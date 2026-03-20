@@ -15,6 +15,7 @@ interface Scheda {
 export default function SchedePage() {
   const [schede, setSchede] = useState<Scheda[]>([])
   const [loading, setLoading] = useState(true)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
@@ -37,6 +38,74 @@ export default function SchedePage() {
     if (!confirm(`Vuoi eliminare la scheda "${nome}"? Questa azione è irreversibile.`)) return
     await supabase.from('schede').delete().eq('id', id)
     fetchSchede()
+  }
+
+  const handleDuplica = async (scheda: Scheda) => {
+    setDuplicating(scheda.id)
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    // Step 1 — Duplica la scheda
+    const { data: nuovaScheda, error: schedaError } = await supabase
+      .from('schede')
+      .insert({
+        coach_id: user.id,
+        nome: `${scheda.nome} (copia)`,
+        descrizione: scheda.descrizione,
+        is_template: false,
+      })
+      .select()
+      .single()
+
+    if (schedaError || !nuovaScheda) {
+      setDuplicating(null)
+      return
+    }
+
+    // Step 2 — Recupera i giorni originali
+    const { data: giorni } = await supabase
+      .from('scheda_giorni')
+      .select(`
+        id, nome, ordine,
+        scheda_esercizi ( esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine )
+      `)
+      .eq('scheda_id', scheda.id)
+      .order('ordine')
+
+    if (giorni && giorni.length > 0) {
+      for (const giorno of giorni) {
+        // Step 3 — Duplica ogni giorno
+        const { data: nuovoGiorno } = await supabase
+          .from('scheda_giorni')
+          .insert({
+            scheda_id: nuovaScheda.id,
+            nome: giorno.nome,
+            ordine: giorno.ordine,
+          })
+          .select()
+          .single()
+
+        // Step 4 — Duplica gli esercizi del giorno
+        if (nuovoGiorno && (giorno as any).scheda_esercizi?.length > 0) {
+          await supabase.from('scheda_esercizi').insert(
+            (giorno as any).scheda_esercizi.map((se: any) => ({
+              giorno_id: nuovoGiorno.id,
+              esercizio_id: se.esercizio_id,
+              serie: se.serie,
+              ripetizioni: se.ripetizioni,
+              recupero_secondi: se.recupero_secondi,
+              note: se.note,
+              ordine: se.ordine,
+            }))
+          )
+        }
+      }
+    }
+
+    setDuplicating(null)
+    fetchSchede()
+    router.push(`/coach/schede/${nuovaScheda.id}`)
   }
 
   return (
@@ -125,14 +194,26 @@ export default function SchedePage() {
                     Creata il {new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
-                  onClick={(e) => e.stopPropagation()}>
+
+                {/* Actions */}
+                <div
+                  className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <button
                     onClick={() => router.push(`/coach/schede/${s.id}`)}
                     className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                     style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
                   >
                     Modifica
+                  </button>
+                  <button
+                    onClick={() => handleDuplica(s)}
+                    disabled={duplicating === s.id}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)', border: '1px solid oklch(0.55 0.20 300 / 20%)' }}
+                  >
+                    {duplicating === s.id ? '...' : 'Duplica'}
                   </button>
                   <button
                     onClick={() => handleDelete(s.id, s.nome)}

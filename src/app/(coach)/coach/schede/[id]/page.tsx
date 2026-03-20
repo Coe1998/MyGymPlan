@@ -46,6 +46,16 @@ export default function SchedaDetailPage() {
   const [esercizi, setEsercizi] = useState<Esercizio[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Edit scheda info
+  const [editingInfo, setEditingInfo] = useState(false)
+  const [editNome, setEditNome] = useState('')
+  const [editDescrizione, setEditDescrizione] = useState('')
+  const [savingInfo, setSavingInfo] = useState(false)
+
+  // Edit giorno nome
+  const [editingGiornoId, setEditingGiornoId] = useState<string | null>(null)
+  const [editGiornoNome, setEditGiornoNome] = useState('')
+
   // Nuovo giorno
   const [newGiornoNome, setNewGiornoNome] = useState('')
   const [addingGiorno, setAddingGiorno] = useState(false)
@@ -60,13 +70,11 @@ export default function SchedaDetailPage() {
 
   const fetchAll = async () => {
     setLoading(true)
-
     const { data: schedaData } = await supabase
-      .from('schede')
-      .select('*')
-      .eq('id', schedaId)
-      .single()
+      .from('schede').select('*').eq('id', schedaId).single()
     setScheda(schedaData)
+    setEditNome(schedaData?.nome ?? '')
+    setEditDescrizione(schedaData?.descrizione ?? '')
 
     const { data: giorniData } = await supabase
       .from('scheda_giorni')
@@ -79,23 +87,39 @@ export default function SchedaDetailPage() {
       `)
       .eq('scheda_id', schedaId)
       .order('ordine')
-
     setGiorni((giorniData as any) ?? [])
 
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: eserciziData } = await supabase
-        .from('esercizi')
-        .select('id, nome, muscoli')
-        .eq('coach_id', user.id)
-        .order('nome')
+        .from('esercizi').select('id, nome, muscoli')
+        .eq('coach_id', user.id).order('nome')
       setEsercizi(eserciziData ?? [])
     }
-
     setLoading(false)
   }
 
   useEffect(() => { fetchAll() }, [schedaId])
+
+  const handleSaveInfo = async () => {
+    if (!editNome.trim()) return
+    setSavingInfo(true)
+    await supabase.from('schede')
+      .update({ nome: editNome.trim(), descrizione: editDescrizione.trim() || null })
+      .eq('id', schedaId)
+    setSavingInfo(false)
+    setEditingInfo(false)
+    fetchAll()
+  }
+
+  const handleSaveGiornoNome = async (giornoId: string) => {
+    if (!editGiornoNome.trim()) return
+    await supabase.from('scheda_giorni')
+      .update({ nome: editGiornoNome.trim() })
+      .eq('id', giornoId)
+    setEditingGiornoId(null)
+    fetchAll()
+  }
 
   const handleAddGiorno = async () => {
     if (!newGiornoNome.trim()) return
@@ -118,9 +142,7 @@ export default function SchedaDetailPage() {
 
   const handleAddEsercizio = async (giornoId: string) => {
     if (!selectedEsercizio) return
-
     const ordine = giorni.find(g => g.id === giornoId)?.scheda_esercizi?.length ?? 0
-
     await supabase.from('scheda_esercizi').insert({
       giorno_id: giornoId,
       esercizio_id: selectedEsercizio,
@@ -130,7 +152,6 @@ export default function SchedaDetailPage() {
       note: noteEsercizio.trim() || null,
       ordine,
     })
-
     setSelectedEsercizio('')
     setSerie('3')
     setRipetizioni('8-12')
@@ -174,18 +195,66 @@ export default function SchedaDetailPage() {
             )}
           </div>
         </div>
+        <button
+          onClick={() => setEditingInfo(true)}
+          className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+        >
+          ✏️ Modifica info
+        </button>
       </div>
 
+      {/* Form modifica info scheda */}
+      {editingInfo && (
+        <div className="rounded-2xl p-6 space-y-4"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Modifica scheda</h2>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Nome</label>
+            <input
+              type="text" value={editNome}
+              onChange={(e) => setEditNome(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+              onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Descrizione</label>
+            <textarea
+              value={editDescrizione}
+              onChange={(e) => setEditDescrizione(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all resize-none"
+              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+              onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+            />
+          </div>
+          <div className="flex gap-3">
+            <button onClick={handleSaveInfo} disabled={savingInfo}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              {savingInfo ? 'Salvataggio...' : 'Salva'}
+            </button>
+            <button
+              onClick={() => { setEditingInfo(false); setEditNome(scheda?.nome ?? ''); setEditDescrizione(scheda?.descrizione ?? '') }}
+              className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+              Annulla
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Aggiungi giorno */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}
-      >
+      <div className="rounded-2xl p-5"
+        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
         <h2 className="font-bold mb-4" style={{ color: 'oklch(0.97 0 0)' }}>Aggiungi un giorno</h2>
         <div className="flex gap-3">
           <input
-            type="text"
-            value={newGiornoNome}
+            type="text" value={newGiornoNome}
             onChange={(e) => setNewGiornoNome(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddGiorno()}
             placeholder='es. "Giorno A — Push", "Lunedì — Upper"'
@@ -219,40 +288,80 @@ export default function SchedaDetailPage() {
       ) : (
         <div className="space-y-6">
           {giorni.map((giorno) => (
-            <div
-              key={giorno.id}
-              className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}
-            >
+            <div key={giorno.id} className="rounded-2xl overflow-hidden"
+              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+
               {/* Giorno header */}
               <div className="px-6 py-4 flex items-center justify-between"
                 style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                     style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                     {giorno.ordine + 1}
                   </div>
-                  <h3 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{giorno.nome}</h3>
-                  <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                    {giorno.scheda_esercizi?.length ?? 0} esercizi
-                  </span>
+
+                  {/* Nome giorno — inline edit */}
+                  {editingGiornoId === giorno.id ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <input
+                        type="text"
+                        value={editGiornoNome}
+                        onChange={(e) => setEditGiornoNome(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveGiornoNome(giorno.id)
+                          if (e.key === 'Escape') setEditingGiornoId(null)
+                        }}
+                        autoFocus
+                        className="flex-1 px-3 py-1.5 rounded-lg text-sm font-bold outline-none transition-all"
+                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46)', color: 'oklch(0.97 0 0)' }}
+                      />
+                      <button
+                        onClick={() => handleSaveGiornoNome(giorno.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                        style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => setEditingGiornoId(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{giorno.nome}</h3>
+                      <button
+                        onClick={() => { setEditingGiornoId(giorno.id); setEditGiornoNome(giorno.nome) }}
+                        className="p-1 rounded transition-all hover:opacity-70"
+                        style={{ color: 'oklch(0.45 0 0)' }}
+                        title="Rinomina giorno"
+                      >
+                        ✏️
+                      </button>
+                      <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                        {giorno.scheda_esercizi?.length ?? 0} esercizi
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}
-                  >
-                    + Esercizio
-                  </button>
-                  <button
-                    onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
-                  >
-                    Elimina giorno
-                  </button>
-                </div>
+
+                {editingGiornoId !== giorno.id && (
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+                      + Esercizio
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
+                      Elimina giorno
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Form aggiunta esercizio */}
@@ -262,8 +371,6 @@ export default function SchedaDetailPage() {
                   <h4 className="font-semibold text-sm" style={{ color: 'oklch(0.70 0.19 46)' }}>
                     Aggiungi esercizio a "{giorno.nome}"
                   </h4>
-
-                  {/* Selezione esercizio */}
                   <div className="space-y-2">
                     <label className="text-xs font-medium" style={{ color: 'oklch(0.70 0 0)' }}>Esercizio</label>
                     <select
@@ -278,8 +385,6 @@ export default function SchedaDetailPage() {
                       ))}
                     </select>
                   </div>
-
-                  {/* Serie, Reps, Recupero */}
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { label: 'Serie', value: serie, setter: setSerie, placeholder: '3' },
@@ -289,8 +394,7 @@ export default function SchedaDetailPage() {
                       <div key={f.label} className="space-y-1.5">
                         <label className="text-xs font-medium" style={{ color: 'oklch(0.70 0 0)' }}>{f.label}</label>
                         <input
-                          type="text"
-                          value={f.value}
+                          type="text" value={f.value}
                           onChange={(e) => f.setter(e.target.value)}
                           placeholder={f.placeholder}
                           className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all"
@@ -301,13 +405,10 @@ export default function SchedaDetailPage() {
                       </div>
                     ))}
                   </div>
-
-                  {/* Note */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium" style={{ color: 'oklch(0.70 0 0)' }}>Note (opzionale)</label>
                     <input
-                      type="text"
-                      value={noteEsercizio}
+                      type="text" value={noteEsercizio}
                       onChange={(e) => setNoteEsercizio(e.target.value)}
                       placeholder="es. Usa presa prona, focus sulla discesa lenta..."
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all"
@@ -316,7 +417,6 @@ export default function SchedaDetailPage() {
                       onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
                     />
                   </div>
-
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAddEsercizio(giorno.id)}
@@ -326,22 +426,20 @@ export default function SchedaDetailPage() {
                         background: !selectedEsercizio ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
                         color: 'oklch(0.13 0 0)',
                         cursor: !selectedEsercizio ? 'not-allowed' : 'pointer',
-                      }}
-                    >
+                      }}>
                       Aggiungi
                     </button>
                     <button
                       onClick={() => setAddingToGiorno(null)}
                       className="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
-                    >
+                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
                       Annulla
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Lista esercizi del giorno */}
+              {/* Lista esercizi */}
               {(giorno.scheda_esercizi?.length ?? 0) === 0 ? (
                 <div className="px-6 py-8 text-center">
                   <p className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>
@@ -386,7 +484,7 @@ export default function SchedaDetailPage() {
                             </p>
                           )}
                         </div>
-                        <div className="flex gap-2 muscoli flex-wrap max-w-32">
+                        <div className="flex flex-wrap gap-1 max-w-32">
                           {se.esercizi?.muscoli?.slice(0, 2).map(m => (
                             <span key={m} className="text-xs px-2 py-0.5 rounded-full"
                               style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
@@ -397,8 +495,7 @@ export default function SchedaDetailPage() {
                         <button
                           onClick={() => handleDeleteEsercizio(se.id)}
                           className="opacity-0 group-hover:opacity-100 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                          style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}
-                        >
+                          style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
                           ✕
                         </button>
                       </div>
