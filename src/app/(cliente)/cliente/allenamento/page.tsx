@@ -259,6 +259,20 @@ export default function AllenamentoPage() {
     return null
   }
 
+  const calcolaEserciziHighlight = (): { nome: string; pesoMax: number }[] => {
+    return esercizi
+      .map(ese => {
+        const eseLog = logs[ese.id]
+        if (!eseLog) return null
+        const pesi = eseLog.serie
+          .filter(s => s.completata && parseFloat(s.peso_kg) > 0)
+          .map(s => parseFloat(s.peso_kg))
+        if (pesi.length === 0) return null
+        return { nome: ese.esercizi.nome, pesoMax: Math.max(...pesi) }
+      })
+      .filter(Boolean) as { nome: string; pesoMax: number }[]
+  }
+
   const getConfronto = (eseId: string, serieIndex: number) =>
     ultimaSessione[eseId]?.find(s => s.numero_serie === serieIndex + 1) ?? null
 
@@ -536,8 +550,8 @@ export default function AllenamentoPage() {
               giornoNome={giornoNome}
               volume={Math.round(volumeTotale)}
               serie={serieCompletate}
-              durata={isViewMode ? `${serieCompletate} serie` : formatDurata(durataSecondi)}
-              newPR={calcolaNuovoPR()}
+              durata={formatDurata(durataSecondi)}
+              esercizi={calcolaEserciziHighlight()}
             />
           </div>
 
