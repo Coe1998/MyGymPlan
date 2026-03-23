@@ -38,6 +38,7 @@ export default function AllenamentoPage() {
   const router = useRouter()
   const giornoId = searchParams.get('giorno')
   const assegnazioneId = searchParams.get('assegnazione')
+  const sessioneIdParam = searchParams.get('sessione') // per visualizzare sessioni passate
   const supabase = createClient()
 
   const [giornoNome, setGiornoNome] = useState('')
@@ -50,16 +51,63 @@ export default function AllenamentoPage() {
   const [completata, setCompletata] = useState(false)
   const [timerAttivo, setTimerAttivo] = useState(false)
   const [timerSecondi, setTimerSecondi] = useState(0)
-
-  // Timer durata allenamento
   const [durataSecondi, setDurataSecondi] = useState(0)
+  const [sessioneData, setSessioneData] = useState<string | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
+  const isViewMode = !!sessioneIdParam
 
   const fetchGiorno = useCallback(async () => {
-    if (!giornoId || !assegnazioneId) return
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+
+    // Modalità visualizzazione sessione passata
+    if (sessioneIdParam) {
+      const { data: sessione } = await supabase
+        .from('sessioni')
+        .select(`id, data, completata, giorno_id, assegnazione_id, scheda_giorni ( nome )`)
+        .eq('id', sessioneIdParam)
+        .single()
+
+      if (!sessione) { setLoading(false); return }
+      setSessioneId(sessione.id)
+      setCompletata(sessione.completata)
+      setSessioneData(sessione.data)
+      setGiornoNome((sessione as any).scheda_giorni?.nome ?? '')
+
+      // Calcola durata approssimativa (non disponibile, usiamo 0)
+      setDurataSecondi(0)
+
+      const { data: giorno } = await supabase
+        .from('scheda_giorni')
+        .select(`id, nome, scheda_esercizi (
+          id, serie, ripetizioni, recupero_secondi, note, ordine,
+          esercizi ( id, nome, muscoli, video_url )
+        )`)
+        .eq('id', sessione.giorno_id)
+        .single()
+
+      if (!giorno) { setLoading(false); return }
+      const eserciziOrdinati = ((giorno as any).scheda_esercizi ?? []).sort((a: any, b: any) => a.ordine - b.ordine)
+      setEsercizi(eserciziOrdinati)
+
+      const { data: logEsistenti } = await supabase.from('log_serie').select('*').eq('sessione_id', sessioneIdParam)
+
+      const logsInit: Record<string, EsercizioLog> = {}
+      for (const ese of eserciziOrdinati) {
+        const serieLog: LogSerie[] = []
+        for (let i = 1; i <= ese.serie; i++) {
+          const es = logEsistenti?.find((l: any) => l.scheda_esercizio_id === ese.id && l.numero_serie === i)
+          serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', completata: es?.completata ?? false })
+        }
+        logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
+      }
+      setLogs(logsInit)
+      setLoading(false)
+      return
+    }
+
+    if (!giornoId || !assegnazioneId) { setLoading(false); return }
 
     const { data: giorno } = await supabase
       .from('scheda_giorni')
@@ -84,6 +132,7 @@ export default function AllenamentoPage() {
     if (sessioneEsistente) {
       sessId = sessioneEsistente.id
       setCompletata(sessioneEsistente.completata)
+      setSessioneData(sessioneEsistente.data)
       if (!sessioneEsistente.completata) {
         const elapsed = Math.floor((Date.now() - new Date(sessioneEsistente.data).getTime()) / 1000)
         setDurataSecondi(elapsed)
@@ -93,6 +142,7 @@ export default function AllenamentoPage() {
         .insert({ cliente_id: user.id, assegnazione_id: assegnazioneId, giorno_id: giornoId, completata: false })
         .select().single()
       sessId = nuova!.id
+      setSessioneData(nuova!.data)
     }
     setSessioneId(sessId)
 
@@ -125,11 +175,10 @@ export default function AllenamentoPage() {
     }
     setLogs(logsInit)
     setLoading(false)
-  }, [giornoId, assegnazioneId])
+  }, [giornoId, assegnazioneId, sessioneIdParam])
 
   useEffect(() => { fetchGiorno() }, [fetchGiorno])
 
-  // Timer recupero
   useEffect(() => {
     if (!timerAttivo) return
     if (timerSecondi <= 0) { setTimerAttivo(false); return }
@@ -137,12 +186,11 @@ export default function AllenamentoPage() {
     return () => clearInterval(interval)
   }, [timerAttivo, timerSecondi])
 
-  // Timer durata
   useEffect(() => {
-    if (completata || loading) return
+    if (completata || loading || isViewMode) return
     durataRef.current = setInterval(() => setDurataSecondi(s => s + 1), 1000)
     return () => { if (durataRef.current) clearInterval(durataRef.current) }
-  }, [completata, loading])
+  }, [completata, loading, isViewMode])
 
   const formatDurata = (sec: number) => {
     const h = Math.floor(sec / 3600)
@@ -152,6 +200,7 @@ export default function AllenamentoPage() {
   }
 
   const updateLog = (eseId: string, serieIndex: number, field: 'peso_kg' | 'ripetizioni', value: string) => {
+    if (isViewMode) return
     setLogs(prev => ({
       ...prev,
       [eseId]: { ...prev[eseId], serie: prev[eseId].serie.map((s, i) => i === serieIndex ? { ...s, [field]: value } : s) }
@@ -159,7 +208,7 @@ export default function AllenamentoPage() {
   }
 
   const toggleSerie = async (ese: SchedaEsercizio, serieIndex: number) => {
-    if (!sessioneId) return
+    if (!sessioneId || isViewMode) return
     const log = logs[ese.id]?.serie[serieIndex]
     if (!log) return
     const nuovoStato = !log.completata
@@ -191,14 +240,10 @@ export default function AllenamentoPage() {
   const serieTotali = esercizi.reduce((acc, e) => acc + e.serie, 0)
   const progressoPerc = serieTotali > 0 ? Math.round((serieCompletate / serieTotali) * 100) : 0
 
-  // Calcola volume totale
-  const volumeTotale = Object.values(logs).reduce((acc, log) => {
-    return acc + log.serie.filter(s => s.completata).reduce((a, s) => {
-      return a + ((parseFloat(s.peso_kg) || 0) * (parseInt(s.ripetizioni) || 0))
-    }, 0)
-  }, 0)
+  const volumeTotale = Object.values(logs).reduce((acc, log) =>
+    acc + log.serie.filter(s => s.completata).reduce((a, s) =>
+      a + ((parseFloat(s.peso_kg) || 0) * (parseInt(s.ripetizioni) || 0)), 0), 0)
 
-  // Calcola NEW PR (peso massimo battuto rispetto all'ultima sessione)
   const calcolaNuovoPR = (): { nome: string; peso: number } | null => {
     for (const ese of esercizi) {
       const eseLog = logs[ese.id]
@@ -208,9 +253,7 @@ export default function AllenamentoPage() {
         if (!serie.completata) continue
         const pesoAttuale = parseFloat(serie.peso_kg) || 0
         const ultimoPeso = ultimi.find(u => u.numero_serie === serie.numero_serie)?.peso_kg ?? 0
-        if (pesoAttuale > (ultimoPeso ?? 0) && pesoAttuale > 0) {
-          return { nome: ese.esercizi.nome, peso: pesoAttuale }
-        }
+        if (pesoAttuale > (ultimoPeso ?? 0) && pesoAttuale > 0) return { nome: ese.esercizi.nome, peso: pesoAttuale }
       }
     }
     return null
@@ -228,7 +271,9 @@ export default function AllenamentoPage() {
     return pa > pu ? 'up' : pa < pu ? 'down' : 'equal'
   }
 
-  if (!giornoId || !assegnazioneId) {
+  const backUrl = isViewMode ? '/cliente/progressi' : '/cliente/dashboard'
+
+  if (!giornoId && !sessioneIdParam) {
     return (
       <div className="flex items-center justify-center min-h-64 p-4">
         <div className="text-center space-y-3">
@@ -244,27 +289,35 @@ export default function AllenamentoPage() {
     )
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-64">
+      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+    </div>
+  )
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => router.push('/cliente/dashboard')}
+          <button onClick={() => router.push(backUrl)}
             className="text-sm hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>←</button>
           <div>
-            <h1 className="text-2xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-              {giornoNome}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl lg:text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+                {giornoNome}
+              </h1>
+              {isViewMode && (
+                <span className="text-xs px-2 py-1 rounded-lg"
+                  style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
+                  Archivio
+                </span>
+              )}
+            </div>
             <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
-              {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {sessioneData
+                ? new Date(sessioneData).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+                : new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
         </div>
@@ -295,8 +348,8 @@ export default function AllenamentoPage() {
         </div>
       </div>
 
-      {/* Timer recupero */}
-      {timerAttivo && (
+      {/* Timer recupero — solo in modalità live */}
+      {timerAttivo && !isViewMode && (
         <div className="rounded-2xl p-4 flex items-center justify-between"
           style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
           <div>
@@ -358,20 +411,18 @@ export default function AllenamentoPage() {
 
               <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
                 {eseLog?.serie.map((serie, serieIndex) => {
-                  const confronto = getConfronto(ese.id, serieIndex)
-                  const miglioramento = getMiglioramento(ese.id, serieIndex)
+                  const confronto = !isViewMode ? getConfronto(ese.id, serieIndex) : null
+                  const miglioramento = !isViewMode ? getMiglioramento(ese.id, serieIndex) : null
 
                   return (
                     <div key={serieIndex} className="px-4 py-3"
                       style={{ background: serie.completata ? 'oklch(0.65 0.18 150 / 5%)' : 'transparent' }}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>Serie {serieIndex + 1}</span>
-                        {confronto ? (
+                        {confronto && !isViewMode && (
                           <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
                             Ultima: {confronto.peso_kg ?? '—'}kg × {confronto.ripetizioni ?? '—'}
                           </span>
-                        ) : (
-                          <span className="text-xs" style={{ color: 'oklch(0.35 0 0)' }}>Prima volta</span>
                         )}
                       </div>
 
@@ -380,8 +431,7 @@ export default function AllenamentoPage() {
                           <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
                           <input type="number" inputMode="decimal" value={serie.peso_kg}
                             onChange={(e) => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
-                            placeholder={confronto?.peso_kg?.toString() ?? '0'}
-                            disabled={completata}
+                            placeholder="0" readOnly={isViewMode}
                             className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                             style={{
                               background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
@@ -394,8 +444,7 @@ export default function AllenamentoPage() {
                           <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps</label>
                           <input type="number" inputMode="numeric" value={serie.ripetizioni}
                             onChange={(e) => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
-                            placeholder={confronto?.ripetizioni?.toString() ?? '0'}
-                            disabled={completata}
+                            placeholder="0" readOnly={isViewMode}
                             className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                             style={{
                               background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
@@ -405,12 +454,12 @@ export default function AllenamentoPage() {
                         </div>
                         <div className="flex flex-col items-center gap-1">
                           <label className="text-xs mb-1 block opacity-0">✓</label>
-                          <button onClick={() => toggleSerie(ese, serieIndex)} disabled={completata}
+                          <button onClick={() => !isViewMode && toggleSerie(ese, serieIndex)}
                             className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                             style={{
                               background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
                               border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
-                              cursor: completata ? 'not-allowed' : 'pointer',
+                              cursor: isViewMode ? 'default' : 'pointer',
                             }}>
                             {serie.completata
                               ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
@@ -430,8 +479,8 @@ export default function AllenamentoPage() {
         })}
       </div>
 
-      {/* Bottone completa */}
-      {!completata && (
+      {/* Bottone completa — solo modalità live */}
+      {!completata && !isViewMode && (
         <div className="pb-4">
           <button onClick={handleCompleta} disabled={saving || progressoPerc < 100}
             className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
@@ -445,19 +494,39 @@ export default function AllenamentoPage() {
         </div>
       )}
 
-      {/* Schermata completamento con overlay share */}
+      {/* Riepilogo + share overlay — quando completato */}
       {completata && (
-        <div className="pb-4 space-y-6">
-          <div className="rounded-2xl p-6 text-center"
-            style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
-            <p className="text-4xl mb-2">🎉</p>
-            <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
-            <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>
-              {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie
-            </p>
-          </div>
+        <div className="pb-4 space-y-5">
+          {!isViewMode && (
+            <div className="rounded-2xl p-6 text-center"
+              style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
+              <p className="text-4xl mb-2">🎉</p>
+              <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
+              <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>
+                {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie
+              </p>
+            </div>
+          )}
 
-          {/* Share overlay */}
+          {/* Riepilogo in modalità archivio */}
+          {isViewMode && (
+            <div className="rounded-2xl p-5"
+              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'oklch(0.45 0 0)' }}>Riepilogo</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
+                  <p className="text-2xl font-black" style={{ color: 'oklch(0.60 0.15 200)' }}>{Math.round(volumeTotale).toLocaleString('it-IT')}</p>
+                  <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>kg volume</p>
+                </div>
+                <div className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
+                  <p className="text-2xl font-black" style={{ color: 'oklch(0.70 0.19 46)' }}>{serieCompletate}</p>
+                  <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>serie</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Share overlay — sempre disponibile quando completato */}
           <div className="rounded-2xl p-5 space-y-4"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <p className="text-sm font-bold text-center" style={{ color: 'oklch(0.97 0 0)' }}>
@@ -467,15 +536,15 @@ export default function AllenamentoPage() {
               giornoNome={giornoNome}
               volume={Math.round(volumeTotale)}
               serie={serieCompletate}
-              durata={formatDurata(durataSecondi)}
+              durata={isViewMode ? `${serieCompletate} serie` : formatDurata(durataSecondi)}
               newPR={calcolaNuovoPR()}
             />
           </div>
 
-          <button onClick={() => router.push('/cliente/dashboard')}
+          <button onClick={() => router.push(backUrl)}
             className="w-full py-3 rounded-2xl text-sm font-semibold transition-all"
             style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-            Torna alla dashboard
+            ← {isViewMode ? 'Torna ai progressi' : 'Torna alla dashboard'}
           </button>
         </div>
       )}

@@ -1,4 +1,6 @@
 'use client'
+import { useRouter } from 'next/navigation'
+const router = useRouter()
 
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -411,8 +413,11 @@ export default function ProgressiPage() {
             ) : (
               <div>
                 {sessioni.map((s, i) => (
-                  <div key={s.id} className="flex items-center gap-3 px-5 py-3"
-                    style={{ borderBottom: i < sessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors hover:bg-white/2"
+                    style={{ borderBottom: i < sessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
+                    onClick={() => router.push(`/cliente/allenamento?sessione=${s.id}`)}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
                       style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
                       {s.completata ? '✅' : '⏸️'}
@@ -425,13 +430,16 @@ export default function ProgressiPage() {
                         {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded-full flex-shrink-0"
-                      style={{
-                        background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                        color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
-                      }}>
-                      {s.completata ? 'Fatto' : 'Parziale'}
-                    </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="text-xs px-2 py-1 rounded-full"
+                        style={{
+                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
+                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                        }}>
+                        {s.completata ? 'Fatto' : 'Parziale'}
+                      </span>
+                      <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>→</span>
+                    </div>
                   </div>
                 ))}
               </div>
