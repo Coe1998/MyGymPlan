@@ -362,23 +362,27 @@ export default function SchedaDetailPage() {
       {/* Aggiungi giorno */}
       <div className="rounded-2xl p-5" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
         <h2 className="font-bold mb-4" style={{ color: 'oklch(0.97 0 0)' }}>Aggiungi un giorno</h2>
-        <div className="flex gap-3">
-          <input type="text" value={newGiornoNome} onChange={(e) => setNewGiornoNome(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAddGiorno()}
-            placeholder='es. "Giorno A — Push", "Lunedì — Upper"'
-            className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-            onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
-          <button onClick={handleAddGiorno} disabled={addingGiorno || !newGiornoNome.trim()}
-            className="px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap"
-            style={{
-              background: !newGiornoNome.trim() ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
-              color: 'oklch(0.13 0 0)', cursor: !newGiornoNome.trim() ? 'not-allowed' : 'pointer',
-            }}>
-            + Aggiungi giorno
-          </button>
-        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+		  <input
+			type="text" value={newGiornoNome}
+			onChange={(e) => setNewGiornoNome(e.target.value)}
+			onKeyDown={(e) => e.key === 'Enter' && handleAddGiorno()}
+			placeholder='es. "Giorno A — Push", "Lunedì — Upper"'
+			className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
+			style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+			onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+			onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+		  <button
+			onClick={handleAddGiorno} disabled={addingGiorno || !newGiornoNome.trim()}
+			className="w-full sm:w-auto px-5 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
+			style={{
+			  background: !newGiornoNome.trim() ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
+			  color: 'oklch(0.13 0 0)',
+			  cursor: !newGiornoNome.trim() ? 'not-allowed' : 'pointer',
+			}}>
+			+ Aggiungi giorno
+		  </button>
+		</div>
       </div>
 
       {/* Giorni */}
@@ -395,47 +399,77 @@ export default function SchedaDetailPage() {
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
               <div className="px-6 py-4 flex items-center justify-between"
                 style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                    {giorno.ordine + 1}
-                  </div>
-                  {editingGiornoId === giorno.id ? (
-                    <div className="flex items-center gap-2 flex-1">
-                      <input type="text" value={editGiornoNome} onChange={(e) => setEditGiornoNome(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleSaveGiornoNome(giorno.id); if (e.key === 'Escape') setEditingGiornoId(null) }}
-                        autoFocus
-                        className="flex-1 px-3 py-1.5 rounded-lg text-sm font-bold outline-none"
-                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46)', color: 'oklch(0.97 0 0)' }} />
-                      <button onClick={() => handleSaveGiornoNome(giorno.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                        style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>✓</button>
-                      <button onClick={() => setEditingGiornoId(null)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>✕</button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{giorno.nome}</h3>
-                      <button onClick={() => { setEditingGiornoId(giorno.id); setEditGiornoNome(giorno.nome) }}
-                        className="p-1 rounded transition-all hover:opacity-70" style={{ color: 'oklch(0.45 0 0)' }}>✏️</button>
-                      <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                        {giorno.scheda_esercizi?.length ?? 0} esercizi
-                      </span>
-                    </div>
-                  )}
-                </div>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+				  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+					style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+					{giorno.ordine + 1}
+				  </div>
+				  {editingGiornoId === giorno.id ? (
+					<div className="flex items-center gap-2 flex-1 min-w-0">
+					  <input type="text" value={editGiornoNome}
+						onChange={(e) => setEditGiornoNome(e.target.value)}
+						onKeyDown={(e) => {
+						  if (e.key === 'Enter') handleSaveGiornoNome(giorno.id)
+						  if (e.key === 'Escape') setEditingGiornoId(null)
+						}}
+						autoFocus
+						className="flex-1 px-3 py-1.5 rounded-lg text-sm font-bold outline-none min-w-0"
+						style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46)', color: 'oklch(0.97 0 0)' }} />
+					  <button onClick={() => handleSaveGiornoNome(giorno.id)}
+						className="px-3 py-1.5 rounded-lg text-xs font-semibold flex-shrink-0"
+						style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>✓</button>
+					  <button onClick={() => setEditingGiornoId(null)}
+						className="px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0"
+						style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>✕</button>
+					</div>
+				  ) : (
+					<div className="flex items-center gap-2 flex-1 min-w-0">
+					  <div className="flex-1 min-w-0 overflow-hidden">
+						<h3 className="font-bold whitespace-nowrap"
+						  style={{
+							color: 'oklch(0.97 0 0)',
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+						  }}
+						  onMouseEnter={(e) => {
+							const el = e.currentTarget
+							if (el.scrollWidth > el.clientWidth) {
+							  el.style.animation = 'marquee 4s linear infinite'
+							  el.style.textOverflow = 'unset'
+							}
+						  }}
+						  onMouseLeave={(e) => {
+							e.currentTarget.style.animation = ''
+							e.currentTarget.style.textOverflow = 'ellipsis'
+						  }}>
+						  {giorno.nome}
+						</h3>
+					  </div>
+					</div>
+				  )}
+				</div>
                 {editingGiornoId !== giorno.id && (
-				  <div className="flex gap-2 flex-shrink-0">
-					<button onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
-					  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-					  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-					  + Ese
+				  <div className="flex gap-1.5 flex-shrink-0">
+					<button
+					  onClick={() => { setEditingGiornoId(giorno.id); setEditGiornoNome(giorno.nome) }}
+					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+					  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+					  title="Rinomina">
+					  ✏️
 					</button>
-					<button onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
-					  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-					  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
-					  🗑️
+					<button
+					  onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
+					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold transition-all"
+					  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}
+					  title="Aggiungi esercizio">
+					  +
+					</button>
+					<button
+					  onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
+					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+					  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
+					  title="Elimina giorno">
+					  ✕
 					</button>
 				  </div>
 				)}

@@ -123,6 +123,11 @@
   --sidebar-ring: oklch(0.70 0.19 46);
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
