@@ -88,18 +88,17 @@ export default function SchedePage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Schede</h1>
-          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Crea e gestisci le schede di allenamento</p>
-        </div>
-        <button onClick={() => router.push('/coach/schede/nuova')}
-          className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-          + Nuova scheda
-        </button>
-      </div>
+    <div className="flex items-center justify-between gap-3">
+	  <div className="min-w-0">
+		<h1 className="text-3xl lg:text-4xl font-black tracking-tight truncate" style={{ color: 'oklch(0.97 0 0)' }}>Schede</h1>
+		<p className="mt-0.5 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Crea e gestisci le schede</p>
+	  </div>
+	  <button onClick={() => router.push('/coach/schede/nuova')}
+		className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
+		style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+		+ Nuova
+	  </button>
+	</div>
 
       <div className="rounded-2xl overflow-hidden"
         style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -133,63 +132,59 @@ export default function SchedePage() {
               const isAssegnata = assegnazioniAttive.length > 0
 
               return (
-                <div key={s.id}
-                  className="flex items-center gap-4 px-6 py-5 group transition-colors cursor-pointer hover:bg-white/2"
-                  style={{ borderBottom: i < schede.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
-                  onClick={() => router.push(`/coach/schede/${s.id}`)}>
+				<div key={s.id}
+				  className="flex items-center gap-3 px-4 py-4 group transition-colors cursor-pointer hover:bg-white/2"
+				  style={{ borderBottom: i < schede.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
+				  onClick={() => router.push(`/coach/schede/${s.id}`)}>
 
-                  {/* Icona con colore diverso se assegnata */}
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ background: isAssegnata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 10%)' }}>
-                    {isAssegnata ? '✅' : '📋'}
-                  </div>
+				  {/* Icona */}
+				  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+					style={{ background: isAssegnata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 10%)' }}>
+					{isAssegnata ? '✅' : '📋'}
+				  </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{s.nome}</p>
-                      {s.is_template && (
-                        <span className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
-                          Template
-                        </span>
-                      )}
-                      {/* Badge clienti assegnati */}
-                      {assegnazioniAttive.length > 0 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                          {assegnazioniAttive.length === 1
-                            ? `Assegnata a ${(assegnazioniAttive[0] as any).profiles?.full_name}`
-                            : `Assegnata a ${assegnazioniAttive.length} clienti`}
-                        </span>
-                      )}
-                    </div>
-                    {s.descrizione && (
-                      <p className="text-sm mt-0.5 truncate" style={{ color: 'oklch(0.50 0 0)' }}>{s.descrizione}</p>
-                    )}
-                    <p className="text-xs mt-1" style={{ color: 'oklch(0.40 0 0)' }}>
-                      Creata il {new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
-                  </div>
+				  {/* Info */}
+				  <div className="flex-1 min-w-0">
+					<div className="flex items-center gap-2 min-w-0">
+					  <p className="font-semibold truncate" style={{ color: 'oklch(0.97 0 0)' }}>{s.nome}</p>
+					  {s.is_template && (
+						<span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+						  style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
+						  Template
+						</span>
+					  )}
+					</div>
+					<div className="flex items-center gap-2 mt-0.5 flex-wrap">
+					  {assegnazioniAttive.length > 0 && (
+						<span className="text-xs px-2 py-0.5 rounded-full"
+						  style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+						  {assegnazioniAttive.length === 1
+							? `👤 ${(assegnazioniAttive[0] as any).profiles?.full_name?.split(' ')[0]}`
+							: `👥 ${assegnazioniAttive.length} clienti`}
+						</span>
+					  )}
+					  <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+						{new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+					  </p>
+					</div>
+				  </div>
 
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
-                    onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => router.push(`/coach/schede/${s.id}`)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-                      Modifica
-                    </button>
-                    <button onClick={() => handleDuplica(s)} disabled={duplicating === s.id}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                      style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)', border: '1px solid oklch(0.55 0.20 300 / 20%)' }}>
-                      {duplicating === s.id ? '...' : 'Duplica'}
-                    </button>
-                    <button onClick={() => handleDelete(s.id, s.nome)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
-                      Elimina
-                    </button>
-                  </div>
-                </div>
+				  {/* Azioni — icone su mobile, testo su desktop */}
+				  <div className="flex gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+					<button onClick={() => handleDuplica(s)} disabled={duplicating === s.id}
+					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+					  style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)', border: '1px solid oklch(0.55 0.20 300 / 20%)' }}
+					  title="Duplica">
+					  {duplicating === s.id ? '⏳' : '⧉'}
+					</button>
+					<button onClick={() => handleDelete(s.id, s.nome)}
+					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+					  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
+					  title="Elimina">
+					  ✕
+					</button>
+				  </div>
+				</div>
               )
             })}
           </div>
