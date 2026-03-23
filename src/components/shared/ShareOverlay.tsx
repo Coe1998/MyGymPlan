@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 
 interface Props {
   giornoNome: string
@@ -16,30 +16,30 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, newPR 
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const isDark = tema === 'dark'
-
-  // Colori in base al tema
-  const bg = isDark ? '#1a1a1a' : '#f0ece6'
   const textPrimary = isDark ? '#ffffff' : '#1a1a1a'
-  const textSecondary = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
-  const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'
+  const textSecondary = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'
+  const dividerColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'
   const logoSub = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)'
   const accent = '#f97316'
 
   const drawCard = (canvas: HTMLCanvasElement) => {
     const scale = 3
     const W = 280
+    const padH = 28
+    const padV = 24
+
     const rows = [
       { label: 'Kg volume', value: volume.toLocaleString('it-IT') },
       { label: 'Serie', value: serie.toString() },
       { label: 'Durata', value: durata },
       ...(newPR ? [{ label: `🏆 NEW PR · ${newPR.nome}`, value: `${newPR.peso} kg`, isAccent: true }] : []),
     ]
-    const rowH = 44
-    const padV = 24
-    const padH = 28
-    const titleH = 36
-    const logoH = 52
-    const totalH = padV + titleH + rows.length * rowH + (rows.length - 1) * 2 + padV + logoH
+
+    const titleH = 40       // nome giorno
+    const rowH = 46         // altezza ogni riga stat
+    const dividerH = 1      // divisore tra righe
+    const logoH = 60        // area logo in fondo
+    const totalH = padV + titleH + (rows.length * rowH) + ((rows.length - 1) * dividerH) + padV + logoH + padV
 
     canvas.width = W * scale
     canvas.height = totalH * scale
@@ -49,104 +49,106 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, newPR 
     const ctx = canvas.getContext('2d')!
     ctx.scale(scale, scale)
 
-    // Sfondo
-    ctx.fillStyle = bg
-    ctx.beginPath()
-    ctx.roundRect(0, 0, W, totalH, 16)
-    ctx.fill()
+    // Sfondo TRASPARENTE — non disegnare nulla come background
+    ctx.clearRect(0, 0, W, totalH)
 
     let y = padV
 
     // Nome giorno centrato
+    ctx.font = '700 11px -apple-system, system-ui, sans-serif'
     ctx.fillStyle = accent
-    ctx.font = '700 11px system-ui, sans-serif'
     ctx.textAlign = 'center'
-    ctx.letterSpacing = '2px'
     ctx.fillText(giornoNome.toUpperCase(), W / 2, y + 14)
     y += titleH
 
     // Stats
     ctx.textAlign = 'left'
-    ctx.letterSpacing = '0px'
-
     rows.forEach((row, i) => {
       const isAccent = (row as any).isAccent
-      const rowY = y + i * (rowH + 2)
+      const rowY = y + i * (rowH + dividerH)
 
-      // Divider sopra
+      // Divisore sopra ogni riga (tranne la prima)
       if (i > 0) {
         ctx.fillStyle = dividerColor
-        ctx.fillRect(padH, rowY - 1, W - padH * 2, 0.5)
+        ctx.fillRect(padH, rowY - dividerH, W - padH * 2, dividerH)
       }
 
       // Label
-      ctx.font = isAccent ? '700 11px system-ui, sans-serif' : '400 11px system-ui, sans-serif'
+      ctx.font = isAccent ? '700 11px -apple-system, system-ui, sans-serif' : '400 11px -apple-system, system-ui, sans-serif'
       ctx.fillStyle = isAccent ? accent : textSecondary
-      ctx.fillText(row.label, padH, rowY + 22)
+      ctx.textAlign = 'left'
+      ctx.fillText(row.label, padH, rowY + 26)
 
       // Valore
-      ctx.font = '800 20px system-ui, sans-serif'
+      ctx.font = '800 21px -apple-system, system-ui, sans-serif'
       ctx.fillStyle = isAccent ? accent : textPrimary
       ctx.textAlign = 'right'
-      ctx.fillText(row.value, W - padH, rowY + 24)
-      ctx.textAlign = 'left'
+      ctx.fillText(row.value, W - padH, rowY + 28)
     })
 
-    y += rows.length * (rowH + 2) + padV
+    y += rows.length * (rowH + dividerH) + padV
 
-    // Divider logo
+    // Divisore logo
     ctx.fillStyle = dividerColor
-    ctx.fillRect(padH, y, W - padH * 2, 0.5)
+    ctx.fillRect(padH, y, W - padH * 2, 1)
     y += 16
 
-    // Logo centrato
+    // Logo MGP centrato
     ctx.textAlign = 'center'
-    ctx.font = '800 24px system-ui, sans-serif'
-    ctx.fillStyle = textPrimary
-    ctx.fillText('MG', W / 2 - 12, y + 22)
-    ctx.fillStyle = accent
-    ctx.fillText('P', W / 2 + 18, y + 22)
 
-    // Sottotitolo logo
-    ctx.font = '400 8px system-ui, sans-serif'
+    // "MG" in bianco/nero
+    ctx.font = '800 24px -apple-system, system-ui, sans-serif'
+    ctx.fillStyle = textPrimary
+
+    // Misura le due parti separatamente per centrare
+    const mgWidth = ctx.measureText('MG').width
+    const pWidth = ctx.measureText('P').width
+    const totalWidth = mgWidth + pWidth
+    const startX = (W - totalWidth) / 2
+
+    ctx.textAlign = 'left'
+    ctx.fillText('MG', startX, y + 24)
+
+    // "P" in arancione
+    ctx.fillStyle = accent
+    ctx.fillText('P', startX + mgWidth, y + 24)
+
+    // Sottotitolo
+    ctx.font = '400 8px -apple-system, system-ui, sans-serif'
     ctx.fillStyle = logoSub
-    ctx.letterSpacing = '3px'
-    ctx.fillText('MYGYMPLAN', W / 2, y + 38)
-    ctx.letterSpacing = '0px'
+    ctx.textAlign = 'center'
+    ctx.fillText('MYGYMPLAN', W / 2, y + 40)
   }
+
+  useEffect(() => {
+    if (canvasRef.current) drawCard(canvasRef.current)
+  }, [tema, giornoNome, volume, serie, durata, newPR])
 
   const handleDownload = async () => {
     const canvas = canvasRef.current
     if (!canvas) return
     setDownloading(true)
 
-    try {
-      drawCard(canvas)
+    // Ridisegna prima del download
+    drawCard(canvas)
 
-      // Su mobile usiamo toBlob + share API se disponibile
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setDownloading(false); return }
+    canvas.toBlob(async (blob) => {
+      if (!blob) { setDownloading(false); return }
 
-        // Prova Web Share API (funziona su iOS Safari e Android Chrome)
-        if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'mgp.png', { type: 'image/png' })] })) {
-          try {
-            await navigator.share({
-              files: [new File([blob], `mgp-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`, { type: 'image/png' })],
-              title: 'MyGymPlan',
-            })
-          } catch (e) {
-            // Se l'utente annulla la condivisione, fallback al download
-            fallbackDownload(canvas)
-          }
-        } else {
+      const file = new File([blob], `mgp-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`, { type: 'image/png' })
+
+      // Web Share API — apre il menu nativo su iOS e Android
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'MyGymPlan' })
+        } catch {
           fallbackDownload(canvas)
         }
-        setDownloading(false)
-      }, 'image/png')
-    } catch (err) {
-      console.error(err)
+      } else {
+        fallbackDownload(canvas)
+      }
       setDownloading(false)
-    }
+    }, 'image/png')
   }
 
   const fallbackDownload = (canvas: HTMLCanvasElement) => {
@@ -156,26 +158,12 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, newPR 
     link.click()
   }
 
-  // Ridisegna preview quando cambia il tema
-  const handleTemaChange = (t: 'dark' | 'light') => {
-    setTema(t)
-    setTimeout(() => {
-      if (canvasRef.current) drawCard(canvasRef.current)
-    }, 50)
-  }
-
-  // Disegna al mount
-  const initCanvas = (el: HTMLCanvasElement | null) => {
-    (canvasRef as any).current = el
-    if (el) setTimeout(() => drawCard(el), 100)
-  }
-
   return (
     <div className="space-y-4">
       {/* Selettore tema */}
       <div className="flex gap-2 justify-center">
         {(['dark', 'light'] as const).map(t => (
-          <button key={t} onClick={() => handleTemaChange(t)}
+          <button key={t} onClick={() => setTema(t)}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
               background: tema === t ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
@@ -187,12 +175,25 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, newPR 
         ))}
       </div>
 
-      {/* Preview canvas */}
+      {/* Preview — sfondo a scacchi per mostrare la trasparenza */}
       <div className="flex justify-center">
-        <canvas ref={initCanvas} style={{ borderRadius: '16px' }} />
+        <div style={{
+          borderRadius: '16px',
+          overflow: 'hidden',
+          // Scacchiera per indicare trasparenza nella preview
+          background: isDark
+            ? 'repeating-conic-gradient(#2a2a2a 0% 25%, #1a1a1a 0% 50%) 0 0 / 16px 16px'
+            : 'repeating-conic-gradient(#e0dcd8 0% 25%, #f0ece6 0% 50%) 0 0 / 16px 16px',
+        }}>
+          <canvas ref={canvasRef} style={{ display: 'block' }} />
+        </div>
       </div>
 
-      {/* Bottone download/share */}
+      <p className="text-xs text-center" style={{ color: 'oklch(0.45 0 0)' }}>
+        La scacchiera indica la trasparenza — il PNG finale non avrà sfondo
+      </p>
+
+      {/* Bottone */}
       <div className="flex justify-center">
         <button onClick={handleDownload} disabled={downloading}
           className="px-6 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
