@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import ShareOverlay from '@/components/shared/ShareOverlay'
 
 interface SchedaEsercizio {
   id: string
@@ -50,6 +51,10 @@ export default function AllenamentoPage() {
   const [timerAttivo, setTimerAttivo] = useState(false)
   const [timerSecondi, setTimerSecondi] = useState(0)
 
+  // Timer durata allenamento
+  const [durataSecondi, setDurataSecondi] = useState(0)
+  const durataRef = useRef<NodeJS.Timeout | null>(null)
+
   const fetchGiorno = useCallback(async () => {
     if (!giornoId || !assegnazioneId) return
     setLoading(true)
@@ -71,7 +76,7 @@ export default function AllenamentoPage() {
 
     const oggi = new Date(); oggi.setHours(0, 0, 0, 0)
     const { data: sessioneEsistente } = await supabase
-      .from('sessioni').select('id, completata')
+      .from('sessioni').select('id, completata, data')
       .eq('cliente_id', user.id).eq('giorno_id', giornoId)
       .eq('assegnazione_id', assegnazioneId).gte('data', oggi.toISOString()).single()
 
@@ -79,6 +84,10 @@ export default function AllenamentoPage() {
     if (sessioneEsistente) {
       sessId = sessioneEsistente.id
       setCompletata(sessioneEsistente.completata)
+      if (!sessioneEsistente.completata) {
+        const elapsed = Math.floor((Date.now() - new Date(sessioneEsistente.data).getTime()) / 1000)
+        setDurataSecondi(elapsed)
+      }
     } else {
       const { data: nuova } = await supabase.from('sessioni')
         .insert({ cliente_id: user.id, assegnazione_id: assegnazioneId, giorno_id: giornoId, completata: false })
@@ -120,12 +129,27 @@ export default function AllenamentoPage() {
 
   useEffect(() => { fetchGiorno() }, [fetchGiorno])
 
+  // Timer recupero
   useEffect(() => {
     if (!timerAttivo) return
     if (timerSecondi <= 0) { setTimerAttivo(false); return }
     const interval = setInterval(() => setTimerSecondi(s => s - 1), 1000)
     return () => clearInterval(interval)
   }, [timerAttivo, timerSecondi])
+
+  // Timer durata
+  useEffect(() => {
+    if (completata || loading) return
+    durataRef.current = setInterval(() => setDurataSecondi(s => s + 1), 1000)
+    return () => { if (durataRef.current) clearInterval(durataRef.current) }
+  }, [completata, loading])
+
+  const formatDurata = (sec: number) => {
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    const s = sec % 60
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
 
   const updateLog = (eseId: string, serieIndex: number, field: 'peso_kg' | 'ripetizioni', value: string) => {
     setLogs(prev => ({
@@ -157,13 +181,40 @@ export default function AllenamentoPage() {
   const handleCompleta = async () => {
     if (!sessioneId) return
     setSaving(true)
+    if (durataRef.current) clearInterval(durataRef.current)
     await supabase.from('sessioni').update({ completata: true }).eq('id', sessioneId)
-    setCompletata(true); setSaving(false)
+    setCompletata(true)
+    setSaving(false)
   }
 
   const serieCompletate = Object.values(logs).reduce((acc, log) => acc + log.serie.filter(s => s.completata).length, 0)
   const serieTotali = esercizi.reduce((acc, e) => acc + e.serie, 0)
   const progressoPerc = serieTotali > 0 ? Math.round((serieCompletate / serieTotali) * 100) : 0
+
+  // Calcola volume totale
+  const volumeTotale = Object.values(logs).reduce((acc, log) => {
+    return acc + log.serie.filter(s => s.completata).reduce((a, s) => {
+      return a + ((parseFloat(s.peso_kg) || 0) * (parseInt(s.ripetizioni) || 0))
+    }, 0)
+  }, 0)
+
+  // Calcola NEW PR (peso massimo battuto rispetto all'ultima sessione)
+  const calcolaNuovoPR = (): { nome: string; peso: number } | null => {
+    for (const ese of esercizi) {
+      const eseLog = logs[ese.id]
+      const ultimi = ultimaSessione[ese.id]
+      if (!eseLog || !ultimi) continue
+      for (const serie of eseLog.serie) {
+        if (!serie.completata) continue
+        const pesoAttuale = parseFloat(serie.peso_kg) || 0
+        const ultimoPeso = ultimi.find(u => u.numero_serie === serie.numero_serie)?.peso_kg ?? 0
+        if (pesoAttuale > (ultimoPeso ?? 0) && pesoAttuale > 0) {
+          return { nome: ese.esercizi.nome, peso: pesoAttuale }
+        }
+      }
+    }
+    return null
+  }
 
   const getConfronto = (eseId: string, serieIndex: number) =>
     ultimaSessione[eseId]?.find(s => s.numero_serie === serieIndex + 1) ?? null
@@ -183,7 +234,6 @@ export default function AllenamentoPage() {
         <div className="text-center space-y-3">
           <p className="text-4xl">💪</p>
           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Seleziona un giorno</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Vai alla dashboard e scegli il giorno</p>
           <button onClick={() => router.push('/cliente/dashboard')}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
             style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.13 0 0)' }}>
@@ -218,12 +268,18 @@ export default function AllenamentoPage() {
             </p>
           </div>
         </div>
-        {completata && (
-          <span className="px-3 py-1.5 rounded-xl text-xs font-semibold"
-            style={{ background: 'oklch(0.65 0.18 150 / 20%)', color: 'oklch(0.65 0.18 150)' }}>
-            ✅ Fatto
-          </span>
-        )}
+        <div className="flex flex-col items-end gap-1">
+          {completata ? (
+            <span className="px-3 py-1.5 rounded-xl text-xs font-semibold"
+              style={{ background: 'oklch(0.65 0.18 150 / 20%)', color: 'oklch(0.65 0.18 150)' }}>
+              ✅ Fatto
+            </span>
+          ) : (
+            <span className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
+              ⏱ {formatDurata(durataSecondi)}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Progress bar */}
@@ -272,7 +328,6 @@ export default function AllenamentoPage() {
                 background: 'oklch(0.18 0 0)',
                 border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}`,
               }}>
-              {/* Header esercizio */}
               <div className="px-4 py-3 flex items-center justify-between"
                 style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -284,48 +339,33 @@ export default function AllenamentoPage() {
                     {tutteCompletate ? '✓' : eseIndex + 1}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>
-                      {ese.esercizi.nome}
-                    </p>
-                    <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                      {ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s
-                    </p>
+                    <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
+                    <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {ese.esercizi.video_url && (
-                    <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs px-2 py-1 rounded-lg"
-                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
-                      ▶
-                    </a>
-                  )}
-                </div>
+                {ese.esercizi.video_url && (
+                  <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
+                    className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
+                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>▶</a>
+                )}
               </div>
 
-              {/* Note coach */}
               {ese.note && (
                 <div className="px-4 py-2" style={{ background: 'oklch(0.15 0 0)', borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
                   <p className="text-xs italic" style={{ color: 'oklch(0.55 0 0)' }}>📝 {ese.note}</p>
                 </div>
               )}
 
-              {/* Serie — layout mobile ottimizzato */}
               <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
                 {eseLog?.serie.map((serie, serieIndex) => {
                   const confronto = getConfronto(ese.id, serieIndex)
                   const miglioramento = getMiglioramento(ese.id, serieIndex)
 
                   return (
-                    <div key={serieIndex}
-                      className="px-4 py-3"
+                    <div key={serieIndex} className="px-4 py-3"
                       style={{ background: serie.completata ? 'oklch(0.65 0.18 150 / 5%)' : 'transparent' }}>
-
-                      {/* Riga info */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>
-                          Serie {serieIndex + 1}
-                        </span>
+                        <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>Serie {serieIndex + 1}</span>
                         {confronto ? (
                           <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
                             Ultima: {confronto.peso_kg ?? '—'}kg × {confronto.ripetizioni ?? '—'}
@@ -335,15 +375,10 @@ export default function AllenamentoPage() {
                         )}
                       </div>
 
-                      {/* Input + check — layout ottimizzato per mobile */}
                       <div className="flex items-center gap-3">
-                        {/* Peso */}
                         <div className="flex-1">
                           <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
-                          <input
-                            type="number"
-                            inputMode="decimal"
-                            value={serie.peso_kg}
+                          <input type="number" inputMode="decimal" value={serie.peso_kg}
                             onChange={(e) => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
                             placeholder={confronto?.peso_kg?.toString() ?? '0'}
                             disabled={completata}
@@ -352,19 +387,12 @@ export default function AllenamentoPage() {
                               background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
                               border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`,
                               color: 'oklch(0.97 0 0)',
-                            }}
-                          />
+                            }} />
                         </div>
-
                         <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
-
-                        {/* Reps */}
                         <div className="flex-1">
                           <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps</label>
-                          <input
-                            type="number"
-                            inputMode="numeric"
-                            value={serie.ripetizioni}
+                          <input type="number" inputMode="numeric" value={serie.ripetizioni}
                             onChange={(e) => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
                             placeholder={confronto?.ripetizioni?.toString() ?? '0'}
                             disabled={completata}
@@ -373,16 +401,11 @@ export default function AllenamentoPage() {
                               background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
                               border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`,
                               color: 'oklch(0.97 0 0)',
-                            }}
-                          />
+                            }} />
                         </div>
-
-                        {/* Check button — grande per il touch */}
                         <div className="flex flex-col items-center gap-1">
                           <label className="text-xs mb-1 block opacity-0">✓</label>
-                          <button
-                            onClick={() => toggleSerie(ese, serieIndex)}
-                            disabled={completata}
+                          <button onClick={() => toggleSerie(ese, serieIndex)} disabled={completata}
                             className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                             style={{
                               background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
@@ -391,8 +414,7 @@ export default function AllenamentoPage() {
                             }}>
                             {serie.completata
                               ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                              : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>
-                            }
+                              : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
                           </button>
                           {miglioramento === 'up' && <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>▲</span>}
                           {miglioramento === 'down' && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
@@ -411,35 +433,50 @@ export default function AllenamentoPage() {
       {/* Bottone completa */}
       {!completata && (
         <div className="pb-4">
-          <button
-            onClick={handleCompleta}
-            disabled={saving || progressoPerc < 100}
+          <button onClick={handleCompleta} disabled={saving || progressoPerc < 100}
             className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
             style={{
               background: progressoPerc === 100 ? 'oklch(0.65 0.18 150)' : 'oklch(0.22 0 0)',
               color: progressoPerc === 100 ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
               cursor: progressoPerc < 100 ? 'not-allowed' : 'pointer',
             }}>
-            {saving ? 'Salvataggio...' : progressoPerc === 100
-              ? '🎉 Completa allenamento'
-              : `${progressoPerc}% — continua!`}
+            {saving ? 'Salvataggio...' : progressoPerc === 100 ? '🎉 Completa allenamento' : `${progressoPerc}% — continua!`}
           </button>
         </div>
       )}
 
+      {/* Schermata completamento con overlay share */}
       {completata && (
-        <div className="pb-4 text-center">
-          <div className="rounded-2xl p-6"
+        <div className="pb-4 space-y-6">
+          <div className="rounded-2xl p-6 text-center"
             style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
             <p className="text-4xl mb-2">🎉</p>
             <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
-            <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>Ottimo lavoro oggi!</p>
-            <button onClick={() => router.push('/cliente/dashboard')}
-              className="mt-4 px-6 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.65 0.18 150)', color: 'oklch(0.13 0 0)' }}>
-              Torna alla home
-            </button>
+            <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>
+              {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie
+            </p>
           </div>
+
+          {/* Share overlay */}
+          <div className="rounded-2xl p-5 space-y-4"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="text-sm font-bold text-center" style={{ color: 'oklch(0.97 0 0)' }}>
+              Condividi il tuo allenamento
+            </p>
+            <ShareOverlay
+              giornoNome={giornoNome}
+              volume={Math.round(volumeTotale)}
+              serie={serieCompletate}
+              durata={formatDurata(durataSecondi)}
+              newPR={calcolaNuovoPR()}
+            />
+          </div>
+
+          <button onClick={() => router.push('/cliente/dashboard')}
+            className="w-full py-3 rounded-2xl text-sm font-semibold transition-all"
+            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            Torna alla dashboard
+          </button>
         </div>
       )}
     </div>
