@@ -113,6 +113,17 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
             </Link>
           )
         })}
+
+        {/* Logout mobile */}
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+            style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
+            {profile.full_name?.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>Esci</span>
+        </button>
       </nav>
     </>
   )
