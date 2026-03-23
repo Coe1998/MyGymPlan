@@ -162,42 +162,42 @@ export default function SchedaDetailPage() {
   return (
     <div className="space-y-8 max-w-5xl">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/coach/schede')}
-            className="text-sm transition-opacity hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>
-            ← Schede
-          </button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-                {scheda?.nome}
-              </h1>
-              {assegnazioniAttive.length > 0 && (
-                <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                  style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                  ✅ {assegnazioniAttive.length === 1 ? '1 cliente' : `${assegnazioniAttive.length} clienti`}
-                </span>
-              )}
-            </div>
-            {scheda?.descrizione && (
-              <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{scheda.descrizione}</p>
-            )}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowFormAssegna(!showFormAssegna)}
-            className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-            👤 Assegna a cliente
-          </button>
-          <button onClick={() => setEditingInfo(true)}
-            className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-            ✏️ Modifica info
-          </button>
-        </div>
-      </div>
+		<div className="space-y-3">
+		  <button onClick={() => router.push('/coach/schede')}
+			className="text-sm transition-opacity hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>
+			← Schede
+		  </button>
+		  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+			<div>
+			  <div className="flex items-center gap-3 flex-wrap">
+				<h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+				  {scheda?.nome}
+				</h1>
+				{assegnazioniAttive.length > 0 && (
+				  <span className="text-xs px-2.5 py-1 rounded-full font-medium"
+					style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+					✅ {assegnazioniAttive.length === 1 ? '1 cliente' : `${assegnazioniAttive.length} clienti`}
+				  </span>
+				)}
+			  </div>
+			  {scheda?.descrizione && (
+				<p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{scheda.descrizione}</p>
+			  )}
+			</div>
+			<div className="flex gap-2 flex-shrink-0">
+			  <button onClick={() => setShowFormAssegna(!showFormAssegna)}
+				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+				style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+				👤 Assegna
+			  </button>
+			  <button onClick={() => setEditingInfo(true)}
+				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+				✏️ Modifica
+			  </button>
+			</div>
+		  </div>
+		</div>
 
       {/* Form modifica info */}
       {editingInfo && (
