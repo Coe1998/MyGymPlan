@@ -1,8 +1,7 @@
 'use client'
-import { useRouter } from 'next/navigation'
-const router = useRouter()
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -55,6 +54,7 @@ interface Checkin {
 const EMOJI_VOTO = ['', '😫', '😕', '😐', '🙂', '🤩']
 
 export default function ProgressiPage() {
+  const router = useRouter()
   const [tab, setTab] = useState<Tab>('grafici')
   const [sessioni, setSessioni] = useState<Sessione[]>([])
   const [esercizi, setEsercizi] = useState<EsercizioOption[]>([])
@@ -88,13 +88,11 @@ export default function ProgressiPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Sessioni
     const { data: sessioniData } = await supabase
       .from('sessioni').select('id, data, completata, scheda_giorni ( nome )')
       .eq('cliente_id', user.id).order('data', { ascending: false })
     setSessioni((sessioniData as any) ?? [])
 
-    // Esercizi tracciati
     const { data: logData } = await supabase
       .from('log_serie')
       .select('scheda_esercizio_id, scheda_esercizi!inner ( esercizi ( id, nome ) )')
@@ -109,26 +107,23 @@ export default function ProgressiPage() {
     setEsercizi(eserciziList)
     if (eserciziList.length > 0) setSelectedEsercizio(eserciziList[0].id)
 
-    // Misurazioni
     const { data: misData } = await supabase
       .from('misurazioni').select('*').eq('cliente_id', user.id).order('data', { ascending: false })
     setMisurazioni(misData ?? [])
 
-    // Foto
     const { data: fotoData } = await supabase.storage.from('progressi-foto')
       .list(`${user.id}`, { sortBy: { column: 'created_at', order: 'desc' } })
     if (fotoData) {
-		const fotoConUrl = fotoData
-			.filter(f => f.id !== null)
-			.map(f => {
-				const { data: urlData } = supabase.storage.from('progressi-foto')
-					.getPublicUrl(`${user.id}/${f.name}`)
-				return { id: f.id as string, created_at: f.created_at ?? '', url: urlData.publicUrl }
-			})
-		setFoto(fotoConUrl)
+      const fotoConUrl = fotoData
+        .filter(f => f.id !== null)
+        .map(f => {
+          const { data: urlData } = supabase.storage.from('progressi-foto')
+            .getPublicUrl(`${user.id}/${f.name}`)
+          return { id: f.id as string, created_at: f.created_at ?? '', url: urlData.publicUrl }
+        })
+      setFoto(fotoConUrl)
     }
 
-    // Check-in
     const { data: checkinData } = await supabase
       .from('checkin').select('*').eq('cliente_id', user.id).order('data', { ascending: false })
     setCheckins(checkinData ?? [])
@@ -272,17 +267,11 @@ export default function ProgressiPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-          Progressi
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-          Il tuo percorso di miglioramento
-        </p>
+        <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Progressi</h1>
+        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Il tuo percorso di miglioramento</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: 'Sessioni', value: sessioniCompletate, icon: '🏋️', color: 'oklch(0.60 0.15 200)' },
@@ -300,7 +289,6 @@ export default function ProgressiPage() {
         ))}
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -318,7 +306,6 @@ export default function ProgressiPage() {
       {/* TAB: GRAFICI */}
       {tab === 'grafici' && (
         <div className="space-y-6">
-          {/* Frequenza */}
           {sessioniCompletate > 0 && (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -335,7 +322,6 @@ export default function ProgressiPage() {
             </div>
           )}
 
-          {/* Progressione esercizio */}
           {esercizi.length > 0 && (
             <div className="rounded-2xl p-5 space-y-5"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -347,7 +333,6 @@ export default function ProgressiPage() {
                   {esercizi.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
                 </select>
               </div>
-
               {loadingGrafico ? (
                 <div className="h-40 flex items-center justify-center">
                   <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
@@ -356,9 +341,7 @@ export default function ProgressiPage() {
                 <div className="h-40 flex items-center justify-center text-center">
                   <div>
                     <p className="text-2xl mb-2">📊</p>
-                    <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-                      Servono almeno 2 sessioni per il grafico
-                    </p>
+                    <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Servono almeno 2 sessioni per il grafico</p>
                   </div>
                 </div>
               ) : (
@@ -394,7 +377,7 @@ export default function ProgressiPage() {
             </div>
           )}
 
-          {/* Storico */}
+          {/* Storico cliccabile */}
           <div className="rounded-2xl overflow-hidden"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <div className="px-5 py-4 flex items-center justify-between"
@@ -413,8 +396,7 @@ export default function ProgressiPage() {
             ) : (
               <div>
                 {sessioni.map((s, i) => (
-                  <div
-                    key={s.id}
+                  <div key={s.id}
                     className="flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors hover:bg-white/2"
                     style={{ borderBottom: i < sessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
                     onClick={() => router.push(`/cliente/allenamento?sessione=${s.id}`)}>
@@ -451,7 +433,6 @@ export default function ProgressiPage() {
       {/* TAB: MISURAZIONI */}
       {tab === 'misurazioni' && (
         <div className="space-y-5">
-          {/* Form nuova misurazione */}
           <div className="rounded-2xl p-5 space-y-4"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Registra peso corporeo</h2>
@@ -459,8 +440,7 @@ export default function ProgressiPage() {
               <div className="flex-1">
                 <label className="text-xs mb-1.5 block" style={{ color: 'oklch(0.60 0 0)' }}>Peso (kg)</label>
                 <input type="number" inputMode="decimal" value={newPeso}
-                  onChange={(e) => setNewPeso(e.target.value)}
-                  placeholder="es. 75.5"
+                  onChange={(e) => setNewPeso(e.target.value)} placeholder="es. 75.5"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                   style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
                   onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
@@ -469,8 +449,7 @@ export default function ProgressiPage() {
               <div className="flex-1">
                 <label className="text-xs mb-1.5 block" style={{ color: 'oklch(0.60 0 0)' }}>Note (opzionale)</label>
                 <input type="text" value={newMisNote}
-                  onChange={(e) => setNewMisNote(e.target.value)}
-                  placeholder="es. mattino a digiuno"
+                  onChange={(e) => setNewMisNote(e.target.value)} placeholder="es. mattino a digiuno"
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                   style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
                   onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
@@ -488,7 +467,6 @@ export default function ProgressiPage() {
             </button>
           </div>
 
-          {/* Grafico peso nel tempo */}
           {misurazioni.length >= 2 && (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -511,7 +489,6 @@ export default function ProgressiPage() {
             </div>
           )}
 
-          {/* Lista misurazioni */}
           <div className="rounded-2xl overflow-hidden"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <div className="px-5 py-4 flex items-center justify-between"
@@ -573,18 +550,11 @@ export default function ProgressiPage() {
           <div className="rounded-2xl p-5 space-y-3"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Foto progressi</h2>
-            <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-              Visibili solo a te e al tuo coach
-            </p>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden"
-              onChange={handleUploadFoto} />
+            <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Visibili solo a te e al tuo coach</p>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUploadFoto} />
             <button onClick={() => fileRef.current?.click()} disabled={uploadingFoto}
               className="w-full py-3 rounded-xl text-sm font-semibold border-2 border-dashed transition-all"
-              style={{
-                background: 'oklch(0.22 0 0)',
-                borderColor: 'oklch(1 0 0 / 15%)',
-                color: 'oklch(0.60 0 0)',
-              }}>
+              style={{ background: 'oklch(0.22 0 0)', borderColor: 'oklch(1 0 0 / 15%)', color: 'oklch(0.60 0 0)' }}>
               {uploadingFoto ? '📤 Caricamento...' : '📸 Carica foto'}
             </button>
           </div>
@@ -594,9 +564,7 @@ export default function ProgressiPage() {
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
               <p className="text-5xl mb-3">📸</p>
               <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna foto ancora</p>
-              <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
-                Carica la tua prima foto per tracciare i progressi visivi
-              </p>
+              <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>Carica la tua prima foto per tracciare i progressi visivi</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -610,16 +578,13 @@ export default function ProgressiPage() {
                     </p>
                     <button onClick={(e) => { e.stopPropagation(); handleDeleteFoto(f.url) }}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
-                      style={{ background: 'oklch(0.65 0.22 27 / 80%)' }}>
-                      ✕
-                    </button>
+                      style={{ background: 'oklch(0.65 0.22 27 / 80%)' }}>✕</button>
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Lightbox */}
           {fotoSelezionata && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
               style={{ background: 'oklch(0 0 0 / 90%)' }}
@@ -636,7 +601,6 @@ export default function ProgressiPage() {
       {/* TAB: CHECK-IN */}
       {tab === 'checkin' && (
         <div className="space-y-5">
-          {/* Form check-in */}
           <div className="rounded-2xl p-5 space-y-5"
             style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${checkinOggi ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}` }}>
             <div className="flex items-center justify-between">
@@ -657,8 +621,7 @@ export default function ProgressiPage() {
                   { label: 'Stress', value: checkinOggi.stress },
                   { label: 'Motivazione', value: checkinOggi.motivazione },
                 ].map(item => (
-                  <div key={item.label} className="rounded-xl p-3 text-center"
-                    style={{ background: 'oklch(0.22 0 0)' }}>
+                  <div key={item.label} className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
                     <p className="text-xs mb-1" style={{ color: 'oklch(0.55 0 0)' }}>{item.label}</p>
                     <p className="text-2xl">{EMOJI_VOTO[item.value]}</p>
                     <p className="text-xs font-bold mt-1" style={{ color: 'oklch(0.97 0 0)' }}>{item.value}/5</p>
@@ -674,9 +637,7 @@ export default function ProgressiPage() {
                   { label: 'Motivazione ad allenarti', key: 'motivazione' as const },
                 ].map(item => (
                   <div key={item.key} className="space-y-2">
-                    <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
-                      {item.label}
-                    </label>
+                    <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{item.label}</label>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map(v => (
                         <button key={v} onClick={() => setNewCheckin(p => ({ ...p, [item.key]: v }))}
@@ -691,11 +652,8 @@ export default function ProgressiPage() {
                     </div>
                   </div>
                 ))}
-
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
-                    Note (opzionale)
-                  </label>
+                  <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note (opzionale)</label>
                   <textarea value={newCheckin.note}
                     onChange={(e) => setNewCheckin(p => ({ ...p, note: e.target.value }))}
                     placeholder="Come stai? Qualcosa da segnalare al coach?"
@@ -704,7 +662,6 @@ export default function ProgressiPage() {
                     onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
                     onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
                 </div>
-
                 <button onClick={handleSaveCheckin}
                   disabled={savingCheckin || !newCheckin.energia || !newCheckin.sonno || !newCheckin.stress || !newCheckin.motivazione}
                   className="w-full py-3 rounded-xl text-sm font-semibold transition-all"
@@ -720,7 +677,6 @@ export default function ProgressiPage() {
             )}
           </div>
 
-          {/* Storico check-in */}
           {checkins.length > 0 && (
             <div className="rounded-2xl overflow-hidden"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -731,11 +687,9 @@ export default function ProgressiPage() {
                 {checkins.slice(0, 10).map((c, i) => (
                   <div key={c.id} className="px-5 py-4"
                     style={{ borderBottom: i < Math.min(checkins.length, 10) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
-                        {new Date(c.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-                      </p>
-                    </div>
+                    <p className="text-sm font-semibold mb-2" style={{ color: 'oklch(0.97 0 0)' }}>
+                      {new Date(c.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </p>
                     <div className="flex gap-4">
                       {[
                         { label: 'Energia', value: c.energia },
@@ -749,9 +703,7 @@ export default function ProgressiPage() {
                         </div>
                       ))}
                     </div>
-                    {c.note && (
-                      <p className="text-xs mt-2 italic" style={{ color: 'oklch(0.50 0 0)' }}>"{c.note}"</p>
-                    )}
+                    {c.note && <p className="text-xs mt-2 italic" style={{ color: 'oklch(0.50 0 0)' }}>"{c.note}"</p>}
                   </div>
                 ))}
               </div>
