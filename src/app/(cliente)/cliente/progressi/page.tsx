@@ -116,12 +116,14 @@ export default function ProgressiPage() {
     const { data: fotoData } = await supabase.storage.from('progressi-foto')
       .list(`${user.id}`, { sortBy: { column: 'created_at', order: 'desc' } })
     if (fotoData) {
-      const fotoConUrl = fotoData.map(f => {
-        const { data: urlData } = supabase.storage.from('progressi-foto')
-          .getPublicUrl(`${user.id}/${f.name}`)
-        return { id: f.id, created_at: f.created_at ?? '', url: urlData.publicUrl }
-      })
-      setFoto(fotoConUrl)
+		const fotoConUrl = fotoData
+			.filter(f => f.id !== null)
+			.map(f => {
+				const { data: urlData } = supabase.storage.from('progressi-foto')
+					.getPublicUrl(`${user.id}/${f.name}`)
+				return { id: f.id as string, created_at: f.created_at ?? '', url: urlData.publicUrl }
+			})
+		setFoto(fotoConUrl)
     }
 
     // Check-in
