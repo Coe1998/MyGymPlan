@@ -426,19 +426,19 @@ export default function SchedaDetailPage() {
                   )}
                 </div>
                 {editingGiornoId !== giorno.id && (
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                      style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-                      + Esercizio
-                    </button>
-                    <button onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
-                      Elimina giorno
-                    </button>
-                  </div>
-                )}
+				  <div className="flex gap-2 flex-shrink-0">
+					<button onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
+					  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+					  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+					  + Ese
+					</button>
+					<button onClick={() => handleDeleteGiorno(giorno.id, giorno.nome)}
+					  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+					  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
+					  🗑️
+					</button>
+				  </div>
+				)}
               </div>
 
               {addingToGiorno === giorno.id && (
@@ -516,9 +516,10 @@ export default function SchedaDetailPage() {
                             style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
                         ))}
                       </div>
-                      <button onClick={() => handleDeleteEsercizio(se.id)}
-                        className="opacity-0 group-hover:opacity-100 px-2.5 py-1.5 rounded-lg text-xs"
-                        style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>✕</button>
+                      <button
+						  onClick={() => handleDeleteEsercizio(se.id)}
+						  className="lg:opacity-0 lg:group-hover:opacity-100 px-2.5 py-1.5 rounded-lg text-xs transition-all flex-shrink-0"
+						  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>✕</button>
                     </div>
                   ))}
                 </div>
