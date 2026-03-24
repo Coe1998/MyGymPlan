@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical } from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 interface Esercizio { id: string; nome: string; muscoli: string[] | null }
 interface SchedaEsercizio {
@@ -16,6 +16,7 @@ interface Scheda { id: string; nome: string; descrizione: string | null; is_temp
 interface Cliente { cliente_id: string; profiles: { id: string; full_name: string | null } }
 interface Assegnazione {
   id: string; data_inizio: string; data_fine: string | null; attiva: boolean
+  pdf_alimentare_url: string | null
   profiles: { full_name: string | null }
 }
 
@@ -51,6 +52,9 @@ export default function SchedaDetailPage() {
   const [dataFine, setDataFine] = useState('')
   const [assegnando, setAssegnando] = useState(false)
   const [assegnaError, setAssegnaError] = useState<string | null>(null)
+  const [uploadingPdf, setUploadingPdf] = useState<string | null>(null) // assegnazione id in corso
+  const pdfInputRef = useRef<HTMLInputElement>(null)
+  const pdfTargetAssId = useRef<string | null>(null)
 
   // Drag & drop state
   const [dragging, setDragging] = useState<{ giornoId: string; eseId: string } | null>(null)
@@ -89,7 +93,7 @@ export default function SchedaDetailPage() {
 
       const { data: assegnazioniData } = await supabase
         .from('assegnazioni')
-        .select('id, data_inizio, data_fine, attiva, profiles!assegnazioni_cliente_id_fkey (full_name)')
+        .select('id, data_inizio, data_fine, attiva, pdf_alimentare_url, profiles!assegnazioni_cliente_id_fkey (full_name)')
         .eq('scheda_id', schedaId)
         .order('created_at', { ascending: false })
       setAssegnazioni((assegnazioniData as any) ?? [])
@@ -158,6 +162,42 @@ export default function SchedaDetailPage() {
   const handleRimuoviAssegnazione = async (id: string) => {
     if (!confirm('Vuoi rimuovere questa assegnazione?')) return
     await supabase.from('assegnazioni').delete().eq('id', id); fetchAll()
+  }
+
+  // ── PDF Alimentare ───────────────────────────────────────────────
+  const handleUploadPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const assId = pdfTargetAssId.current
+    if (!assId || !e.target.files?.[0]) return
+    const file = e.target.files[0]
+    if (file.type !== 'application/pdf') { alert('Carica un file PDF'); return }
+    if (file.size > 10 * 1024 * 1024) { alert('Il PDF non può superare 10MB'); return }
+
+    setUploadingPdf(assId)
+    // Rimuovi eventuale PDF precedente
+    const assCorrente = assegnazioni.find(a => a.id === assId)
+    if (assCorrente?.pdf_alimentare_url) {
+      const path = `${assId}.pdf`
+      await supabase.storage.from('alimentari').remove([path])
+    }
+
+    const path = `${assId}.pdf`
+    const { error: uploadError } = await supabase.storage.from('alimentari').upload(path, file, { upsert: true })
+    if (uploadError) { alert('Errore upload PDF'); setUploadingPdf(null); return }
+
+    const { data: urlData } = supabase.storage.from('alimentari').getPublicUrl(path)
+    await supabase.from('assegnazioni').update({ pdf_alimentare_url: urlData.publicUrl }).eq('id', assId)
+
+    setUploadingPdf(null)
+    pdfTargetAssId.current = null
+    if (pdfInputRef.current) pdfInputRef.current.value = ''
+    fetchAll()
+  }
+
+  const handleDeletePdf = async (assId: string) => {
+    if (!confirm('Vuoi rimuovere la scheda alimentare?')) return
+    await supabase.storage.from('alimentari').remove([`${assId}.pdf`])
+    await supabase.from('assegnazioni').update({ pdf_alimentare_url: null }).eq('id', assId)
+    fetchAll()
   }
 
   // ── Drag & drop helpers ──────────────────────────────────────────
@@ -268,6 +308,14 @@ export default function SchedaDetailPage() {
 
   return (
     <div className="space-y-8 max-w-5xl">
+      {/* Input PDF nascosto */}
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={handleUploadPdf}
+      />
       {/* Header */}
 		<div className="space-y-3">
 		  <button onClick={() => router.push('/coach/schede')}
@@ -433,33 +481,83 @@ export default function SchedaDetailPage() {
         ) : (
           <div>
             {assegnazioni.map((a, i) => (
-              <div key={a.id} className="flex items-center gap-4 px-6 py-4"
+              <div key={a.id} className="px-6 py-4"
                 style={{ borderBottom: i < assegnazioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                  {(a as any).profiles?.full_name?.charAt(0).toUpperCase()}
+                {/* Riga principale */}
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                    style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                    {(a as any).profiles?.full_name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                      {(a as any).profiles?.full_name}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                      Dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
+                      {a.data_fine ? ` · Scade il ${new Date(a.data_fine).toLocaleDateString('it-IT')}` : ' · Nessuna scadenza'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                    <span className="text-xs px-2.5 py-1 rounded-full"
+                      style={{
+                        background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.30 0 0)',
+                        color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                      }}>
+                      {a.attiva ? 'Attiva' : 'Inattiva'}
+                    </span>
+                    <button onClick={() => handleRimuoviAssegnazione(a.id)}
+                      className="text-xs px-3 py-1.5 rounded-lg transition-all"
+                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
+                      Rimuovi
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
-                    {(a as any).profiles?.full_name}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-                    Dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
-                    {a.data_fine ? ` · Scade il ${new Date(a.data_fine).toLocaleDateString('it-IT')}` : ' · Nessuna scadenza'}
-                  </p>
+
+                {/* Riga PDF alimentare */}
+                <div className="mt-3 ml-14 flex items-center gap-2 flex-wrap">
+                  {a.pdf_alimentare_url ? (
+                    <>
+                      <a
+                        href={a.pdf_alimentare_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-all hover:opacity-80"
+                        style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.85 0.12 46)' }}>
+                        <FontAwesomeIcon icon={faFilePdf} /> Scheda alimentare
+                      </a>
+                      <button
+                        onClick={() => {
+                          pdfTargetAssId.current = a.id
+                          pdfInputRef.current?.click()
+                        }}
+                        disabled={uploadingPdf === a.id}
+                        className="text-xs px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
+                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        <FontAwesomeIcon icon={faUpload} /> Sostituisci
+                      </button>
+                      <button
+                        onClick={() => handleDeletePdf(a.id)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
+                        style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.65 0.22 27)' }}>
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        pdfTargetAssId.current = a.id
+                        pdfInputRef.current?.click()
+                      }}
+                      disabled={uploadingPdf === a.id}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all border border-dashed hover:opacity-80"
+                      style={{ background: 'transparent', borderColor: 'oklch(1 0 0 / 15%)', color: 'oklch(0.50 0 0)' }}>
+                      {uploadingPdf === a.id
+                        ? <><FontAwesomeIcon icon={faUpload} /> Caricamento...</>
+                        : <><FontAwesomeIcon icon={faFilePdf} /> + Scheda alimentare</>}
+                    </button>
+                  )}
                 </div>
-                <span className="text-xs px-2.5 py-1 rounded-full"
-                  style={{
-                    background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.30 0 0)',
-                    color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
-                  }}>
-                  {a.attiva ? 'Attiva' : 'Inattiva'}
-                </span>
-                <button onClick={() => handleRimuoviAssegnazione(a.id)}
-                  className="text-xs px-3 py-1.5 rounded-lg transition-all"
-                  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
-                  Rimuovi
-                </button>
               </div>
             ))}
           </div>
