@@ -85,7 +85,7 @@ export default function AllenamentoPage() {
         .from('scheda_giorni')
         .select(`id, nome, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
-          esercizi ( id, nome, muscoli, video_url, note )
+          esercizi ( id, nome, muscoli, video_url, descrizione )
         )`)
         .eq('id', sessione.giorno_id)
         .single()
@@ -116,7 +116,7 @@ export default function AllenamentoPage() {
       .from('scheda_giorni')
       .select(`id, nome, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
-        esercizi ( id, nome, muscoli, video_url, note )
+        esercizi ( id, nome, muscoli, video_url, descrizione )
       )`)
       .eq('id', giornoId).single()
 
@@ -399,7 +399,7 @@ export default function AllenamentoPage() {
                 border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}`,
               }}>
               {/* Modal note esercizio */}
-              {noteAperta === ese.id && (ese.note || ese.esercizi.note) && (
+              {noteAperta === ese.id && (ese.note || ese.esercizi.descrizione) && (
                 <div
                   className="fixed inset-0 z-50 flex items-end justify-center"
                   style={{ background: 'oklch(0 0 0 / 60%)' }}
@@ -423,10 +423,10 @@ export default function AllenamentoPage() {
                         <FontAwesomeIcon icon={faXmark} />
                       </button>
                     </div>
-                    {ese.esercizi.note && (
+                    {ese.esercizi.descrizione && (
                       <div className="space-y-1">
                         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'oklch(0.45 0 0)' }}>Descrizione esercizio</p>
-                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.esercizi.note}</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.esercizi.descrizione}</p>
                       </div>
                     )}
                     {ese.note && (
@@ -458,7 +458,7 @@ export default function AllenamentoPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {(ese.note || ese.esercizi.note) && (
+                  {(ese.note || ese.esercizi.descrizione) && (
                     <button
                       onClick={() => setNoteAperta(noteAperta === ese.id ? null : ese.id)}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
