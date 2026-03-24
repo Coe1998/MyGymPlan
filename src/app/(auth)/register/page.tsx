@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<UserRole>('cliente')
+  const [role, setRole] = useState<UserRole>('atleta')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -35,7 +35,7 @@ export default function RegisterPage() {
     if (role === 'coach') {
       router.push('/coach/dashboard')
     } else {
-      router.push('/cliente/dashboard')
+      router.push('/atleta/dashboard')
     }
   }
 
@@ -46,9 +46,9 @@ export default function RegisterPage() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black"
             style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-            M
+            B
           </div>
-          <span className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>MyGymPlan</span>
+          <span className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</span>
         </div>
 
         <div className="space-y-2">
@@ -60,7 +60,7 @@ export default function RegisterPage() {
         <div className="grid grid-cols-2 gap-3">
           {[
             { value: 'coach', label: 'Sono un Coach', icon: faDumbbell, desc: 'Gestisco atleti e schede' },
-            { value: 'cliente', label: 'Sono un Atleta', icon: faPersonRunning, desc: 'Seguo le schede del mio coach' },
+            { value: 'atleta', label: 'Sono un Atleta', icon: faPersonRunning, desc: 'Mi alleno in autonomia' },
           ].map((r) => (
             <button
               key={r.value}
@@ -94,11 +94,7 @@ export default function RegisterPage() {
                 onChange={(e) => field.setter(e.target.value)}
                 placeholder={field.placeholder}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                style={{
-                  background: 'oklch(0.20 0 0)',
-                  border: '1px solid oklch(1 0 0 / 8%)',
-                  color: 'oklch(0.97 0 0)',
-                }}
+                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
                 onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
                 onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
               />
