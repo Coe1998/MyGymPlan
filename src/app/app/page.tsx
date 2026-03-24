@@ -1,0 +1,25 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+
+export default async function AppEntryPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) redirect('/login')
+
+  if (profile.role === 'coach')   redirect('/coach/dashboard')
+  if (profile.role === 'cliente') redirect('/cliente/dashboard')
+  if (profile.role === 'atleta')  redirect('/atleta/dashboard')
+
+  redirect('/login')
+}
