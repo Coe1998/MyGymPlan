@@ -195,6 +195,18 @@ export default function AllenamentoPage() {
     return () => { if (durataRef.current) clearInterval(durataRef.current) }
   }, [completata, loading, isViewMode])
 
+  // Auto-stop timer quando tutte le serie sono completate
+  useEffect(() => {
+    if (isViewMode || completata || loading) return
+    const serieTot = esercizi.reduce((acc, e) => acc + e.serie, 0)
+    if (serieTot === 0) return
+    const serieComp = Object.values(logs).reduce((acc, log) => acc + log.serie.filter(s => s.completata).length, 0)
+    if (serieComp === serieTot && durataRef.current) {
+      clearInterval(durataRef.current)
+      durataRef.current = null
+    }
+  }, [logs, esercizi, isViewMode, completata, loading])
+
   const formatDurata = (sec: number) => {
     const h = Math.floor(sec / 3600)
     const m = Math.floor((sec % 3600) / 60)
@@ -234,7 +246,9 @@ export default function AllenamentoPage() {
     if (!sessioneId) return
     setSaving(true)
     if (durataRef.current) clearInterval(durataRef.current)
-    await supabase.from('sessioni').update({ completata: true }).eq('id', sessioneId)
+    await supabase.from('sessioni')
+      .update({ completata: true, durata_secondi: durataSecondi })
+      .eq('id', sessioneId)
     setCompletata(true)
     setSaving(false)
   }
@@ -345,8 +359,9 @@ export default function AllenamentoPage() {
               <FontAwesomeIcon icon={faCircleCheck} /> Fatto
             </span>
           ) : (
-            <span className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-              <FontAwesomeIcon icon={faStopwatch} /> {formatDurata(durataSecondi)}
+            <span className="px-3 py-1.5 rounded-xl text-sm font-black tabular-nums"
+              style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+              <FontAwesomeIcon icon={faStopwatch} className="mr-1.5" />{formatDurata(durataSecondi)}
             </span>
           )}
         </div>

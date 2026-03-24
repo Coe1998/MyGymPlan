@@ -14,6 +14,7 @@ import {
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import ShareOverlayWeek from '@/components/shared/ShareOverlayWeek'
 
 type Tab = 'grafici' | 'misurazioni' | 'foto' | 'checkin'
 
@@ -88,6 +89,14 @@ export default function ProgressiPage() {
   const [newCheckin, setNewCheckin] = useState({ energia: 0, sonno: 0, stress: 0, motivazione: 0, note: '' })
   const [savingCheckin, setSavingCheckin] = useState(false)
 
+  // Riepilogo settimanale
+  const [weekVolume, setWeekVolume] = useState(0)
+  const [weekReps, setWeekReps] = useState(0)
+  const [weekSessioni, setWeekSessioni] = useState(0)
+  const [weekDurataSecondi, setWeekDurataSecondi] = useState(0)
+  const [weekLabel, setWeekLabel] = useState('')
+  const [showWeekShare, setShowWeekShare] = useState(false)
+
   const supabase = createClient()
 
   const fetchAll = async () => {
@@ -137,6 +146,46 @@ export default function ProgressiPage() {
     const oggi = new Date().toISOString().split('T')[0]
     const checkinDiOggi = checkinData?.find(c => c.data === oggi) ?? null
     setCheckinOggi(checkinDiOggi)
+
+    // ── Dati settimanali ──────────────────────────────────────────
+    const inizioSettimana = new Date()
+    inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay() + 1) // lunedì
+    inizioSettimana.setHours(0, 0, 0, 0)
+    const fineSettimana = new Date(inizioSettimana)
+    fineSettimana.setDate(fineSettimana.getDate() + 6)
+
+    const fmt = (d: Date) => d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
+    setWeekLabel(`${fmt(inizioSettimana)} – ${fmt(fineSettimana)}`)
+
+    const sessioniSettimana = (sessioniData ?? []).filter((s: any) =>
+      s.completata && new Date(s.data) >= inizioSettimana && new Date(s.data) <= fineSettimana
+    )
+    setWeekSessioni(sessioniSettimana.length)
+
+    if (sessioniSettimana.length > 0) {
+      const ids = sessioniSettimana.map((s: any) => s.id)
+      const { data: logsWeek } = await supabase
+        .from('log_serie').select('peso_kg, ripetizioni, completata')
+        .in('sessione_id', ids).eq('completata', true)
+
+      let vol = 0, rep = 0
+      for (const l of (logsWeek ?? []) as any[]) {
+        const p = parseFloat(l.peso_kg) || 0
+        const r = parseInt(l.ripetizioni) || 0
+        vol += p * r
+        rep += r
+      }
+      setWeekVolume(Math.round(vol))
+      setWeekReps(rep)
+
+      // Durata totale (da durata_secondi se disponibile)
+      const { data: sessioniConDurata } = await supabase
+        .from('sessioni').select('durata_secondi').in('id', ids)
+      const totSec = (sessioniConDurata ?? []).reduce((acc: number, s: any) => acc + (s.durata_secondi ?? 0), 0)
+      setWeekDurataSecondi(totSec)
+    } else {
+      setWeekVolume(0); setWeekReps(0); setWeekDurataSecondi(0)
+    }
 
     setLoading(false)
   }
@@ -313,6 +362,71 @@ export default function ProgressiPage() {
       {/* TAB: GRAFICI */}
       {tab === 'grafici' && (
         <div className="space-y-6">
+
+          {/* ── Riepilogo settimanale + share ── */}
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+            <div className="px-5 py-4 flex items-center justify-between"
+              style={{ borderBottom: showWeekShare ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-0.5"
+                  style={{ color: 'oklch(0.70 0.19 46)' }}>Questa settimana</p>
+                <p className="font-black text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{weekLabel}</p>
+              </div>
+              <button
+                onClick={() => setShowWeekShare(p => !p)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                style={{
+                  background: showWeekShare ? 'oklch(0.70 0.19 46)' : 'oklch(0.70 0.19 46 / 15%)',
+                  color: showWeekShare ? 'oklch(0.13 0 0)' : 'oklch(0.70 0.19 46)',
+                }}>
+                <FontAwesomeIcon icon={faChartBar} />
+                {showWeekShare ? 'Chiudi' : 'Condividi'}
+              </button>
+            </div>
+
+            {/* Stats mini */}
+            {!showWeekShare && (
+              <div className="grid grid-cols-4 divide-x"
+                style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', borderColor: 'oklch(1 0 0 / 6%)' }}>
+                {[
+                  { label: 'Allenamenti', value: weekSessioni },
+                  { label: 'Volume kg', value: weekVolume.toLocaleString('it-IT') },
+                  { label: 'Reps', value: weekReps.toLocaleString('it-IT') },
+                  { label: 'Tempo', value: weekDurataSecondi > 0
+                    ? `${Math.floor(weekDurataSecondi / 3600)}h${Math.floor((weekDurataSecondi % 3600) / 60)}m`
+                    : '—' },
+                ].map(s => (
+                  <div key={s.label} className="p-3 text-center">
+                    <p className="text-base font-black" style={{ color: 'oklch(0.97 0 0)' }}>{s.value}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Share overlay settimanale */}
+            {showWeekShare && weekSessioni > 0 && (
+              <div className="p-5">
+                <ShareOverlayWeek
+                  weekLabel={weekLabel}
+                  volume={weekVolume}
+                  reps={weekReps}
+                  sessioni={weekSessioni}
+                  durata={weekDurataSecondi > 0
+                    ? `${Math.floor(weekDurataSecondi / 3600).toString().padStart(2, '0')}:${Math.floor((weekDurataSecondi % 3600) / 60).toString().padStart(2, '0')}:${(weekDurataSecondi % 60).toString().padStart(2, '0')}`
+                    : '—'}
+                />
+              </div>
+            )}
+            {showWeekShare && weekSessioni === 0 && (
+              <div className="p-6 text-center">
+                <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+                  Nessun allenamento completato questa settimana.
+                </p>
+              </div>
+            )}
+          </div>
           {sessioniCompletate > 0 && (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
