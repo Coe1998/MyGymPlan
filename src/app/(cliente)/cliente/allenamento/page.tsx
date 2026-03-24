@@ -14,7 +14,7 @@ interface SchedaEsercizio {
   recupero_secondi: number
   note: string | null
   ordine: number
-  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null }
+  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; note: string | null }
 }
 
 interface LogSerie {
@@ -85,7 +85,7 @@ export default function AllenamentoPage() {
         .from('scheda_giorni')
         .select(`id, nome, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
-          esercizi ( id, nome, muscoli, video_url )
+          esercizi ( id, nome, muscoli, video_url, note )
         )`)
         .eq('id', sessione.giorno_id)
         .single()
@@ -116,7 +116,7 @@ export default function AllenamentoPage() {
       .from('scheda_giorni')
       .select(`id, nome, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
-        esercizi ( id, nome, muscoli, video_url )
+        esercizi ( id, nome, muscoli, video_url, note )
       )`)
       .eq('id', giornoId).single()
 
@@ -399,7 +399,7 @@ export default function AllenamentoPage() {
                 border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}`,
               }}>
               {/* Modal note esercizio */}
-              {noteAperta === ese.id && ese.note && (
+              {noteAperta === ese.id && (ese.note || ese.esercizi.note) && (
                 <div
                   className="fixed inset-0 z-50 flex items-end justify-center"
                   style={{ background: 'oklch(0 0 0 / 60%)' }}
@@ -423,8 +423,18 @@ export default function AllenamentoPage() {
                         <FontAwesomeIcon icon={faXmark} />
                       </button>
                     </div>
-                    <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.note}</p>
-                    {/* drag handle visivo */}
+                    {ese.esercizi.note && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'oklch(0.45 0 0)' }}>Descrizione esercizio</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.esercizi.note}</p>
+                      </div>
+                    )}
+                    {ese.note && (
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'oklch(0.45 0 0)' }}>Note del coach</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.note}</p>
+                      </div>
+                    )}
                     <div className="flex justify-center pt-1">
                       <div className="w-10 h-1 rounded-full" style={{ background: 'oklch(0.30 0 0)' }} />
                     </div>
@@ -448,7 +458,7 @@ export default function AllenamentoPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {ese.note && (
+                  {(ese.note || ese.esercizi.note) && (
                     <button
                       onClick={() => setNoteAperta(noteAperta === ese.id ? null : ese.id)}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
