@@ -1,7 +1,7 @@
 'use client'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLock, faXmark, faRocketLaunch } from '@fortawesome/free-solid-svg-icons'
+import { faLock, faXmark, faRocket } from '@fortawesome/free-solid-svg-icons'
 
 interface PaywallModalProps {
   titolo: string
@@ -48,7 +48,7 @@ export default function PaywallModal({ titolo, descrizione, onClose }: PaywallMo
             className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95"
             style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}
             onClick={() => alert('Stripe in arrivo — stay tuned!')}>
-            <FontAwesomeIcon icon={faRocketLaunch} />
+            <FontAwesomeIcon icon={faRocket} />
             Passa a Pro
           </button>
           <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-medium"

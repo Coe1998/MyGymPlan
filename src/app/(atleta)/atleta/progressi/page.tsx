@@ -3,7 +3,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faLock, faChartLine, faWeightScale, faCamera,
-  faRocketLaunch, faCircleCheck,
+  faRocket, faCircleCheck,
 } from '@fortawesome/free-solid-svg-icons'
 
 const FEATURES_PRO = [
@@ -61,7 +61,7 @@ export default function AtletaProgressiPage() {
           onClick={() => alert('Stripe in arrivo — stay tuned!')}
           className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-95"
           style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-          <FontAwesomeIcon icon={faRocketLaunch} />
+          <FontAwesomeIcon icon={faRocket} />
           Passa a Pro
         </button>
         <p className="text-center text-xs" style={{ color: 'oklch(0.40 0 0)' }}>

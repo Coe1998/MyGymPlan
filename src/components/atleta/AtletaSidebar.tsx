@@ -8,7 +8,7 @@ import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faHouse, faDumbbell, faClipboardList, faListCheck,
-  faRightFromBracket, faRocketLaunch, faLock,
+  faRightFromBracket, faRocket, faLock,
 } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
@@ -103,7 +103,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
               onClick={() => alert('Stripe in arrivo!')}
               className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95"
               style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-              <FontAwesomeIcon icon={faRocketLaunch} /> Passa a Pro
+              <FontAwesomeIcon icon={faRocket} /> Passa a Pro
             </button>
           </div>
         )}
