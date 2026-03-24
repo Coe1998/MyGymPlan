@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Syne, Inter } from "next/font/google";
 import "./globals.css";
+import IosBanner from "@/components/shared/IosBanner";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -59,6 +60,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         {children}
+        <IosBanner />
         {/* Service Worker registration */}
         <script
           dangerouslySetInnerHTML={{
