@@ -7,8 +7,15 @@ import {
   faUsers, faClipboardList, faCircleCheck, faDumbbell,
   faTriangleExclamation, faChartBar, faHeart, faComment,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
+  faWeightScale, faArrowTrendUp, faArrowTrendDown, faMinus,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+interface Misurazione {
+  data: string
+  peso_kg: number
+}
 
 interface ClienteStats {
   id: string
@@ -25,10 +32,11 @@ interface ClienteStats {
     motivazione: number
     note: string | null
   } | null
+  misurazioni: Misurazione[]
   alert: string[]
 }
 
-type VistaTab = 'overview' | 'benessere' | 'attivita'
+type VistaTab = 'overview' | 'benessere' | 'peso' | 'attivita'
 
 export default function AnalyticsPage() {
   const [clientiStats, setClientiStats] = useState<ClienteStats[]>([])
@@ -109,6 +117,18 @@ export default function AnalyticsPage() {
         alert.push('Nessun check-in ancora')
       }
 
+      // Misurazioni peso
+      const { data: misData } = await supabase
+        .from('misurazioni')
+        .select('data, peso_kg')
+        .eq('cliente_id', clienteId)
+        .not('peso_kg', 'is', null)
+        .order('data', { ascending: true })
+      const misurazioni: Misurazione[] = (misData ?? []).map((m: any) => ({
+        data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
+        peso_kg: parseFloat(m.peso_kg),
+      }))
+
       stats.push({
         id: clienteId,
         full_name: profile?.full_name,
@@ -117,6 +137,7 @@ export default function AnalyticsPage() {
         ultima_sessione: ultimaSessione,
         giorni_inattivo: giorniInattivo,
         ultimo_checkin: ultimoCheckin,
+        misurazioni,
         alert,
       })
     }
@@ -217,6 +238,7 @@ export default function AnalyticsPage() {
         {[
           { id: 'overview' as VistaTab, label: 'Attività', icon: faChartBar },
           { id: 'benessere' as VistaTab, label: 'Benessere', icon: faHeart },
+          { id: 'peso' as VistaTab, label: 'Peso', icon: faWeightScale },
           { id: 'attivita' as VistaTab, label: 'Alert', icon: faTriangleExclamation, badge: clientiConAlert.length },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -411,6 +433,100 @@ export default function AnalyticsPage() {
                         </p>
                       </div>
                     )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* TAB: PESO */}
+          {tab === 'peso' && (
+            <div className="space-y-4">
+              <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+                Andamento del peso corporeo registrato dai clienti
+              </p>
+              {clientiStats.map((c) => {
+                const ultime = c.misurazioni
+                const ultimoPeso = ultime.length > 0 ? ultime[ultime.length - 1].peso_kg : null
+                const penultimoPeso = ultime.length > 1 ? ultime[ultime.length - 2].peso_kg : null
+                const delta = ultimoPeso !== null && penultimoPeso !== null
+                  ? Math.round((ultimoPeso - penultimoPeso) * 10) / 10
+                  : null
+
+                return (
+                  <div key={c.id} className="rounded-2xl p-5 space-y-4"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    {/* Header cliente */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                          style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                          {c.full_name?.charAt(0).toUpperCase()}
+                        </div>
+                        <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
+                      </div>
+                      {ultimoPeso !== null ? (
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+                              {ultimoPeso} <span className="text-sm font-normal" style={{ color: 'oklch(0.50 0 0)' }}>kg</span>
+                            </p>
+                            <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                              {ultime[ultime.length - 1].data}
+                            </p>
+                          </div>
+                          {delta !== null && (
+                            <span className="flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full"
+                              style={{
+                                background: delta === 0
+                                  ? 'oklch(0.22 0 0)'
+                                  : delta > 0
+                                    ? 'oklch(0.60 0.15 200 / 15%)'
+                                    : 'oklch(0.65 0.18 150 / 15%)',
+                                color: delta === 0
+                                  ? 'oklch(0.50 0 0)'
+                                  : delta > 0
+                                    ? 'oklch(0.60 0.15 200)'
+                                    : 'oklch(0.65 0.18 150)',
+                              }}>
+                              <FontAwesomeIcon icon={delta > 0 ? faArrowTrendUp : delta < 0 ? faArrowTrendDown : faMinus} />
+                              {delta > 0 ? `+${delta}` : delta} kg
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs px-3 py-1.5 rounded-full"
+                          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.45 0 0)' }}>
+                          Nessun dato
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Grafico */}
+                    {ultime.length >= 2 ? (
+                      <div style={{ height: 120 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={ultime} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+                            <XAxis dataKey="data" tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false}
+                              domain={['auto', 'auto']} />
+                            <Tooltip
+                              contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
+                              labelStyle={{ color: 'oklch(0.70 0 0)' }}
+                              itemStyle={{ color: 'oklch(0.70 0.19 46)' }}
+                              formatter={(v: any) => [`${v} kg`, 'Peso']}
+                            />
+                            <Line type="monotone" dataKey="peso_kg" stroke="oklch(0.70 0.19 46)"
+                              strokeWidth={2} dot={{ r: 3, fill: 'oklch(0.70 0.19 46)', strokeWidth: 0 }}
+                              activeDot={{ r: 5 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : ultime.length === 1 ? (
+                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                        Solo una misurazione — il grafico apparirà dalla seconda registrazione
+                      </p>
+                    ) : null}
                   </div>
                 )
               })}
