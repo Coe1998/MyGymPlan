@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical } from '@fortawesome/free-solid-svg-icons'
 
 interface Esercizio { id: string; nome: string; muscoli: string[] | null }
 interface SchedaEsercizio {
@@ -51,6 +51,13 @@ export default function SchedaDetailPage() {
   const [dataFine, setDataFine] = useState('')
   const [assegnando, setAssegnando] = useState(false)
   const [assegnaError, setAssegnaError] = useState<string | null>(null)
+
+  // Drag & drop state
+  const [dragging, setDragging] = useState<{ giornoId: string; eseId: string } | null>(null)
+  const [dragOver, setDragOver] = useState<string | null>(null) // eseId target
+  const dragNode = useRef<HTMLDivElement | null>(null)
+  const dragGhost = useRef<HTMLDivElement | null>(null)
+  const pointerOffset = useRef({ x: 0, y: 0 })
 
   const fetchAll = async () => {
     setLoading(true)
@@ -151,6 +158,104 @@ export default function SchedaDetailPage() {
   const handleRimuoviAssegnazione = async (id: string) => {
     if (!confirm('Vuoi rimuovere questa assegnazione?')) return
     await supabase.from('assegnazioni').delete().eq('id', id); fetchAll()
+  }
+
+  // ── Drag & drop helpers ──────────────────────────────────────────
+  const saveOrdine = async (giornoId: string, ordinati: SchedaEsercizio[]) => {
+    await Promise.all(
+      ordinati.map((ese, i) =>
+        supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', ese.id)
+      )
+    )
+  }
+
+  const reorderInGiorno = (giornoId: string, fromId: string, toId: string) => {
+    setGiorni(prev => prev.map(g => {
+      if (g.id !== giornoId) return g
+      const lista = [...g.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)
+      const fromIdx = lista.findIndex(e => e.id === fromId)
+      const toIdx = lista.findIndex(e => e.id === toId)
+      if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return g
+      const [moved] = lista.splice(fromIdx, 1)
+      lista.splice(toIdx, 0, moved)
+      const aggiornati = lista.map((e, i) => ({ ...e, ordine: i }))
+      saveOrdine(giornoId, aggiornati)
+      return { ...g, scheda_esercizi: aggiornati }
+    }))
+  }
+
+  const onDragStart = (e: React.DragEvent, giornoId: string, eseId: string) => {
+    setDragging({ giornoId, eseId })
+    e.dataTransfer.effectAllowed = 'move'
+    // ghost trasparente
+    const ghost = document.createElement('div')
+    ghost.style.position = 'absolute'; ghost.style.top = '-9999px'
+    document.body.appendChild(ghost)
+    e.dataTransfer.setDragImage(ghost, 0, 0)
+    dragGhost.current = ghost
+  }
+
+  const onDragOver = (e: React.DragEvent, eseId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOver(eseId)
+  }
+
+  const onDrop = (e: React.DragEvent, toId: string) => {
+    e.preventDefault()
+    if (!dragging || dragging.eseId === toId) { endDrag(); return }
+    reorderInGiorno(dragging.giornoId, dragging.eseId, toId)
+    endDrag()
+  }
+
+  const endDrag = () => {
+    setDragging(null); setDragOver(null)
+    if (dragGhost.current) { document.body.removeChild(dragGhost.current); dragGhost.current = null }
+  }
+
+  // Touch / pointer drag
+  const onPointerDown = (e: React.PointerEvent, giornoId: string, eseId: string, el: HTMLDivElement) => {
+    if (e.pointerType === 'mouse') return // handled by HTML5 drag
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.92;pointer-events:none;
+      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    dragGhost.current = clone
+    dragNode.current = el
+    el.style.opacity = '0.3'
+    setDragging({ giornoId, eseId })
+
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
+      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      // trova elemento sotto
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      if (row) setDragOver(row.dataset.eseid ?? null)
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderInGiorno(giornoId, eseId, toId)
+      if (dragNode.current) dragNode.current.style.opacity = '1'
+      document.body.removeChild(clone)
+      dragGhost.current = null; dragNode.current = null
+      setDragging(null); setDragOver(null)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
   }
 
   if (loading) return (
@@ -531,33 +636,65 @@ export default function SchedaDetailPage() {
                 </div>
               ) : (
                 <div>
-                  {giorno.scheda_esercizi.sort((a, b) => a.ordine - b.ordine).map((se, i) => (
-                    <div key={se.id} className="flex items-center gap-4 px-6 py-4 group"
-                      style={{ borderBottom: i < giorno.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>{i + 1}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{se.esercizi?.nome}</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          {[`${se.serie} serie`, `${se.ripetizioni} reps`, `${se.recupero_secondi}s recupero`].map(t => (
-                            <span key={t} className="text-xs px-2 py-0.5 rounded"
-                              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>{t}</span>
+                  {giorno.scheda_esercizi.sort((a, b) => a.ordine - b.ordine).map((se, i) => {
+                    const isDraggingThis = dragging?.eseId === se.id
+                    const isDragTarget = dragOver === se.id && dragging?.eseId !== se.id
+                    return (
+                      <div
+                        key={se.id}
+                        data-eseid={se.id}
+                        draggable
+                        onDragStart={(e) => onDragStart(e, giorno.id, se.id)}
+                        onDragOver={(e) => onDragOver(e, se.id)}
+                        onDrop={(e) => onDrop(e, se.id)}
+                        onDragEnd={endDrag}
+                        className="flex items-center gap-4 px-6 py-4 group transition-all duration-150"
+                        style={{
+                          borderBottom: i < giorno.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+                          opacity: isDraggingThis ? 0.35 : 1,
+                          background: isDragTarget ? 'oklch(0.70 0.19 46 / 8%)' : 'transparent',
+                          borderTop: isDragTarget ? '2px solid oklch(0.70 0.19 46 / 60%)' : undefined,
+                        }}>
+                        {/* Drag handle */}
+                        <div
+                          className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+                          style={{ color: 'oklch(0.35 0 0)', padding: '4px' }}
+                          ref={(el) => {
+                            if (!el) return
+                            el.onpointerdown = (e) => {
+                              const row = el.closest('[data-eseid]') as HTMLDivElement
+                              onPointerDown(e as any, giorno.id, se.id, row)
+                            }
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faGripVertical} />
+                        </div>
+
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>{i + 1}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{se.esercizi?.nome}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            {[`${se.serie} serie`, `${se.ripetizioni} reps`, `${se.recupero_secondi}s recupero`].map(t => (
+                              <span key={t} className="text-xs px-2 py-0.5 rounded"
+                                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>{t}</span>
+                            ))}
+                          </div>
+                          {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}><FontAwesomeIcon icon={faNoteSticky} /> {se.note}</p>}
+                        </div>
+                        <div className="flex flex-wrap gap-1 max-w-32">
+                          {se.esercizi?.muscoli?.slice(0, 2).map(m => (
+                            <span key={m} className="text-xs px-2 py-0.5 rounded-full"
+                              style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
                           ))}
                         </div>
-                        {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}><FontAwesomeIcon icon={faNoteSticky} /> {se.note}</p>}
+                        <button
+                          onClick={() => handleDeleteEsercizio(se.id)}
+                          className="lg:opacity-0 lg:group-hover:opacity-100 px-2.5 py-1.5 rounded-lg text-xs transition-all flex-shrink-0"
+                          style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>✕</button>
                       </div>
-                      <div className="flex flex-wrap gap-1 max-w-32">
-                        {se.esercizi?.muscoli?.slice(0, 2).map(m => (
-                          <span key={m} className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
-                        ))}
-                      </div>
-                      <button
-						  onClick={() => handleDeleteEsercizio(se.id)}
-						  className="lg:opacity-0 lg:group-hover:opacity-100 px-2.5 py-1.5 rounded-lg text-xs transition-all flex-shrink-0"
-						  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>✕</button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
