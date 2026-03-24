@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -9,29 +9,65 @@ import { faDumbbell, faPersonRunning } from '@fortawesome/free-solid-svg-icons'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteCode = searchParams.get('code')
+
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<UserRole>('atleta')
+  // Se arriva con codice invito → forza ruolo atleta e non mostrare selezione
+  const [role, setRole] = useState<UserRole>(inviteCode ? 'atleta' : 'atleta')
+  const [coachNome, setCoachNome] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Recupera il nome del coach dal codice invito
+  useEffect(() => {
+    if (!inviteCode) return
+    const supabase = createClient()
+    supabase.from('profiles').select('full_name')
+      .eq('coach_code', inviteCode).eq('role', 'coach').single()
+      .then(({ data }) => setCoachNome(data?.full_name ?? null))
+  }, [inviteCode])
 
   const handleRegister = async () => {
     setLoading(true)
     setError(null)
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName, role }
       }
     })
-    if (error) {
-      setError(error.message)
+
+    if (signUpError) {
+      setError(signUpError.message)
       setLoading(false)
       return
     }
+
+    // Se c'è un codice invito → crea il record in coach_inviti
+    if (inviteCode && signUpData.user) {
+      // Trova il coach
+      const { data: coach } = await supabase
+        .from('profiles').select('id').eq('coach_code', inviteCode).single()
+
+      if (coach) {
+        // Piccolo delay per aspettare che il profilo venga creato dal trigger
+        await new Promise(r => setTimeout(r, 1500))
+        await supabase.from('coach_inviti').insert({
+          coach_id: coach.id,
+          cliente_id: signUpData.user.id,
+          stato: 'pending',
+        })
+        router.push('/atleta/dashboard?invito=inviato')
+        return
+      }
+    }
+
     if (role === 'coach') {
       router.push('/coach/dashboard')
     } else {
@@ -51,34 +87,45 @@ export default function RegisterPage() {
           <span className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</span>
         </div>
 
+        {/* Banner invito coach */}
+        {inviteCode && (
+          <div className="px-4 py-3 rounded-xl text-sm"
+            style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.80 0 0)' }}>
+            🎯 Sei stato invitato da{' '}
+            <strong style={{ color: 'oklch(0.97 0 0)' }}>
+              {coachNome ?? 'un coach'}
+            </strong>.
+            Crea il tuo account gratuito per iniziare.
+          </div>
+        )}
+
         <div className="space-y-2">
           <h1 className="text-3xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Crea il tuo account</h1>
           <p style={{ color: 'oklch(0.60 0 0)' }}>Inizia subito, è gratuito</p>
         </div>
 
-        {/* Role selector */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { value: 'coach', label: 'Sono un Coach', icon: faDumbbell, desc: 'Gestisco atleti e schede' },
-            { value: 'atleta', label: 'Sono un Atleta', icon: faPersonRunning, desc: 'Mi alleno in autonomia' },
-          ].map((r) => (
-            <button
-              key={r.value}
-              onClick={() => setRole(r.value as UserRole)}
-              className="p-4 rounded-xl text-left transition-all"
-              style={{
-                background: role === r.value ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.20 0 0)',
-                border: role === r.value ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid oklch(1 0 0 / 8%)',
-              }}
-            >
-              <div className="text-2xl mb-2"><FontAwesomeIcon icon={r.icon} /></div>
-              <div className="font-semibold text-sm" style={{ color: role === r.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.97 0 0)' }}>
-                {r.label}
-              </div>
-              <div className="text-xs mt-1" style={{ color: 'oklch(0.55 0 0)' }}>{r.desc}</div>
-            </button>
-          ))}
-        </div>
+        {/* Role selector — nascosto se arriva da invito coach */}
+        {!inviteCode && (
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: 'coach', label: 'Sono un Coach', icon: faDumbbell, desc: 'Gestisco atleti e schede' },
+              { value: 'atleta', label: 'Sono un Atleta', icon: faPersonRunning, desc: 'Mi alleno in autonomia' },
+            ].map((r) => (
+              <button key={r.value} onClick={() => setRole(r.value as UserRole)}
+                className="p-4 rounded-xl text-left transition-all"
+                style={{
+                  background: role === r.value ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.20 0 0)',
+                  border: role === r.value ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid oklch(1 0 0 / 8%)',
+                }}>
+                <div className="text-2xl mb-2"><FontAwesomeIcon icon={r.icon} /></div>
+                <div className="font-semibold text-sm" style={{ color: role === r.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.97 0 0)' }}>
+                  {r.label}
+                </div>
+                <div className="text-xs mt-1" style={{ color: 'oklch(0.55 0 0)' }}>{r.desc}</div>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-4">
           {[
@@ -88,16 +135,13 @@ export default function RegisterPage() {
           ].map((field) => (
             <div key={field.label} className="space-y-2">
               <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{field.label}</label>
-              <input
-                type={field.type}
-                value={field.value}
+              <input type={field.type} value={field.value}
                 onChange={(e) => field.setter(e.target.value)}
                 placeholder={field.placeholder}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
                 style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
                 onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
-              />
+                onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
             </div>
           ))}
 
@@ -108,23 +152,20 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <button
-            onClick={handleRegister}
-            disabled={loading}
+          <button onClick={handleRegister} disabled={loading}
             className="w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95"
             style={{
               background: loading ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)',
-              color: 'oklch(0.13 0 0)',
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
-          >
+              color: 'oklch(0.13 0 0)', cursor: loading ? 'not-allowed' : 'pointer',
+            }}>
             {loading ? 'Registrazione in corso...' : 'Crea account →'}
           </button>
         </div>
 
         <p className="text-center text-sm" style={{ color: 'oklch(0.60 0 0)' }}>
           Hai già un account?{' '}
-          <a href="/login" className="font-semibold hover:opacity-80 transition-opacity"
+          <a href={inviteCode ? `/login?code=${inviteCode}` : '/login'}
+            className="font-semibold hover:opacity-80 transition-opacity"
             style={{ color: 'oklch(0.70 0.19 46)' }}>
             Accedi
           </a>
