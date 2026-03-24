@@ -14,7 +14,7 @@ interface SchedaEsercizio {
   recupero_secondi: number
   note: string | null
   ordine: number
-  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; note: string | null }
+  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null }
 }
 
 interface LogSerie {
