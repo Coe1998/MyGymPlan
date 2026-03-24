@@ -12,6 +12,7 @@ import {
   faDumbbell, faCalendarDays, faCircleCheck, faChartBar,
   faScaleBalanced, faCamera, faUpload, faPause, faPersonRunning,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
+  faChevronLeft, faChevronRight, faXmark, faShareNodes,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import ShareOverlayWeek from '@/components/shared/ShareOverlayWeek'
@@ -61,6 +62,34 @@ interface Checkin {
 
 const EMOJI_VOTO: (IconDefinition | null)[] = [null, faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars]
 
+interface WeekData {
+  label: string
+  volume: number
+  reps: number
+  sessioni: number
+  durataSecondi: number
+  inizioISO: string
+}
+
+const fmt = (d: Date) => d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
+
+const getLunedi = (offsetSettimane = 0): Date => {
+  const d = new Date()
+  d.setDate(d.getDate() - d.getDay() + 1 + offsetSettimane * 7)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+const formatDurataWeek = (sec: number) =>
+  sec > 0
+    ? `${Math.floor(sec / 3600).toString().padStart(2, '0')}:${Math.floor((sec % 3600) / 60).toString().padStart(2, '0')}:${(sec % 60).toString().padStart(2, '0')}`
+    : '—'
+
+const formatDurataShort = (sec: number) =>
+  sec > 0
+    ? `${Math.floor(sec / 3600)}h${Math.floor((sec % 3600) / 60)}m`
+    : '—'
+
 export default function ProgressiPage() {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('grafici')
@@ -96,6 +125,13 @@ export default function ProgressiPage() {
   const [weekDurataSecondi, setWeekDurataSecondi] = useState(0)
   const [weekLabel, setWeekLabel] = useState('')
   const [showWeekShare, setShowWeekShare] = useState(false)
+  const [weekOffset, setWeekOffset] = useState(0) // 0 = corrente, -1 = precedente
+  const [showStorico, setShowStorico] = useState(false)
+  const [storicoSettimane, setStoricoSettimane] = useState<WeekData[]>([])
+  const [storicoShareIdx, setStoricoShareIdx] = useState<number | null>(null)
+
+  // Cache sessioni con durata per il calcolo settimanale
+  const sessioniCacheRef = useRef<any[]>([])
 
   const supabase = createClient()
 
@@ -147,45 +183,82 @@ export default function ProgressiPage() {
     const checkinDiOggi = checkinData?.find(c => c.data === oggi) ?? null
     setCheckinOggi(checkinDiOggi)
 
-    // ── Dati settimanali ──────────────────────────────────────────
-    const inizioSettimana = new Date()
-    inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay() + 1) // lunedì
-    inizioSettimana.setHours(0, 0, 0, 0)
-    const fineSettimana = new Date(inizioSettimana)
-    fineSettimana.setDate(fineSettimana.getDate() + 6)
-
-    const fmt = (d: Date) => d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
-    setWeekLabel(`${fmt(inizioSettimana)} – ${fmt(fineSettimana)}`)
-
-    const sessioniSettimana = (sessioniData ?? []).filter((s: any) =>
-      s.completata && new Date(s.data) >= inizioSettimana && new Date(s.data) <= fineSettimana
-    )
-    setWeekSessioni(sessioniSettimana.length)
-
-    if (sessioniSettimana.length > 0) {
-      const ids = sessioniSettimana.map((s: any) => s.id)
-      const { data: logsWeek } = await supabase
-        .from('log_serie').select('peso_kg, ripetizioni, completata')
-        .in('sessione_id', ids).eq('completata', true)
-
-      let vol = 0, rep = 0
-      for (const l of (logsWeek ?? []) as any[]) {
-        const p = parseFloat(l.peso_kg) || 0
-        const r = parseInt(l.ripetizioni) || 0
-        vol += p * r
-        rep += r
-      }
-      setWeekVolume(Math.round(vol))
-      setWeekReps(rep)
-
-      // Durata totale (da durata_secondi se disponibile)
-      const { data: sessioniConDurata } = await supabase
-        .from('sessioni').select('durata_secondi').in('id', ids)
-      const totSec = (sessioniConDurata ?? []).reduce((acc: number, s: any) => acc + (s.durata_secondi ?? 0), 0)
-      setWeekDurataSecondi(totSec)
-    } else {
-      setWeekVolume(0); setWeekReps(0); setWeekDurataSecondi(0)
+    // ── Dati settimanali con offset ───────────────────────────────
+    // Salva sessioni con durata in cache per riuso
+    const ids = (sessioniData ?? []).filter((s: any) => s.completata).map((s: any) => s.id)
+    let sessioniConDurata: any[] = []
+    if (ids.length > 0) {
+      const { data: durataData } = await supabase
+        .from('sessioni').select('id, data, durata_secondi').in('id', ids)
+      sessioniConDurata = durataData ?? []
     }
+    sessioniCacheRef.current = sessioniConDurata
+
+    // Fetch log_serie una sola volta per tutte le sessioni completate
+    let allLogs: any[] = []
+    if (ids.length > 0) {
+      const { data: logsAll } = await supabase
+        .from('log_serie').select('sessione_id, peso_kg, ripetizioni, completata')
+        .in('sessione_id', ids).eq('completata', true)
+      allLogs = logsAll ?? []
+    }
+
+    // Calcola stats per una settimana dato offset (0 = corrente, -1 = precedente, ecc.)
+    const calcWeek = (offset: number): WeekData => {
+      const lun = getLunedi(offset)
+      const dom = new Date(lun); dom.setDate(dom.getDate() + 6); dom.setHours(23, 59, 59, 999)
+      const label = `${fmt(lun)} – ${fmt(dom)}`
+      const sessWeek = (sessioniData ?? []).filter((s: any) =>
+        s.completata && new Date(s.data) >= lun && new Date(s.data) <= dom
+      )
+      const weekIds = sessWeek.map((s: any) => s.id)
+      const weekLogs = allLogs.filter(l => weekIds.includes(l.sessione_id))
+      let vol = 0, rep = 0
+      for (const l of weekLogs) {
+        vol += (parseFloat(l.peso_kg) || 0) * (parseInt(l.ripetizioni) || 0)
+        rep += parseInt(l.ripetizioni) || 0
+      }
+      const totSec = sessioniConDurata
+        .filter(s => weekIds.includes(s.id))
+        .reduce((acc, s) => acc + (s.durata_secondi ?? 0), 0)
+      return { label, volume: Math.round(vol), reps: rep, sessioni: sessWeek.length, durataSecondi: totSec, inizioISO: lun.toISOString() }
+    }
+
+    // Settimana corrente e precedente
+    const current = calcWeek(0)
+    setWeekLabel(current.label)
+    setWeekVolume(current.volume)
+    setWeekReps(current.reps)
+    setWeekSessioni(current.sessioni)
+    setWeekDurataSecondi(current.durataSecondi)
+
+    // Storico: tutte le settimane che hanno almeno 1 sessione
+    const settimaneSet = new Set<string>()
+    for (const s of (sessioniData ?? []).filter((s: any) => s.completata)) {
+      const lun = getLunedi(0)
+      const d = new Date(s.data)
+      const lunS = new Date(d); lunS.setDate(d.getDate() - d.getDay() + 1); lunS.setHours(0,0,0,0)
+      settimaneSet.add(lunS.toISOString())
+    }
+    const storico: WeekData[] = []
+    for (const lunISO of Array.from(settimaneSet).sort((a, b) => b.localeCompare(a))) {
+      const lun = new Date(lunISO)
+      const dom = new Date(lun); dom.setDate(dom.getDate() + 6); dom.setHours(23, 59, 59, 999)
+      const label = `${fmt(lun)} – ${fmt(dom)}`
+      const sessWeek = (sessioniData ?? []).filter((s: any) =>
+        s.completata && new Date(s.data) >= lun && new Date(s.data) <= dom
+      )
+      const weekIds = sessWeek.map((s: any) => s.id)
+      const weekLogs = allLogs.filter(l => weekIds.includes(l.sessione_id))
+      let vol = 0, rep = 0
+      for (const l of weekLogs) {
+        vol += (parseFloat(l.peso_kg) || 0) * (parseInt(l.ripetizioni) || 0)
+        rep += parseInt(l.ripetizioni) || 0
+      }
+      const totSec = sessioniConDurata.filter(s => weekIds.includes(s.id)).reduce((acc, s) => acc + (s.durata_secondi ?? 0), 0)
+      storico.push({ label, volume: Math.round(vol), reps: rep, sessioni: sessWeek.length, durataSecondi: totSec, inizioISO: lunISO })
+    }
+    setStoricoSettimane(storico)
 
     setLoading(false)
   }
@@ -222,6 +295,20 @@ export default function ProgressiPage() {
 
   useEffect(() => { fetchAll() }, [])
   useEffect(() => { if (selectedEsercizio) fetchGrafico(selectedEsercizio) }, [selectedEsercizio])
+
+  // Aggiorna dati visualizzati quando cambia l'offset settimana
+  useEffect(() => {
+    if (storicoSettimane.length === 0) return
+    // offset 0 = prima voce storico (corrente), -1 = seconda
+    const idx = weekOffset === 0 ? 0 : 1
+    const w = storicoSettimane[idx]
+    if (!w) return
+    setWeekLabel(w.label)
+    setWeekVolume(w.volume)
+    setWeekReps(w.reps)
+    setWeekSessioni(w.sessioni)
+    setWeekDurataSecondi(w.durataSecondi)
+  }, [weekOffset, storicoSettimane])
 
   const handleSaveMisurazione = async () => {
     if (!newPeso.trim()) return
@@ -363,15 +450,42 @@ export default function ProgressiPage() {
       {tab === 'grafici' && (
         <div className="space-y-6">
 
-          {/* ── Riepilogo settimanale + share ── */}
+          {/* ── Riepilogo settimanale ── */}
           <div className="rounded-2xl overflow-hidden"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+
+            {/* Header con frecce navigazione */}
             <div className="px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: showWeekShare ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-0.5"
-                  style={{ color: 'oklch(0.70 0.19 46)' }}>Questa settimana</p>
-                <p className="font-black text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{weekLabel}</p>
+              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              <div className="flex items-center gap-2">
+                {/* ← solo se siamo sulla settimana corrente (per andare alla precedente) */}
+                <button
+                  onClick={() => { setWeekOffset(-1); setShowWeekShare(false) }}
+                  disabled={weekOffset === -1}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                  style={{
+                    background: weekOffset === -1 ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                    color: weekOffset === -1 ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                    opacity: weekOffset === -1 ? 1 : 0.6,
+                  }}>
+                  <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                </button>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest"
+                    style={{ color: 'oklch(0.70 0.19 46)' }}>
+                    {weekOffset === 0 ? 'Questa settimana' : 'Settimana scorsa'}
+                  </p>
+                  <p className="font-black text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{weekLabel}</p>
+                </div>
+                {/* → torna alla corrente */}
+                {weekOffset === -1 && (
+                  <button
+                    onClick={() => { setWeekOffset(0); setShowWeekShare(false) }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+                  </button>
+                )}
               </div>
               <button
                 onClick={() => setShowWeekShare(p => !p)}
@@ -380,7 +494,7 @@ export default function ProgressiPage() {
                   background: showWeekShare ? 'oklch(0.70 0.19 46)' : 'oklch(0.70 0.19 46 / 15%)',
                   color: showWeekShare ? 'oklch(0.13 0 0)' : 'oklch(0.70 0.19 46)',
                 }}>
-                <FontAwesomeIcon icon={faChartBar} />
+                <FontAwesomeIcon icon={faShareNodes} />
                 {showWeekShare ? 'Chiudi' : 'Condividi'}
               </button>
             </div>
@@ -388,14 +502,12 @@ export default function ProgressiPage() {
             {/* Stats mini */}
             {!showWeekShare && (
               <div className="grid grid-cols-4 divide-x"
-                style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', borderColor: 'oklch(1 0 0 / 6%)' }}>
+                style={{ borderColor: 'oklch(1 0 0 / 6%)' }}>
                 {[
                   { label: 'Allenamenti', value: weekSessioni },
                   { label: 'Volume kg', value: weekVolume.toLocaleString('it-IT') },
                   { label: 'Reps', value: weekReps.toLocaleString('it-IT') },
-                  { label: 'Tempo', value: weekDurataSecondi > 0
-                    ? `${Math.floor(weekDurataSecondi / 3600)}h${Math.floor((weekDurataSecondi % 3600) / 60)}m`
-                    : '—' },
+                  { label: 'Tempo', value: formatDurataShort(weekDurataSecondi) },
                 ].map(s => (
                   <div key={s.label} className="p-3 text-center">
                     <p className="text-base font-black" style={{ color: 'oklch(0.97 0 0)' }}>{s.value}</p>
@@ -405,7 +517,7 @@ export default function ProgressiPage() {
               </div>
             )}
 
-            {/* Share overlay settimanale */}
+            {/* Share overlay */}
             {showWeekShare && weekSessioni > 0 && (
               <div className="p-5">
                 <ShareOverlayWeek
@@ -413,20 +525,118 @@ export default function ProgressiPage() {
                   volume={weekVolume}
                   reps={weekReps}
                   sessioni={weekSessioni}
-                  durata={weekDurataSecondi > 0
-                    ? `${Math.floor(weekDurataSecondi / 3600).toString().padStart(2, '0')}:${Math.floor((weekDurataSecondi % 3600) / 60).toString().padStart(2, '0')}:${(weekDurataSecondi % 60).toString().padStart(2, '0')}`
-                    : '—'}
+                  durata={formatDurataWeek(weekDurataSecondi)}
                 />
               </div>
             )}
             {showWeekShare && weekSessioni === 0 && (
               <div className="p-6 text-center">
-                <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-                  Nessun allenamento completato questa settimana.
-                </p>
+                <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Nessun allenamento questa settimana.</p>
+              </div>
+            )}
+
+            {/* Storico button */}
+            {!showWeekShare && storicoSettimane.length > 2 && (
+              <div className="px-5 py-3" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+                <button
+                  onClick={() => setShowStorico(true)}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  Visualizza storico completo ({storicoSettimane.length} settimane) →
+                </button>
               </div>
             )}
           </div>
+
+          {/* ── Modal storico ── */}
+          {showStorico && (
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+              style={{ background: 'oklch(0 0 0 / 75%)' }}
+              onClick={() => { setShowStorico(false); setStoricoShareIdx(null) }}>
+              <div className="w-full max-w-lg rounded-3xl overflow-hidden"
+                style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+                onClick={e => e.stopPropagation()}>
+
+                {/* Modal header */}
+                <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>Storico</p>
+                    <h2 className="font-black" style={{ color: 'oklch(0.97 0 0)' }}>Tutti i riepiloghi</h2>
+                  </div>
+                  <button onClick={() => { setShowStorico(false); setStoricoShareIdx(null) }}
+                    className="w-9 h-9 rounded-full flex items-center justify-center"
+                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    <FontAwesomeIcon icon={faXmark} />
+                  </button>
+                </div>
+
+                {/* Lista settimane */}
+                <div className="overflow-y-auto flex-1">
+                  {storicoSettimane.map((w, i) => (
+                    <div key={w.inizioISO}>
+                      <div className="px-5 py-4"
+                        style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
+                        {/* Header settimana */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                              {i === 0 ? 'Questa settimana' : i === 1 ? 'Settimana scorsa' : w.label}
+                            </p>
+                            {i > 1 && <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>{w.label}</p>}
+                          </div>
+                          <button
+                            onClick={() => setStoricoShareIdx(storicoShareIdx === i ? null : i)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+                            style={{
+                              background: storicoShareIdx === i ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                              color: storicoShareIdx === i ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                            }}>
+                            <FontAwesomeIcon icon={faShareNodes} />
+                            {storicoShareIdx === i ? 'Chiudi' : 'Share'}
+                          </button>
+                        </div>
+
+                        {/* Stats inline */}
+                        {storicoShareIdx !== i && (
+                          <div className="grid grid-cols-4 gap-2">
+                            {[
+                              { label: 'Allenamenti', value: w.sessioni },
+                              { label: 'Volume', value: `${w.volume.toLocaleString('it-IT')} kg` },
+                              { label: 'Reps', value: w.reps.toLocaleString('it-IT') },
+                              { label: 'Tempo', value: formatDurataShort(w.durataSecondi) },
+                            ].map(s => (
+                              <div key={s.label} className="rounded-xl p-2.5 text-center"
+                                style={{ background: 'oklch(0.20 0 0)' }}>
+                                <p className="text-sm font-black" style={{ color: 'oklch(0.97 0 0)' }}>{s.value}</p>
+                                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>{s.label}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Share overlay nel modal */}
+                        {storicoShareIdx === i && w.sessioni > 0 && (
+                          <ShareOverlayWeek
+                            weekLabel={w.label}
+                            volume={w.volume}
+                            reps={w.reps}
+                            sessioni={w.sessioni}
+                            durata={formatDurataWeek(w.durataSecondi)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Drag handle */}
+                <div className="flex justify-center py-3 flex-shrink-0">
+                  <div className="w-10 h-1 rounded-full" style={{ background: 'oklch(0.28 0 0)' }} />
+                </div>
+              </div>
+            </div>
+          )}
           {sessioniCompletate > 0 && (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
