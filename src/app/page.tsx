@@ -93,8 +93,14 @@ export default function LandingPage() {
     <div style={{ background: 'oklch(0.11 0 0)', color: 'oklch(0.97 0 0)', fontFamily: 'Syne, Inter, sans-serif', overflowX: 'hidden' }}>
 
       {/* ── NAV ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
-        style={{ background: 'oklch(0.11 0 0 / 80%)', backdropFilter: 'blur(12px)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6"
+        style={{
+          background: 'oklch(0.11 0 0 / 80%)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid oklch(1 0 0 / 6%)',
+          paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+          paddingBottom: '1rem',
+        }}>
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
             style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>B</div>
@@ -126,7 +132,8 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
         {/* Background grid */}
         <div className="absolute inset-0" style={{
           backgroundImage: `linear-gradient(oklch(1 0 0 / 3%) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 3%) 1px, transparent 1px)`,
