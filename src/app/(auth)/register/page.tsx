@@ -69,7 +69,12 @@ function RegisterForm() {
     }
 
     if (role === 'coach') {
-      router.push('/coach/dashboard')
+      // Piccolo delay per aspettare che il trigger crei il profilo
+      await new Promise(r => setTimeout(r, 1500))
+      await supabase.from('profiles')
+        .update({ coach_status: 'pending' })
+        .eq('id', signUpData.user!.id)
+      router.push('/coach/pending')
     } else {
       router.push('/atleta/dashboard')
     }

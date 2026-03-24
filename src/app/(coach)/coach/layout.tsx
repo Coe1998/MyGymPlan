@@ -15,6 +15,12 @@ export default async function CoachLayout({
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'coach') redirect('/cliente/dashboard')
 
+  // Coach in attesa di approvazione → manda alla pagina pending
+  // La pagina /coach/pending ha il suo layout separato quindi non viene intercettata qui
+  if (profile?.coach_status === 'pending') {
+    redirect('/coach/pending')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <CoachSidebar profile={profile} />
