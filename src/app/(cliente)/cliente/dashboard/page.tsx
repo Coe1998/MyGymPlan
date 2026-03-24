@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDumbbell, faCalendarDays, faHand, faClipboardList, faPersonRunning, faCircleCheck, faPause } from '@fortawesome/free-solid-svg-icons'
+import SessioniList from '@/components/cliente/SessioniList'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -179,32 +180,12 @@ export default async function ClienteDashboard() {
             </p>
           </div>
         ) : (
-          <div>
-            {ultimeSessioni.map((s: any, i: number) => (
-              <div key={s.id} className="flex items-center gap-4 px-6 py-4"
-                style={{ borderBottom: i < ultimeSessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                  style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
-                  {s.completata ? <FontAwesomeIcon icon={faCircleCheck} /> : <FontAwesomeIcon icon={faPause} />}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
-                    {s.scheda_giorni?.nome ?? 'Allenamento'}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-                    {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </p>
-                </div>
-                <span className="text-xs px-2.5 py-1 rounded-full"
-                  style={{
-                    background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                    color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
-                  }}>
-                  {s.completata ? 'Completato' : 'Incompleto'}
-                </span>
-              </div>
-            ))}
-          </div>
+          <SessioniList sessioni={(ultimeSessioni as any[]).map(s => ({
+            id: s.id,
+            data: s.data,
+            completata: s.completata,
+            scheda_giorni: s.scheda_giorni ?? null,
+          }))} />
         )}
       </div>
     </div>
