@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUsers, faClipboardList, faCircleCheck, faHand } from '@fortawesome/free-solid-svg-icons'
 
 export default async function CoachDashboard() {
   const supabase = await createClient()
@@ -22,9 +24,9 @@ export default async function CoachDashboard() {
     .from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true)
 
   const stats = [
-    { label: 'Clienti attivi', value: clienti?.length ?? 0, icon: '👥', color: 'oklch(0.60 0.15 200)' },
-    { label: 'Schede create', value: schede?.length ?? 0, icon: '📋', color: 'oklch(0.70 0.19 46)' },
-    { label: 'Schede assegnate', value: assegnazioni?.length ?? 0, icon: '✅', color: 'oklch(0.65 0.18 150)' },
+    { label: 'Clienti attivi', value: clienti?.length ?? 0, icon: faUsers, color: 'oklch(0.60 0.15 200)' },
+    { label: 'Schede create', value: schede?.length ?? 0, icon: faClipboardList, color: 'oklch(0.70 0.19 46)' },
+    { label: 'Schede assegnate', value: assegnazioni?.length ?? 0, icon: faCircleCheck, color: 'oklch(0.65 0.18 150)' },
   ]
 
   const ora = new Date().getHours()
@@ -36,7 +38,7 @@ export default async function CoachDashboard() {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
-            {saluto} 👋
+            {saluto} <FontAwesomeIcon icon={faHand} />
           </p>
           <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
             {profile.full_name}
@@ -68,7 +70,7 @@ export default async function CoachDashboard() {
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
                 style={{ background: `${stat.color} / 15%`, border: `1px solid ${stat.color} / 20%` }}
               >
-                {stat.icon}
+                <FontAwesomeIcon icon={stat.icon} />
               </div>
             </div>
             <p className="text-5xl font-black" style={{ color: stat.color }}>
@@ -99,7 +101,7 @@ export default async function CoachDashboard() {
 
         {(clienti?.length ?? 0) === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="text-5xl">👥</div>
+            <div className="text-5xl"><FontAwesomeIcon icon={faUsers} /></div>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
             <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
               Inizia aggiungendo il tuo primo cliente

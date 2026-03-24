@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ShareOverlay from '@/components/shared/ShareOverlay'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDumbbell, faCircleCheck, faPause, faStopwatch, faNoteSticky, faTrophy, faCircleInfo, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 interface SchedaEsercizio {
   id: string
@@ -53,6 +55,7 @@ export default function AllenamentoPage() {
   const [timerSecondi, setTimerSecondi] = useState(0)
   const [durataSecondi, setDurataSecondi] = useState(0)
   const [sessioneData, setSessioneData] = useState<string | null>(null)
+  const [noteAperta, setNoteAperta] = useState<string | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const isViewMode = !!sessioneIdParam
 
@@ -291,7 +294,7 @@ export default function AllenamentoPage() {
     return (
       <div className="flex items-center justify-center min-h-64 p-4">
         <div className="text-center space-y-3">
-          <p className="text-4xl">💪</p>
+          <p className="text-4xl"><FontAwesomeIcon icon={faDumbbell} /></p>
           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Seleziona un giorno</p>
           <button onClick={() => router.push('/cliente/dashboard')}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
@@ -339,11 +342,11 @@ export default function AllenamentoPage() {
           {completata ? (
             <span className="px-3 py-1.5 rounded-xl text-xs font-semibold"
               style={{ background: 'oklch(0.65 0.18 150 / 20%)', color: 'oklch(0.65 0.18 150)' }}>
-              ✅ Fatto
+              <FontAwesomeIcon icon={faCircleCheck} /> Fatto
             </span>
           ) : (
             <span className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-              ⏱ {formatDurata(durataSecondi)}
+              <FontAwesomeIcon icon={faStopwatch} /> {formatDurata(durataSecondi)}
             </span>
           )}
         </div>
@@ -367,7 +370,7 @@ export default function AllenamentoPage() {
         <div className="rounded-2xl p-4 flex items-center justify-between"
           style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
           <div>
-            <p className="text-sm font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>⏱️ Recupero</p>
+            <p className="text-sm font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}><FontAwesomeIcon icon={faStopwatch} /> Recupero</p>
             <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>Prossima serie tra...</p>
           </div>
           <div className="flex items-center gap-3">
@@ -395,6 +398,40 @@ export default function AllenamentoPage() {
                 background: 'oklch(0.18 0 0)',
                 border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}`,
               }}>
+              {/* Modal note esercizio */}
+              {noteAperta === ese.id && ese.note && (
+                <div
+                  className="fixed inset-0 z-50 flex items-end justify-center"
+                  style={{ background: 'oklch(0 0 0 / 60%)' }}
+                  onClick={() => setNoteAperta(null)}
+                >
+                  <div
+                    className="w-full max-w-2xl rounded-t-3xl p-6 space-y-4"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FontAwesomeIcon icon={faNoteSticky} style={{ color: 'oklch(0.70 0.19 46)' }} />
+                        <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Note — {ese.esercizi.nome}</p>
+                      </div>
+                      <button
+                        onClick={() => setNoteAperta(null)}
+                        className="w-8 h-8 rounded-full flex items-center justify-center"
+                        style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}
+                      >
+                        <FontAwesomeIcon icon={faXmark} />
+                      </button>
+                    </div>
+                    <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.note}</p>
+                    {/* drag handle visivo */}
+                    <div className="flex justify-center pt-1">
+                      <div className="w-10 h-1 rounded-full" style={{ background: 'oklch(0.30 0 0)' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="px-4 py-3 flex items-center justify-between"
                 style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -410,18 +447,28 @@ export default function AllenamentoPage() {
                     <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s</p>
                   </div>
                 </div>
-                {ese.esercizi.video_url && (
-                  <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
-                    className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>▶</a>
-                )}
-              </div>
-
-              {ese.note && (
-                <div className="px-4 py-2" style={{ background: 'oklch(0.15 0 0)', borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
-                  <p className="text-xs italic" style={{ color: 'oklch(0.55 0 0)' }}>📝 {ese.note}</p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {ese.note && (
+                    <button
+                      onClick={() => setNoteAperta(noteAperta === ese.id ? null : ese.id)}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
+                      style={{
+                        background: noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
+                        color: noteAperta === ese.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
+                        border: `1px solid ${noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+                      }}
+                      title="Visualizza note del coach"
+                    >
+                      <FontAwesomeIcon icon={faCircleInfo} className="text-sm" />
+                    </button>
+                  )}
+                  {ese.esercizi.video_url && (
+                    <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
+                      className="text-xs px-2 py-1 rounded-lg"
+                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>▶</a>
+                  )}
                 </div>
-              )}
+              </div>
 
               <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
                 {eseLog?.serie.map((serie, serieIndex) => {
@@ -503,7 +550,7 @@ export default function AllenamentoPage() {
               color: progressoPerc === 100 ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
               cursor: progressoPerc < 100 ? 'not-allowed' : 'pointer',
             }}>
-            {saving ? 'Salvataggio...' : progressoPerc === 100 ? '🎉 Completa allenamento' : `${progressoPerc}% — continua!`}
+            {saving ? 'Salvataggio...' : progressoPerc === 100 ? <><FontAwesomeIcon icon={faTrophy} /> Completa allenamento</> : `${progressoPerc}% — continua!`}
           </button>
         </div>
       )}
@@ -514,7 +561,7 @@ export default function AllenamentoPage() {
           {!isViewMode && (
             <div className="rounded-2xl p-6 text-center"
               style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
-              <p className="text-4xl mb-2">🎉</p>
+              <p className="text-4xl mb-2"><FontAwesomeIcon icon={faTrophy} /></p>
               <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
               <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>
                 {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie

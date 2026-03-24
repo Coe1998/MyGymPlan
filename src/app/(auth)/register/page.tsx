@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole } from '@/types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDumbbell, faPersonRunning } from '@fortawesome/free-solid-svg-icons'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -57,8 +59,8 @@ export default function RegisterPage() {
         {/* Role selector */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { value: 'coach', label: 'Sono un Coach', icon: '🏋️', desc: 'Gestisco atleti e schede' },
-            { value: 'cliente', label: 'Sono un Atleta', icon: '🏃', desc: 'Seguo le schede del mio coach' },
+            { value: 'coach', label: 'Sono un Coach', icon: faDumbbell, desc: 'Gestisco atleti e schede' },
+            { value: 'cliente', label: 'Sono un Atleta', icon: faPersonRunning, desc: 'Seguo le schede del mio coach' },
           ].map((r) => (
             <button
               key={r.value}
@@ -69,7 +71,7 @@ export default function RegisterPage() {
                 border: role === r.value ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid oklch(1 0 0 / 8%)',
               }}
             >
-              <div className="text-2xl mb-2">{r.icon}</div>
+              <div className="text-2xl mb-2"><FontAwesomeIcon icon={r.icon} /></div>
               <div className="font-semibold text-sm" style={{ color: role === r.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.97 0 0)' }}>
                 {r.label}
               </div>

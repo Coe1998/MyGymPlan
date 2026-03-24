@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDumbbell, faCalendarDays, faHand, faClipboardList, faPersonRunning, faCircleCheck, faPause } from '@fortawesome/free-solid-svg-icons'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -62,7 +64,7 @@ export default async function ClienteDashboard() {
       {/* Header */}
       <div>
         <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.60 0.15 200)' }}>
-          {saluto} 👋
+          {saluto} <FontAwesomeIcon icon={faHand} />
         </p>
         <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
           {profile.full_name}
@@ -75,14 +77,14 @@ export default async function ClienteDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { label: 'Sessioni totali', value: totaleSessioni ?? 0, icon: '🏋️', color: 'oklch(0.60 0.15 200)' },
-          { label: 'Questa settimana', value: sessioniSettimana ?? 0, icon: '📅', color: 'oklch(0.70 0.19 46)' },
+          { label: 'Sessioni totali', value: totaleSessioni ?? 0, icon: faDumbbell, color: 'oklch(0.60 0.15 200)' },
+          { label: 'Questa settimana', value: sessioniSettimana ?? 0, icon: faCalendarDays, color: 'oklch(0.70 0.19 46)' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl p-6 space-y-3"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <div className="flex items-center justify-between">
               <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
-              <span className="text-2xl">{stat.icon}</span>
+              <FontAwesomeIcon icon={stat.icon} className="text-2xl" />
             </div>
             <p className="text-5xl font-black" style={{ color: stat.color }}>{stat.value}</p>
           </div>
@@ -106,7 +108,7 @@ export default async function ClienteDashboard() {
 
         {!schedaAttiva ? (
           <div className="py-16 text-center space-y-3">
-            <p className="text-5xl">📋</p>
+            <p className="text-5xl"><FontAwesomeIcon icon={faClipboardList} /></p>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda assegnata</p>
             <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
               Il tuo coach non ti ha ancora assegnato una scheda
@@ -170,7 +172,7 @@ export default async function ClienteDashboard() {
 
         {!ultimeSessioni || ultimeSessioni.length === 0 ? (
           <div className="py-12 text-center space-y-3">
-            <p className="text-4xl">🏃</p>
+            <p className="text-4xl"><FontAwesomeIcon icon={faPersonRunning} /></p>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun allenamento ancora</p>
             <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
               Inizia il tuo primo allenamento dalla scheda qui sopra
@@ -183,7 +185,7 @@ export default async function ClienteDashboard() {
                 style={{ borderBottom: i < ultimeSessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                   style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
-                  {s.completata ? '✅' : '⏸️'}
+                  {s.completata ? <FontAwesomeIcon icon={faCircleCheck} /> : <FontAwesomeIcon icon={faPause} />}
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>

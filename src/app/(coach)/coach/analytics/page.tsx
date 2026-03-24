@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faUsers, faClipboardList, faCircleCheck, faDumbbell,
+  faTriangleExclamation, faChartBar, faHeart, faComment,
+  faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
+} from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 interface ClienteStats {
   id: string
@@ -151,16 +158,16 @@ export default function AnalyticsPage() {
     return { color: 'oklch(0.75 0.15 27)', bg: 'oklch(0.65 0.22 27 / 15%)', label: 'Attenzione' }
   }
 
-  const EMOJI = ['', '😫', '😕', '😐', '🙂', '🤩']
+  const EMOJI: (IconDefinition | null)[] = [null, faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars]
 
   const clientiConAlert = clientiStats.filter(c => c.alert.length > 0)
   const clientiAttivi = clientiStats.filter(c => c.giorni_inattivo !== null && c.giorni_inattivo <= 7).length
 
   const overviewStats = [
-    { label: 'Clienti totali', value: totaleClienti, icon: '👥', color: 'oklch(0.60 0.15 200)' },
-    { label: 'Schede create', value: totaleSchede, icon: '📋', color: 'oklch(0.70 0.19 46)' },
-    { label: 'Assegnazioni attive', value: totaleAssegnazioni, icon: '✅', color: 'oklch(0.65 0.18 150)' },
-    { label: 'Sessioni totali', value: totaleSessioni, icon: '🏋️', color: 'oklch(0.65 0.15 300)' },
+    { label: 'Clienti totali', value: totaleClienti, icon: faUsers, color: 'oklch(0.60 0.15 200)' },
+    { label: 'Schede create', value: totaleSchede, icon: faClipboardList, color: 'oklch(0.70 0.19 46)' },
+    { label: 'Assegnazioni attive', value: totaleAssegnazioni, icon: faCircleCheck, color: 'oklch(0.65 0.18 150)' },
+    { label: 'Sessioni totali', value: totaleSessioni, icon: faDumbbell, color: 'oklch(0.65 0.15 300)' },
   ]
 
   return (
@@ -179,7 +186,7 @@ export default function AnalyticsPage() {
       {!loading && clientiConAlert.length > 0 && (
         <div className="rounded-2xl p-4 flex items-start gap-3"
           style={{ background: 'oklch(0.65 0.22 27 / 10%)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-          <span className="text-xl flex-shrink-0">⚠️</span>
+          <FontAwesomeIcon icon={faTriangleExclamation} className="text-xl flex-shrink-0" />
           <div>
             <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0.10 46)' }}>
               {clientiConAlert.length} {clientiConAlert.length === 1 ? 'cliente richiede' : 'clienti richiedono'} attenzione
@@ -198,7 +205,7 @@ export default function AnalyticsPage() {
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <div className="flex items-center justify-between">
               <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
-              <span>{stat.icon}</span>
+              <FontAwesomeIcon icon={stat.icon} />
             </div>
             <p className="text-3xl lg:text-4xl font-black" style={{ color: stat.color }}>{stat.value}</p>
           </div>
@@ -208,9 +215,9 @@ export default function AnalyticsPage() {
       {/* Tabs */}
       <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
         {[
-          { id: 'overview' as VistaTab, label: 'Attività', icon: '📊' },
-          { id: 'benessere' as VistaTab, label: 'Benessere', icon: '❤️' },
-          { id: 'attivita' as VistaTab, label: 'Alert', icon: '⚠️', badge: clientiConAlert.length },
+          { id: 'overview' as VistaTab, label: 'Attività', icon: faChartBar },
+          { id: 'benessere' as VistaTab, label: 'Benessere', icon: faHeart },
+          { id: 'attivita' as VistaTab, label: 'Alert', icon: faTriangleExclamation, badge: clientiConAlert.length },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all relative"
@@ -218,7 +225,7 @@ export default function AnalyticsPage() {
               background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
               color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
             }}>
-            <span>{t.icon}</span>
+            <FontAwesomeIcon icon={t.icon} />
             <span className="hidden sm:inline">{t.label}</span>
             {t.badge && t.badge > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
@@ -237,7 +244,7 @@ export default function AnalyticsPage() {
       ) : clientiStats.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-5xl">📊</p>
+          <p className="text-5xl"><FontAwesomeIcon icon={faChartBar} /></p>
           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
           <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi clienti per vedere le analytics</p>
         </div>
@@ -272,7 +279,7 @@ export default function AnalyticsPage() {
                         <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
                         {c.alert.length > 0 && (
                           <p className="text-xs" style={{ color: 'oklch(0.75 0.15 27)' }}>
-                            ⚠️ {c.alert.length} alert
+                            <FontAwesomeIcon icon={faTriangleExclamation} /> {c.alert.length} alert
                           </p>
                         )}
                       </div>
@@ -386,9 +393,9 @@ export default function AnalyticsPage() {
                             <p className="text-xs mb-1" style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.50 0 0)' }}>
                               {item.label}
                             </p>
-                            <p className="text-2xl">{EMOJI[item.value]}</p>
+                            <p className="text-2xl">{EMOJI[item.value] && <FontAwesomeIcon icon={EMOJI[item.value]!} />}</p>
                             <p className="text-xs font-bold mt-1" style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.97 0 0)' }}>
-                              {item.value}/5 {item.warn && '⚠️'}
+                              {item.value}/5 {item.warn && <FontAwesomeIcon icon={faTriangleExclamation} />}
                             </p>
                           </div>
                         ))}
@@ -400,7 +407,7 @@ export default function AnalyticsPage() {
                       <div className="px-4 py-3 rounded-xl"
                         style={{ background: 'oklch(0.22 0 0)' }}>
                         <p className="text-xs italic" style={{ color: 'oklch(0.60 0 0)' }}>
-                          💬 "{c.ultimo_checkin.note}"
+                          <FontAwesomeIcon icon={faComment} /> "{c.ultimo_checkin.note}"
                         </p>
                       </div>
                     )}
@@ -416,7 +423,7 @@ export default function AnalyticsPage() {
               {clientiConAlert.length === 0 ? (
                 <div className="rounded-2xl py-16 text-center space-y-3"
                   style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <p className="text-5xl">✅</p>
+                  <p className="text-5xl"><FontAwesomeIcon icon={faCircleCheck} /></p>
                   <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Tutto ok!</p>
                   <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente richiede attenzione</p>
                 </div>
@@ -447,7 +454,7 @@ export default function AnalyticsPage() {
                         {c.alert.map((alert, i) => (
                           <span key={i} className="text-xs px-3 py-1.5 rounded-full font-medium"
                             style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.85 0.10 46)' }}>
-                            ⚠️ {alert}
+                            <FontAwesomeIcon icon={faTriangleExclamation} /> {alert}
                           </span>
                         ))}
                       </div>

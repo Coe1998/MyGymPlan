@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTriangleExclamation, faCircleCheck, faUsers } from '@fortawesome/free-solid-svg-icons'
 
 interface Cliente {
   cliente_id: string
@@ -138,13 +140,13 @@ export default function ClientiPage() {
         {error && (
           <div className="px-4 py-3 rounded-xl text-sm"
             style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-            ⚠️ {error}
+            <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
           </div>
         )}
         {success && (
           <div className="px-4 py-3 rounded-xl text-sm"
             style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
-            ✅ {success}
+            <FontAwesomeIcon icon={faCircleCheck} /> {success}
           </div>
         )}
       </div>
@@ -166,7 +168,7 @@ export default function ClientiPage() {
           </div>
         ) : clienti.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="text-5xl">👥</div>
+            <div className="text-5xl"><FontAwesomeIcon icon={faUsers} /></div>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
             <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi il tuo primo cliente usando il form qui sopra</p>
           </div>

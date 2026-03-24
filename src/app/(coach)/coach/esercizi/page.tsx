@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTriangleExclamation, faDumbbell } from '@fortawesome/free-solid-svg-icons'
 
 interface Esercizio {
   id: string
@@ -246,7 +248,7 @@ export default function EserciziPage() {
           {error && (
             <div className="px-4 py-3 rounded-xl text-sm"
               style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-              ⚠️ {error}
+              <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
             </div>
           )}
 
@@ -309,7 +311,7 @@ export default function EserciziPage() {
           </div>
         ) : esercizi.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="text-5xl">💪</div>
+            <div className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></div>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun esercizio ancora</p>
             <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
               Crea il tuo primo esercizio per iniziare a costruire le schede
@@ -330,7 +332,7 @@ export default function EserciziPage() {
                 {/* Icona */}
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0 mt-0.5"
                   style={{ background: 'oklch(0.70 0.19 46 / 10%)' }}>
-                  💪
+                  <FontAwesomeIcon icon={faDumbbell} />
                 </div>
 
                 {/* Info */}

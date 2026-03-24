@@ -5,11 +5,13 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHouse, faDumbbell, faChartLine, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
-  { href: '/cliente/dashboard', label: 'Home', icon: '🏠' },
-  { href: '/cliente/allenamento', label: 'Allena', icon: '💪' },
-  { href: '/cliente/progressi', label: 'Progressi', icon: '📈' },
+  { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
+  { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
+  { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
 ]
 
 export default function ClienteSidebar({ profile }: { profile: Profile }) {
@@ -58,7 +60,7 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
                   color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.55 0 0)',
                   borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
                 }}>
-                <span className="text-base">{item.icon}</span>
+                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
                 {item.label}
               </Link>
             )
@@ -82,7 +84,7 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
           <button onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
             style={{ color: 'oklch(0.45 0 0)' }}>
-            <span>🚪</span>
+            <FontAwesomeIcon icon={faRightFromBracket} />
             Esci
           </button>
         </div>
@@ -101,7 +103,7 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
             <Link key={item.href} href={item.href}
               className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
               style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
-              <span className="text-2xl">{item.icon}</span>
+              <FontAwesomeIcon icon={item.icon} className="text-2xl" />
               <span className="text-xs font-medium"
                 style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
                 {item.label}

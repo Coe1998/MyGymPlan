@@ -1,6 +1,8 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faMoon, faSun, faDownload } from '@fortawesome/free-solid-svg-icons'
 
 interface EsercizioHighlight {
   nome: string
@@ -193,7 +195,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
               color: tema === t ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
               border: '1px solid oklch(1 0 0 / 8%)',
             }}>
-            {t === 'dark' ? '🌙 Dark' : '☀️ Light'}
+            {t === 'dark' ? <><FontAwesomeIcon icon={faMoon} /> Dark</> : <><FontAwesomeIcon icon={faSun} /> Light</>}
           </button>
         ))}
       </div>
@@ -281,7 +283,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
             color: 'oklch(0.13 0 0)',
             cursor: downloading ? 'not-allowed' : 'pointer',
           }}>
-          {downloading ? 'Generando...' : '⬇️ Scarica / Condividi'}
+          {downloading ? 'Generando...' : <><FontAwesomeIcon icon={faDownload} /> Scarica / Condividi</>}
         </button>
       </div>
     </div>

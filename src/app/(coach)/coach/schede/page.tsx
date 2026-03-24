@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faClipboardList, faCircleCheck, faUser, faUsers, faHourglass, faCopy, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 interface Scheda {
   id: string
@@ -123,7 +125,7 @@ export default function SchedePage() {
           </div>
         ) : schede.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="text-5xl">📋</div>
+            <div className="text-5xl"><FontAwesomeIcon icon={faClipboardList} /></div>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda ancora</p>
             <button onClick={() => router.push('/coach/schede/nuova')}
               className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
@@ -146,7 +148,7 @@ export default function SchedePage() {
                   {/* Icona */}
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                     style={{ background: isAssegnata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 10%)' }}>
-                    {isAssegnata ? '✅' : '📋'}
+                    {isAssegnata ? <FontAwesomeIcon icon={faCircleCheck} /> : <FontAwesomeIcon icon={faClipboardList} />}
                   </div>
 
                   {/* Info */}
@@ -165,8 +167,8 @@ export default function SchedePage() {
                         <span className="text-xs px-2 py-0.5 rounded-full"
                           style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
                           {assegnazioniAttive.length === 1
-                            ? `👤 ${(assegnazioniAttive[0] as any).profiles?.full_name?.split(' ')[0]}`
-                            : `👥 ${assegnazioniAttive.length} clienti`}
+                            ? <><FontAwesomeIcon icon={faUser} /> {(assegnazioniAttive[0] as any).profiles?.full_name?.split(' ')[0]}</>
+                            : <><FontAwesomeIcon icon={faUsers} /> {assegnazioniAttive.length} clienti</>}
                         </span>
                       )}
                       <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
@@ -181,13 +183,13 @@ export default function SchedePage() {
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
                       style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)', border: '1px solid oklch(0.55 0.20 300 / 20%)' }}
                       title="Duplica">
-                      {duplicating === s.id ? '⏳' : '⧉'}
+                      {duplicating === s.id ? <FontAwesomeIcon icon={faHourglass} /> : <FontAwesomeIcon icon={faCopy} />}
                     </button>
                     <button onClick={() => handleDelete(s.id, s.nome)}
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
                       style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
                       title="Elimina">
-                      ✕
+                      <FontAwesomeIcon icon={faXmark} />
                     </button>
                   </div>
                 </div>

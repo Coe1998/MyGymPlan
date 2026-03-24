@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 interface Esercizio { id: string; nome: string; muscoli: string[] | null }
 interface SchedaEsercizio {
@@ -176,7 +178,7 @@ export default function SchedaDetailPage() {
 				{assegnazioniAttive.length > 0 && (
 				  <span className="text-xs px-2.5 py-1 rounded-full font-medium"
 					style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-					✅ {assegnazioniAttive.length === 1 ? '1 cliente' : `${assegnazioniAttive.length} clienti`}
+					<FontAwesomeIcon icon={faCircleCheck} /> {assegnazioniAttive.length === 1 ? '1 cliente' : `${assegnazioniAttive.length} clienti`}
 				  </span>
 				)}
 			  </div>
@@ -188,12 +190,12 @@ export default function SchedaDetailPage() {
 			  <button onClick={() => setShowFormAssegna(!showFormAssegna)}
 				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
 				style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-				👤 Assegna
+				<FontAwesomeIcon icon={faUser} /> Assegna
 			  </button>
 			  <button onClick={() => setEditingInfo(true)}
 				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
 				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-				✏️ Modifica
+				<FontAwesomeIcon icon={faPen} /> Modifica
 			  </button>
 			</div>
 		  </div>
@@ -295,7 +297,7 @@ export default function SchedaDetailPage() {
             {assegnaError && (
               <div className="px-4 py-3 rounded-xl text-sm"
                 style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-                ⚠️ {assegnaError}
+                <FontAwesomeIcon icon={faTriangleExclamation} /> {assegnaError}
               </div>
             )}
             <div className="flex gap-3">
@@ -319,7 +321,7 @@ export default function SchedaDetailPage() {
         {/* Lista assegnazioni */}
         {assegnazioni.length === 0 ? (
           <div className="py-10 text-center space-y-2">
-            <p className="text-3xl">👤</p>
+            <p className="text-3xl"><FontAwesomeIcon icon={faUser} /></p>
             <p className="text-sm font-medium" style={{ color: 'oklch(0.60 0 0)' }}>Nessun cliente assegnato</p>
             <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>Clicca "+ Assegna" per assegnare questa scheda a un cliente</p>
           </div>
@@ -388,7 +390,7 @@ export default function SchedaDetailPage() {
       {/* Giorni */}
       {giorni.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-4xl mb-3">📅</p>
+          <p className="text-4xl mb-3"><FontAwesomeIcon icon={faCalendarDays} /></p>
           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun giorno ancora</p>
           <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi il primo giorno di allenamento</p>
         </div>
@@ -455,7 +457,7 @@ export default function SchedaDetailPage() {
 					  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
 					  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
 					  title="Rinomina">
-					  ✏️
+					  <FontAwesomeIcon icon={faPen} />
 					</button>
 					<button
 					  onClick={() => setAddingToGiorno(addingToGiorno === giorno.id ? null : giorno.id)}
@@ -542,7 +544,7 @@ export default function SchedaDetailPage() {
                               style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>{t}</span>
                           ))}
                         </div>
-                        {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>📝 {se.note}</p>}
+                        {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}><FontAwesomeIcon icon={faNoteSticky} /> {se.note}</p>}
                       </div>
                       <div className="flex flex-wrap gap-1 max-w-32">
                         {se.esercizi?.muscoli?.slice(0, 2).map(m => (

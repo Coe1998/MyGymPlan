@@ -7,6 +7,13 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar
 } from 'recharts'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faDumbbell, faCalendarDays, faCircleCheck, faChartBar,
+  faScaleBalanced, faCamera, faUpload, faPause, faPersonRunning,
+  faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
+} from '@fortawesome/free-solid-svg-icons'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 type Tab = 'grafici' | 'misurazioni' | 'foto' | 'checkin'
 
@@ -51,7 +58,7 @@ interface Checkin {
   note: string | null
 }
 
-const EMOJI_VOTO = ['', '😫', '😕', '😐', '🙂', '🤩']
+const EMOJI_VOTO: (IconDefinition | null)[] = [null, faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars]
 
 export default function ProgressiPage() {
   const router = useRouter()
@@ -250,11 +257,11 @@ export default function ProgressiPage() {
     return Array.from(settimane.entries()).slice(-8).map(([settimana, allenamenti]) => ({ settimana, allenamenti }))
   }
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'grafici', label: 'Grafici', icon: '📊' },
-    { id: 'misurazioni', label: 'Misure', icon: '⚖️' },
-    { id: 'foto', label: 'Foto', icon: '📸' },
-    { id: 'checkin', label: 'Check-in', icon: '✅' },
+  const tabs: { id: Tab; label: string; icon: IconDefinition }[] = [
+    { id: 'grafici', label: 'Grafici', icon: faChartBar },
+    { id: 'misurazioni', label: 'Misure', icon: faScaleBalanced },
+    { id: 'foto', label: 'Foto', icon: faCamera },
+    { id: 'checkin', label: 'Check-in', icon: faCircleCheck },
   ]
 
   if (loading) {
@@ -274,15 +281,15 @@ export default function ProgressiPage() {
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Sessioni', value: sessioniCompletate, icon: '🏋️', color: 'oklch(0.60 0.15 200)' },
-          { label: 'Questa settimana', value: sessioniSettimana, icon: '📅', color: 'oklch(0.70 0.19 46)' },
-          { label: 'Check-in', value: checkins.length, icon: '✅', color: 'oklch(0.65 0.18 150)' },
+          { label: 'Sessioni', value: sessioniCompletate, icon: faDumbbell, color: 'oklch(0.60 0.15 200)' },
+          { label: 'Questa settimana', value: sessioniSettimana, icon: faCalendarDays, color: 'oklch(0.70 0.19 46)' },
+          { label: 'Check-in', value: checkins.length, icon: faCircleCheck, color: 'oklch(0.65 0.18 150)' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl p-4 space-y-2"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
             <div className="flex items-center justify-between">
               <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
-              <span>{stat.icon}</span>
+              <FontAwesomeIcon icon={stat.icon} />
             </div>
             <p className="text-3xl font-black" style={{ color: stat.color }}>{stat.value}</p>
           </div>
@@ -297,7 +304,7 @@ export default function ProgressiPage() {
               background: tab === t.id ? 'oklch(0.60 0.15 200)' : 'transparent',
               color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
             }}>
-            <span>{t.icon}</span>
+            <FontAwesomeIcon icon={t.icon} />
             <span className="hidden sm:inline">{t.label}</span>
           </button>
         ))}
@@ -340,7 +347,7 @@ export default function ProgressiPage() {
               ) : graficoDati.length < 2 ? (
                 <div className="h-40 flex items-center justify-center text-center">
                   <div>
-                    <p className="text-2xl mb-2">📊</p>
+                    <p className="text-2xl mb-2"><FontAwesomeIcon icon={faChartBar} /></p>
                     <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Servono almeno 2 sessioni per il grafico</p>
                   </div>
                 </div>
@@ -390,7 +397,7 @@ export default function ProgressiPage() {
             </div>
             {sessioni.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-4xl mb-2">🏃</p>
+                <p className="text-4xl mb-2"><FontAwesomeIcon icon={faPersonRunning} /></p>
                 <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun allenamento ancora</p>
               </div>
             ) : (
@@ -402,7 +409,7 @@ export default function ProgressiPage() {
                     onClick={() => router.push(`/cliente/allenamento?sessione=${s.id}`)}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
                       style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
-                      {s.completata ? '✅' : '⏸️'}
+                      {s.completata ? <FontAwesomeIcon icon={faCircleCheck} /> : <FontAwesomeIcon icon={faPause} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>
@@ -501,7 +508,7 @@ export default function ProgressiPage() {
             </div>
             {misurazioni.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-4xl mb-2">⚖️</p>
+                <p className="text-4xl mb-2"><FontAwesomeIcon icon={faScaleBalanced} /></p>
                 <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna misurazione ancora</p>
               </div>
             ) : (
@@ -555,14 +562,14 @@ export default function ProgressiPage() {
             <button onClick={() => fileRef.current?.click()} disabled={uploadingFoto}
               className="w-full py-3 rounded-xl text-sm font-semibold border-2 border-dashed transition-all"
               style={{ background: 'oklch(0.22 0 0)', borderColor: 'oklch(1 0 0 / 15%)', color: 'oklch(0.60 0 0)' }}>
-              {uploadingFoto ? '📤 Caricamento...' : '📸 Carica foto'}
+              {uploadingFoto ? <><FontAwesomeIcon icon={faUpload} /> Caricamento...</> : <><FontAwesomeIcon icon={faCamera} /> Carica foto</>}
             </button>
           </div>
 
           {foto.length === 0 ? (
             <div className="rounded-2xl py-16 text-center"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="text-5xl mb-3">📸</p>
+              <p className="text-5xl mb-3"><FontAwesomeIcon icon={faCamera} /></p>
               <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna foto ancora</p>
               <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>Carica la tua prima foto per tracciare i progressi visivi</p>
             </div>
@@ -608,7 +615,7 @@ export default function ProgressiPage() {
               {checkinOggi && (
                 <span className="text-xs px-3 py-1 rounded-full"
                   style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                  ✅ Completato
+                  <FontAwesomeIcon icon={faCircleCheck} /> Completato
                 </span>
               )}
             </div>
@@ -623,7 +630,7 @@ export default function ProgressiPage() {
                 ].map(item => (
                   <div key={item.label} className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
                     <p className="text-xs mb-1" style={{ color: 'oklch(0.55 0 0)' }}>{item.label}</p>
-                    <p className="text-2xl">{EMOJI_VOTO[item.value]}</p>
+                    <p className="text-2xl">{EMOJI_VOTO[item.value] && <FontAwesomeIcon icon={EMOJI_VOTO[item.value]!} />}</p>
                     <p className="text-xs font-bold mt-1" style={{ color: 'oklch(0.97 0 0)' }}>{item.value}/5</p>
                   </div>
                 ))}
@@ -646,7 +653,7 @@ export default function ProgressiPage() {
                             background: newCheckin[item.key] === v ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
                             border: newCheckin[item.key] === v ? '2px solid oklch(0.60 0.15 200)' : '2px solid transparent',
                           }}>
-                          {EMOJI_VOTO[v]}
+                          {EMOJI_VOTO[v] ? <FontAwesomeIcon icon={EMOJI_VOTO[v]!} /> : null}
                         </button>
                       ))}
                     </div>
@@ -698,7 +705,7 @@ export default function ProgressiPage() {
                         { label: 'Motivazione', value: c.motivazione },
                       ].map(item => (
                         <div key={item.label} className="text-center">
-                          <p className="text-xl">{EMOJI_VOTO[item.value]}</p>
+                          <p className="text-xl">{EMOJI_VOTO[item.value] && <FontAwesomeIcon icon={EMOJI_VOTO[item.value]!} />}</p>
                           <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{item.label.slice(0, 3)}</p>
                         </div>
                       ))}

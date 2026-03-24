@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
 
 export default function NuovaSchedaPage() {
   const [nome, setNome] = useState('')
@@ -106,7 +108,7 @@ export default function NuovaSchedaPage() {
               background: isTemplate ? 'oklch(0.55 0.20 300)' : 'oklch(0.30 0 0)',
               border: isTemplate ? 'none' : '1px solid oklch(1 0 0 / 20%)',
             }}>
-            {isTemplate && <span className="text-white text-xs">✓</span>}
+            {isTemplate && <FontAwesomeIcon icon={faCheck} style={{ color: 'white' }} className="text-xs" />}
           </div>
           <div className="text-left">
             <p className="text-sm font-medium" style={{ color: 'oklch(0.97 0 0)' }}>Salva come template</p>
@@ -119,7 +121,7 @@ export default function NuovaSchedaPage() {
         {error && (
           <div className="px-4 py-3 rounded-xl text-sm"
             style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-            ⚠️ {error}
+            <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
           </div>
         )}
 

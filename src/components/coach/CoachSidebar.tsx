@@ -5,13 +5,15 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChartBar, faUsers, faClipboardList, faDumbbell, faChartLine, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
-  { href: '/coach/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/coach/clienti', label: 'Clienti', icon: '👥' },
-  { href: '/coach/schede', label: 'Schede', icon: '📋' },
-  { href: '/coach/esercizi', label: 'Esercizi', icon: '💪' },
-  { href: '/coach/analytics', label: 'Analytics', icon: '📈' },
+  { href: '/coach/dashboard', label: 'Dashboard', icon: faChartBar },
+  { href: '/coach/clienti', label: 'Clienti', icon: faUsers },
+  { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
+  { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
+  { href: '/coach/analytics', label: 'Analytics', icon: faChartLine },
 ]
 
 export default function CoachSidebar({ profile }: { profile: Profile }) {
@@ -60,7 +62,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
                   color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.55 0 0)',
                   borderLeft: isActive ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
                 }}>
-                <span className="text-base">{item.icon}</span>
+                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
                 {item.label}
               </Link>
             )
@@ -84,7 +86,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
           <button onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
             style={{ color: 'oklch(0.45 0 0)' }}>
-            <span>🚪</span>
+            <FontAwesomeIcon icon={faRightFromBracket} />
             Esci
           </button>
         </div>
@@ -105,7 +107,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
               style={{
                 background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent',
               }}>
-              <span className="text-xl">{item.icon}</span>
+              <FontAwesomeIcon icon={item.icon} className="text-xl" />
               <span className="text-xs font-medium"
                 style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
                 {item.label}
