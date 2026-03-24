@@ -18,7 +18,15 @@ export default async function AtletaLayout({ children }: { children: React.React
   return (
     <div className="min-h-screen" style={{ background: 'oklch(0.13 0 0)' }}>
       <AtletaSidebar profile={profile} />
-      <main className="lg:ml-64 p-4 lg:p-8 pb-24 lg:pb-8">
+      <main
+        className="lg:ml-64 pb-24 lg:pb-8"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+          paddingBottom: '',
+        }}
+      >
         {children}
       </main>
     </div>
