@@ -8,7 +8,7 @@ import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faHouse, faDumbbell, faClipboardList, faListCheck,
-  faRightFromBracket, faRocket, faLock,
+  faRightFromBracket, faRocket, faLock, faGear,
 } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/atleta/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/atleta/schede', label: 'Schede', icon: faClipboardList },
   { href: '/atleta/esercizi', label: 'Esercizi', icon: faListCheck },
+  { href: '/atleta/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
 const navItemsLocked = [

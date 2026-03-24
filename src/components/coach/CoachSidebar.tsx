@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartBar, faUsers, faClipboardList, faDumbbell, faChartLine, faRightFromBracket } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar, faUsers, faClipboardList, faDumbbell, faChartLine, faRightFromBracket, faGear } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
   { href: '/coach/dashboard', label: 'Dashboard', icon: faChartBar },
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
   { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
   { href: '/coach/analytics', label: 'Analytics', icon: faChartLine },
+  { href: '/coach/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
 export default function CoachSidebar({ profile }: { profile: Profile }) {
@@ -37,10 +38,10 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-black"
               style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-              M
+              B
             </div>
             <div>
-              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>MyGymPlan</p>
+              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</p>
               <p className="text-xs" style={{ color: 'oklch(0.70 0.19 46)' }}>Area Coach</p>
             </div>
           </div>
