@@ -54,58 +54,101 @@ export default function AnalyticsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: clientiData } = await supabase
-      .from('coach_clienti')
-      .select('cliente_id, profiles!coach_clienti_cliente_id_fkey (id, full_name)')
-      .eq('coach_id', user.id)
-    setTotaleClienti(clientiData?.length ?? 0)
+    // ── 1. Fetch base in parallelo ────────────────────────────────
+    const [clientiRes, schedeRes, assegnazioniRes] = await Promise.all([
+      supabase.from('coach_clienti')
+        .select('cliente_id, profiles!coach_clienti_cliente_id_fkey (id, full_name)')
+        .eq('coach_id', user.id),
+      supabase.from('schede').select('id').eq('coach_id', user.id),
+      supabase.from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true),
+    ])
 
-    const { data: schedeData } = await supabase
-      .from('schede').select('id').eq('coach_id', user.id)
-    setTotaleSchede(schedeData?.length ?? 0)
+    const clientiData = clientiRes.data ?? []
+    setTotaleClienti(clientiData.length)
+    setTotaleSchede(schedeRes.data?.length ?? 0)
+    setTotaleAssegnazioni(assegnazioniRes.data?.length ?? 0)
 
-    const { data: assegnazioniData } = await supabase
-      .from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true)
-    setTotaleAssegnazioni(assegnazioniData?.length ?? 0)
+    if (clientiData.length === 0) { setLoading(false); return }
 
+    const clienteIds = clientiData.map(c => c.cliente_id)
+
+    // ── 2. Fetch aggregate per TUTTI i clienti in parallelo ───────
+    const [sessRes, checkinRes, misRes, assegAttiveRes] = await Promise.all([
+      // Tutte le sessioni di tutti i clienti
+      supabase.from('sessioni')
+        .select('id, data, cliente_id')
+        .in('cliente_id', clienteIds)
+        .order('data', { ascending: false }),
+      // Ultimi check-in per tutti i clienti (1 per cliente)
+      supabase.from('checkin')
+        .select('*')
+        .in('cliente_id', clienteIds)
+        .order('data', { ascending: false }),
+      // Misurazioni peso per tutti i clienti
+      supabase.from('misurazioni')
+        .select('cliente_id, data, peso_kg')
+        .in('cliente_id', clienteIds)
+        .not('peso_kg', 'is', null)
+        .order('data', { ascending: true }),
+      // Assegnazioni attive per tutti i clienti
+      supabase.from('assegnazioni')
+        .select('cliente_id')
+        .in('cliente_id', clienteIds)
+        .eq('coach_id', user.id)
+        .eq('attiva', true),
+    ])
+
+    const tutteSessioni = sessRes.data ?? []
+    const tuttiCheckin = checkinRes.data ?? []
+    const tutteMisurazioni = misRes.data ?? []
+    const tutteAssegAttive = assegAttiveRes.data ?? []
+
+    // Conta sessioni totali per il badge
+    const sessioniPerCliente = new Map<string, typeof tutteSessioni>()
+    for (const s of tutteSessioni) {
+      if (!sessioniPerCliente.has(s.cliente_id)) sessioniPerCliente.set(s.cliente_id, [])
+      sessioniPerCliente.get(s.cliente_id)!.push(s)
+    }
+    setTotaleSessioni(tutteSessioni.length)
+
+    // Ultimo checkin per cliente
+    const ultimoCheckinPerCliente = new Map<string, any>()
+    for (const c of tuttiCheckin) {
+      if (!ultimoCheckinPerCliente.has(c.cliente_id)) ultimoCheckinPerCliente.set(c.cliente_id, c)
+    }
+
+    // Misurazioni per cliente
+    const misurazioniPerCliente = new Map<string, Misurazione[]>()
+    for (const m of tutteMisurazioni) {
+      if (!misurazioniPerCliente.has(m.cliente_id)) misurazioniPerCliente.set(m.cliente_id, [])
+      misurazioniPerCliente.get(m.cliente_id)!.push({
+        data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
+        peso_kg: parseFloat(m.peso_kg),
+      })
+    }
+
+    // Assegnazioni attive per cliente
+    const assegAttivePerCliente = new Map<string, number>()
+    for (const a of tutteAssegAttive) {
+      assegAttivePerCliente.set(a.cliente_id, (assegAttivePerCliente.get(a.cliente_id) ?? 0) + 1)
+    }
+
+    // ── 3. Costruisci stats per ogni cliente (tutto in memoria) ───
     const stats: ClienteStats[] = []
-    let sessioniTot = 0
-
-    for (const c of (clientiData ?? [])) {
+    for (const c of clientiData) {
       const clienteId = c.cliente_id
       const profile = (c as any).profiles
-
-      const { data: schedeAttive } = await supabase
-        .from('assegnazioni').select('id')
-        .eq('cliente_id', clienteId).eq('coach_id', user.id).eq('attiva', true)
-
-      const { data: sessioni } = await supabase
-        .from('sessioni').select('id, data')
-        .eq('cliente_id', clienteId).order('data', { ascending: false })
-
-      sessioniTot += sessioni?.length ?? 0
-      const ultimaSessione = sessioni && sessioni.length > 0 ? sessioni[0].data : null
+      const sessioni = sessioniPerCliente.get(clienteId) ?? []
+      const ultimaSessione = sessioni.length > 0 ? sessioni[0].data : null
       const giorniInattivo = ultimaSessione
         ? Math.floor((Date.now() - new Date(ultimaSessione).getTime()) / (1000 * 60 * 60 * 24))
         : null
+      const ultimoCheckin = ultimoCheckinPerCliente.get(clienteId) ?? null
 
-      // Ultimo check-in
-      const { data: checkinData } = await supabase
-        .from('checkin').select('*')
-        .eq('cliente_id', clienteId)
-        .order('data', { ascending: false })
-        .limit(1)
-      const ultimoCheckin = checkinData && checkinData.length > 0 ? checkinData[0] : null
-
-      // Calcola alert automatici
       const alert: string[] = []
-
-      if (giorniInattivo !== null && giorniInattivo > 10 && (sessioni?.length ?? 0) > 0) {
+      if (giorniInattivo !== null && giorniInattivo > 10 && sessioni.length > 0)
         alert.push(`Inattivo da ${giorniInattivo} giorni`)
-      }
-      if ((sessioni?.length ?? 0) === 0) {
-        alert.push('Non si è mai allenato')
-      }
+      if (sessioni.length === 0) alert.push('Non si è mai allenato')
       if (ultimoCheckin) {
         if (ultimoCheckin.stress >= 4) alert.push('Stress elevato')
         if (ultimoCheckin.energia <= 2) alert.push('Energia bassa')
@@ -117,33 +160,20 @@ export default function AnalyticsPage() {
         alert.push('Nessun check-in ancora')
       }
 
-      // Misurazioni peso
-      const { data: misData } = await supabase
-        .from('misurazioni')
-        .select('data, peso_kg')
-        .eq('cliente_id', clienteId)
-        .not('peso_kg', 'is', null)
-        .order('data', { ascending: true })
-      const misurazioni: Misurazione[] = (misData ?? []).map((m: any) => ({
-        data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
-        peso_kg: parseFloat(m.peso_kg),
-      }))
-
       stats.push({
         id: clienteId,
         full_name: profile?.full_name,
-        schede_attive: schedeAttive?.length ?? 0,
-        totale_sessioni: sessioni?.length ?? 0,
+        schede_attive: assegAttivePerCliente.get(clienteId) ?? 0,
+        totale_sessioni: sessioni.length,
         ultima_sessione: ultimaSessione,
         giorni_inattivo: giorniInattivo,
         ultimo_checkin: ultimoCheckin,
-        misurazioni,
+        misurazioni: misurazioniPerCliente.get(clienteId) ?? [],
         alert,
       })
     }
 
-    setTotaleSessioni(sessioniTot)
-    // Ordina: prima chi ha alert, poi per inattività
+    setTotaleSessioni(tutteSessioni.length)
     stats.sort((a, b) => {
       if (a.alert.length !== b.alert.length) return b.alert.length - a.alert.length
       if (a.giorni_inattivo === null) return 1

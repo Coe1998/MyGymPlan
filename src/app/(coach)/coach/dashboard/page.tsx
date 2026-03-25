@@ -12,16 +12,17 @@ export default async function CoachDashboard() {
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'coach') redirect('/cliente/dashboard')
 
-  const { data: clienti } = await supabase
-    .from('coach_clienti')
-    .select(`cliente_id, created_at, profiles!coach_clienti_cliente_id_fkey (id, full_name)`)
-    .eq('coach_id', user.id)
+  const [clientiRes, schedeRes, assegnazioniRes] = await Promise.all([
+    supabase.from('coach_clienti')
+      .select(`cliente_id, created_at, profiles!coach_clienti_cliente_id_fkey (id, full_name)`)
+      .eq('coach_id', user.id),
+    supabase.from('schede').select('id').eq('coach_id', user.id),
+    supabase.from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true),
+  ])
 
-  const { data: schede } = await supabase
-    .from('schede').select('id').eq('coach_id', user.id)
-
-  const { data: assegnazioni } = await supabase
-    .from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true)
+  const clienti = clientiRes.data
+  const schede = schedeRes.data
+  const assegnazioni = assegnazioniRes.data
 
   const stats = [
     { label: 'Clienti attivi', value: clienti?.length ?? 0, icon: faUsers, color: 'oklch(0.60 0.15 200)' },

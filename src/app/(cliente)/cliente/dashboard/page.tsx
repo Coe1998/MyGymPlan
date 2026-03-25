@@ -14,46 +14,26 @@ export default async function ClienteDashboard() {
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'cliente') redirect('/coach/dashboard')
 
-  // Schede assegnate attive
-  const { data: assegnazioni } = await supabase
-    .from('assegnazioni')
-    .select(`
-      id, data_inizio, data_fine, attiva,
-      schede ( id, nome, descrizione,
-        scheda_giorni ( id, nome, ordine )
-      )
-    `)
-    .eq('cliente_id', user.id)
-    .eq('attiva', true)
-    .order('created_at', { ascending: false })
-
-  // Ultime sessioni
-  const { data: ultimeSessioni } = await supabase
-    .from('sessioni')
-    .select(`
-      id, data, completata,
-      scheda_giorni ( nome )
-    `)
-    .eq('cliente_id', user.id)
-    .order('data', { ascending: false })
-    .limit(5)
-
-  // Totale sessioni
-  const { count: totaleSessioni } = await supabase
-    .from('sessioni')
-    .select('id', { count: 'exact' })
-    .eq('cliente_id', user.id)
-
-  // Sessioni questa settimana
   const inizioSettimana = new Date()
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
 
-  const { count: sessioniSettimana } = await supabase
-    .from('sessioni')
-    .select('id', { count: 'exact' })
-    .eq('cliente_id', user.id)
-    .gte('data', inizioSettimana.toISOString())
+  const [assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes] = await Promise.all([
+    supabase.from('assegnazioni')
+      .select(`id, data_inizio, data_fine, attiva, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
+      .eq('cliente_id', user.id).eq('attiva', true).order('created_at', { ascending: false }),
+    supabase.from('sessioni')
+      .select(`id, data, completata, scheda_giorni ( nome )`)
+      .eq('cliente_id', user.id).order('data', { ascending: false }).limit(5),
+    supabase.from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id),
+    supabase.from('sessioni').select('id', { count: 'exact' })
+      .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString()),
+  ])
+
+  const assegnazioni = assegnazioniRes.data
+  const ultimeSessioni = ultimeSessioniRes.data
+  const totaleSessioni = totaleRes.count
+  const sessioniSettimana = settimanaRes.count
 
   const ora = new Date().getHours()
   const saluto = ora < 12 ? 'Buongiorno' : ora < 18 ? 'Buon pomeriggio' : 'Buonasera'
