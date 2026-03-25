@@ -138,7 +138,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     // Logo PNG reale
     const logoEl = document.getElementById('__bynari_logo__') as HTMLImageElement | null
     if (logoEl && logoEl.complete && logoEl.naturalWidth > 0) {
-      const lH = isDark ? 38 : 52
+      const lH = isDark ? 38 : 62
       const lW = Math.round(logoEl.naturalWidth * lH / logoEl.naturalHeight)
       ctx.drawImage(logoEl, (W - lW) / 2, y + 4, lW, lH)
     }
