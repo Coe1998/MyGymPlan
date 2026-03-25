@@ -85,12 +85,12 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     // Nome giorno — prefisso piccolo sopra, parola grande sotto
     ctx.textAlign = 'center'
     if (prefisso) {
-      ctx.font = '900 11px "Barlow Condensed", sans-serif'
+      ctx.font = '900 11px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = accent
       ctx.fillText(prefisso.toUpperCase(), W / 2, y + 13)
       y += 20
     }
-    ctx.font = '900 30px "Barlow Condensed", sans-serif'
+    ctx.font = '900 30px "Big Shoulders Display", sans-serif'
     ctx.fillStyle = textPrimary
     ctx.fillText(parola.toUpperCase(), W / 2, y + 30)
     y += prefisso ? 48 : 52
@@ -113,16 +113,16 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
       // Label
       ctx.font = row.isAccent
-        ? '700 11px "Barlow Condensed", sans-serif'
-        : '400 11px "Barlow Condensed", sans-serif'
+        ? '700 11px "Big Shoulders Display", sans-serif'
+        : '400 11px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = row.isAccent ? accent : textSecondary
       ctx.textAlign = 'left'
       ctx.fillText(row.label, padH, rowY + (row.isAccent ? 22 : 26))
 
       // Valore
       ctx.font = row.isAccent
-        ? '800 16px "Barlow Condensed", sans-serif'
-        : '800 21px "Barlow Condensed", sans-serif'
+        ? '800 16px "Big Shoulders Display", sans-serif'
+        : '800 21px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = row.isAccent ? accent : textPrimary
       ctx.textAlign = 'right'
       ctx.fillText(row.value, W - padH, rowY + (row.isAccent ? 24 : 28))
@@ -145,11 +145,12 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
   }
 
 
+  // Carica Big Shoulders Display per il canvas
   useEffect(() => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
-    link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&display=swap'
-    if (!document.querySelector('link[href*="Barlow"]')) document.head.appendChild(link)
+    link.href = 'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&display=swap'
+    if (!document.querySelector('link[href*="Big+Shoulders"]')) document.head.appendChild(link)
     document.fonts.ready.then(() => { if (canvasRef.current) drawCard(canvasRef.current) })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tema])
@@ -293,7 +294,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         </button>
       </div>
 
-      {/* Tutorial uso badge */}
+      {/* Tutorial */}
       <details className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
         <summary className="px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between select-none"
           style={{ color: 'oklch(0.60 0 0)' }}>
@@ -304,7 +305,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
           <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>Segui questi semplici passaggi:</p>
           {[
             { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
-            { n: '2', text: 'Vai nella galleria del telefono, tieni premuto sull\'immagine → Copia' },
+            { n: '2', text: 'Vai nella galleria, tieni premuto sull\'immagine → Copia' },
             { n: '3', text: 'Apri Instagram e avvia una nuova Storia' },
             { n: '4', text: 'Scegli una tua foto come sfondo della storia' },
             { n: '5', text: 'Tocca lo schermo come se volessi scrivere del testo, poi premi Incolla' },

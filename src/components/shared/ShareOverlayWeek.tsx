@@ -54,12 +54,12 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
 
     // Header — "RIEPILOGO" piccolo + weekLabel grande
     ctx.textAlign = 'center'
-    ctx.font = '900 10px "Barlow Condensed", sans-serif'
+    ctx.font = '900 10px "Big Shoulders Display", sans-serif'
     ctx.fillStyle = accent
     ctx.fillText('RIEPILOGO SETTIMANALE', W / 2, y + 12)
     y += 18
 
-    ctx.font = '900 28px "Barlow Condensed", sans-serif'
+    ctx.font = '900 28px "Big Shoulders Display", sans-serif'
     ctx.fillStyle = textPrimary
     ctx.fillText(weekLabel.toUpperCase(), W / 2, y + 30)
     y += 54
@@ -72,11 +72,11 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
         ctx.fillStyle = dividerColor
         ctx.fillRect(padH, rowY - 1, W - padH * 2, 0.5)
       }
-      ctx.font = '400 11px "Barlow Condensed", sans-serif'
+      ctx.font = '400 11px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = textSecondary
       ctx.textAlign = 'left'
       ctx.fillText(row.label, padH, rowY + 26)
-      ctx.font = '800 21px "Barlow Condensed", sans-serif'
+      ctx.font = '800 21px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = textPrimary
       ctx.textAlign = 'right'
       ctx.fillText(row.value, W - padH, rowY + 28)
@@ -99,11 +99,12 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
   }
 
 
+  // Carica Big Shoulders Display per il canvas
   useEffect(() => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
-    link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&display=swap'
-    if (!document.querySelector('link[href*="Barlow"]')) document.head.appendChild(link)
+    link.href = 'https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&display=swap'
+    if (!document.querySelector('link[href*="Big+Shoulders"]')) document.head.appendChild(link)
     document.fonts.ready.then(() => { if (canvasRef.current) drawCard(canvasRef.current) })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tema])
@@ -183,7 +184,7 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
         </button>
       </div>
 
-      {/* Tutorial uso badge */}
+      {/* Tutorial */}
       <details className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
         <summary className="px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between select-none"
           style={{ color: 'oklch(0.60 0 0)' }}>
@@ -191,16 +192,14 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
           <span style={{ fontSize: 10 }}>▼</span>
         </summary>
         <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>
-            Segui questi semplici passaggi:
-          </p>
+          <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>Segui questi semplici passaggi:</p>
           {[
             { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
-            { n: '2', text: 'Vai nella galleria del telefono e tieni premuto sull\'immagine → Copia' },
+            { n: '2', text: 'Vai nella galleria, tieni premuto sull\'immagine → Copia' },
             { n: '3', text: 'Apri Instagram e avvia una nuova Storia' },
             { n: '4', text: 'Scegli una tua foto come sfondo della storia' },
             { n: '5', text: 'Tocca lo schermo come se volessi scrivere del testo, poi premi Incolla' },
-            { n: '6', text: 'Il badge apparirà sulla storia — ridimensionalo e posizionalo come vuoi!' },
+            { n: '6', text: 'Il badge apparirà sulla storia — ridimensionalo e posizionalo dove vuoi!' },
           ].map(step => (
             <div key={step.n} className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
@@ -211,7 +210,7 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
             </div>
           ))}
           <p className="text-xs pt-1" style={{ color: 'oklch(0.40 0 0)' }}>
-            Funziona allo stesso modo su TikTok, WhatsApp e tutti i social che supportano le storie.
+            Funziona allo stesso modo su TikTok, WhatsApp e tutti i social con le storie.
           </p>
         </div>
       </details>
