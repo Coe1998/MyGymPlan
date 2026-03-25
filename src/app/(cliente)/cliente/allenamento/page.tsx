@@ -58,6 +58,7 @@ export default function AllenamentoPage() {
   const [noteAperta, setNoteAperta] = useState<string | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
+  const durataSecondiRef = useRef(0)
   const isViewMode = !!sessioneIdParam
 
   const fetchGiorno = useCallback(async () => {
@@ -183,8 +184,9 @@ export default function AllenamentoPage() {
 
   useEffect(() => { fetchGiorno() }, [fetchGiorno])
 
+  useEffect(() => { durataSecondiRef.current = durataSecondi }, [durataSecondi])
+
   useEffect(() => {
-    if (!timerAttivo) return
     if (timerSecondi <= 0) { setTimerAttivo(false); return }
     const interval = setInterval(() => setTimerSecondi(s => s - 1), 1000)
     return () => clearInterval(interval)
@@ -216,7 +218,12 @@ export default function AllenamentoPage() {
     const serieComp = Object.values(logs).reduce((acc, log) => acc + log.serie.filter(s => s.completata).length, 0)
     if (serieComp === serieTot) {
       hasAutoCompleted.current = true
-      handleCompleta()
+      if (durataRef.current) { clearInterval(durataRef.current); durataRef.current = null }
+      const durataCorrente = durataSecondiRef.current
+      supabase.from('sessioni')
+        .update({ completata: true, durata_secondi: durataCorrente })
+        .eq('id', sessioneId)
+        .then(() => setCompletata(true))
     }
   }, [logs, esercizi, isViewMode, completata, loading, sessioneId])
 
