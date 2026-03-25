@@ -85,12 +85,12 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     // Nome giorno — prefisso piccolo sopra, parola grande sotto
     ctx.textAlign = 'center'
     if (prefisso) {
-      ctx.font = '900 11px -apple-system, system-ui, sans-serif'
+      ctx.font = '900 11px "Barlow Condensed", sans-serif'
       ctx.fillStyle = accent
       ctx.fillText(prefisso.toUpperCase(), W / 2, y + 13)
       y += 20
     }
-    ctx.font = '900 30px -apple-system, system-ui, sans-serif'
+    ctx.font = '900 30px "Barlow Condensed", sans-serif'
     ctx.fillStyle = textPrimary
     ctx.fillText(parola.toUpperCase(), W / 2, y + 30)
     y += prefisso ? 48 : 52
@@ -113,16 +113,16 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
       // Label
       ctx.font = row.isAccent
-        ? '700 11px -apple-system, system-ui, sans-serif'
-        : '400 11px -apple-system, system-ui, sans-serif'
+        ? '700 11px "Barlow Condensed", sans-serif'
+        : '400 11px "Barlow Condensed", sans-serif'
       ctx.fillStyle = row.isAccent ? accent : textSecondary
       ctx.textAlign = 'left'
       ctx.fillText(row.label, padH, rowY + (row.isAccent ? 22 : 26))
 
       // Valore
       ctx.font = row.isAccent
-        ? '800 16px -apple-system, system-ui, sans-serif'
-        : '800 21px -apple-system, system-ui, sans-serif'
+        ? '800 16px "Barlow Condensed", sans-serif'
+        : '800 21px "Barlow Condensed", sans-serif'
       ctx.fillStyle = row.isAccent ? accent : textPrimary
       ctx.textAlign = 'right'
       ctx.fillText(row.value, W - padH, rowY + (row.isAccent ? 24 : 28))
@@ -135,14 +135,24 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     ctx.fillRect(padH, y, W - padH * 2, 0.5)
     y += 16
 
-    // Logo PNG — Bynari_W1 su dark, Bynari_B1 su light
+    // Logo PNG reale
     const logoEl = document.getElementById('__bynari_logo__') as HTMLImageElement | null
     if (logoEl && logoEl.complete && logoEl.naturalWidth > 0) {
       const lH = isDark ? 38 : 52
       const lW = Math.round(logoEl.naturalWidth * lH / logoEl.naturalHeight)
-      ctx.drawImage(logoEl, (W - lW) / 2, y + 2, lW, lH)
+      ctx.drawImage(logoEl, (W - lW) / 2, y + 4, lW, lH)
     }
   }
+
+
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&display=swap'
+    if (!document.querySelector('link[href*="Barlow"]')) document.head.appendChild(link)
+    document.fonts.ready.then(() => { if (canvasRef.current) drawCard(canvasRef.current) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tema])
 
   useEffect(() => {
     if (canvasRef.current) drawCard(canvasRef.current)
@@ -177,15 +187,10 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
   return (
     <div className="space-y-5">
-      {/* Img nascosta per canvas drawImage */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        id="__bynari_logo__"
-        src={isDark ? '/logo/Bynari_W1.png' : '/logo/Bynari_B1.png'}
-        alt=""
-        style={{ display: 'none' }}
-        onLoad={() => { if (canvasRef.current) drawCard(canvasRef.current) }}
-      />
+      <img id="__bynari_logo__" src={isDark ? '/logo/Bynari_W1.png' : '/logo/Bynari_B1.png'}
+        alt="" style={{ display: 'none' }}
+        onLoad={() => { if (canvasRef.current) drawCard(canvasRef.current) }} />
       {/* Selettore tema */}
       <div className="flex gap-2 justify-center">
         {(['dark', 'light'] as const).map(t => (

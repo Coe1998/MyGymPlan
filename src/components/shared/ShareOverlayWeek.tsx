@@ -54,12 +54,12 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
 
     // Header — "RIEPILOGO" piccolo + weekLabel grande
     ctx.textAlign = 'center'
-    ctx.font = '900 10px -apple-system, system-ui, sans-serif'
+    ctx.font = '900 10px "Barlow Condensed", sans-serif'
     ctx.fillStyle = accent
     ctx.fillText('RIEPILOGO SETTIMANALE', W / 2, y + 12)
     y += 18
 
-    ctx.font = '900 28px -apple-system, system-ui, sans-serif'
+    ctx.font = '900 28px "Barlow Condensed", sans-serif'
     ctx.fillStyle = textPrimary
     ctx.fillText(weekLabel.toUpperCase(), W / 2, y + 30)
     y += 54
@@ -72,11 +72,11 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
         ctx.fillStyle = dividerColor
         ctx.fillRect(padH, rowY - 1, W - padH * 2, 0.5)
       }
-      ctx.font = '400 11px -apple-system, system-ui, sans-serif'
+      ctx.font = '400 11px "Barlow Condensed", sans-serif'
       ctx.fillStyle = textSecondary
       ctx.textAlign = 'left'
       ctx.fillText(row.label, padH, rowY + 26)
-      ctx.font = '800 21px -apple-system, system-ui, sans-serif'
+      ctx.font = '800 21px "Barlow Condensed", sans-serif'
       ctx.fillStyle = textPrimary
       ctx.textAlign = 'right'
       ctx.fillText(row.value, W - padH, rowY + 28)
@@ -89,14 +89,24 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
     ctx.fillRect(padH, y, W - padH * 2, 0.5)
     y += 16
 
-    // Logo PNG — Bynari_W1 su dark, Bynari_B1 su light
+    // Logo PNG reale
     const logoEl = document.getElementById('__bynari_logo__') as HTMLImageElement | null
     if (logoEl && logoEl.complete && logoEl.naturalWidth > 0) {
       const lH = isDark ? 38 : 52
       const lW = Math.round(logoEl.naturalWidth * lH / logoEl.naturalHeight)
-      ctx.drawImage(logoEl, (W - lW) / 2, y + 2, lW, lH)
+      ctx.drawImage(logoEl, (W - lW) / 2, y + 4, lW, lH)
     }
   }
+
+
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&display=swap'
+    if (!document.querySelector('link[href*="Barlow"]')) document.head.appendChild(link)
+    document.fonts.ready.then(() => { if (canvasRef.current) drawCard(canvasRef.current) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tema])
 
   useEffect(() => {
     if (canvasRef.current) drawCard(canvasRef.current)
@@ -128,13 +138,9 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
   return (
     <div className="space-y-5">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        id="__bynari_logo__"
-        src={isDark ? '/logo/Bynari_W1.png' : '/logo/Bynari_B1.png'}
-        alt=""
-        style={{ display: 'none' }}
-        onLoad={() => { if (canvasRef.current) drawCard(canvasRef.current) }}
-      />
+      <img id="__bynari_logo__" src={isDark ? '/logo/Bynari_W1.png' : '/logo/Bynari_B1.png'}
+        alt="" style={{ display: 'none' }}
+        onLoad={() => { if (canvasRef.current) drawCard(canvasRef.current) }} />
       {/* Tema */}
       <div className="flex gap-2 justify-center">
         {(['dark', 'light'] as const).map(t => (
