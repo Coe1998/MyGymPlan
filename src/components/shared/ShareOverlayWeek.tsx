@@ -196,7 +196,7 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
           </p>
           {[
             { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
-            { n: '2', text: 'Vai nella galleria del telefono e tieni premuto sull'immagine → Copia' },
+            { n: '2', text: 'Vai nella galleria del telefono e tieni premuto sull\'immagine → Copia' },
             { n: '3', text: 'Apri Instagram e avvia una nuova Storia' },
             { n: '4', text: 'Scegli una tua foto come sfondo della storia' },
             { n: '5', text: 'Tocca lo schermo come se volessi scrivere del testo, poi premi Incolla' },
