@@ -59,6 +59,7 @@ export default function AllenamentoPage() {
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
   const durataSecondiRef = useRef(0)
+  const sessioneStartRef = useRef<number | null>(null)
   const isViewMode = !!sessioneIdParam
 
   const fetchGiorno = useCallback(async () => {
@@ -139,7 +140,8 @@ export default function AllenamentoPage() {
       setCompletata(sessioneEsistente.completata)
       setSessioneData(sessioneEsistente.data)
       if (!sessioneEsistente.completata) {
-        const elapsed = Math.floor((Date.now() - new Date(sessioneEsistente.data).getTime()) / 1000)
+        sessioneStartRef.current = new Date(sessioneEsistente.data).getTime()
+        const elapsed = Math.floor((Date.now() - sessioneStartRef.current) / 1000)
         setDurataSecondi(elapsed)
       }
     } else {
@@ -148,6 +150,7 @@ export default function AllenamentoPage() {
         .select().single()
       sessId = nuova!.id
       setSessioneData(nuova!.data)
+      sessioneStartRef.current = new Date(nuova!.data).getTime()
     }
     setSessioneId(sessId)
 
@@ -194,7 +197,12 @@ export default function AllenamentoPage() {
 
   useEffect(() => {
     if (completata || loading || isViewMode) return
-    durataRef.current = setInterval(() => setDurataSecondi(s => s + 1), 1000)
+    durataRef.current = setInterval(() => {
+      if (sessioneStartRef.current) {
+        const elapsed = Math.floor((Date.now() - sessioneStartRef.current) / 1000)
+        setDurataSecondi(elapsed)
+      }
+    }, 1000)
     return () => { if (durataRef.current) clearInterval(durataRef.current) }
   }, [completata, loading, isViewMode])
 
