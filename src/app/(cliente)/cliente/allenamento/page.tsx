@@ -57,6 +57,7 @@ export default function AllenamentoPage() {
   const [sessioneData, setSessioneData] = useState<string | null>(null)
   const [noteAperta, setNoteAperta] = useState<string | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
+  const hasAutoCompleted = useRef(false)
   const isViewMode = !!sessioneIdParam
 
   const fetchGiorno = useCallback(async () => {
@@ -206,6 +207,18 @@ export default function AllenamentoPage() {
       durataRef.current = null
     }
   }, [logs, esercizi, isViewMode, completata, loading])
+
+  // Auto-completa sessione quando tutte le serie sono spuntate
+  useEffect(() => {
+    if (isViewMode || completata || loading || !sessioneId || hasAutoCompleted.current) return
+    const serieTot = esercizi.reduce((acc, e) => acc + e.serie, 0)
+    if (serieTot === 0) return
+    const serieComp = Object.values(logs).reduce((acc, log) => acc + log.serie.filter(s => s.completata).length, 0)
+    if (serieComp === serieTot) {
+      hasAutoCompleted.current = true
+      handleCompleta()
+    }
+  }, [logs, esercizi, isViewMode, completata, loading, sessioneId])
 
   const formatDurata = (sec: number) => {
     const h = Math.floor(sec / 3600)
