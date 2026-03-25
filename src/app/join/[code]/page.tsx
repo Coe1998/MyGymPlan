@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation'
 
 export default async function JoinPage({ params }: { params: Promise<{ code: string }> }) {
   const supabase = await createClient()
-  const { code } = await params
+  const { code: rawCode } = await params
+  const code = rawCode.toUpperCase()
 
   // Trova il coach dal codice
   const { data: coach } = await supabase
