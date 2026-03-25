@@ -135,21 +135,22 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     ctx.fillRect(padH, y, W - padH * 2, 0.5)
     y += 16
 
-    // Logo MGP
-    ctx.textAlign = 'left'
-    ctx.font = '800 24px -apple-system, system-ui, sans-serif'
-    ctx.fillStyle = textPrimary
-    const mgW = ctx.measureText('MG').width
-    const pW = ctx.measureText('P').width
-    const startX = (W - mgW - pW) / 2
-    ctx.fillText('MG', startX, y + 24)
+    // Logo BYNARI
+    ctx.textAlign = 'center'
+    ctx.font = '900 20px -apple-system, system-ui, sans-serif'
+    // "B" in arancione + "YNARI" in colore testo
+    const bW = ctx.measureText('B').width
+    const ynariW = ctx.measureText('YNARI').width
+    const logoStartX = (W - bW - ynariW) / 2
     ctx.fillStyle = accent
-    ctx.fillText('P', startX + mgW, y + 24)
-
-    ctx.font = '400 8px -apple-system, system-ui, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText('B', logoStartX, y + 24)
+    ctx.fillStyle = textPrimary
+    ctx.fillText('YNARI', logoStartX + bW, y + 24)
+    ctx.font = '400 7px -apple-system, system-ui, sans-serif'
     ctx.fillStyle = logoSub
     ctx.textAlign = 'center'
-    ctx.fillText('MYGYMPLAN', W / 2, y + 40)
+    ctx.fillText('powered by bynari.app', W / 2, y + 40)
   }
 
   useEffect(() => {
@@ -164,10 +165,10 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
     canvas.toBlob(async (blob) => {
       if (!blob) { setDownloading(false); return }
-      const file = new File([blob], `mgp-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`, { type: 'image/png' })
+      const file = new File([blob], `bynari-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`, { type: 'image/png' })
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: 'MyGymPlan' })
+          await navigator.share({ files: [file], title: 'Bynari' })
         } catch { fallbackDownload(canvas) }
       } else {
         fallbackDownload(canvas)
@@ -178,7 +179,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
   const fallbackDownload = (canvas: HTMLCanvasElement) => {
     const link = document.createElement('a')
-    link.download = `mgp-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`
+    link.download = `bynari-${giornoNome.toLowerCase().replace(/\s/g, '-')}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
   }

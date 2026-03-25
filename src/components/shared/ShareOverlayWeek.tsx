@@ -89,19 +89,20 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
     ctx.fillRect(padH, y, W - padH * 2, 0.5)
     y += 16
 
-    // Logo
+    // Logo BYNARI
     ctx.textAlign = 'left'
-    ctx.font = '800 24px -apple-system, system-ui, sans-serif'
-    ctx.fillStyle = textPrimary
-    const mgW = ctx.measureText('MG').width
-    const startX = (W - mgW - ctx.measureText('P').width) / 2
-    ctx.fillText('MG', startX, y + 24)
+    ctx.font = '900 20px -apple-system, system-ui, sans-serif'
+    const bW = ctx.measureText('B').width
+    const ynariW = ctx.measureText('YNARI').width
+    const logoStartX = (W - bW - ynariW) / 2
     ctx.fillStyle = accent
-    ctx.fillText('P', startX + mgW, y + 24)
-    ctx.font = '400 8px -apple-system, system-ui, sans-serif'
+    ctx.fillText('B', logoStartX, y + 24)
+    ctx.fillStyle = textPrimary
+    ctx.fillText('YNARI', logoStartX + bW, y + 24)
+    ctx.font = '400 7px -apple-system, system-ui, sans-serif'
     ctx.fillStyle = logoSub
     ctx.textAlign = 'center'
-    ctx.fillText('MYGYMPLAN', W / 2, y + 40)
+    ctx.fillText('powered by bynari.app', W / 2, y + 40)
   }
 
   useEffect(() => {
