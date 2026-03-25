@@ -84,10 +84,8 @@ function LoginForm() {
         <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full opacity-10"
           style={{ background: 'oklch(0.70 0.19 46)' }} />
 
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>B</div>
-          <span className="text-xl font-bold tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</span>
+        <div className="relative z-10">
+          <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '32px', width: 'auto' }} />
         </div>
 
         <div className="relative z-10 space-y-6">
@@ -119,10 +117,8 @@ function LoginForm() {
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
-          <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>B</div>
-            <span className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</span>
+          <div className="lg:hidden">
+            <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '28px', width: 'auto' }} />
           </div>
 
           {/* Banner invito */}

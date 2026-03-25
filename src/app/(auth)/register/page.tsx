@@ -84,12 +84,8 @@ function RegisterForm() {
     <div className="min-h-screen flex items-center justify-center p-8" style={{ background: 'oklch(0.13 0 0)' }}>
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-            B
-          </div>
-          <span className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Bynari</span>
+        <div>
+          <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '28px', width: 'auto' }} />
         </div>
 
         {/* Banner invito coach */}

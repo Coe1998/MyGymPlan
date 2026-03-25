@@ -101,10 +101,8 @@ export default function LandingPage() {
           paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
           paddingBottom: '1rem',
         }}>
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>B</div>
-          <span className="font-black text-lg tracking-tight">BYNARI</span>
+        <div>
+          <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '26px', width: 'auto' }} />
         </div>
         <div className="hidden md:flex items-center gap-8">
           {['Coach', 'Atleti', 'Pricing'].map(item => (
@@ -443,13 +441,9 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="py-10 px-6" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>B</div>
-            <span className="font-black text-sm tracking-tight">BYNARI</span>
-            <span className="text-xs ml-2" style={{ color: 'oklch(0.30 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              © 2026
-            </span>
+          <div className="flex items-center gap-3">
+            <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '22px', width: 'auto' }} />
+            <span className="text-xs" style={{ color: 'oklch(0.30 0 0)', fontFamily: 'Inter, sans-serif' }}>© 2026</span>
           </div>
           <div className="flex items-center gap-6">
             {[['Accedi', '/login'], ['Registrati', '/register']].map(([label, href]) => (

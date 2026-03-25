@@ -33,15 +33,9 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
         style={{ background: 'oklch(0.16 0 0)', borderRight: '1px solid oklch(1 0 0 / 6%)' }}>
         {/* Logo */}
         <div className="p-6" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg font-black"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-              M
-            </div>
-            <div>
-              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>MyGymPlan</p>
-              <p className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Area Atleta</p>
-            </div>
+          <div className="flex flex-col gap-0.5">
+            <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '28px', width: 'auto' }} />
+            <p className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Area Atleta</p>
           </div>
         </div>
 
