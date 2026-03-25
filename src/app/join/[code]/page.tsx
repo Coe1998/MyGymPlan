@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export default async function JoinPage({ params }: { params: { code: string } }) {
+export default async function JoinPage({ params }: { params: Promise<{ code: string }> }) {
   const supabase = await createClient()
-  const code = params.code
+  const { code } = await params
 
   // Trova il coach dal codice
   const { data: coach } = await supabase
@@ -11,7 +11,7 @@ export default async function JoinPage({ params }: { params: { code: string } })
     .select('id, full_name')
     .eq('coach_code', code)
     .eq('role', 'coach')
-    .single()
+    .maybeSingle()
 
   if (!coach) {
     return (
@@ -37,12 +37,12 @@ export default async function JoinPage({ params }: { params: { code: string } })
     if (user.id === coach.id) redirect('/coach/dashboard')
 
     const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', user.id).single()
+      .from('profiles').select('role').eq('id', user.id).maybeSingle()
 
     // Se è già cliente di questo coach → dashboard
     const { data: existing } = await supabase
       .from('coach_clienti').select('id')
-      .eq('coach_id', coach.id).eq('cliente_id', user.id).single()
+      .eq('coach_id', coach.id).eq('cliente_id', user.id).maybeSingle()
     if (existing) redirect('/cliente/dashboard')
 
     // Se era atleta → aggiorna ruolo a cliente
@@ -56,7 +56,7 @@ export default async function JoinPage({ params }: { params: { code: string } })
       .select('id, stato')
       .eq('coach_id', coach.id)
       .eq('cliente_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!invito) {
       await supabase.from('coach_inviti').insert({
