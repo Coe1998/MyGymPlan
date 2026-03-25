@@ -260,6 +260,21 @@ export default function AllenamentoPage() {
     if (existing) { await supabase.from('log_serie').update(payload).eq('id', existing.id) }
     else { await supabase.from('log_serie').insert(payload) }
     if (nuovoStato) { setTimerSecondi(ese.recupero_secondi); setTimerAttivo(true) }
+
+    // Se era l'ultima serie, marca la sessione come completata su Supabase
+    if (nuovoStato) {
+      const logsAggiornati = {
+        ...logs,
+        [ese.id]: { ...logs[ese.id], serie: logs[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, completata: true } : s) }
+      }
+      const serieTot = esercizi.reduce((acc, e) => acc + e.serie, 0)
+      const serieComp = Object.values(logsAggiornati).reduce((acc, l) => acc + l.serie.filter(s => s.completata).length, 0)
+      if (serieComp >= serieTot) {
+        if (durataRef.current) { clearInterval(durataRef.current); durataRef.current = null }
+        await supabase.from('sessioni').update({ completata: true, durata_secondi: durataSecondi }).eq('id', sessioneId)
+        setCompletata(true)
+      }
+    }
   }
 
   const handleCompleta = async () => {
