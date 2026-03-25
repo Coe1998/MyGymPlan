@@ -45,6 +45,8 @@ export default function AtletaSchedaDetailPage() {
 
   const [addingToGiorno, setAddingToGiorno] = useState<string | null>(null)
   const [selectedEsercizio, setSelectedEsercizio] = useState('')
+  const [filtroMuscolo, setFiltroMuscolo] = useState<string>('')
+  const [searchEsercizio, setSearchEsercizio] = useState('')
   const [serie, setSerie] = useState('3')
   const [ripetizioni, setRipetizioni] = useState('8-12')
   const [recupero, setRecupero] = useState('90')
@@ -363,20 +365,91 @@ export default function AtletaSchedaDetailPage() {
                 <div className="px-6 py-5 space-y-4"
                   style={{ background: 'oklch(0.15 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
                   <h4 className="font-semibold text-sm" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                    Aggiungi esercizio a "{giorno.nome}"
+                    Aggiungi esercizio a &quot;{giorno.nome}&quot;
                   </h4>
-                  <select value={selectedEsercizio} onChange={e => setSelectedEsercizio(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: selectedEsercizio ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)' }}>
-                    <option value="">Seleziona un esercizio...</option>
-                    {esercizi.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
-                  </select>
-                  {esercizi.length === 0 && (
+
+                  {/* Filtro gruppi muscolari */}
+                  {(() => {
+                    const gruppi = Array.from(new Set(esercizi.flatMap(e => e.muscoli ?? []))).sort()
+                    return gruppi.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        <button onClick={() => setFiltroMuscolo('')}
+                          className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
+                          style={{
+                            background: filtroMuscolo === '' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                            color: filtroMuscolo === '' ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                            border: '1px solid oklch(1 0 0 / 8%)',
+                          }}>
+                          Tutti
+                        </button>
+                        {gruppi.map(g => (
+                          <button key={g} onClick={() => setFiltroMuscolo(filtroMuscolo === g ? '' : g)}
+                            className="px-3 py-1 rounded-full text-xs font-semibold transition-all capitalize"
+                            style={{
+                              background: filtroMuscolo === g ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                              color: filtroMuscolo === g ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                              border: '1px solid oklch(1 0 0 / 8%)',
+                            }}>
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null
+                  })()}
+
+                  {/* Ricerca testuale */}
+                  <input type="text" value={searchEsercizio}
+                    onChange={e => { setSearchEsercizio(e.target.value); setSelectedEsercizio('') }}
+                    placeholder="Cerca esercizio..."
+                    className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                    onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+                    onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+                  />
+
+                  {/* Lista esercizi filtrata */}
+                  {esercizi.length === 0 ? (
                     <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
                       Nessun esercizio nella libreria.{' '}
                       <a href="/atleta/esercizi" style={{ color: 'oklch(0.70 0.19 46)' }}>Creane uno →</a>
                     </p>
-                  )}
+                  ) : (() => {
+                    const filtered = esercizi.filter(e => {
+                      const matchMuscolo = filtroMuscolo === '' || (e.muscoli ?? []).includes(filtroMuscolo)
+                      const matchSearch = searchEsercizio === '' || e.nome.toLowerCase().includes(searchEsercizio.toLowerCase())
+                      return matchMuscolo && matchSearch
+                    })
+                    return (
+                      <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto"
+                        style={{ border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        {filtered.length === 0 ? (
+                          <div className="px-4 py-6 text-center">
+                            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun esercizio trovato</p>
+                          </div>
+                        ) : filtered.map((e, i) => (
+                          <button key={e.id} onClick={() => setSelectedEsercizio(e.id)}
+                            className="w-full flex items-center justify-between px-4 py-3 text-left transition-all"
+                            style={{
+                              background: selectedEsercizio === e.id ? 'oklch(0.70 0.19 46 / 15%)' : i % 2 === 0 ? 'oklch(0.20 0 0)' : 'oklch(0.18 0 0)',
+                              borderBottom: i < filtered.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none',
+                            }}>
+                            <span className="text-sm font-medium"
+                              style={{ color: selectedEsercizio === e.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.90 0 0)' }}>
+                              {e.nome}
+                            </span>
+                            <div className="flex gap-1 flex-wrap justify-end ml-2">
+                              {(e.muscoli ?? []).slice(0, 2).map(m => (
+                                <span key={m} className="text-xs px-2 py-0.5 rounded-full capitalize"
+                                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                                  {m}
+                                </span>
+                              ))}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )
+                  })()}
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       { label: 'Serie', value: serie, setter: setSerie, placeholder: '3' },
@@ -404,7 +477,7 @@ export default function AtletaSchedaDetailPage() {
                       style={{ background: !selectedEsercizio ? 'oklch(0.35 0 0)' : 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
                       Aggiungi
                     </button>
-                    <button onClick={() => setAddingToGiorno(null)}
+                    <button onClick={() => { setAddingToGiorno(null); setFiltroMuscolo(''); setSearchEsercizio(''); setSelectedEsercizio('') }}
                       className="px-5 py-2.5 rounded-xl text-sm font-medium"
                       style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
                       Annulla
