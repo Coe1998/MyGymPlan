@@ -182,6 +182,39 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
           {downloading ? 'Generando...' : <><FontAwesomeIcon icon={faDownload} /> Scarica / Condividi</>}
         </button>
       </div>
+
+      {/* Tutorial uso badge */}
+      <details className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+        <summary className="px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between select-none"
+          style={{ color: 'oklch(0.60 0 0)' }}>
+          <span>💡 Come condividerlo su Instagram</span>
+          <span style={{ fontSize: 10 }}>▼</span>
+        </summary>
+        <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+          <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>
+            Segui questi semplici passaggi:
+          </p>
+          {[
+            { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
+            { n: '2', text: 'Vai nella galleria del telefono e tieni premuto sull'immagine → Copia' },
+            { n: '3', text: 'Apri Instagram e avvia una nuova Storia' },
+            { n: '4', text: 'Scegli una tua foto come sfondo della storia' },
+            { n: '5', text: 'Tocca lo schermo come se volessi scrivere del testo, poi premi Incolla' },
+            { n: '6', text: 'Il badge apparirà sulla storia — ridimensionalo e posizionalo come vuoi!' },
+          ].map(step => (
+            <div key={step.n} className="flex items-start gap-3">
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
+                style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
+                {step.n}
+              </span>
+              <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.65 0 0)' }}>{step.text}</p>
+            </div>
+          ))}
+          <p className="text-xs pt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+            Funziona allo stesso modo su TikTok, WhatsApp e tutti i social che supportano le storie.
+          </p>
+        </div>
+      </details>
     </div>
   )
 }
