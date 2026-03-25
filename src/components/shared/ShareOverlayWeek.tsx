@@ -89,20 +89,13 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
     ctx.fillRect(padH, y, W - padH * 2, 0.5)
     y += 16
 
-    // Logo BYNARI
-    ctx.textAlign = 'left'
-    ctx.font = '900 20px -apple-system, system-ui, sans-serif'
-    const bW = ctx.measureText('B').width
-    const ynariW = ctx.measureText('YNARI').width
-    const logoStartX = (W - bW - ynariW) / 2
-    ctx.fillStyle = accent
-    ctx.fillText('B', logoStartX, y + 24)
-    ctx.fillStyle = textPrimary
-    ctx.fillText('YNARI', logoStartX + bW, y + 24)
-    ctx.font = '400 7px -apple-system, system-ui, sans-serif'
-    ctx.fillStyle = logoSub
-    ctx.textAlign = 'center'
-    ctx.fillText('powered by bynari.app', W / 2, y + 40)
+    // Logo PNG — Bynari_W1 su dark, Bynari_B1 su light
+    const logoEl = document.getElementById('__bynari_logo__') as HTMLImageElement | null
+    if (logoEl && logoEl.complete && logoEl.naturalWidth > 0) {
+      const lH = 26
+      const lW = Math.round(logoEl.naturalWidth * lH / logoEl.naturalHeight)
+      ctx.drawImage(logoEl, (W - lW) / 2, y + 6, lW, lH)
+    }
   }
 
   useEffect(() => {
@@ -134,6 +127,14 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
 
   return (
     <div className="space-y-5">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        id="__bynari_logo__"
+        src={isDark ? '/logo/Bynari_W1.png' : '/logo/Bynari_B1.png'}
+        alt=""
+        style={{ display: 'none' }}
+        onLoad={() => { if (canvasRef.current) drawCard(canvasRef.current) }}
+      />
       {/* Tema */}
       <div className="flex gap-2 justify-center">
         {(['dark', 'light'] as const).map(t => (
