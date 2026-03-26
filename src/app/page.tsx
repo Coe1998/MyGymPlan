@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
-// ── Intersection Observer hook ──────────────────────────────────
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
@@ -15,45 +14,27 @@ function useInView(threshold = 0.15) {
   return { ref, inView }
 }
 
-// ── Data ────────────────────────────────────────────────────────
 const COACH_BENEFITS = [
-  {
-    num: '01',
-    title: 'Sai chi sta per mollare',
-    body: 'Vedi in tempo reale chi non si allena da giorni, chi ha i livelli di stress alle stelle, chi non dorme. Intervieni prima che sparisca.',
-  },
-  {
-    num: '02',
-    title: 'Schede pronte in 3 minuti',
-    body: 'Crea una scheda, salvala come template, assegnala a più clienti in un tap. Niente più copie manuali o file Excel.',
-  },
-  {
-    num: '03',
-    title: 'I clienti si allenano davvero',
-    body: 'App mobile che guida il cliente serie per serie, con timer automatico. Più autonomia per loro, meno messaggi alle 22 per te.',
-  },
-  {
-    num: '04',
-    title: 'Tutto in un posto solo',
-    body: 'Scheda di allenamento, piano alimentare PDF, messaggi, progressi. Smetti di usare 4 app diverse per ogni cliente.',
-  },
+  { num: '01', title: 'Sai chi sta per mollare', body: 'Vedi chi non si allena da giorni, chi ha lo stress alle stelle, chi dorme male. Intervieni prima che ti disdica.' },
+  { num: '02', title: 'Schede pronte in 3 minuti', body: 'Crea una scheda, salvala come template, assegnala a più clienti in un tap. Niente più Excel o PDF sparsi.' },
+  { num: '03', title: 'I clienti si allenano davvero', body: 'L\'app guida il cliente serie per serie con timer automatico. Più autonomia per loro, meno messaggi alle 22 per te.' },
+  { num: '04', title: 'Tutto in un posto solo', body: 'Scheda, piano alimentare, progressi, messaggi. Smetti di usare 4 app diverse per ogni cliente.' },
 ]
 
 const ATLETA_FEATURES = [
-  { num: '01', title: 'Logga ogni serie in secondi', body: 'Peso, reps, recupero automatico. Confronto immediato con la sessione precedente. Niente distrazioni.' },
+  { num: '01', title: 'Logga ogni serie in secondi', body: 'Peso, reps, recupero automatico. Confronto immediato con la sessione precedente.' },
   { num: '02', title: 'Vedi i progressi davvero', body: 'Grafici peso massimo e volume per esercizio. La curva di forza che cresce settimana dopo settimana.' },
   { num: '03', title: 'Condividi i tuoi risultati', body: 'Card stile Strava con i tuoi highlight. Un tap e la condividi dove vuoi.' },
-  { num: '04', title: 'Tieni traccia di come stai', body: 'Check-in energía, sonno, stress. Capisce quando spingerti e quando rallentare.' },
+  { num: '04', title: 'Tieni traccia di come stai', body: 'Check-in energia, sonno, stress. Capisci quando spingerti e quando recuperare.' },
 ]
 
 const STEPS = [
   { num: '1', title: 'Crea il tuo account', body: 'Registrazione in 30 secondi. Nessuna carta di credito.' },
-  { num: '2', title: 'Aggiungi i tuoi clienti', body: 'Via email o link invito. Il cliente scarica l\'app e parte.' },
+  { num: '2', title: 'Aggiungi i tuoi clienti', body: 'Via email o link invito. Il cliente installa l\'app e parte subito.' },
   { num: '3', title: 'Assegna le schede', body: 'Crea o duplica una scheda, assegnala, imposta le date. Fatto.' },
-  { num: '4', title: 'Monitora tutto', body: 'Dashboard in tempo reale. Sai esattamente come sta andando ognuno.' },
+  { num: '4', title: 'Monitora e intervieni', body: 'Dashboard in tempo reale. Sai esattamente chi rischia di abbandonare.' },
 ]
 
-// ── Components ──────────────────────────────────────────────────
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode, delay?: number, className?: string }) {
   const { ref, inView } = useInView()
   return (
@@ -86,7 +67,84 @@ function FeatureCard({ num, title, body, delay }: { num: string, title: string, 
   )
 }
 
-// ── Page ────────────────────────────────────────────────────────
+function MockDashboard() {
+  return (
+    <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden" style={{
+      background: 'oklch(0.15 0 0)',
+      border: '1px solid oklch(1 0 0 / 10%)',
+      boxShadow: '0 40px 80px oklch(0 0 0 / 60%), 0 0 0 1px oklch(0.70 0.19 46 / 10%)',
+    }}>
+      {/* Window bar */}
+      <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.13 0 0)' }}>
+        <div className="w-3 h-3 rounded-full" style={{ background: 'oklch(0.65 0.18 27)' }} />
+        <div className="w-3 h-3 rounded-full" style={{ background: 'oklch(0.75 0.15 85)' }} />
+        <div className="w-3 h-3 rounded-full" style={{ background: 'oklch(0.65 0.18 150)' }} />
+        <div className="flex-1 mx-4 h-5 rounded-md" style={{ background: 'oklch(0.20 0 0)' }} />
+      </div>
+      <div className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-xs font-bold mb-1" style={{ color: 'oklch(0.50 0 0)' }}>Buongiorno</div>
+            <div className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>Dashboard Coach</div>
+          </div>
+          <div className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+            12 clienti attivi
+          </div>
+        </div>
+        {/* Alert */}
+        <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: 'oklch(0.75 0.15 27 / 10%)', border: '1px solid oklch(0.75 0.15 27 / 25%)' }}>
+          <div className="text-lg">⚠️</div>
+          <div>
+            <div className="text-xs font-bold" style={{ color: 'oklch(0.85 0.12 50)' }}>3 clienti non si allenano da 5+ giorni</div>
+            <div className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>Marco R. · Giulia T. · Andrea M.</div>
+          </div>
+        </div>
+        {/* Client list */}
+        <div className="space-y-2">
+          {[
+            { name: 'Marco Rossi', days: '5 giorni fa', status: 'warning', perc: 20 },
+            { name: 'Sara Bianchi', days: 'Oggi', status: 'ok', perc: 100 },
+            { name: 'Luca Ferrari', days: 'Ieri', status: 'ok', perc: 75 },
+          ].map((c) => (
+            <div key={c.name} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'oklch(0.18 0 0)' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                style={{
+                  background: c.status === 'warning' ? 'oklch(0.75 0.15 27 / 20%)' : 'oklch(0.65 0.18 150 / 20%)',
+                  color: c.status === 'warning' ? 'oklch(0.85 0.12 50)' : 'oklch(0.65 0.18 150)',
+                }}>
+                {c.name.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold" style={{ color: 'oklch(0.90 0 0)' }}>{c.name}</div>
+                <div className="text-xs" style={{ color: c.status === 'warning' ? 'oklch(0.75 0.15 27)' : 'oklch(0.50 0 0)' }}>{c.days}</div>
+              </div>
+              <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                <div className="h-full rounded-full" style={{
+                  width: `${c.perc}%`,
+                  background: c.status === 'warning' ? 'oklch(0.75 0.15 27)' : 'oklch(0.65 0.18 150)',
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { label: 'Sessioni settimana', value: '34' },
+            { label: 'Retention media', value: '91%' },
+            { label: 'Nuovi PR', value: '7' },
+          ].map((s) => (
+            <div key={s.label} className="p-3 rounded-xl text-center" style={{ background: 'oklch(0.18 0 0)' }}>
+              <div className="text-xl font-black" style={{ color: 'oklch(0.70 0.19 46)' }}>{s.value}</div>
+              <div className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -95,8 +153,8 @@ export default function LandingPage() {
   useEffect(() => {
     const onScroll = () => {
       if (heroRef.current) {
-        heroRef.current.style.transform = `translateY(${window.scrollY * 0.3}px)`
-        heroRef.current.style.opacity = `${1 - window.scrollY / 500}`
+        heroRef.current.style.transform = `translateY(${window.scrollY * 0.2}px)`
+        heroRef.current.style.opacity = `${1 - window.scrollY / 600}`
       }
     }
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -109,19 +167,16 @@ export default function LandingPage() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6"
         style={{
-          background: 'oklch(0.11 0 0 / 80%)',
+          background: 'oklch(0.11 0 0 / 85%)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid oklch(1 0 0 / 6%)',
           paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
           paddingBottom: '1rem',
         }}>
-        <div>
-          <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '26px', width: 'auto' }} />
-        </div>
+        <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '26px', width: 'auto' }} />
         <div className="hidden md:flex items-center gap-8">
-          {[['Come funziona', '#come-funziona'], ['Coach', '#coach'], ['Atleti', '#atleti'], ['Pricing', '#pricing']].map(([label, href]) => (
-            <a key={label} href={href}
-              className="text-sm font-medium transition-colors"
+          {[['Come funziona', '#come-funziona'], ['Per i Coach', '#coach'], ['Per gli Atleti', '#atleti'], ['Pricing', '#pricing']].map(([label, href]) => (
+            <a key={label} href={href} className="text-sm font-medium"
               style={{ color: 'oklch(0.50 0 0)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'oklch(0.97 0 0)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'oklch(0.50 0 0)')}>
@@ -130,13 +185,10 @@ export default function LandingPage() {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/login"
-            className="hidden sm:block text-sm font-semibold px-4 py-2 rounded-xl transition-all"
-            style={{ color: 'oklch(0.60 0 0)' }}>
-            Accedi
-          </Link>
+          <Link href="/login" className="hidden sm:block text-sm font-semibold px-4 py-2 rounded-xl"
+            style={{ color: 'oklch(0.55 0 0)' }}>Accedi</Link>
           <Link href="/register"
-            className="text-sm font-bold px-4 py-2 rounded-xl transition-all active:scale-95"
+            className="text-sm font-bold px-4 py-2 rounded-xl transition-all active:scale-95 hover:brightness-110"
             style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
             Prova gratis
           </Link>
@@ -144,93 +196,109 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 5rem)' }}>
-        {/* Background grid */}
+      <section className="relative overflow-hidden" style={{
+        paddingTop: 'calc(env(safe-area-inset-top) + 7rem)',
+        paddingBottom: '5rem',
+      }}>
         <div className="absolute inset-0" style={{
           backgroundImage: `linear-gradient(oklch(1 0 0 / 3%) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 3%) 1px, transparent 1px)`,
           backgroundSize: '60px 60px',
         }} />
-        {/* Radial glow */}
         <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 40%, oklch(0.70 0.19 46 / 12%) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 70% 60% at 50% 20%, oklch(0.70 0.19 46 / 10%) 0%, transparent 70%)',
         }} />
-        <div className="absolute top-0 right-0 w-px h-full opacity-20"
-          style={{ background: 'linear-gradient(to bottom, transparent, oklch(0.70 0.19 46), transparent)' }} />
 
-        <div ref={heroRef} className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-          {/* Tag */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-xs font-bold tracking-widest uppercase"
-            style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.70 0.19 46)' }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ background: 'oklch(0.70 0.19 46)' }} />
-            Ora in beta · Accesso gratuito
+        <div ref={heroRef} className="relative z-10 px-6 max-w-5xl mx-auto">
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase"
+              style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.70 0.19 46)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{ background: 'oklch(0.70 0.19 46)' }} />
+              Ora in beta · Accesso gratuito
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="font-black tracking-tighter leading-none mb-6" style={{
-            fontSize: 'clamp(2.6rem, 9vw, 7.5rem)',
-            fontFamily: 'Syne, sans-serif',
-            letterSpacing: '-0.04em',
-          }}>
-            I tuoi clienti si allenano.<br />
-            <span style={{ color: 'oklch(0.70 0.19 46)' }}>Tu sai tutto.</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
-            style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-            Bynari è il software per personal trainer che vuole smettere di perdere clienti,
-            risparmiare tempo sulla gestione e capire davvero come sta andando ognuno.
-          </p>
-
-          {/* Dual CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/register"
-              className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-base transition-all active:scale-95 hover:scale-105"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', minWidth: 220 }}>
-              Inizia con 3 clienti gratis
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </Link>
-            <Link href="/register"
-              className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-base transition-all active:scale-95 hover:scale-105"
-              style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(1 0 0 / 12%)', minWidth: 200 }}>
-              Sono un Atleta
-              <span className="transition-transform group-hover:translate-x-1">→</span>
-            </Link>
+          <div className="text-center mb-12">
+            <h1 className="font-black tracking-tighter leading-none mb-6" style={{
+              fontSize: 'clamp(2.4rem, 7vw, 6rem)',
+              fontFamily: 'Syne, sans-serif',
+              letterSpacing: '-0.04em',
+            }}>
+              I tuoi clienti stanno<br />per mollare.{' '}
+              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Tu lo sai prima.</span>
+            </h1>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
+              style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+              Gestisci allenamenti, monitora i progressi e individua chi sta perdendo motivazione —
+              prima che abbandoni e tu perda il rinnovo.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+              <Link href="/register"
+                className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-base transition-all active:scale-95 hover:brightness-110"
+                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', minWidth: 240 }}>
+                Prova gratis con 3 clienti
+                <span className="transition-transform group-hover:translate-x-1">→</span>
+              </Link>
+              <Link href="/register"
+                className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-base transition-all active:scale-95"
+                style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(1 0 0 / 12%)', minWidth: 200 }}>
+                Sono un Atleta
+                <span className="transition-transform group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
+            <p className="text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>
+              Nessuna carta di credito · Setup in 2 minuti · Cancella quando vuoi
+            </p>
           </div>
 
-          <p className="mt-8 text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>
-            Nessuna carta di credito · Setup in 2 minuti · Cancella quando vuoi
-          </p>
+          {/* Mock UI prodotto */}
+          <FadeIn delay={0.2}>
+            <MockDashboard />
+          </FadeIn>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-32"
           style={{ background: 'linear-gradient(to bottom, transparent, oklch(0.11 0 0))' }} />
       </section>
 
+      {/* ── NUMERI ── */}
+      <section className="py-12 px-6" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { value: '~30%', label: 'dei clienti abbandona entro 3 mesi' },
+            { value: '0€', label: 'per iniziare, nessun vincolo' },
+            { value: '2 min', label: 'per creare e assegnare una scheda' },
+            { value: '100%', label: 'mobile first, PWA installabile' },
+          ].map((s, i) => (
+            <FadeIn key={s.label} delay={i * 0.1}>
+              <div className="text-center">
+                <p className="font-black text-3xl md:text-4xl tracking-tight mb-1"
+                  style={{ color: 'oklch(0.70 0.19 46)', fontFamily: 'Syne, sans-serif' }}>{s.value}</p>
+                <p className="text-xs leading-snug" style={{ color: 'oklch(0.40 0 0)', fontFamily: 'Inter, sans-serif' }}>{s.label}</p>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+      </section>
+
       {/* ── PROBLEMA ── */}
       <section className="py-24 px-6" style={{ background: 'oklch(0.13 0 0)' }}>
         <div className="max-w-4xl mx-auto">
           <FadeIn>
-            <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: 'oklch(0.70 0.19 46)' }}>
-              Il problema
-            </p>
+            <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: 'oklch(0.70 0.19 46)' }}>Il problema</p>
             <h2 className="font-black tracking-tighter mb-6 leading-tight"
               style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontFamily: 'Syne, sans-serif' }}>
-              Gestire i clienti oggi è un&apos;altro lavoro.
+              Ogni cliente perso è un rinnovo mancato.<br />
+              <span style={{ color: 'oklch(0.55 0 0)' }}>E di solito non capisci perché.</span>
             </h2>
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
             {[
               { icon: '📋', title: 'Schede su Excel, WhatsApp e PDF', body: 'Ogni cliente ha la scheda in un posto diverso. Aggiornarle richiede più tempo che allenarli.' },
-              { icon: '👻', title: 'Clienti che spariscono', body: 'Non sai chi non si allena da una settimana. Quando te ne accorgi, si sono già disiscritti.' },
-              { icon: '🕐', title: 'Ore perse in gestione', body: 'Messaggi, aggiornamenti, controlli manuali. Tempo sottratto ai clienti che puoi realmente aiutare.' },
+              { icon: '👻', title: 'Clienti che spariscono in silenzio', body: 'Non sai chi non si allena da una settimana. Quando te ne accorgi, si sono già disiscritti.' },
+              { icon: '🕐', title: 'Ore perse in gestione', body: 'Messaggi, aggiornamenti, controlli manuali. Tempo rubato ai clienti che potresti realmente aiutare.' },
             ].map((item, i) => (
               <FadeIn key={item.title} delay={i * 0.1}>
-                <div className="p-6 rounded-2xl h-full" style={{
-                  background: 'oklch(0.16 0 0)',
-                  border: '1px solid oklch(1 0 0 / 7%)',
-                }}>
+                <div className="p-6 rounded-2xl h-full" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 7%)' }}>
                   <div className="text-3xl mb-4">{item.icon}</div>
                   <h3 className="font-black text-base mb-2 tracking-tight" style={{ color: 'oklch(0.97 0 0)', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>{item.body}</p>
@@ -242,18 +310,19 @@ export default function LandingPage() {
       </section>
 
       {/* ── SOLUZIONE ── */}
-      <section className="py-20 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <FadeIn>
             <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: 'oklch(0.70 0.19 46)' }}>La soluzione</p>
-            <h2 className="font-black tracking-tighter mb-6 leading-tight"
-              style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontFamily: 'Syne, sans-serif' }}>
-              Un posto solo per tutto.<br />
-              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Niente più caos.</span>
+            <h2 className="font-black tracking-tighter mb-5 leading-tight"
+              style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', fontFamily: 'Syne, sans-serif' }}>
+              Uno strumento che ti fa<br />
+              <span style={{ color: 'oklch(0.70 0.19 46)' }}>guadagnare di più perdendo meno.</span>
             </h2>
             <p className="text-base leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              Bynari mette insieme schede, allenamenti, progressi e comunicazione in una sola app.
-              I tuoi clienti si allenano meglio. Tu lavori meno. E tieni tutto sotto controllo.
+              Bynari non è una semplice app per schede. È lo strumento che ti dà visibilità su ogni cliente,
+              ti avvisa quando qualcuno rischia di abbandonare e ti fa lavorare meno sulla gestione
+              per concentrarti su chi conta davvero.
             </p>
           </FadeIn>
         </div>
@@ -266,16 +335,13 @@ export default function LandingPage() {
             <p className="text-xs font-black tracking-widest uppercase mb-4" style={{ color: 'oklch(0.70 0.19 46)' }}>Come funziona</p>
             <h2 className="font-black tracking-tighter mb-14"
               style={{ fontSize: 'clamp(1.8rem, 5vw, 3.2rem)', fontFamily: 'Syne, sans-serif' }}>
-              Parti in 4 passi.
+              Operativo in 4 passi.
             </h2>
           </FadeIn>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((step, i) => (
               <FadeIn key={step.num} delay={i * 0.1}>
-                <div className="relative p-6 rounded-2xl h-full" style={{
-                  background: 'oklch(0.16 0 0)',
-                  border: '1px solid oklch(1 0 0 / 7%)',
-                }}>
+                <div className="relative p-6 rounded-2xl h-full" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 7%)' }}>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm mb-4"
                     style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', fontFamily: 'Syne, sans-serif' }}>
                     {step.num}
@@ -297,28 +363,24 @@ export default function LandingPage() {
               <p className="text-xs font-black tracking-widest uppercase mb-3" style={{ color: 'oklch(0.70 0.19 46)' }}>Per i Coach</p>
               <h2 className="font-black tracking-tighter leading-none mb-4"
                 style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)', fontFamily: 'Syne, sans-serif' }}>
-                Perdi meno clienti.<br />
-                <span style={{ color: 'oklch(0.70 0.19 46)' }}>Guadagna di più.</span>
+                Meno clienti persi.<br />
+                <span style={{ color: 'oklch(0.70 0.19 46)' }}>Più rinnovi.</span>
               </h2>
               <p className="text-base max-w-xl leading-relaxed" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                Ogni cliente che abbandona è un mancato rinnovo. Bynari ti aiuta a tenerli attivi,
-                motivati e convinti che valga la pena continuare con te.
+                Un cliente che abbandona ti costa in media 3 mesi di rinnovo mancato.
+                Bynari ti dà la visibilità per intervenire prima, non dopo.
               </p>
             </div>
           </FadeIn>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {COACH_BENEFITS.map((f, i) => (
-              <FeatureCard key={f.num} {...f} delay={i * 0.1} />
-            ))}
+            {COACH_BENEFITS.map((f, i) => <FeatureCard key={f.num} {...f} delay={i * 0.1} />)}
           </div>
-
           <FadeIn delay={0.4}>
             <div className="mt-8 flex items-center gap-4">
               <Link href="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95"
                 style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
-                Inizia con 3 clienti gratis →
+                Prova gratis con 3 clienti →
               </Link>
               <span className="text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>
                 Nessuna carta · Beta gratuita
@@ -340,15 +402,12 @@ export default function LandingPage() {
           </FadeIn>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FadeIn delay={0.1}>
-              <div className="p-6 rounded-2xl h-full" style={{
-                background: 'oklch(0.70 0.19 46 / 6%)',
-                border: '1px solid oklch(0.70 0.19 46 / 25%)',
-              }}>
+              <div className="p-6 rounded-2xl h-full" style={{ background: 'oklch(0.70 0.19 46 / 6%)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
                 <p className="font-black text-sm mb-4 uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>✓ È per te</p>
                 {[
-                  'Sei un personal trainer con 5+ clienti attivi',
-                  'Passi troppo tempo a gestire schede e messaggi',
-                  'Hai perso clienti senza capire perché',
+                  'Hai 5+ clienti attivi e vuoi tenerli il più a lungo possibile',
+                  'Perdi troppo tempo su schede, messaggi e aggiornamenti manuali',
+                  'Hai già perso clienti senza capire il motivo',
                   'Vuoi monitorare i progressi senza fare tutto a mano',
                   'Cerchi uno strumento professionale, non un foglio Excel',
                 ].map((item) => (
@@ -360,14 +419,11 @@ export default function LandingPage() {
               </div>
             </FadeIn>
             <FadeIn delay={0.2}>
-              <div className="p-6 rounded-2xl h-full" style={{
-                background: 'oklch(0.16 0 0)',
-                border: '1px solid oklch(1 0 0 / 7%)',
-              }}>
+              <div className="p-6 rounded-2xl h-full" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 7%)' }}>
                 <p className="font-black text-sm mb-4 uppercase tracking-widest" style={{ color: 'oklch(0.45 0 0)' }}>✗ Non è per te</p>
                 {[
                   'Hai solo 1–2 clienti e gestisci tutto via WhatsApp',
-                  'Cerchi un software con CRM, fatturazione e contabilità',
+                  'Cerchi un software con CRM, fatturazione e contabilità integrata',
                   'Vuoi uno strumento per palestre con 50+ istruttori',
                   'Non hai intenzione di usare la tecnologia nel tuo lavoro',
                 ].map((item) => (
@@ -399,25 +455,19 @@ export default function LandingPage() {
                 <span style={{ color: 'oklch(0.70 0.19 46)' }}>Vedi i numeri crescere.</span>
               </h2>
               <p className="text-base max-w-xl ml-auto leading-relaxed" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                Con o senza un coach. Crea la tua scheda, logga ogni allenamento e
-                smetti di allenarti a memoria senza sapere se stai progredendo.
+                Con o senza coach. Crea la tua scheda, logga ogni allenamento e
+                smetti di allenarti a memoria senza sapere se stai davvero progredendo.
               </p>
             </div>
           </FadeIn>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {ATLETA_FEATURES.map((f, i) => (
-              <FeatureCard key={f.num} {...f} delay={i * 0.1} />
-            ))}
+            {ATLETA_FEATURES.map((f, i) => <FeatureCard key={f.num} {...f} delay={i * 0.1} />)}
           </div>
-
           <FadeIn delay={0.4}>
             <div className="mt-8 flex items-center justify-end gap-4">
-              <span className="text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                Piano free · 1 scheda · 3 giorni
-              </span>
+              <span className="text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>Piano free · 1 scheda · 3 giorni</span>
               <Link href="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-80 active:scale-95"
                 style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(1 0 0 / 15%)' }}>
                 Inizia gratis →
               </Link>
@@ -434,14 +484,13 @@ export default function LandingPage() {
             <h2 className="font-black tracking-tighter mb-4"
               style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontFamily: 'Syne, sans-serif' }}>
               Inizia gratis.<br />
-              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Cresci quando sei pronto.</span>
+              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Blocca il prezzo di lancio.</span>
             </h2>
             <p className="text-base mb-12 leading-relaxed" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              Durante la beta tutto è gratuito. Registrati adesso e blocchi
-              il prezzo di lancio prima che i piani a pagamento partano.
+              Durante la beta tutto è gratuito. Chi si registra ora blocca il prezzo speciale
+              prima che i piani a pagamento partano.
             </p>
           </FadeIn>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
             {[
               {
@@ -517,21 +566,19 @@ export default function LandingPage() {
               <div className="relative z-10">
                 <h2 className="font-black tracking-tighter mb-4 leading-tight"
                   style={{ fontSize: 'clamp(1.8rem, 5vw, 3.5rem)', fontFamily: 'Syne, sans-serif' }}>
-                  Smetti di perdere clienti<br />
-                  <span style={{ color: 'oklch(0.70 0.19 46)' }}>per mancanza di attenzione.</span>
+                  Il prossimo cliente che stava<br />per mollare{' '}
+                  <span style={{ color: 'oklch(0.70 0.19 46)' }}>lo tieni.</span>
                 </h2>
                 <p className="text-base mb-10 leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                  Registrati gratis oggi. Inizia a usarlo con i tuoi clienti.
-                  Nessuna carta di credito, nessun vincolo.
+                  Registrati gratis oggi. Nessuna carta di credito, nessun vincolo.
+                  Inizia con 3 clienti e vedi la differenza.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/register"
-                    className="group flex items-center gap-3 px-10 py-4 rounded-2xl font-black text-base transition-all active:scale-95 hover:scale-105"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', minWidth: 240 }}>
-                    Inizia con 3 clienti gratis
-                    <span className="transition-transform group-hover:translate-x-1">→</span>
-                  </Link>
-                </div>
+                <Link href="/register"
+                  className="group inline-flex items-center gap-3 px-10 py-4 rounded-2xl font-black text-base transition-all active:scale-95 hover:brightness-110"
+                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                  Prova gratis con 3 clienti
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </Link>
                 <p className="mt-5 text-xs" style={{ color: 'oklch(0.35 0 0)', fontFamily: 'Inter, sans-serif' }}>
                   Setup in 2 minuti · Beta gratuita · Nessun obbligo
                 </p>
@@ -546,9 +593,7 @@ export default function LandingPage() {
         <div className="max-w-xl mx-auto text-center">
           <FadeIn>
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-6"
-              style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-              ⚡
-            </div>
+              style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>⚡</div>
             <h2 className="font-black tracking-tighter mb-3" style={{ fontSize: '2.2rem', fontFamily: 'Syne, sans-serif' }}>
               Vuoi il prezzo di lancio?
             </h2>
@@ -556,28 +601,22 @@ export default function LandingPage() {
               I piani Pro e Coach arriveranno presto. Lascia la tua email
               e ti avvisiamo prima di tutti con un prezzo riservato.
             </p>
-
             {submitted ? (
               <div className="px-6 py-4 rounded-2xl" style={{ background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
                 <p className="font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>✓ Sei in lista!</p>
-                <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                  Ti contatteremo non appena il piano sarà disponibile.
-                </p>
+                <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>Ti contatteremo non appena il piano sarà disponibile.</p>
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="la@tua.email"
                   className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
                   style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)', fontFamily: 'Inter, sans-serif' }}
                   onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
                   onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 10%)'}
-                  onKeyDown={e => e.key === 'Enter' && email && setSubmitted(true)}
-                />
-                <button
-                  onClick={() => email && setSubmitted(true)}
-                  className="px-6 py-3 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+                  onKeyDown={e => e.key === 'Enter' && email && setSubmitted(true)} />
+                <button onClick={() => email && setSubmitted(true)}
+                  className="px-6 py-3 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95"
                   style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
                   Avvisami
                 </button>
@@ -597,7 +636,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             {[['Accedi', '/login'], ['Registrati', '/register']].map(([label, href]) => (
               <Link key={label} href={href}
-                className="text-xs font-medium transition-opacity hover:opacity-100"
+                className="text-xs font-medium hover:opacity-100"
                 style={{ color: 'oklch(0.40 0 0)', fontFamily: 'Inter, sans-serif' }}>
                 {label}
               </Link>
