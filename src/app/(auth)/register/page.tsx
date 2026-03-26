@@ -49,20 +49,27 @@ function RegisterForm() {
       return
     }
 
-    // Se c'è un codice invito → crea il record in coach_inviti
+    // Se c'è un codice invito → crea il record in coach_inviti via API (bypassa RLS)
     if (inviteCode && signUpData.user) {
-      // Trova il coach
       const { data: coach } = await supabase
-        .from('profiles').select('id').eq('coach_code', inviteCode).single()
+        .from('profiles').select('id').eq('coach_code', inviteCode.toUpperCase()).maybeSingle()
 
       if (coach) {
-        // Piccolo delay per aspettare che il profilo venga creato dal trigger
-        await new Promise(r => setTimeout(r, 1500))
-        await supabase.from('coach_inviti').insert({
-          coach_id: coach.id,
-          cliente_id: signUpData.user.id,
-          stato: 'pending',
+        // Piccolo delay per aspettare che il trigger crei il profilo
+        await new Promise(r => setTimeout(r, 2500))
+        const res = await fetch('/api/coach/crea-invito', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coach_id: coach.id, cliente_id: signUpData.user.id }),
         })
+        if (!res.ok) {
+          // fallback: prova con il client diretto
+          await supabase.from('coach_inviti').insert({
+            coach_id: coach.id,
+            cliente_id: signUpData.user.id,
+            stato: 'pending',
+          })
+        }
         router.push('/atleta/dashboard?invito=inviato')
         return
       }
