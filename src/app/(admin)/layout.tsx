@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import AdminLogoutButton from './AdminLogoutButton'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -23,7 +22,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ADMIN
           </span>
         </div>
-        <AdminLogoutButton />
+        <a href="/login"
+          className="text-xs font-medium px-3 py-1.5 rounded-lg"
+          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+          Esci
+        </a>
       </div>
       <main className="p-6 max-w-6xl mx-auto">
         {children}
