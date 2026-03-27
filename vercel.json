@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/coach-inattivi",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
