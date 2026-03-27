@@ -687,8 +687,8 @@ export default function AnalyticsPage() {
             onClick={e => e.stopPropagation()}>
 
             {/* Header drawer */}
-            <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-4"
-              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+            <div className="sticky top-0 z-10 flex items-center gap-4 px-5"
+              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
               <button onClick={chiudiCliente}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
                 style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
