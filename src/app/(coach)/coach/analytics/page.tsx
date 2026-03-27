@@ -8,6 +8,7 @@ import {
   faTriangleExclamation, faChartBar, faHeart, faComment,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
   faWeightScale, faArrowTrendUp, faArrowTrendDown, faMinus,
+  faXmark, faChevronDown, faChevronUp, faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -36,6 +37,28 @@ interface ClienteStats {
   alert: string[]
 }
 
+interface LogSerie {
+  numero_serie: number
+  peso_kg: number | null
+  ripetizioni: number | null
+  completata: boolean
+  scheda_esercizi: {
+    serie: number
+    ripetizioni: string
+    recupero_secondi: number
+    esercizi: { nome: string; muscoli: string[] | null }
+  } | null
+}
+
+interface SessioneDettaglio {
+  id: string
+  data: string
+  completata: boolean
+  durata_secondi: number | null
+  scheda_giorni: { nome: string } | null
+  log_serie: LogSerie[]
+}
+
 type VistaTab = 'overview' | 'benessere' | 'peso' | 'attivita'
 
 export default function AnalyticsPage() {
@@ -46,6 +69,10 @@ export default function AnalyticsPage() {
   const [totaleSchede, setTotaleSchede] = useState(0)
   const [totaleAssegnazioni, setTotaleAssegnazioni] = useState(0)
   const [totaleSessioni, setTotaleSessioni] = useState(0)
+  const [clienteSelezionato, setClienteSelezionato] = useState<ClienteStats | null>(null)
+  const [sessioniDettaglio, setSessioniDettaglio] = useState<SessioneDettaglio[]>([])
+  const [loadingSessioni, setLoadingSessioni] = useState(false)
+  const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -186,6 +213,43 @@ export default function AnalyticsPage() {
 
   useEffect(() => { fetchAnalytics() }, [])
 
+  const apriCliente = async (cliente: ClienteStats) => {
+    setClienteSelezionato(cliente)
+    setSessioneAperta(null)
+    setLoadingSessioni(true)
+    const { data } = await supabase
+      .from('sessioni')
+      .select(`
+        id, data, completata, durata_secondi,
+        scheda_giorni ( nome ),
+        log_serie (
+          numero_serie, peso_kg, ripetizioni, completata,
+          scheda_esercizi (
+            serie, ripetizioni, recupero_secondi,
+            esercizi ( nome, muscoli )
+          )
+        )
+      `)
+      .eq('cliente_id', cliente.id)
+      .order('data', { ascending: false })
+    setSessioniDettaglio((data as any) ?? [])
+    setLoadingSessioni(false)
+  }
+
+  const chiudiCliente = () => {
+    setClienteSelezionato(null)
+    setSessioniDettaglio([])
+    setSessioneAperta(null)
+  }
+
+  const formatDurata = (sec: number | null) => {
+    if (!sec) return null
+    const h = Math.floor(sec / 3600)
+    const m = Math.floor((sec % 3600) / 60)
+    if (h > 0) return `${h}h ${m}min`
+    return `${m}min`
+  }
+
   const getStatoCliente = (giorni: number | null, sessioni: number) => {
     if (sessioni === 0) return { label: 'Mai allenato', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' }
     if (giorni === null) return { label: 'Nessuna sessione', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' }
@@ -319,7 +383,8 @@ export default function AnalyticsPage() {
                 const stato = getStatoCliente(c.giorni_inattivo, c.totale_sessioni)
                 return (
                   <div key={c.id}
-                    className="px-5 py-4 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center flex flex-col gap-2"
+                    onClick={() => apriCliente(c)}
+                    className="px-5 py-4 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center flex flex-col gap-2 cursor-pointer transition-colors hover:opacity-80"
                     style={{ borderBottom: i < clientiStats.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
                     {/* Cliente */}
                     <div className="lg:col-span-4 flex items-center gap-3">
@@ -611,6 +676,172 @@ export default function AnalyticsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── DRAWER DETTAGLIO CLIENTE ── */}
+      {clienteSelezionato && (
+        <div className="fixed inset-0 z-50 flex justify-end" style={{ background: 'oklch(0 0 0 / 60%)' }}
+          onClick={chiudiCliente}>
+          <div className="w-full max-w-xl h-full overflow-y-auto flex flex-col"
+            style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+            onClick={e => e.stopPropagation()}>
+
+            {/* Header drawer */}
+            <div className="sticky top-0 z-10 flex items-center gap-4 px-5 py-4"
+              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+              <button onClick={chiudiCliente}
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                  {clienteSelezionato.full_name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-black text-base truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                    {clienteSelezionato.full_name}
+                  </p>
+                  <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                    {clienteSelezionato.totale_sessioni} sessioni totali
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contenuto */}
+            <div className="flex-1 p-5 space-y-3">
+              {loadingSessioni ? (
+                <div className="py-16 text-center">
+                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento sessioni...</p>
+                </div>
+              ) : sessioniDettaglio.length === 0 ? (
+                <div className="py-16 text-center space-y-3 rounded-2xl"
+                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  <p className="text-4xl"><FontAwesomeIcon icon={faDumbbell} /></p>
+                  <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna sessione ancora</p>
+                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Il cliente non ha ancora completato allenamenti</p>
+                </div>
+              ) : (
+                sessioniDettaglio.map((sessione) => {
+                  const isAperta = sessioneAperta === sessione.id
+                  const serieCompletate = sessione.log_serie.filter(s => s.completata).length
+                  const serieTotali = sessione.log_serie.length
+                  const volumeTotale = sessione.log_serie
+                    .filter(s => s.completata)
+                    .reduce((acc, s) => acc + ((s.peso_kg ?? 0) * (s.ripetizioni ?? 0)), 0)
+
+                  // Raggruppa log per esercizio
+                  const eserciziMap = new Map<string, { nome: string; muscoli: string[] | null; serie: LogSerie[] }>()
+                  for (const log of sessione.log_serie) {
+                    const nome = log.scheda_esercizi?.esercizi?.nome ?? 'Esercizio'
+                    if (!eserciziMap.has(nome)) {
+                      eserciziMap.set(nome, { nome, muscoli: log.scheda_esercizi?.esercizi?.muscoli ?? null, serie: [] })
+                    }
+                    eserciziMap.get(nome)!.serie.push(log)
+                  }
+                  const esercizi = Array.from(eserciziMap.values())
+
+                  return (
+                    <div key={sessione.id} className="rounded-2xl overflow-hidden"
+                      style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${sessione.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(1 0 0 / 6%)'}` }}>
+
+                      {/* Header sessione — cliccabile */}
+                      <div className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{ borderBottom: isAperta ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}
+                        onClick={() => setSessioneAperta(isAperta ? null : sessione.id)}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{
+                            background: sessione.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.75 0.15 27 / 15%)',
+                            color: sessione.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)',
+                          }}>
+                          <FontAwesomeIcon icon={sessione.completata ? faCircleCheck : faDumbbell} className="text-xs" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                            {(sessione as any).scheda_giorni?.nome ?? 'Allenamento'}
+                          </p>
+                          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                            {new Date(sessione.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                            {formatDurata(sessione.durata_secondi) && ` · ${formatDurata(sessione.durata_secondi)}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="text-right">
+                            <p className="text-xs font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+                              {serieCompletate}/{serieTotali} serie
+                            </p>
+                            {volumeTotale > 0 && (
+                              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                                {Math.round(volumeTotale).toLocaleString('it-IT')} kg vol.
+                              </p>
+                            )}
+                          </div>
+                          <FontAwesomeIcon icon={isAperta ? faChevronUp : faChevronDown}
+                            className="text-xs" style={{ color: 'oklch(0.45 0 0)' }} />
+                        </div>
+                      </div>
+
+                      {/* Dettaglio esercizi */}
+                      {isAperta && (
+                        <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
+                          {esercizi.map((ese) => (
+                            <div key={ese.nome} className="px-4 py-3 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{ese.nome}</p>
+                                {ese.muscoli && ese.muscoli.length > 0 && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full"
+                                    style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
+                                    {ese.muscoli[0]}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="space-y-1">
+                                {ese.serie
+                                  .sort((a, b) => a.numero_serie - b.numero_serie)
+                                  .map((serie) => (
+                                    <div key={serie.numero_serie}
+                                      className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                                      style={{
+                                        background: serie.completata ? 'oklch(0.65 0.18 150 / 8%)' : 'oklch(0.22 0 0)',
+                                        border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(1 0 0 / 5%)'}`,
+                                      }}>
+                                      <span className="text-xs font-bold w-14 flex-shrink-0"
+                                        style={{ color: 'oklch(0.50 0 0)' }}>
+                                        Serie {serie.numero_serie}
+                                      </span>
+                                      {serie.completata ? (
+                                        <>
+                                          <span className="text-sm font-black flex-1"
+                                            style={{ color: 'oklch(0.97 0 0)' }}>
+                                            {serie.peso_kg ?? '—'} kg
+                                          </span>
+                                          <span className="text-sm font-black"
+                                            style={{ color: 'oklch(0.97 0 0)' }}>
+                                            × {serie.ripetizioni ?? '—'} reps
+                                          </span>
+                                          <span className="text-xs ml-1" style={{ color: 'oklch(0.65 0.18 150)' }}>✓</span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs flex-1" style={{ color: 'oklch(0.40 0 0)' }}>
+                                          Non completata
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
