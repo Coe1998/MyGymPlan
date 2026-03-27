@@ -5,11 +5,7 @@ export default async function AppEntryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) {
-    if (profile.role === 'admin')   redirect('/admin/dashboard')
-
-  redirect('/login')
-  }
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -22,7 +18,6 @@ export default async function AppEntryPage() {
   if (profile.role === 'coach')   redirect('/coach/dashboard')
   if (profile.role === 'cliente') redirect('/cliente/dashboard')
   if (profile.role === 'atleta')  redirect('/atleta/dashboard')
-
   if (profile.role === 'admin')   redirect('/admin/dashboard')
 
   redirect('/login')
