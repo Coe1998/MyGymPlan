@@ -69,6 +69,8 @@ function LoginForm() {
       }
     } else if (profile?.role === 'cliente') {
       router.push('/cliente/dashboard')
+    } else if (profile?.role === 'admin') {
+      router.push('/admin/dashboard')
     } else {
       router.push('/atleta/dashboard')
     }
