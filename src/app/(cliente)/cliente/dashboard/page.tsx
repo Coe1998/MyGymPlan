@@ -20,7 +20,7 @@ export default async function ClienteDashboard() {
 
   const [assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes] = await Promise.all([
     supabase.from('assegnazioni')
-      .select(`id, data_inizio, data_fine, attiva, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
+      .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
       .eq('cliente_id', user.id).eq('attiva', true).order('created_at', { ascending: false }),
     supabase.from('sessioni')
       .select(`id, data, completata, scheda_giorni ( nome )`)
@@ -134,6 +134,22 @@ export default async function ClienteDashboard() {
                   </Link>
                 ))}
             </div>
+
+            {/* PDF Alimentare */}
+            {schedaAttiva.pdf_alimentare_url && (
+              <a href={schedaAttiva.pdf_alimentare_url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 rounded-xl transition-all hover:opacity-80 active:scale-95"
+                style={{ background: 'oklch(0.65 0.18 150 / 8%)', border: '1px solid oklch(0.65 0.18 150 / 25%)' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-lg"
+                  style={{ background: 'oklch(0.65 0.18 150 / 20%)', color: 'oklch(0.65 0.18 150)' }}>
+                  📄
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Scheda alimentare</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>Apri il PDF del tuo coach →</p>
+                </div>
+              </a>
+            )}
           </div>
         )}
       </div>
