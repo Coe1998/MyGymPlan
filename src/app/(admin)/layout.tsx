@@ -14,8 +14,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div style={{ background: 'oklch(0.11 0 0)', minHeight: '100vh', color: 'oklch(0.97 0 0)', fontFamily: 'Syne, Inter, sans-serif' }}>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b"
-        style={{ borderColor: 'oklch(1 0 0 / 8%)', background: 'oklch(0.13 0 0)' }}>
+      <div className="flex items-center justify-between px-6 border-b"
+        style={{ borderColor: 'oklch(1 0 0 / 8%)', background: 'oklch(0.13 0 0)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
         <div className="flex items-center gap-3">
           <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '22px', width: 'auto' }} />
           <span className="text-xs font-black px-2 py-1 rounded-lg"
