@@ -9,6 +9,8 @@ import {
   faCheck, faTriangleExclamation, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 
+const ONBOARDING_KEY = 'bynari-coach-onboarding-done'
+
 export default function ImpostazioniPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -209,6 +211,36 @@ export default function ImpostazioniPage() {
             color: !newPassword ? 'oklch(0.40 0 0)' : 'oklch(0.13 0 0)',
           }}>
           {savingPassword ? 'Aggiornamento...' : 'Aggiorna password'}
+        </button>
+      </div>
+
+
+      {/* ── Tutorial ── */}
+      <div className="rounded-2xl p-6 space-y-4"
+        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+            🎓
+          </div>
+          <div>
+            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Tutorial</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+              Rivedi la guida introduttiva all&apos;app
+            </p>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+          Hai già completato il tutorial ma vuoi rivederlo? Clicca qui sotto per ripartire dall&apos;inizio.
+        </p>
+        <button
+          onClick={() => {
+            localStorage.removeItem(ONBOARDING_KEY)
+            window.location.reload()
+          }}
+          className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 hover:brightness-110"
+          style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          🎓 Rivedi il tutorial
         </button>
       </div>
 
