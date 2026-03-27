@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUsers, faClipboardList, faCircleCheck, faHand } from '@fortawesome/free-solid-svg-icons'
+import CoachOnboarding from '@/components/shared/CoachOnboarding'
 
 export default async function CoachDashboard() {
   const supabase = await createClient()
@@ -35,6 +36,7 @@ export default async function CoachDashboard() {
 
   return (
     <div className="space-y-8 max-w-5xl">
+      <CoachOnboarding />
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

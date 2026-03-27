@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDumbbell, faCalendarDays, faHand, faClipboardList, faPersonRunning, faCircleCheck, faPause } from '@fortawesome/free-solid-svg-icons'
 import SessioniList from '@/components/cliente/SessioniList'
+import ClienteOnboarding from '@/components/shared/ClienteOnboarding'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -42,6 +43,7 @@ export default async function ClienteDashboard() {
 
   return (
     <div className="space-y-8 max-w-5xl">
+      <ClienteOnboarding />
       {/* Header */}
       <div>
         <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.60 0.15 200)' }}>
