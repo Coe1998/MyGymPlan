@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ADMIN
           </span>
         </div>
-        <a href="/login"
+        <a href="/api/auth/signout"
           className="text-xs font-medium px-3 py-1.5 rounded-lg"
           style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
           Esci
