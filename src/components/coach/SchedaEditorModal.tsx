@@ -61,10 +61,39 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
   const [searchA, setSearchA] = useState('')
   const [filtroMuscolo, setFiltroMuscolo] = useState('')
   const [showAlt, setShowAlt] = useState(!!form.alternativa_id)
+  const [showCreaEse, setShowCreaEse] = useState(false)
+  const [nuovoNome, setNuovoNome] = useState('')
+  const [nuovoMuscoli, setNuovoMuscoli] = useState<string[]>([])
+  const [creandoEse, setCreandoEse] = useState(false)
 
   const MUSCOLI = ['Petto', 'Dorsali', 'Spalle', 'Bicipiti', 'Tricipiti', 'Quadricipiti', 'Femorali', 'Glutei', 'Addome', 'Polpacci', 'Trapezio', 'Avambracci']
 
   const set = (key: keyof EsForm, val: string) => onChange({ ...form, [key]: val })
+
+  const handleCreaEsercizio = async () => {
+    if (!nuovoNome.trim()) return
+    setCreandoEse(true)
+    const supabase = (await import('@/lib/supabase/client')).createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setCreandoEse(false); return }
+    const { data } = await supabase.from('esercizi').insert({
+      coach_id: user.id,
+      nome: nuovoNome.trim(),
+      muscoli: nuovoMuscoli.length > 0 ? nuovoMuscoli : null,
+      is_global: false,
+    }).select().single()
+    if (data) {
+      // Add to local list and select it
+      onChange({ ...form, esercizio_id: data.id })
+      setSearchP('')
+      setShowCreaEse(false)
+      setNuovoNome('')
+      setNuovoMuscoli([])
+      // Notify parent to refresh esercizi list
+      window.dispatchEvent(new CustomEvent('bynari:esercizio-creato', { detail: data }))
+    }
+    setCreandoEse(false)
+  }
   const setMany = (updates: Partial<EsForm>) => onChange({ ...form, ...updates })
   const tipo = getTipoInfo(form.tipo)
   const isGrouped = ['superset', 'giant_set'].includes(form.tipo)
@@ -130,11 +159,62 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               placeholder="Cerca esercizio..."
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
+            {/* Crea esercizio inline */}
+            {!form.esercizio_id && (showCreaEse ? (
+              <div className="rounded-xl p-3 space-y-3 mt-1"
+                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                  Crea nuovo esercizio
+                </p>
+                <input type="text" value={nuovoNome} onChange={e => setNuovoNome(e.target.value)}
+                  placeholder="Nome esercizio *"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'oklch(0.25 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
+                <div className="flex flex-wrap gap-1.5">
+                  {MUSCOLI.map(m => (
+                    <button key={m} onClick={() => setNuovoMuscoli(prev =>
+                      prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]
+                    )}
+                      className="px-2.5 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        background: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.28 0 0)',
+                        color: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+                      }}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleCreaEsercizio} disabled={creandoEse || !nuovoNome.trim()}
+                    className="flex-1 py-2 rounded-xl text-sm font-bold"
+                    style={{
+                      background: !nuovoNome.trim() ? 'oklch(0.28 0 0)' : 'oklch(0.70 0.19 46)',
+                      color: !nuovoNome.trim() ? 'oklch(0.42 0 0)' : 'oklch(0.11 0 0)',
+                    }}>
+                    {creandoEse ? 'Salvataggio...' : '✓ Crea e seleziona'}
+                  </button>
+                  <button onClick={() => { setShowCreaEse(false); setNuovoNome(''); setNuovoMuscoli([]) }}
+                    className="px-4 py-2 rounded-xl text-sm"
+                    style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setShowCreaEse(true)}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold mt-1"
+                style={{ background: 'oklch(0.20 0 0)', color: 'oklch(0.65 0.15 300)', border: '1px dashed oklch(0.65 0.15 300 / 40%)' }}>
+                + Crea nuovo esercizio
+              </button>
+            ))}
+
             {(searchP.length > 0 || filtroMuscolo) && (
               <div className="rounded-xl overflow-hidden max-h-44 overflow-y-auto"
                 style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
                 {filtP.length === 0
-                  ? <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                  ? <div>
+                      <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                    </div>
                   : filtP.map((e, i) => (
                     <button key={e.id} onClick={() => { set('esercizio_id', e.id); setSearchP('') }}
                       className="w-full text-left px-4 py-2.5 transition-all active:opacity-60"
@@ -423,6 +503,16 @@ export default function SchedaEditorModal({
   }, [schedaId])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Aggiorna lista esercizi quando ne viene creato uno inline
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const nuovoEse = (e as CustomEvent).detail
+      setEsercizi(prev => [...prev, nuovoEse].sort((a, b) => a.nome.localeCompare(b.nome)))
+    }
+    window.addEventListener('bynari:esercizio-creato', handler)
+    return () => window.removeEventListener('bynari:esercizio-creato', handler)
+  }, [])
 
   // Compute gruppo labels for current day
   const getGruppiGiorno = () => {
