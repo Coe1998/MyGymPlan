@@ -510,40 +510,26 @@ export default function AllenamentoPage() {
         </div>
       )}
 
-      {/* Timer recupero — fisso in basso, solo in modalità live */}
+      {/* Timer recupero — solo in modalità live */}
       {timerAttivo && !isViewMode && (
-        <div className="fixed left-0 right-0 z-40 px-4"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}>
-          <div className="max-w-2xl mx-auto rounded-2xl px-5 py-3 flex items-center justify-between"
-            style={{
-              background: 'oklch(0.18 0 0)',
-              border: '1px solid oklch(0.70 0.19 46 / 50%)',
-              boxShadow: '0 8px 32px oklch(0 0 0 / 60%)',
-            }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                <FontAwesomeIcon icon={faStopwatch} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>Recupero</p>
-                <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>Prossima serie tra...</p>
-              </div>
+        <div className="rounded-2xl p-4 flex items-center justify-between"
+          style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}><FontAwesomeIcon icon={faStopwatch} /> Recupero</p>
+            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>Prossima serie tra...</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-3xl font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
+              {Math.floor(timerSecondi / 60).toString().padStart(2, '0')}:{(timerSecondi % 60).toString().padStart(2, '0')}
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-2xl font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                {Math.floor(timerSecondi / 60).toString().padStart(2, '0')}:{(timerSecondi % 60).toString().padStart(2, '0')}
-              </div>
-              <button onClick={() => setTimerAttivo(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
-                Salta
-              </button>
-            </div>
+            <button onClick={() => setTimerAttivo(false)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              Salta
+            </button>
           </div>
         </div>
       )}
-
 
       {/* Esercizi */}
       <div className="space-y-4">

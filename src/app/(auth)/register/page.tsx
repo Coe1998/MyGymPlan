@@ -74,6 +74,12 @@ function RegisterForm() {
       await supabase.from('profiles')
         .update({ coach_status: 'pending' })
         .eq('id', signUpData.user!.id)
+      // Notifica Telegram admin
+      fetch('/api/notify/nuovo-coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName, email }),
+      }).catch(() => {})
       router.push('/coach/pending')
     } else {
       router.push('/atleta/dashboard')

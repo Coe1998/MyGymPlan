@@ -47,8 +47,12 @@ export async function updateSession(request: NextRequest) {
 
     if (profile?.role === 'coach') {
       return NextResponse.redirect(new URL('/coach/dashboard', request.url))
-    } else {
+    } else if (profile?.role === 'cliente') {
       return NextResponse.redirect(new URL('/cliente/dashboard', request.url))
+    } else if (profile?.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    } else {
+      return NextResponse.redirect(new URL('/atleta/dashboard', request.url))
     }
   }
 

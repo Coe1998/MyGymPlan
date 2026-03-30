@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers()
     if (authError) return NextResponse.json({ error: 'Errore nella ricerca' }, { status: 500 })
 
-    const targetUser = authUsers.users.find(u => u.email === email.trim())
+    const targetUser = authUsers.users.find(u => u.email?.toLowerCase() === email.trim().toLowerCase())
     if (!targetUser)
       return NextResponse.json({
         error: 'Nessun utente trovato con questa email. Assicurati che si sia già registrato su Bynari.'

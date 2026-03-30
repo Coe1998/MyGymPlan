@@ -2,28 +2,32 @@
 
 import { useEffect, useState } from 'react'
 
+const DISMISS_KEY = 'bynari-ios-banner-dismissed-at'
+const DAYS_BEFORE_RESHOWING = 7
+
 export default function IosBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // Rileva Safari iOS
     const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    // Controlla se già installata (standalone = già aperta come PWA)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
       || ('standalone' in window.navigator && (window.navigator as any).standalone === true)
-    // Controlla se già chiuso in precedenza
-    const dismissed = localStorage.getItem('bynari-ios-banner-dismissed')
 
-    if (isIos && isSafari && !isStandalone && !dismissed) {
-      // Piccolo delay per non bloccare il rendering
+    // Controlla se è stato chiuso di recente (entro 7 giorni)
+    const dismissedAt = localStorage.getItem(DISMISS_KEY)
+    const recentlyDismissed = dismissedAt
+      ? (Date.now() - parseInt(dismissedAt)) < DAYS_BEFORE_RESHOWING * 24 * 60 * 60 * 1000
+      : false
+
+    if (isIos && isSafari && !isStandalone && !recentlyDismissed) {
       setTimeout(() => setVisible(true), 2000)
     }
   }, [])
 
   const dismiss = () => {
     setVisible(false)
-    localStorage.setItem('bynari-ios-banner-dismissed', '1')
+    localStorage.setItem(DISMISS_KEY, Date.now().toString())
   }
 
   if (!visible) return null
@@ -60,7 +64,7 @@ export default function IosBanner() {
               style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.80 0 0)', fontSize: 11 }}>
               ⬆
             </span>
-            {' '}poi <strong style={{ color: 'oklch(0.80 0 0)' }}>"Aggiungi a schermata Home"</strong> per usarla come un'app
+            {' '}poi <strong style={{ color: 'oklch(0.80 0 0)' }}>"Aggiungi a schermata Home"</strong> per usarla come un&apos;app
           </p>
         </div>
 

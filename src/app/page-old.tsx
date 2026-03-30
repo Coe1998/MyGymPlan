@@ -19,11 +19,10 @@ const COACH_BENEFITS = [
   { num: '02', title: 'Schede pronte in 3 minuti', body: 'Crea una scheda, salvala come template, assegnala a più clienti in un tap. Niente più Excel o PDF sparsi.' },
   { num: '03', title: 'I clienti si allenano davvero', body: 'L\'app guida il cliente serie per serie con timer automatico. Più autonomia per loro, meno messaggi alle 22 per te.' },
   { num: '04', title: 'Tutto in un posto solo', body: 'Scheda, piano alimentare, progressi, messaggi. Smetti di usare 4 app diverse per ogni cliente.' },
-  { num: '05', title: 'Progressione automatica dei carichi', body: 'I nostri algoritmi analizzano le performance storiche e suggeriscono l\'aumento di carico ideale per ogni cliente. Meno calcoli manuali per te, più risultati costanti per loro.' },
 ]
 
 const ATLETA_FEATURES = [
-  { num: '01', title: 'Suggerimento carico in tempo reale', body: 'Logga una serie e l\'algoritmo ti dice subito quanto caricare nella successiva. Autoregolazione precisa, serie per serie, basata sulla tua performance attuale.' },
+  { num: '01', title: 'Logga ogni serie in secondi', body: 'Peso, reps, recupero automatico. Confronto immediato con la sessione precedente.' },
   { num: '02', title: 'Vedi i progressi davvero', body: 'Grafici peso massimo e volume per esercizio. La curva di forza che cresce settimana dopo settimana.' },
   { num: '03', title: 'Condividi i tuoi risultati', body: 'Card stile Strava con i tuoi highlight. Un tap e la condividi dove vuoi.' },
   { num: '04', title: 'Tieni traccia di come stai', body: 'Check-in energia, sonno, stress. Capisci quando spingerti e quando recuperare.' },
@@ -298,7 +297,7 @@ export default function LandingPage() {
               { icon: '👻', title: 'Clienti che spariscono in silenzio', body: 'Non sai chi non si allena da una settimana. Quando te ne accorgi, si sono già disiscritti.' },
               { icon: '🕐', title: 'Ore perse in gestione', body: 'Messaggi, aggiornamenti, controlli manuali. Tempo rubato ai clienti che potresti realmente aiutare.' },
             ].map((item, i) => (
-              <FadeIn key={item.title} delay={i * 0.1}> {/* Corretto: uso i invece di item.num */}
+              <FadeIn key={item.title} delay={i * 0.1}>
                 <div className="p-6 rounded-2xl h-full" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 7%)' }}>
                   <div className="text-3xl mb-4">{item.icon}</div>
                   <h3 className="font-black text-base mb-2 tracking-tight" style={{ color: 'oklch(0.97 0 0)', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
@@ -320,15 +319,10 @@ export default function LandingPage() {
               Uno strumento che ti fa<br />
               <span style={{ color: 'oklch(0.70 0.19 46)' }}>guadagnare di più perdendo meno.</span>
             </h2>
-            <p className="text-base leading-relaxed mb-4" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-base leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
               Bynari non è una semplice app per schede. È lo strumento che ti dà visibilità su ogni cliente,
               ti avvisa quando qualcuno rischia di abbandonare e ti fa lavorare meno sulla gestione
               per concentrarti su chi conta davvero.
-            </p>
-            <p className="text-base leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              In più, i nostri potenti algoritmi analizzano le performance in tempo reale,
-              suggerendo automaticamente l\'aumento progressivo del carico sessione per sessione e serie per serie,
-              eliminando ogni dubbio su quanto caricare.
             </p>
           </FadeIn>
         </div>
@@ -381,7 +375,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {COACH_BENEFITS.map((f, i) => <FeatureCard key={f.num} {...f} delay={i * 0.1} />)}
           </div>
-          <FadeIn delay={0.5}>
+          <FadeIn delay={0.4}>
             <div className="mt-8 flex items-center gap-4">
               <Link href="/register"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95"
