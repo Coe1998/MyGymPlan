@@ -298,7 +298,7 @@ export default function LandingPage() {
               { icon: '👻', title: 'Clienti che spariscono in silenzio', body: 'Non sai chi non si allena da una settimana. Quando te ne accorgi, si sono già disiscritti.' },
               { icon: '🕐', title: 'Ore perse in gestione', body: 'Messaggi, aggiornamenti, controlli manuali. Tempo rubato ai clienti che potresti realmente aiutare.' },
             ].map((item, i) => (
-              <FadeIn key={item.title} delay={item.num === '01' ? 0 : 0.1}>
+              <FadeIn key={item.title} delay={i * 0.1}> {/* Corretto: uso i invece di item.num */}
                 <div className="p-6 rounded-2xl h-full" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 7%)' }}>
                   <div className="text-3xl mb-4">{item.icon}</div>
                   <h3 className="font-black text-base mb-2 tracking-tight" style={{ color: 'oklch(0.97 0 0)', fontFamily: 'Syne, sans-serif' }}>{item.title}</h3>
