@@ -19,11 +19,16 @@ const MUSCOLI_OPTIONS = [
   'Addome', 'Quadricipiti', 'Femorali', 'Glutei', 'Polpacci', 'Avambracci',
 ]
 
+const PAGE_SIZE = 10
+
 export default function AtletaEserciziPage() {
   const supabase = createClient()
   const [esercizi, setEsercizi] = useState<Esercizio[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState<'tutti' | 'miei' | 'globali'>('tutti')
+  const [filtroMuscolo, setFiltroMuscolo] = useState<string | null>(null)
+  const [visibili, setVisibili] = useState(PAGE_SIZE)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [nome, setNome] = useState('')
@@ -45,6 +50,7 @@ export default function AtletaEserciziPage() {
   }
 
   useEffect(() => { fetchEsercizi() }, [])
+  useEffect(() => { setVisibili(PAGE_SIZE) }, [search, filtroTipo, filtroMuscolo])
 
   const resetForm = () => {
     setNome(''); setMuscoli([]); setDescrizione('')
@@ -83,14 +89,26 @@ export default function AtletaEserciziPage() {
   const toggleMuscolo = (m: string) =>
     setMuscoli(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])
 
-  const filtered = esercizi.filter(e => e.nome.toLowerCase().includes(search.toLowerCase()))
+  const filtered = esercizi.filter(e => {
+    if (search && !e.nome.toLowerCase().includes(search.toLowerCase()) &&
+        !e.muscoli?.some(m => m.toLowerCase().includes(search.toLowerCase()))) return false
+    if (filtroTipo === 'miei' && e.is_global) return false
+    if (filtroTipo === 'globali' && !e.is_global) return false
+    if (filtroMuscolo && !e.muscoli?.includes(filtroMuscolo)) return false
+    return true
+  })
+
+  const visibiliEsercizi = filtered.slice(0, visibili)
+  const haAltri = filtered.length > visibili
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Esercizi</h1>
-          <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>La tua libreria personale</p>
+          <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
+            {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
+          </p>
         </div>
         <button onClick={() => { resetForm(); setShowForm(true) }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
@@ -112,7 +130,6 @@ export default function AtletaEserciziPage() {
               <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
-
           <div className="space-y-2">
             <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Nome *</label>
             <input type="text" value={nome} onChange={e => setNome(e.target.value)}
@@ -122,7 +139,6 @@ export default function AtletaEserciziPage() {
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
               onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
           </div>
-
           <div className="space-y-2">
             <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Muscoli</label>
             <div className="flex flex-wrap gap-2">
@@ -139,7 +155,6 @@ export default function AtletaEserciziPage() {
               ))}
             </div>
           </div>
-
           <div className="space-y-2">
             <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note / Descrizione</label>
             <textarea value={descrizione} onChange={e => setDescrizione(e.target.value)}
@@ -149,7 +164,6 @@ export default function AtletaEserciziPage() {
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
               onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
           </div>
-
           <div className="flex gap-3">
             <button onClick={handleSave} disabled={saving || !nome.trim()}
               className="px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"
@@ -167,13 +181,55 @@ export default function AtletaEserciziPage() {
         </div>
       )}
 
-      {/* Search */}
-      <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-        placeholder="Cerca esercizio..."
-        className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-        onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-        onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+      {/* ── Filtri ── */}
+      <div className="space-y-3">
+        <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Cerca per nome o muscolo..."
+          className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+          onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+
+        <div className="flex gap-2">
+          {[
+            { id: 'tutti', label: 'Tutti' },
+            { id: 'miei', label: '👤 Miei' },
+            { id: 'globali', label: '🌐 Globali' },
+          ].map(f => (
+            <button key={f.id} onClick={() => setFiltroTipo(f.id as any)}
+              className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
+              style={{
+                background: filtroTipo === f.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                color: filtroTipo === f.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+              }}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setFiltroMuscolo(null)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+            style={{
+              background: filtroMuscolo === null ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+              color: filtroMuscolo === null ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+              border: filtroMuscolo === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+            }}>
+            Tutti i muscoli
+          </button>
+          {MUSCOLI_OPTIONS.map(m => (
+            <button key={m} onClick={() => setFiltroMuscolo(filtroMuscolo === m ? null : m)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+              style={{
+                background: filtroMuscolo === m ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                color: filtroMuscolo === m ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                border: filtroMuscolo === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+              }}>
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Lista */}
       {loading ? (
@@ -183,20 +239,29 @@ export default function AtletaEserciziPage() {
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
           <p className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></p>
           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
-            {search ? 'Nessun risultato' : 'Nessun esercizio ancora'}
+            {search || filtroTipo !== 'tutti' || filtroMuscolo ? 'Nessun risultato' : 'Nessun esercizio ancora'}
           </p>
           <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
-            {search ? 'Prova un altro termine' : 'Aggiungi il tuo primo esercizio'}
+            {search || filtroTipo !== 'tutti' || filtroMuscolo ? 'Prova a cambiare i filtri' : 'Aggiungi il tuo primo esercizio'}
           </p>
         </div>
       ) : (
         <div className="rounded-2xl overflow-hidden"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          {filtered.map((e, i) => (
+          <div className="px-5 py-3 flex items-center justify-between"
+            style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
+            <p className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>
+              {filtered.length} esercizi trovati
+            </p>
+          </div>
+          {visibiliEsercizi.map((e, i) => (
             <div key={e.id} className="flex items-center gap-4 px-5 py-4 group"
-              style={{ borderBottom: i < filtered.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              style={{ borderBottom: i < visibiliEsercizi.length - 1 || haAltri ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                style={{
+                  background: e.is_global ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 15%)',
+                  color: e.is_global ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)',
+                }}>
                 <FontAwesomeIcon icon={faDumbbell} />
               </div>
               <div className="flex-1 min-w-0">
@@ -234,6 +299,15 @@ export default function AtletaEserciziPage() {
               )}
             </div>
           ))}
+          {haAltri && (
+            <div className="px-5 py-4 text-center">
+              <button onClick={() => setVisibili(v => v + PAGE_SIZE)}
+                className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80 active:scale-95"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                Mostra altri ({filtered.length - visibili} rimasti)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
