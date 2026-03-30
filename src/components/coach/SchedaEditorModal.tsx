@@ -427,8 +427,6 @@ export default function SchedaEditorModal({
   // Compute gruppo labels for current day
   const getGruppiGiorno = () => {
     // ── Drag & drop ─────────────────────────────────────────────
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const reorderEsercizi = async (fromId: string, toId: string) => {
     if (!activeGiorno || fromId === toId) return
@@ -460,7 +458,7 @@ export default function SchedaEditorModal({
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
-    setDraggingId(eseId)
+    let currentOver: HTMLElement | null = null
     const onMove = (me: PointerEvent) => {
       clone.style.left = `${me.clientX - offset.x}px`
       clone.style.top = `${me.clientY - offset.y}px`
@@ -468,11 +466,20 @@ export default function SchedaEditorModal({
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
       const row = below?.closest('[data-eseid]') as HTMLElement | null
-      setDragOverId(row?.dataset.eseid ?? null)
+      if (currentOver && currentOver !== row) {
+        currentOver.style.borderTop = ''
+        currentOver.style.background = ''
+      }
+      if (row && row !== el) {
+        row.style.borderTop = '2px solid oklch(0.70 0.19 46)'
+        row.style.background = 'oklch(0.70 0.19 46 / 8%)'
+        currentOver = row
+      }
     }
     const onUp = (ue: PointerEvent) => {
       document.removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerup', onUp)
+      if (currentOver) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
       clone.style.display = 'none'
       const below = document.elementFromPoint(ue.clientX, ue.clientY)
       clone.style.display = ''
@@ -481,7 +488,6 @@ export default function SchedaEditorModal({
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
       el.style.opacity = '1'
       document.body.removeChild(clone)
-      setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
     document.addEventListener('pointerup', onUp)
@@ -552,8 +558,6 @@ export default function SchedaEditorModal({
     if (!form.esercizio_id || !activeGiorno) return
     setSaving(true)
     // ── Drag & drop ─────────────────────────────────────────────
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const reorderEsercizi = async (fromId: string, toId: string) => {
     if (!activeGiorno || fromId === toId) return
@@ -585,7 +589,7 @@ export default function SchedaEditorModal({
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
-    setDraggingId(eseId)
+    let currentOver: HTMLElement | null = null
     const onMove = (me: PointerEvent) => {
       clone.style.left = `${me.clientX - offset.x}px`
       clone.style.top = `${me.clientY - offset.y}px`
@@ -593,11 +597,20 @@ export default function SchedaEditorModal({
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
       const row = below?.closest('[data-eseid]') as HTMLElement | null
-      setDragOverId(row?.dataset.eseid ?? null)
+      if (currentOver && currentOver !== row) {
+        currentOver.style.borderTop = ''
+        currentOver.style.background = ''
+      }
+      if (row && row !== el) {
+        row.style.borderTop = '2px solid oklch(0.70 0.19 46)'
+        row.style.background = 'oklch(0.70 0.19 46 / 8%)'
+        currentOver = row
+      }
     }
     const onUp = (ue: PointerEvent) => {
       document.removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerup', onUp)
+      if (currentOver) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
       clone.style.display = 'none'
       const below = document.elementFromPoint(ue.clientX, ue.clientY)
       clone.style.display = ''
@@ -606,7 +619,6 @@ export default function SchedaEditorModal({
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
       el.style.opacity = '1'
       document.body.removeChild(clone)
-      setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
     document.addEventListener('pointerup', onUp)
@@ -623,8 +635,6 @@ export default function SchedaEditorModal({
     if (!editingId || !activeGiorno) return
     setSaving(true)
     // ── Drag & drop ─────────────────────────────────────────────
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const reorderEsercizi = async (fromId: string, toId: string) => {
     if (!activeGiorno || fromId === toId) return
@@ -656,7 +666,7 @@ export default function SchedaEditorModal({
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
-    setDraggingId(eseId)
+    let currentOver: HTMLElement | null = null
     const onMove = (me: PointerEvent) => {
       clone.style.left = `${me.clientX - offset.x}px`
       clone.style.top = `${me.clientY - offset.y}px`
@@ -664,11 +674,20 @@ export default function SchedaEditorModal({
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
       const row = below?.closest('[data-eseid]') as HTMLElement | null
-      setDragOverId(row?.dataset.eseid ?? null)
+      if (currentOver && currentOver !== row) {
+        currentOver.style.borderTop = ''
+        currentOver.style.background = ''
+      }
+      if (row && row !== el) {
+        row.style.borderTop = '2px solid oklch(0.70 0.19 46)'
+        row.style.background = 'oklch(0.70 0.19 46 / 8%)'
+        currentOver = row
+      }
     }
     const onUp = (ue: PointerEvent) => {
       document.removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerup', onUp)
+      if (currentOver) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
       clone.style.display = 'none'
       const below = document.elementFromPoint(ue.clientX, ue.clientY)
       clone.style.display = ''
@@ -677,7 +696,6 @@ export default function SchedaEditorModal({
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
       el.style.opacity = '1'
       document.body.removeChild(clone)
-      setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
     document.addEventListener('pointerup', onUp)
@@ -698,8 +716,6 @@ export default function SchedaEditorModal({
   }
 
   // ── Drag & drop ─────────────────────────────────────────────
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOverId, setDragOverId] = useState<string | null>(null)
 
   const reorderEsercizi = async (fromId: string, toId: string) => {
     if (!activeGiorno || fromId === toId) return
@@ -731,7 +747,7 @@ export default function SchedaEditorModal({
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
-    setDraggingId(eseId)
+    let currentOver: HTMLElement | null = null
     const onMove = (me: PointerEvent) => {
       clone.style.left = `${me.clientX - offset.x}px`
       clone.style.top = `${me.clientY - offset.y}px`
@@ -739,11 +755,20 @@ export default function SchedaEditorModal({
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
       const row = below?.closest('[data-eseid]') as HTMLElement | null
-      setDragOverId(row?.dataset.eseid ?? null)
+      if (currentOver && currentOver !== row) {
+        currentOver.style.borderTop = ''
+        currentOver.style.background = ''
+      }
+      if (row && row !== el) {
+        row.style.borderTop = '2px solid oklch(0.70 0.19 46)'
+        row.style.background = 'oklch(0.70 0.19 46 / 8%)'
+        currentOver = row
+      }
     }
     const onUp = (ue: PointerEvent) => {
       document.removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerup', onUp)
+      if (currentOver) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
       clone.style.display = 'none'
       const below = document.elementFromPoint(ue.clientX, ue.clientY)
       clone.style.display = ''
@@ -752,7 +777,6 @@ export default function SchedaEditorModal({
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
       el.style.opacity = '1'
       document.body.removeChild(clone)
-      setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
     document.addEventListener('pointerup', onUp)
@@ -906,13 +930,7 @@ export default function SchedaEditorModal({
 
                           {!isEditing ? (
                             // Compact row
-                            <div className="flex items-start gap-3 px-4 py-3"
-                              style={{
-                                background: dragOverId === ese.id && draggingId !== ese.id
-                                  ? 'oklch(0.70 0.19 46 / 8%)' : 'transparent',
-                                borderTop: dragOverId === ese.id && draggingId !== ese.id
-                                  ? '2px solid oklch(0.70 0.19 46 / 50%)' : undefined,
-                              }}>
+                            <div className="flex items-start gap-3 px-4 py-3">
                               {/* Drag handle */}
                               <div
                                 className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none mt-1"
