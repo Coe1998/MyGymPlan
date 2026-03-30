@@ -603,35 +603,86 @@ export default function SchedaDetailPage() {
                 <div className="px-5 py-4">
                   <p className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>Nessun esercizio — apri l'editor per aggiungerne</p>
                 </div>
-              ) : (
-                <div>
-                  {[...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine).map((se, i) => (
-                    <div key={se.id} className="flex items-start gap-3 px-5 py-3"
-                      style={{ borderBottom: i < giorno.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
-                        {i + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{se.esercizi?.nome}</p>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
-                            {se.serie}×{se.ripetizioni}
-                          </span>
-                          <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
-                            {se.recupero_secondi}s
-                          </span>
-                          {se.esercizi?.muscoli?.slice(0, 2).map(m => (
-                            <span key={m} className="text-xs px-2 py-0.5 rounded-full"
-                              style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
-                          ))}
+              ) : (() => {
+                const TIPO_COLORS: Record<string, { color: string; bg: string }> = {
+                  superset: { color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 15%)' },
+                  giant_set: { color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 15%)' },
+                  dropset: { color: 'oklch(0.70 0.19 46)', bg: 'oklch(0.70 0.19 46 / 15%)' },
+                  rest_pause: { color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 15%)' },
+                  piramidale: { color: 'oklch(0.85 0.12 80)', bg: 'oklch(0.85 0.12 80 / 15%)' },
+                }
+                const TIPO_LABELS: Record<string, string> = {
+                  superset: 'Superset', giant_set: 'Giant Set', dropset: 'Dropset',
+                  rest_pause: 'Rest-Pause', piramidale: 'Piramidale',
+                }
+                const sorted = [...giorno.scheda_esercizi].sort((a: any, b: any) => a.ordine - b.ordine)
+                // Build gruppo labels
+                const gruppoLabelMap = new Map<string, string>()
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                for (const ese of sorted) {
+                  if ((ese as any).gruppo_id && !gruppoLabelMap.has((ese as any).gruppo_id)) {
+                    gruppoLabelMap.set((ese as any).gruppo_id, letters[gruppoLabelMap.size % 26])
+                  }
+                }
+                return (
+                  <div className="p-3 space-y-2">
+                    {sorted.map((se: any, i: number) => {
+                      const isGrouped = !!se.gruppo_id
+                      const tipoColors = TIPO_COLORS[se.tipo] ?? null
+                      const tipoLabel = TIPO_LABELS[se.tipo] ?? null
+                      const gruppoLabel = gruppoLabelMap.get(se.gruppo_id) ?? null
+                      const prevEse = sorted[i - 1] as any
+                      const isFirstInGroup = isGrouped && (!prevEse || prevEse.gruppo_id !== se.gruppo_id)
+                      return (
+                        <div key={se.id} style={{ marginLeft: isGrouped ? '0.75rem' : '0' }}>
+                          {isFirstInGroup && tipoColors && (
+                            <div className="flex items-center gap-2 mb-1 -ml-3">
+                              <div className="w-5 h-5 rounded-md flex items-center justify-center text-xs font-black flex-shrink-0"
+                                style={{ background: tipoColors.bg, color: tipoColors.color }}>
+                                {gruppoLabel}
+                              </div>
+                              <span className="text-xs font-bold" style={{ color: tipoColors.color }}>{tipoLabel}</span>
+                              <div className="flex-1 h-px" style={{ background: `${tipoColors.color}30` }} />
+                            </div>
+                          )}
+                          <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
+                            style={{
+                              background: 'oklch(0.20 0 0)',
+                              borderLeft: isGrouped && tipoColors ? `3px solid ${tipoColors.color}60` : 'none',
+                            }}>
+                            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                              style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.55 0 0)' }}>
+                              {i + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{se.esercizi?.nome}</p>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  {se.serie}×{se.ripetizioni}
+                                </span>
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  {se.recupero_secondi}s
+                                </span>
+                                {tipoColors && tipoLabel && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                                    style={{ background: tipoColors.bg, color: tipoColors.color }}>
+                                    {tipoLabel}
+                                  </span>
+                                )}
+                                {se.esercizi?.muscoli?.slice(0, 2).map((m: string) => (
+                                  <span key={m} className="text-xs px-2 py-0.5 rounded-full"
+                                    style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
+                                ))}
+                              </div>
+                              {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{se.note}</p>}
+                            </div>
+                          </div>
                         </div>
-                        {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{se.note}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           ))}
         </div>

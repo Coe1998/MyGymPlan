@@ -174,11 +174,14 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             Gruppo
           </label>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => set('gruppo_id', '')}
+            <button onClick={() => {
+              const newId = crypto.randomUUID()
+              set('gruppo_id', newId)
+            }}
               className="px-3 py-1.5 rounded-full text-xs font-bold"
               style={{
-                background: !form.gruppo_id ? tipo.bg : 'oklch(0.23 0 0)',
-                color: !form.gruppo_id ? tipo.color : 'oklch(0.48 0 0)',
+                background: 'oklch(0.23 0 0)',
+                color: 'oklch(0.48 0 0)',
               }}>
               + Nuovo gruppo
             </button>
