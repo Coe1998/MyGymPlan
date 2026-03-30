@@ -427,9 +427,6 @@ export default function SchedaEditorModal({
   // Compute gruppo labels for current day
   const getGruppiGiorno = () => {
     // ── Drag & drop ─────────────────────────────────────────────
-  const dragGhost = useRef<HTMLDivElement | null>(null)
-  const dragNode = useRef<HTMLDivElement | null>(null)
-  const pointerOffset = useRef({ x: 0, y: 0 })
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
@@ -456,19 +453,17 @@ export default function SchedaEditorModal({
   const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
-    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
       border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
-    dragGhost.current = clone
-    dragNode.current = el
     el.style.opacity = '0.3'
     setDraggingId(eseId)
     const onMove = (me: PointerEvent) => {
-      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
-      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.left = `${me.clientX - offset.x}px`
+      clone.style.top = `${me.clientY - offset.y}px`
       clone.style.display = 'none'
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
@@ -484,9 +479,8 @@ export default function SchedaEditorModal({
       const row = below?.closest('[data-eseid]') as HTMLElement | null
       const toId = row?.dataset.eseid
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
-      if (dragNode.current) dragNode.current.style.opacity = '1'
+      el.style.opacity = '1'
       document.body.removeChild(clone)
-      dragGhost.current = null; dragNode.current = null
       setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
@@ -558,9 +552,6 @@ export default function SchedaEditorModal({
     if (!form.esercizio_id || !activeGiorno) return
     setSaving(true)
     // ── Drag & drop ─────────────────────────────────────────────
-  const dragGhost = useRef<HTMLDivElement | null>(null)
-  const dragNode = useRef<HTMLDivElement | null>(null)
-  const pointerOffset = useRef({ x: 0, y: 0 })
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
@@ -587,19 +578,17 @@ export default function SchedaEditorModal({
   const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
-    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
       border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
-    dragGhost.current = clone
-    dragNode.current = el
     el.style.opacity = '0.3'
     setDraggingId(eseId)
     const onMove = (me: PointerEvent) => {
-      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
-      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.left = `${me.clientX - offset.x}px`
+      clone.style.top = `${me.clientY - offset.y}px`
       clone.style.display = 'none'
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
@@ -615,9 +604,8 @@ export default function SchedaEditorModal({
       const row = below?.closest('[data-eseid]') as HTMLElement | null
       const toId = row?.dataset.eseid
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
-      if (dragNode.current) dragNode.current.style.opacity = '1'
+      el.style.opacity = '1'
       document.body.removeChild(clone)
-      dragGhost.current = null; dragNode.current = null
       setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
@@ -635,9 +623,6 @@ export default function SchedaEditorModal({
     if (!editingId || !activeGiorno) return
     setSaving(true)
     // ── Drag & drop ─────────────────────────────────────────────
-  const dragGhost = useRef<HTMLDivElement | null>(null)
-  const dragNode = useRef<HTMLDivElement | null>(null)
-  const pointerOffset = useRef({ x: 0, y: 0 })
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
@@ -664,19 +649,17 @@ export default function SchedaEditorModal({
   const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
-    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
       border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
-    dragGhost.current = clone
-    dragNode.current = el
     el.style.opacity = '0.3'
     setDraggingId(eseId)
     const onMove = (me: PointerEvent) => {
-      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
-      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.left = `${me.clientX - offset.x}px`
+      clone.style.top = `${me.clientY - offset.y}px`
       clone.style.display = 'none'
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
@@ -692,9 +675,8 @@ export default function SchedaEditorModal({
       const row = below?.closest('[data-eseid]') as HTMLElement | null
       const toId = row?.dataset.eseid
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
-      if (dragNode.current) dragNode.current.style.opacity = '1'
+      el.style.opacity = '1'
       document.body.removeChild(clone)
-      dragGhost.current = null; dragNode.current = null
       setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
@@ -716,9 +698,6 @@ export default function SchedaEditorModal({
   }
 
   // ── Drag & drop ─────────────────────────────────────────────
-  const dragGhost = useRef<HTMLDivElement | null>(null)
-  const dragNode = useRef<HTMLDivElement | null>(null)
-  const pointerOffset = useRef({ x: 0, y: 0 })
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
 
@@ -745,19 +724,17 @@ export default function SchedaEditorModal({
   const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
-    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
       border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
-    dragGhost.current = clone
-    dragNode.current = el
     el.style.opacity = '0.3'
     setDraggingId(eseId)
     const onMove = (me: PointerEvent) => {
-      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
-      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.left = `${me.clientX - offset.x}px`
+      clone.style.top = `${me.clientY - offset.y}px`
       clone.style.display = 'none'
       const below = document.elementFromPoint(me.clientX, me.clientY)
       clone.style.display = ''
@@ -773,9 +750,8 @@ export default function SchedaEditorModal({
       const row = below?.closest('[data-eseid]') as HTMLElement | null
       const toId = row?.dataset.eseid
       if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
-      if (dragNode.current) dragNode.current.style.opacity = '1'
+      el.style.opacity = '1'
       document.body.removeChild(clone)
-      dragGhost.current = null; dragNode.current = null
       setDraggingId(null); setDragOverId(null)
     }
     document.addEventListener('pointermove', onMove)
