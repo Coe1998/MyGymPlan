@@ -6,8 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faXmark, faDumbbell, faWeightScale, faHeart,
   faClipboardList, faChartBar, faCircleCheck, faPause,
-  faArrowTrendUp, faArrowTrendDown, faMinus,
+  faArrowTrendUp, faArrowTrendDown, faMinus, faUtensils,
 } from '@fortawesome/free-solid-svg-icons'
+import MacroTargetForm from '@/components/coach/MacroTargetForm'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface Cliente {
@@ -27,11 +28,13 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
   const [clienteAperto, setClienteAperto] = useState<Cliente | null>(null)
   const [dettaglio, setDettaglio] = useState<ClienteDettaglio | null>(null)
   const [loading, setLoading] = useState(false)
+  const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
   const supabase = createClient()
 
   const apriCliente = async (c: Cliente) => {
     setClienteAperto(c)
     setDettaglio(null)
+    setDrawerTab('overview')
     setLoading(true)
 
     const [sessRes, misRes, checkinRes, assRes] = await Promise.all([
@@ -164,10 +167,29 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
               </div>
             </div>
 
+            {/* Drawer tabs */}
+            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+              {[
+                { id: 'overview', label: '📊 Overview' },
+                { id: 'nutrizione', label: '🥗 Nutrizione' },
+              ].map(t => (
+                <button key={t.id} onClick={() => setDrawerTab(t.id as any)}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: drawerTab === t.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                    color: drawerTab === t.id ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
+                  }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
                 <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
               </div>
+            ) : drawerTab === 'nutrizione' ? (
+              <MacroTargetForm clienteId={clienteAperto.cliente_id} />
             ) : dettaglio && (
               <div className="flex-1 p-5 space-y-5">
 
