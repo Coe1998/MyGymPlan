@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import MacroTargetForm from '@/components/coach/MacroTargetForm'
 
 interface Misurazione {
   data: string
@@ -74,6 +75,7 @@ export default function AnalyticsPage() {
   const [loadingSessioni, setLoadingSessioni] = useState(false)
   const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
   const [assegnazioniCliente, setAssegnazioniCliente] = useState<any[]>([])
+  const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
 
   const supabase = createClient()
 
@@ -219,6 +221,7 @@ export default function AnalyticsPage() {
     setSessioneAperta(null)
     setLoadingSessioni(true)
     setAssegnazioniCliente([])
+    setDrawerTab('overview')
     const [sessData, assData] = await Promise.all([
       supabase.from('sessioni').select(`
         id, data, completata, durata_secondi,
@@ -728,6 +731,26 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
+            {/* Drawer tabs */}
+            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+              {[
+                { id: 'overview', label: '📊 Overview' },
+                { id: 'nutrizione', label: '🥗 Nutrizione' },
+              ].map(t => (
+                <button key={t.id} onClick={() => setDrawerTab(t.id as any)}
+                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: drawerTab === t.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                    color: drawerTab === t.id ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
+                  }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {drawerTab === 'nutrizione' ? (
+              <MacroTargetForm clienteId={clienteSelezionato!.id} />
+            ) : (
             {/* Contenuto */}
             <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
@@ -965,6 +988,7 @@ export default function AnalyticsPage() {
               )}
             </div>
           </div>
+            )}
         </div>
       )}
     </div>
