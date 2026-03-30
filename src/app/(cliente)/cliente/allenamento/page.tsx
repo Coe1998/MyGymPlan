@@ -428,6 +428,14 @@ export default function AllenamentoPage() {
 
   const backUrl = isViewMode ? '/cliente/progressi' : '/cliente/dashboard'
 
+  const gruppoLabelMap = new Map<string, string>()
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  for (const e of esercizi) {
+    if (e.gruppo_id && !gruppoLabelMap.has(e.gruppo_id)) {
+      gruppoLabelMap.set(e.gruppo_id, LETTERS[gruppoLabelMap.size % 26])
+    }
+  }
+
   if (!giornoId && !sessioneIdParam) {
     return (
       <div className="flex items-center justify-center min-h-64 p-4">
@@ -564,16 +572,7 @@ export default function AllenamentoPage() {
 
       {/* Esercizi */}
       <div className="space-y-4">
-        {(() => {
-          // Compute gruppo labels
-          const gruppoLabelMap = new Map<string, string>()
-          const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-          for (const e of esercizi) {
-            if (e.gruppo_id && !gruppoLabelMap.has(e.gruppo_id)) {
-              gruppoLabelMap.set(e.gruppo_id, LETTERS[gruppoLabelMap.size % 26])
-            }
-          }
-          return esercizi.map((ese, eseIndex) => {
+        {esercizi.map((ese, eseIndex) => {
           const eseLog = logs[ese.id]
           const tutteCompletate = eseLog?.serie.every(s => s.completata)
           const isGrouped = !!ese.gruppo_id
@@ -797,9 +796,6 @@ export default function AllenamentoPage() {
             </div>
           )
         })}
-        </div>
-        )
-        })()}
       </div>
 
       {/* Bottone completa — solo modalità live */}
