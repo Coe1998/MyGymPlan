@@ -174,17 +174,24 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             Gruppo
           </label>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => {
-              const newId = crypto.randomUUID()
-              set('gruppo_id', newId)
-            }}
-              className="px-3 py-1.5 rounded-full text-xs font-bold"
-              style={{
-                background: 'oklch(0.23 0 0)',
-                color: 'oklch(0.48 0 0)',
-              }}>
-              + Nuovo gruppo
-            </button>
+            {/* Show as selected when gruppo_id is a new UUID not in existing gruppi */}
+            {(() => {
+              const isNuovo = !!form.gruppo_id && !gruppi.some(g => g.id === form.gruppo_id)
+              return (
+                <button onClick={() => {
+                  const newId = crypto.randomUUID()
+                  set('gruppo_id', newId)
+                }}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold"
+                  style={{
+                    background: isNuovo ? tipo.bg : 'oklch(0.23 0 0)',
+                    color: isNuovo ? tipo.color : 'oklch(0.48 0 0)',
+                    border: isNuovo ? `1px solid ${tipo.color}40` : '1px solid transparent',
+                  }}>
+                  {isNuovo ? `✓ Nuovo gruppo` : '+ Nuovo gruppo'}
+                </button>
+              )
+            })()}
             {gruppi.map(g => (
               <button key={g.id} onClick={() => set('gruppo_id', g.id)}
                 className="px-3 py-1.5 rounded-full text-xs font-bold"
