@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
@@ -426,7 +426,74 @@ export default function SchedaEditorModal({
 
   // Compute gruppo labels for current day
   const getGruppiGiorno = () => {
+    // ── Drag & drop ─────────────────────────────────────────────
+  const dragGhost = useRef<HTMLDivElement | null>(null)
+  const dragNode = useRef<HTMLDivElement | null>(null)
+  const pointerOffset = useRef({ x: 0, y: 0 })
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const reorderEsercizi = async (fromId: string, toId: string) => {
+    if (!activeGiorno || fromId === toId) return
     const giorno = giorni.find(g => g.id === activeGiorno)
+    if (!giorno) return
+    const lista = [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)
+    const fromIdx = lista.findIndex(e => e.id === fromId)
+    const toIdx = lista.findIndex(e => e.id === toId)
+    if (fromIdx === -1 || toIdx === -1) return
+    const [moved] = lista.splice(fromIdx, 1)
+    lista.splice(toIdx, 0, moved)
+    // Optimistic UI update
+    setGiorni(prev => prev.map(g => g.id !== activeGiorno ? g : {
+      ...g, scheda_esercizi: lista.map((e, i) => ({ ...e, ordine: i }))
+    }))
+    // Persist
+    await Promise.all(lista.map((e, i) =>
+      supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', e.id)
+    ))
+  }
+
+  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
+      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    dragGhost.current = clone
+    dragNode.current = el
+    el.style.opacity = '0.3'
+    setDraggingId(eseId)
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
+      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      setDragOverId(row?.dataset.eseid ?? null)
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
+      if (dragNode.current) dragNode.current.style.opacity = '1'
+      document.body.removeChild(clone)
+      dragGhost.current = null; dragNode.current = null
+      setDraggingId(null); setDragOverId(null)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }
+
+  const giorno = giorni.find(g => g.id === activeGiorno)
     if (!giorno) return []
     const seen = new Map<string, string>()
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -490,7 +557,74 @@ export default function SchedaEditorModal({
   const handleSaveEse = async () => {
     if (!form.esercizio_id || !activeGiorno) return
     setSaving(true)
+    // ── Drag & drop ─────────────────────────────────────────────
+  const dragGhost = useRef<HTMLDivElement | null>(null)
+  const dragNode = useRef<HTMLDivElement | null>(null)
+  const pointerOffset = useRef({ x: 0, y: 0 })
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const reorderEsercizi = async (fromId: string, toId: string) => {
+    if (!activeGiorno || fromId === toId) return
     const giorno = giorni.find(g => g.id === activeGiorno)
+    if (!giorno) return
+    const lista = [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)
+    const fromIdx = lista.findIndex(e => e.id === fromId)
+    const toIdx = lista.findIndex(e => e.id === toId)
+    if (fromIdx === -1 || toIdx === -1) return
+    const [moved] = lista.splice(fromIdx, 1)
+    lista.splice(toIdx, 0, moved)
+    // Optimistic UI update
+    setGiorni(prev => prev.map(g => g.id !== activeGiorno ? g : {
+      ...g, scheda_esercizi: lista.map((e, i) => ({ ...e, ordine: i }))
+    }))
+    // Persist
+    await Promise.all(lista.map((e, i) =>
+      supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', e.id)
+    ))
+  }
+
+  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
+      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    dragGhost.current = clone
+    dragNode.current = el
+    el.style.opacity = '0.3'
+    setDraggingId(eseId)
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
+      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      setDragOverId(row?.dataset.eseid ?? null)
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
+      if (dragNode.current) dragNode.current.style.opacity = '1'
+      document.body.removeChild(clone)
+      dragGhost.current = null; dragNode.current = null
+      setDraggingId(null); setDragOverId(null)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }
+
+  const giorno = giorni.find(g => g.id === activeGiorno)
     const ordine = giorno?.scheda_esercizi?.length ?? 0
     await supabase.from('scheda_esercizi').insert(buildPayload(form, activeGiorno, ordine))
     setForm(EMPTY); setAddingEse(false); setSaving(false)
@@ -500,7 +634,74 @@ export default function SchedaEditorModal({
   const handleSaveEdit = async () => {
     if (!editingId || !activeGiorno) return
     setSaving(true)
+    // ── Drag & drop ─────────────────────────────────────────────
+  const dragGhost = useRef<HTMLDivElement | null>(null)
+  const dragNode = useRef<HTMLDivElement | null>(null)
+  const pointerOffset = useRef({ x: 0, y: 0 })
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const reorderEsercizi = async (fromId: string, toId: string) => {
+    if (!activeGiorno || fromId === toId) return
     const giorno = giorni.find(g => g.id === activeGiorno)
+    if (!giorno) return
+    const lista = [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)
+    const fromIdx = lista.findIndex(e => e.id === fromId)
+    const toIdx = lista.findIndex(e => e.id === toId)
+    if (fromIdx === -1 || toIdx === -1) return
+    const [moved] = lista.splice(fromIdx, 1)
+    lista.splice(toIdx, 0, moved)
+    // Optimistic UI update
+    setGiorni(prev => prev.map(g => g.id !== activeGiorno ? g : {
+      ...g, scheda_esercizi: lista.map((e, i) => ({ ...e, ordine: i }))
+    }))
+    // Persist
+    await Promise.all(lista.map((e, i) =>
+      supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', e.id)
+    ))
+  }
+
+  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
+      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    dragGhost.current = clone
+    dragNode.current = el
+    el.style.opacity = '0.3'
+    setDraggingId(eseId)
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
+      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      setDragOverId(row?.dataset.eseid ?? null)
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
+      if (dragNode.current) dragNode.current.style.opacity = '1'
+      document.body.removeChild(clone)
+      dragGhost.current = null; dragNode.current = null
+      setDraggingId(null); setDragOverId(null)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }
+
+  const giorno = giorni.find(g => g.id === activeGiorno)
     const ordine = giorno?.scheda_esercizi?.find(e => e.id === editingId)?.ordine ?? 0
     const { giorno_id, ...payload } = buildPayload(editForm, activeGiorno, ordine) as any
     await supabase.from('scheda_esercizi').update(payload).eq('id', editingId)
@@ -512,6 +713,73 @@ export default function SchedaEditorModal({
     await supabase.from('scheda_esercizi').delete().eq('id', id)
     if (editingId === id) setEditingId(null)
     await fetchAll()
+  }
+
+  // ── Drag & drop ─────────────────────────────────────────────
+  const dragGhost = useRef<HTMLDivElement | null>(null)
+  const dragNode = useRef<HTMLDivElement | null>(null)
+  const pointerOffset = useRef({ x: 0, y: 0 })
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+
+  const reorderEsercizi = async (fromId: string, toId: string) => {
+    if (!activeGiorno || fromId === toId) return
+    const giorno = giorni.find(g => g.id === activeGiorno)
+    if (!giorno) return
+    const lista = [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)
+    const fromIdx = lista.findIndex(e => e.id === fromId)
+    const toIdx = lista.findIndex(e => e.id === toId)
+    if (fromIdx === -1 || toIdx === -1) return
+    const [moved] = lista.splice(fromIdx, 1)
+    lista.splice(toIdx, 0, moved)
+    // Optimistic UI update
+    setGiorni(prev => prev.map(g => g.id !== activeGiorno ? g : {
+      ...g, scheda_esercizi: lista.map((e, i) => ({ ...e, ordine: i }))
+    }))
+    // Persist
+    await Promise.all(lista.map((e, i) =>
+      supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', e.id)
+    ))
+  }
+
+  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
+      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    dragGhost.current = clone
+    dragNode.current = el
+    el.style.opacity = '0.3'
+    setDraggingId(eseId)
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - pointerOffset.current.x}px`
+      clone.style.top = `${me.clientY - pointerOffset.current.y}px`
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      setDragOverId(row?.dataset.eseid ?? null)
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
+      if (dragNode.current) dragNode.current.style.opacity = '1'
+      document.body.removeChild(clone)
+      dragGhost.current = null; dragNode.current = null
+      setDraggingId(null); setDragOverId(null)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
   }
 
   const giorno = giorni.find(g => g.id === activeGiorno)
@@ -633,7 +901,9 @@ export default function SchedaEditorModal({
                     const isLastInGroup = isGrouped && (!nextEse || nextEse.gruppo_id !== ese.gruppo_id)
 
                     return (
-                      <div key={ese.id} style={{ marginLeft: isGrouped ? '1rem' : '0' }}>
+                      <div key={ese.id}
+                        data-eseid={ese.id}
+                        style={{ marginLeft: isGrouped ? '1rem' : '0' }}>
 
                         {/* Group label */}
                         {isFirstInGroup && (
@@ -660,7 +930,26 @@ export default function SchedaEditorModal({
 
                           {!isEditing ? (
                             // Compact row
-                            <div className="flex items-start gap-3 px-4 py-3">
+                            <div className="flex items-start gap-3 px-4 py-3"
+                              style={{
+                                background: dragOverId === ese.id && draggingId !== ese.id
+                                  ? 'oklch(0.70 0.19 46 / 8%)' : 'transparent',
+                                borderTop: dragOverId === ese.id && draggingId !== ese.id
+                                  ? '2px solid oklch(0.70 0.19 46 / 50%)' : undefined,
+                              }}>
+                              {/* Drag handle */}
+                              <div
+                                className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none mt-1"
+                                style={{ color: 'oklch(0.35 0 0)', padding: '2px' }}
+                                ref={el => {
+                                  if (!el) return
+                                  el.onpointerdown = (e) => {
+                                    const row = el.closest('[data-eseid]') as HTMLDivElement
+                                    if (row) onPointerDownDrag(e as any, ese.id, row)
+                                  }
+                                }}>
+                                ⠿
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
                                   {ese.esercizi?.nome}
@@ -705,6 +994,7 @@ export default function SchedaEditorModal({
                                   )}
                                 </div>
                               </div>
+                              </div>{/* end flex-1 */}
                               <div className="flex gap-1.5 flex-shrink-0">
                                 <button
                                   onClick={() => {
