@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardList, faCircleCheck, faUser, faUsers, faHourglass, faCopy, faXmark } from '@fortawesome/free-solid-svg-icons'
+import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 
 interface Scheda {
   id: string
@@ -21,6 +22,20 @@ export default function SchedePage() {
   const [duplicating, setDuplicating] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+  const [nuovaSchedaId, setNuovaSchedaId] = useState<string | null>(null)
+  const [creatingNuova, setCreatingNuova] = useState(false)
+
+  const handleNuovaScheda = async () => {
+    setCreatingNuova(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase
+      .from('schede')
+      .insert({ coach_id: user.id, nome: 'Nuova scheda', is_template: false })
+      .select().single()
+    if (data) setNuovaSchedaId(data.id)
+    setCreatingNuova(false)
+  }
 
   const fetchSchede = async () => {
     setLoading(true)
@@ -100,10 +115,10 @@ export default function SchedePage() {
           </h1>
           <p className="mt-0.5 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Crea e gestisci le schede</p>
         </div>
-        <button onClick={() => router.push('/coach/schede/nuova')}
+        <button onClick={() => handleNuovaScheda()}
           className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
           style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-          + Nuova
+          {creatingNuova ? '...' : '+ Nuova'}
         </button>
       </div>
 
@@ -127,7 +142,7 @@ export default function SchedePage() {
           <div className="py-16 text-center space-y-3">
             <div className="text-5xl"><FontAwesomeIcon icon={faClipboardList} /></div>
             <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda ancora</p>
-            <button onClick={() => router.push('/coach/schede/nuova')}
+            <button onClick={() => handleNuovaScheda()}
               className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
               + Crea scheda
@@ -198,6 +213,13 @@ export default function SchedePage() {
           </div>
         )}
       </div>
+      {nuovaSchedaId && (
+        <SchedaEditorModal
+          schedaId={nuovaSchedaId}
+          schedaNome="Nuova scheda"
+          onClose={() => { setNuovaSchedaId(null); fetchSchede() }}
+        />
+      )}
     </div>
   )
 }
