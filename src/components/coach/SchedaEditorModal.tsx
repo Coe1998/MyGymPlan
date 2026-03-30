@@ -453,7 +453,7 @@ export default function SchedaEditorModal({
     ))
   }
 
-  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+  const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
     pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
@@ -546,7 +546,7 @@ export default function SchedaEditorModal({
       note: f.note.trim() || null,
       ordine,
       tipo: f.tipo,
-      gruppo_id: gruppoId,
+      gruppo_id: gruppoId || null,
       drop_count: f.tipo === 'dropset' ? (parseInt(f.drop_count) || 2) : null,
       drop_percentage: f.tipo === 'dropset' ? (parseInt(f.drop_pct) || 20) : null,
       rest_pause_secondi: f.tipo === 'rest_pause' ? (parseInt(f.rest_pause_sec) || 15) : null,
@@ -584,7 +584,7 @@ export default function SchedaEditorModal({
     ))
   }
 
-  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+  const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
     pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
@@ -661,7 +661,7 @@ export default function SchedaEditorModal({
     ))
   }
 
-  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+  const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
     pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
@@ -742,7 +742,7 @@ export default function SchedaEditorModal({
     ))
   }
 
-  const onPointerDownDrag = (e: React.PointerEvent, eseId: string, el: HTMLDivElement) => {
+  const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
     e.preventDefault()
     const rect = el.getBoundingClientRect()
     pointerOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
@@ -941,12 +941,9 @@ export default function SchedaEditorModal({
                               <div
                                 className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none mt-1"
                                 style={{ color: 'oklch(0.35 0 0)', padding: '2px' }}
-                                ref={el => {
-                                  if (!el) return
-                                  el.onpointerdown = (e) => {
-                                    const row = el.closest('[data-eseid]') as HTMLDivElement
-                                    if (row) onPointerDownDrag(e as any, ese.id, row)
-                                  }
+                                onPointerDown={(e) => {
+                                  const row = (e.currentTarget as HTMLElement).closest('[data-eseid]') as HTMLDivElement
+                                  if (row) onPointerDownDrag(e, ese.id, row)
                                 }}>
                                 ⠿
                               </div>
