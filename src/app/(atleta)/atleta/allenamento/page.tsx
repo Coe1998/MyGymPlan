@@ -85,7 +85,7 @@ export default function AllenamentoPage() {
         .from('scheda_giorni')
         .select(`id, nome, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
-          esercizi ( id, nome, muscoli, video_url, descrizione )
+          esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
         )`)
         .eq('id', sessione.giorno_id)
         .single()
@@ -116,7 +116,7 @@ export default function AllenamentoPage() {
       .from('scheda_giorni')
       .select(`id, nome, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
-        esercizi ( id, nome, muscoli, video_url, descrizione )
+        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
       )`)
       .eq('id', giornoId).single()
 

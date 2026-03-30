@@ -147,7 +147,7 @@ export default function ProgressiPage() {
 
     const { data: logData } = await supabase
       .from('log_serie')
-      .select('scheda_esercizio_id, scheda_esercizi!inner ( esercizi ( id, nome ) )')
+      .select('scheda_esercizio_id, scheda_esercizi!inner ( esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome ) )')
       .in('sessione_id', (sessioniData ?? []).map((s: any) => s.id))
     const eserciziMap = new Map<string, EsercizioOption>()
     for (const log of (logData ?? []) as any[]) {
