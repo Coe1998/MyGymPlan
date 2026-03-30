@@ -368,6 +368,15 @@ export default function SchedaEditorModal({
   const [form, setForm] = useState<EsForm>(EMPTY)
   const [editForm, setEditForm] = useState<EsForm>(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [schedaNomeEdit, setSchedaNomeEdit] = useState(schedaNome)
+  const [savingNome, setSavingNome] = useState(false)
+
+  const handleSaveNome = async () => {
+    if (!schedaNomeEdit.trim() || schedaNomeEdit === schedaNome) return
+    setSavingNome(true)
+    await supabase.from('schede').update({ nome: schedaNomeEdit.trim() }).eq('id', schedaId)
+    setSavingNome(false)
+  }
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -512,13 +521,23 @@ export default function SchedaEditorModal({
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
           style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
               Editor Scheda
             </p>
-            <h2 className="text-lg font-black leading-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-              {schedaNome}
-            </h2>
+            <input
+              value={schedaNomeEdit}
+              onChange={e => setSchedaNomeEdit(e.target.value)}
+              onBlur={handleSaveNome}
+              onKeyDown={e => e.key === 'Enter' && handleSaveNome()}
+              className="w-full text-lg font-black leading-tight outline-none bg-transparent border-b"
+              style={{
+                color: 'oklch(0.97 0 0)',
+                borderColor: 'oklch(1 0 0 / 15%)',
+                paddingBottom: '2px',
+              }}
+              onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+            />
           </div>
           <button onClick={onClose}
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"

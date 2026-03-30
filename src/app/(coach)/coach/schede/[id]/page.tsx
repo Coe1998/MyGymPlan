@@ -78,7 +78,7 @@ export default function SchedaDetailPage() {
       .from('scheda_giorni')
       .select(`id, nome, ordine, scheda_esercizi (
         id, esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine,
-        esercizi ( id, nome, muscoli )
+        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli )
       )`)
       .eq('scheda_id', schedaId).order('ordine')
     setGiorni((giorniData as any) ?? [])
