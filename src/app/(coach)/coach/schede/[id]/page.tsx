@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash, faTableList } from '@fortawesome/free-solid-svg-icons'
+import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 
 interface Esercizio { id: string; nome: string; muscoli: string[] | null }
 interface SchedaEsercizio {
@@ -49,12 +50,13 @@ export default function SchedaDetailPage() {
   const [clienti, setClienti] = useState<Cliente[]>([])
   const [assegnazioni, setAssegnazioni] = useState<Assegnazione[]>([])
   const [showFormAssegna, setShowFormAssegna] = useState(false)
-  const [selectedClienti, setSelectedClienti] = useState<string[]>([])
+  const [selectedCliente, setSelectedCliente] = useState('')
   const [dataInizio, setDataInizio] = useState(new Date().toISOString().split('T')[0])
   const [dataFine, setDataFine] = useState('')
   const [assegnando, setAssegnando] = useState(false)
   const [assegnaError, setAssegnaError] = useState<string | null>(null)
   const [uploadingPdf, setUploadingPdf] = useState<string | null>(null) // assegnazione id in corso
+  const [showEditor, setShowEditor] = useState(false)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const pdfTargetAssId = useRef<string | null>(null)
 
@@ -147,19 +149,18 @@ export default function SchedaDetailPage() {
   }
 
   const handleAssegna = async () => {
-    if (selectedClienti.length === 0) return
+    if (!selectedCliente) return
     setAssegnando(true); setAssegnaError(null)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    for (const clienteId of selectedClienti) {
-      await supabase.from('assegnazioni').update({ attiva: false })
-        .eq('scheda_id', schedaId).eq('cliente_id', clienteId).eq('attiva', true)
-      await supabase.from('assegnazioni').insert({
-        scheda_id: schedaId, cliente_id: clienteId, coach_id: user.id,
-        data_inizio: dataInizio, data_fine: dataFine || null, attiva: true,
-      })
-    }
-    setSelectedClienti([]); setDataFine(''); setShowFormAssegna(false); setAssegnando(false); fetchAll()
+    await supabase.from('assegnazioni').update({ attiva: false })
+      .eq('scheda_id', schedaId).eq('cliente_id', selectedCliente).eq('attiva', true)
+    const { error } = await supabase.from('assegnazioni').insert({
+      scheda_id: schedaId, cliente_id: selectedCliente, coach_id: user.id,
+      data_inizio: dataInizio, data_fine: dataFine || null, attiva: true,
+    })
+    if (error) { setAssegnaError("Errore durante l'assegnazione."); setAssegnando(false); return }
+    setSelectedCliente(''); setDataFine(''); setShowFormAssegna(false); setAssegnando(false); fetchAll()
   }
 
   const handleRimuoviAssegnazione = async (id: string) => {
@@ -348,10 +349,10 @@ export default function SchedaDetailPage() {
 				style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
 				<FontAwesomeIcon icon={faUser} /> Assegna
 			  </button>
-			  <button onClick={() => setEditingInfo(true)}
-				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+			  <button onClick={() => setShowEditor(true)}
+				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
 				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-				<FontAwesomeIcon icon={faPen} /> Modifica
+				<FontAwesomeIcon icon={faTableList} /> Editor scheda
 			  </button>
 			</div>
 		  </div>
@@ -420,56 +421,16 @@ export default function SchedaDetailPage() {
           <div className="px-6 py-5 space-y-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
             <h3 className="font-semibold text-sm" style={{ color: 'oklch(0.70 0.19 46)' }}>Nuova assegnazione</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2 md:col-span-1">
-                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
-                  Clienti
-                  {selectedClienti.length > 0 && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                      {selectedClienti.length} selezionati
-                    </span>
-                  )}
-                </label>
-                <div className="rounded-xl overflow-hidden max-h-40 overflow-y-auto"
-                  style={{ border: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.22 0 0)' }}>
-                  {clienti.length === 0 ? (
-                    <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
-                  ) : clienti.map((c, i) => {
-                    const isSelected = selectedClienti.includes(c.cliente_id)
-                    return (
-                      <button key={c.cliente_id}
-                        onClick={() => setSelectedClienti(prev =>
-                          isSelected ? prev.filter(id => id !== c.cliente_id) : [...prev, c.cliente_id]
-                        )}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all"
-                        style={{
-                          background: isSelected ? 'oklch(0.70 0.19 46 / 12%)' : 'transparent',
-                          borderBottom: i < clienti.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none',
-                        }}>
-                        <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
-                          style={{
-                            background: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.30 0 0)',
-                            border: isSelected ? 'none' : '1px solid oklch(1 0 0 / 15%)',
-                          }}>
-                          {isSelected && <span className="text-xs font-bold" style={{ color: 'oklch(0.11 0 0)' }}>✓</span>}
-                        </div>
-                        <span className="text-sm" style={{ color: isSelected ? 'oklch(0.97 0 0)' : 'oklch(0.75 0 0)' }}>
-                          {c.profiles?.full_name}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-                {clienti.length > 1 && (
-                  <button
-                    onClick={() => setSelectedClienti(
-                      selectedClienti.length === clienti.length ? [] : clienti.map(c => c.cliente_id)
-                    )}
-                    className="mt-2 text-xs font-medium"
-                    style={{ color: 'oklch(0.70 0.19 46)' }}>
-                    {selectedClienti.length === clienti.length ? 'Deseleziona tutti' : 'Seleziona tutti'}
-                  </button>
-                )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Cliente</label>
+                <select value={selectedCliente} onChange={(e) => setSelectedCliente(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: selectedCliente ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)' }}>
+                  <option value="">Seleziona cliente...</option>
+                  {clienti.map(c => (
+                    <option key={c.cliente_id} value={c.cliente_id}>{c.profiles?.full_name}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Data inizio</label>
@@ -497,15 +458,15 @@ export default function SchedaDetailPage() {
               </div>
             )}
             <div className="flex gap-3">
-              <button onClick={handleAssegna} disabled={assegnando || selectedClienti.length === 0}
+              <button onClick={handleAssegna} disabled={assegnando || !selectedCliente}
                 className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={{
-                  background: selectedClienti.length === 0 ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
-                  color: 'oklch(0.13 0 0)', cursor: selectedClienti.length === 0 ? 'not-allowed' : 'pointer',
+                  background: !selectedCliente ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
+                  color: 'oklch(0.13 0 0)', cursor: !selectedCliente ? 'not-allowed' : 'pointer',
                 }}>
-                {assegnando ? 'Assegnazione...' : selectedClienti.length > 1 ? `Assegna a ${selectedClienti.length} clienti` : 'Conferma assegnazione'}
+                {assegnando ? 'Assegnazione...' : 'Conferma assegnazione'}
               </button>
-              <button onClick={() => { setShowFormAssegna(false); setAssegnaError(null); setSelectedClienti([]) }}
+              <button onClick={() => { setShowFormAssegna(false); setAssegnaError(null) }}
                 className="px-6 py-2.5 rounded-xl text-sm font-medium"
                 style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
                 Annulla
@@ -917,6 +878,13 @@ export default function SchedaDetailPage() {
             </div>
           ))}
         </div>
+      )}
+      {showEditor && scheda && (
+        <SchedaEditorModal
+          schedaId={schedaId}
+          schedaNome={scheda.nome}
+          onClose={() => { setShowEditor(false); fetchAll() }}
+        />
       )}
     </div>
   )

@@ -1,0 +1,730 @@
+'use client'
+
+import { useState, useCallback, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
+
+interface Esercizio { id: string; nome: string; muscoli: string[] | null }
+
+interface SchedaEsercizio {
+  id: string; esercizio_id: string; serie: number; ripetizioni: string
+  recupero_secondi: number; note: string | null; ordine: number
+  tipo: string; gruppo_id: string | null
+  drop_count: number | null; drop_percentage: number | null
+  rest_pause_secondi: number | null; piramidale_direzione: string | null
+  alternativa_esercizio_id: string | null
+  esercizi: Esercizio
+  alternativa_esercizi?: Esercizio | null
+}
+
+interface Giorno { id: string; nome: string; ordine: number; scheda_esercizi: SchedaEsercizio[] }
+
+interface EsForm {
+  esercizio_id: string; alternativa_id: string
+  serie: string; ripetizioni: string; recupero: string; note: string
+  tipo: string; gruppo_id: string
+  drop_count: string; drop_pct: string
+  rest_pause_sec: string; piramide_dir: string
+}
+
+const EMPTY: EsForm = {
+  esercizio_id: '', alternativa_id: '',
+  serie: '3', ripetizioni: '8-12', recupero: '90', note: '',
+  tipo: 'normale', gruppo_id: '',
+  drop_count: '2', drop_pct: '20',
+  rest_pause_sec: '15', piramide_dir: 'ascendente',
+}
+
+const TIPI = [
+  { id: 'normale', label: 'Normale', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' },
+  { id: 'superset', label: 'Superset', color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 18%)' },
+  { id: 'giant_set', label: 'Giant Set', color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 18%)' },
+  { id: 'dropset', label: 'Dropset', color: 'oklch(0.70 0.19 46)', bg: 'oklch(0.70 0.19 46 / 18%)' },
+  { id: 'rest_pause', label: 'Rest-Pause', color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 18%)' },
+  { id: 'piramidale', label: 'Piramidale', color: 'oklch(0.85 0.12 80)', bg: 'oklch(0.85 0.12 80 / 18%)' },
+]
+
+const getTipoInfo = (tipo: string) => TIPI.find(t => t.id === tipo) ?? TIPI[0]
+
+// ── Sub-component: exercise form ─────────────────────────────────
+function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, saving }: {
+  form: EsForm
+  onChange: (f: EsForm) => void
+  esercizi: Esercizio[]
+  gruppi: { id: string; label: string }[]
+  onSave: () => void
+  onCancel: () => void
+  saving: boolean
+}) {
+  const [searchP, setSearchP] = useState('')
+  const [searchA, setSearchA] = useState('')
+  const [showAlt, setShowAlt] = useState(!!form.alternativa_id)
+
+  const set = (key: keyof EsForm, val: string) => onChange({ ...form, [key]: val })
+  const tipo = getTipoInfo(form.tipo)
+  const isGrouped = ['superset', 'giant_set'].includes(form.tipo)
+
+  const primarioNome = esercizi.find(e => e.id === form.esercizio_id)?.nome ?? ''
+  const altNome = esercizi.find(e => e.id === form.alternativa_id)?.nome ?? ''
+
+  const filtP = esercizi.filter(e => e.nome.toLowerCase().includes(searchP.toLowerCase())).slice(0, 15)
+  const filtA = esercizi.filter(e =>
+    e.nome.toLowerCase().includes(searchA.toLowerCase()) && e.id !== form.esercizio_id
+  ).slice(0, 15)
+
+  return (
+    <div className="p-4 space-y-4">
+
+      {/* ── Esercizio primario ── */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+          Esercizio *
+        </label>
+        {form.esercizio_id ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold"
+              style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+              {primarioNome}
+            </div>
+            <button onClick={() => { set('esercizio_id', ''); setSearchP('') }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              <FontAwesomeIcon icon={faXmark} className="text-xs" />
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            <input autoFocus type="text" value={searchP} onChange={e => setSearchP(e.target.value)}
+              placeholder="Cerca esercizio..."
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
+            {searchP.length > 0 && (
+              <div className="rounded-xl overflow-hidden max-h-44 overflow-y-auto"
+                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                {filtP.length === 0
+                  ? <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                  : filtP.map((e, i) => (
+                    <button key={e.id} onClick={() => { set('esercizio_id', e.id); setSearchP('') }}
+                      className="w-full text-left px-4 py-2.5 transition-all active:opacity-60"
+                      style={{ borderBottom: i < filtP.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none' }}>
+                      <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{e.nome}</p>
+                      {e.muscoli && <p className="text-xs mt-0.5" style={{ color: 'oklch(0.48 0 0)' }}>{e.muscoli.slice(0, 3).join(' · ')}</p>}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Tipo ── */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Tipo</label>
+        <div className="flex flex-wrap gap-2">
+          {TIPI.map(t => (
+            <button key={t.id} onClick={() => { set('tipo', t.id); if (!['superset','giant_set'].includes(t.id)) set('gruppo_id', '') }}
+              className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+              style={{
+                background: form.tipo === t.id ? t.bg : 'oklch(0.23 0 0)',
+                color: form.tipo === t.id ? t.color : 'oklch(0.48 0 0)',
+                border: form.tipo === t.id ? `1px solid ${t.color}40` : '1px solid transparent',
+              }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Gruppo (superset / giant set) ── */}
+      {isGrouped && (
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+            Gruppo
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => set('gruppo_id', '')}
+              className="px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{
+                background: !form.gruppo_id ? tipo.bg : 'oklch(0.23 0 0)',
+                color: !form.gruppo_id ? tipo.color : 'oklch(0.48 0 0)',
+              }}>
+              + Nuovo gruppo
+            </button>
+            {gruppi.map(g => (
+              <button key={g.id} onClick={() => set('gruppo_id', g.id)}
+                className="px-3 py-1.5 rounded-full text-xs font-bold"
+                style={{
+                  background: form.gruppo_id === g.id ? tipo.bg : 'oklch(0.23 0 0)',
+                  color: form.gruppo_id === g.id ? tipo.color : 'oklch(0.48 0 0)',
+                }}>
+                Gruppo {g.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Dropset specifics ── */}
+      {form.tipo === 'dropset' && (
+        <div className="grid grid-cols-2 gap-3 p-3 rounded-xl" style={{ background: 'oklch(0.70 0.19 46 / 6%)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>N. Drop</label>
+            <input type="number" min="1" max="5" value={form.drop_count} onChange={e => set('drop_count', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>% Riduzione</label>
+            <input type="number" min="5" max="50" value={form.drop_pct} onChange={e => set('drop_pct', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+          </div>
+        </div>
+      )}
+
+      {/* ── Rest-Pause specifics ── */}
+      {form.tipo === 'rest_pause' && (
+        <div className="p-3 rounded-xl" style={{ background: 'oklch(0.65 0.15 300 / 6%)', border: '1px solid oklch(0.65 0.15 300 / 20%)' }}>
+          <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.15 300)' }}>Secondi micro-recupero</label>
+          <input type="number" value={form.rest_pause_sec} onChange={e => set('rest_pause_sec', e.target.value)}
+            className="mt-1.5 w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+        </div>
+      )}
+
+      {/* ── Piramidale specifics ── */}
+      {form.tipo === 'piramidale' && (
+        <div className="p-3 rounded-xl" style={{ background: 'oklch(0.85 0.12 80 / 6%)', border: '1px solid oklch(0.85 0.12 80 / 20%)' }}>
+          <label className="text-xs font-semibold" style={{ color: 'oklch(0.85 0.12 80)' }}>Direzione</label>
+          <div className="flex gap-2 mt-1.5">
+            {['ascendente', 'discendente'].map(d => (
+              <button key={d} onClick={() => set('piramide_dir', d)}
+                className="flex-1 py-2 rounded-xl text-sm font-bold"
+                style={{
+                  background: form.piramide_dir === d ? 'oklch(0.85 0.12 80 / 20%)' : 'oklch(0.22 0 0)',
+                  color: form.piramide_dir === d ? 'oklch(0.85 0.12 80)' : 'oklch(0.48 0 0)',
+                }}>
+                {d === 'ascendente' ? '↑ Peso cresce' : '↓ Peso cala'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Serie / Reps / Recupero ── */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { key: 'serie' as keyof EsForm, label: 'Serie', ph: '3' },
+          { key: 'ripetizioni' as keyof EsForm, label: 'Reps', ph: '8-12' },
+          { key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90' },
+        ].map(f => (
+          <div key={f.key} className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>{f.label}</label>
+            <input type="text" value={form[f.key] as string} onChange={e => set(f.key, e.target.value)}
+              placeholder={f.ph}
+              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Note ── */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Note coach</label>
+        <input type="text" value={form.note} onChange={e => set('note', e.target.value)}
+          placeholder="Indicazioni tecniche, avvertenze..."
+          className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+          onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+      </div>
+
+      {/* ── Alternativa ── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+            Alternativa
+          </label>
+          {!showAlt && !form.alternativa_id && (
+            <button onClick={() => setShowAlt(true)}
+              className="text-xs font-semibold"
+              style={{ color: 'oklch(0.65 0.15 300)' }}>
+              + Aggiungi
+            </button>
+          )}
+        </div>
+
+        {(showAlt || form.alternativa_id) && (
+          form.alternativa_id ? (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium"
+                style={{ background: 'oklch(0.65 0.15 300 / 12%)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(0.65 0.15 300 / 25%)' }}>
+                {altNome}
+              </div>
+              <button onClick={() => { set('alternativa_id', ''); setShowAlt(false); setSearchA('') }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                <FontAwesomeIcon icon={faXmark} className="text-xs" />
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <input autoFocus type="text" value={searchA} onChange={e => setSearchA(e.target.value)}
+                placeholder="Cerca alternativa..."
+                className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.65 0.15 300 / 40%)', color: 'oklch(0.97 0 0)' }} />
+              {searchA.length > 0 && (
+                <div className="rounded-xl overflow-hidden max-h-36 overflow-y-auto"
+                  style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  {filtA.length === 0
+                    ? <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                    : filtA.map((e, i) => (
+                      <button key={e.id} onClick={() => { set('alternativa_id', e.id); setShowAlt(false); setSearchA('') }}
+                        className="w-full text-left px-4 py-2.5"
+                        style={{ borderBottom: i < filtA.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none' }}>
+                        <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{e.nome}</p>
+                      </button>
+                    ))}
+                </div>
+              )}
+              <button onClick={() => { setShowAlt(false); setSearchA('') }}
+                className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Annulla</button>
+            </div>
+          )
+        )}
+      </div>
+
+      {/* ── Actions ── */}
+      <div className="flex gap-3 pt-1">
+        <button onClick={onSave} disabled={saving || !form.esercizio_id}
+          className="flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
+          style={{
+            background: !form.esercizio_id ? 'oklch(0.28 0 0)' : 'oklch(0.70 0.19 46)',
+            color: !form.esercizio_id ? 'oklch(0.42 0 0)' : 'oklch(0.11 0 0)',
+            cursor: !form.esercizio_id ? 'not-allowed' : 'pointer',
+          }}>
+          <FontAwesomeIcon icon={faCheck} />
+          {saving ? 'Salvataggio...' : 'Salva'}
+        </button>
+        <button onClick={onCancel}
+          className="px-5 py-3 rounded-xl text-sm font-medium"
+          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+          Annulla
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Main Modal ───────────────────────────────────────────────────
+export default function SchedaEditorModal({
+  schedaId, schedaNome, onClose,
+}: {
+  schedaId: string; schedaNome: string; onClose: () => void
+}) {
+  const supabase = createClient()
+  const [giorni, setGiorni] = useState<Giorno[]>([])
+  const [esercizi, setEsercizi] = useState<Esercizio[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeGiorno, setActiveGiorno] = useState<string | null>(null)
+  const [addingGiorno, setAddingGiorno] = useState(false)
+  const [newGiornoNome, setNewGiornoNome] = useState('')
+  const [addingEse, setAddingEse] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState<EsForm>(EMPTY)
+  const [editForm, setEditForm] = useState<EsForm>(EMPTY)
+  const [saving, setSaving] = useState(false)
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const [giorniRes, eserciziRes] = await Promise.all([
+      supabase.from('scheda_giorni')
+        .select(`
+          id, nome, ordine,
+          scheda_esercizi (
+            id, esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine,
+            tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi,
+            piramidale_direzione, alternativa_esercizio_id,
+            esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli ),
+            alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
+          )
+        `)
+        .eq('scheda_id', schedaId)
+        .order('ordine'),
+      supabase.from('esercizi')
+        .select('id, nome, muscoli')
+        .or('is_global.eq.true,coach_id.eq.' + user.id)
+        .order('nome'),
+    ])
+
+    const giorniData = (giorniRes.data as any) ?? []
+    setGiorni(giorniData)
+    setEsercizi(eserciziRes.data ?? [])
+    if (giorniData.length > 0 && !activeGiorno) {
+      setActiveGiorno(giorniData[0].id)
+    }
+    setLoading(false)
+  }, [schedaId])
+
+  useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Compute gruppo labels for current day
+  const getGruppiGiorno = () => {
+    const giorno = giorni.find(g => g.id === activeGiorno)
+    if (!giorno) return []
+    const seen = new Map<string, string>()
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    for (const ese of [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)) {
+      if (ese.gruppo_id && !seen.has(ese.gruppo_id)) {
+        seen.set(ese.gruppo_id, letters[seen.size % 26])
+      }
+    }
+    return Array.from(seen.entries()).map(([id, label]) => ({ id, label }))
+  }
+
+  const getGruppoLabel = (gruppoId: string | null) => {
+    if (!gruppoId) return null
+    return getGruppiGiorno().find(g => g.id === gruppoId)?.label ?? null
+  }
+
+  const handleAddGiorno = async () => {
+    if (!newGiornoNome.trim()) return
+    await supabase.from('scheda_giorni').insert({
+      scheda_id: schedaId, nome: newGiornoNome.trim(), ordine: giorni.length,
+    })
+    setNewGiornoNome(''); setAddingGiorno(false)
+    const res = await supabase.from('scheda_giorni')
+      .select('id, nome, ordine').eq('scheda_id', schedaId).order('ordine')
+    const last = (res.data ?? []).at(-1)
+    await fetchAll()
+    if (last) setActiveGiorno(last.id)
+  }
+
+  const handleDeleteGiorno = async (giornoId: string) => {
+    if (!confirm('Eliminare questo giorno e tutti i suoi esercizi?')) return
+    await supabase.from('scheda_giorni').delete().eq('id', giornoId)
+    const resto = giorni.filter(g => g.id !== giornoId)
+    setActiveGiorno(resto[0]?.id ?? null)
+    await fetchAll()
+  }
+
+  const buildPayload = (f: EsForm, giornoId: string, ordine: number) => {
+    let gruppoId: string | null = null
+    if (['superset', 'giant_set'].includes(f.tipo)) {
+      gruppoId = f.gruppo_id && f.gruppo_id !== '' ? f.gruppo_id : crypto.randomUUID()
+    }
+    return {
+      giorno_id: giornoId,
+      esercizio_id: f.esercizio_id,
+      alternativa_esercizio_id: f.alternativa_id || null,
+      serie: parseInt(f.serie) || 3,
+      ripetizioni: f.ripetizioni || '8-12',
+      recupero_secondi: parseInt(f.recupero) || 90,
+      note: f.note.trim() || null,
+      ordine,
+      tipo: f.tipo,
+      gruppo_id: gruppoId,
+      drop_count: f.tipo === 'dropset' ? (parseInt(f.drop_count) || 2) : null,
+      drop_percentage: f.tipo === 'dropset' ? (parseInt(f.drop_pct) || 20) : null,
+      rest_pause_secondi: f.tipo === 'rest_pause' ? (parseInt(f.rest_pause_sec) || 15) : null,
+      piramidale_direzione: f.tipo === 'piramidale' ? f.piramide_dir : null,
+    }
+  }
+
+  const handleSaveEse = async () => {
+    if (!form.esercizio_id || !activeGiorno) return
+    setSaving(true)
+    const giorno = giorni.find(g => g.id === activeGiorno)
+    const ordine = giorno?.scheda_esercizi?.length ?? 0
+    await supabase.from('scheda_esercizi').insert(buildPayload(form, activeGiorno, ordine))
+    setForm(EMPTY); setAddingEse(false); setSaving(false)
+    await fetchAll()
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !activeGiorno) return
+    setSaving(true)
+    const giorno = giorni.find(g => g.id === activeGiorno)
+    const ordine = giorno?.scheda_esercizi?.find(e => e.id === editingId)?.ordine ?? 0
+    const { giorno_id, ...payload } = buildPayload(editForm, activeGiorno, ordine) as any
+    await supabase.from('scheda_esercizi').update(payload).eq('id', editingId)
+    setEditingId(null); setSaving(false)
+    await fetchAll()
+  }
+
+  const handleDeleteEse = async (id: string) => {
+    await supabase.from('scheda_esercizi').delete().eq('id', id)
+    if (editingId === id) setEditingId(null)
+    await fetchAll()
+  }
+
+  const giorno = giorni.find(g => g.id === activeGiorno)
+  const eserciziGiorno = [...(giorno?.scheda_esercizi ?? [])].sort((a, b) => a.ordine - b.ordine)
+  const gruppiGiorno = getGruppiGiorno()
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
+      style={{ background: 'oklch(0 0 0 / 75%)', backdropFilter: 'blur(10px)' }}>
+      <div className="w-full max-w-2xl flex flex-col rounded-3xl overflow-hidden"
+        style={{
+          background: 'oklch(0.15 0 0)',
+          border: '1px solid oklch(1 0 0 / 10%)',
+          maxHeight: '92vh',
+        }}>
+
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
+              Editor Scheda
+            </p>
+            <h2 className="text-lg font-black leading-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+              {schedaNome}
+            </h2>
+          </div>
+          <button onClick={onClose}
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center py-16">
+            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+          </div>
+        ) : (
+          <>
+            {/* ── Day tabs ── */}
+            <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto flex-shrink-0 scrollbar-none"
+              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+              {giorni.map(g => (
+                <button key={g.id}
+                  onClick={() => { setActiveGiorno(g.id); setAddingEse(false); setEditingId(null) }}
+                  className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
+                  style={{
+                    background: activeGiorno === g.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                    color: activeGiorno === g.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                  }}>
+                  {g.nome}
+                </button>
+              ))}
+
+              {addingGiorno ? (
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <input autoFocus value={newGiornoNome}
+                    onChange={e => setNewGiornoNome(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleAddGiorno(); if (e.key === 'Escape') setAddingGiorno(false) }}
+                    placeholder="Nome..."
+                    className="w-28 px-3 py-2 rounded-xl text-sm outline-none"
+                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 50%)', color: 'oklch(0.97 0 0)' }} />
+                  <button onClick={handleAddGiorno}
+                    className="px-3 py-2 rounded-xl text-sm font-bold"
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>✓</button>
+                  <button onClick={() => setAddingGiorno(false)}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center"
+                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>✕</button>
+                </div>
+              ) : (
+                <button onClick={() => setAddingGiorno(true)}
+                  className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              )}
+            </div>
+
+            {/* ── Exercise list ── */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {!activeGiorno ? (
+                <div className="py-12 text-center">
+                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi un giorno per iniziare</p>
+                </div>
+              ) : (
+                <>
+                  {/* Day header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>
+                      {eserciziGiorno.length} {eserciziGiorno.length === 1 ? 'esercizio' : 'esercizi'}
+                    </p>
+                    <button onClick={() => handleDeleteGiorno(activeGiorno)}
+                      className="text-xs px-3 py-1.5 rounded-lg"
+                      style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.70 0.20 27)' }}>
+                      Elimina giorno
+                    </button>
+                  </div>
+
+                  {/* Exercises */}
+                  {eserciziGiorno.map((ese, i) => {
+                    const gruppoLabel = getGruppoLabel(ese.gruppo_id)
+                    const isGrouped = !!ese.gruppo_id
+                    const tipoInfo = getTipoInfo(ese.tipo)
+                    const isEditing = editingId === ese.id
+                    const prevEse = eserciziGiorno[i - 1]
+                    const isFirstInGroup = isGrouped && (!prevEse || prevEse.gruppo_id !== ese.gruppo_id)
+                    const nextEse = eserciziGiorno[i + 1]
+                    const isLastInGroup = isGrouped && (!nextEse || nextEse.gruppo_id !== ese.gruppo_id)
+
+                    return (
+                      <div key={ese.id} style={{ marginLeft: isGrouped ? '1rem' : '0' }}>
+
+                        {/* Group label */}
+                        {isFirstInGroup && (
+                          <div className="flex items-center gap-2 mb-1.5 -ml-4">
+                            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                              style={{ background: tipoInfo.bg, color: tipoInfo.color }}>
+                              {gruppoLabel}
+                            </div>
+                            <span className="text-xs font-bold" style={{ color: tipoInfo.color }}>
+                              {tipoInfo.label}
+                            </span>
+                            <div className="flex-1 h-px" style={{ background: `${tipoInfo.color}30` }} />
+                          </div>
+                        )}
+
+                        <div className="rounded-2xl overflow-hidden"
+                          style={{
+                            background: 'oklch(0.19 0 0)',
+                            border: `1px solid ${isGrouped ? `${tipoInfo.color}30` : 'oklch(1 0 0 / 6%)'}`,
+                            borderLeft: isGrouped ? `3px solid ${tipoInfo.color}` : undefined,
+                            marginBottom: isGrouped && !isLastInGroup ? '2px' : undefined,
+                            borderRadius: isGrouped && !isFirstInGroup && !isLastInGroup ? '0.75rem' : undefined,
+                          }}>
+
+                          {!isEditing ? (
+                            // Compact row
+                            <div className="flex items-start gap-3 px-4 py-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                                  {ese.esercizi?.nome}
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                  {ese.tipo !== 'normale' && (
+                                    <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                                      style={{ background: tipoInfo.bg, color: tipoInfo.color }}>
+                                      {tipoInfo.label}
+                                    </span>
+                                  )}
+                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                    {ese.serie}×{ese.ripetizioni}
+                                  </span>
+                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                    {ese.recupero_secondi}s rec.
+                                  </span>
+                                  {ese.tipo === 'dropset' && ese.drop_count && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.70 0.19 46 / 10%)', color: 'oklch(0.70 0.19 46)' }}>
+                                      {ese.drop_count} drop · -{ese.drop_percentage}%
+                                    </span>
+                                  )}
+                                  {ese.tipo === 'rest_pause' && ese.rest_pause_secondi && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.15 300 / 10%)', color: 'oklch(0.65 0.15 300)' }}>
+                                      {ese.rest_pause_secondi}s micro-rec.
+                                    </span>
+                                  )}
+                                  {ese.tipo === 'piramidale' && ese.piramidale_direzione && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.85 0.12 80 / 10%)', color: 'oklch(0.85 0.12 80)' }}>
+                                      {ese.piramidale_direzione === 'ascendente' ? '↑' : '↓'} {ese.piramidale_direzione}
+                                    </span>
+                                  )}
+                                  {ese.alternativa_esercizi && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.15 300 / 10%)', color: 'oklch(0.65 0.15 300)' }}>
+                                      Alt: {(ese.alternativa_esercizi as any)?.nome}
+                                    </span>
+                                  )}
+                                  {ese.note && (
+                                    <span className="text-xs italic" style={{ color: 'oklch(0.45 0 0)' }}>
+                                      "{ese.note}"
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-1.5 flex-shrink-0">
+                                <button
+                                  onClick={() => {
+                                    setEditingId(ese.id)
+                                    setAddingEse(false)
+                                    setEditForm({
+                                      esercizio_id: ese.esercizio_id,
+                                      alternativa_id: ese.alternativa_esercizio_id ?? '',
+                                      serie: String(ese.serie),
+                                      ripetizioni: ese.ripetizioni,
+                                      recupero: String(ese.recupero_secondi),
+                                      note: ese.note ?? '',
+                                      tipo: ese.tipo,
+                                      gruppo_id: ese.gruppo_id ?? '',
+                                      drop_count: String(ese.drop_count ?? 2),
+                                      drop_pct: String(ese.drop_percentage ?? 20),
+                                      rest_pause_sec: String(ese.rest_pause_secondi ?? 15),
+                                      piramide_dir: ese.piramidale_direzione ?? 'ascendente',
+                                    })
+                                  }}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  <FontAwesomeIcon icon={faPen} className="text-xs" />
+                                </button>
+                                <button onClick={() => handleDeleteEse(ese.id)}
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                                  style={{ background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.70 0.20 27)' }}>
+                                  <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            // Edit form
+                            <EsercizioForm
+                              form={editForm}
+                              onChange={setEditForm}
+                              esercizi={esercizi}
+                              gruppi={gruppiGiorno}
+                              onSave={handleSaveEdit}
+                              onCancel={() => setEditingId(null)}
+                              saving={saving}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Add exercise */}
+                  {addingEse ? (
+                    <div className="rounded-2xl overflow-hidden"
+                      style={{ background: 'oklch(0.19 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+                      <EsercizioForm
+                        form={form}
+                        onChange={setForm}
+                        esercizi={esercizi}
+                        gruppi={gruppiGiorno}
+                        onSave={handleSaveEse}
+                        onCancel={() => { setAddingEse(false); setForm(EMPTY) }}
+                        saving={saving}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setAddingEse(true); setEditingId(null) }}
+                      className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                      style={{
+                        background: 'transparent',
+                        color: 'oklch(0.70 0.19 46)',
+                        border: '2px dashed oklch(0.70 0.19 46 / 25%)',
+                      }}>
+                      <FontAwesomeIcon icon={faPlus} /> Aggiungi esercizio
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
