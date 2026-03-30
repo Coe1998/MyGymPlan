@@ -12,6 +12,8 @@ interface Esercizio {
   video_url: string | null
   muscoli: string[] | null
   created_at: string
+  is_global: boolean
+  coach_id: string | null
 }
 
 const MUSCOLI_DISPONIBILI = [
@@ -46,8 +48,9 @@ export default function EserciziPage() {
     const { data } = await supabase
       .from('esercizi')
       .select('*')
-      .eq('coach_id', user.id)
-      .order('created_at', { ascending: false })
+      .or('is_global.eq.true,coach_id.eq.' + user.id)
+      .order('is_global', { ascending: false })
+      .order('nome', { ascending: true })
     setEsercizi(data ?? [])
     setLoading(false)
   }
@@ -301,7 +304,7 @@ export default function EserciziPage() {
           <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Libreria esercizi</h2>
           <span className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-            {esercizi.length} esercizi
+            {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
           </span>
         </div>
 
@@ -364,23 +367,30 @@ export default function EserciziPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
-                  <button
-                    onClick={() => handleEdit(e)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
-                  >
-                    Modifica
-                  </button>
-                  <button
-                    onClick={() => handleDelete(e.id, e.nome)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-                    style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
-                  >
-                    Elimina
-                  </button>
-                </div>
+                {/* Badge globale o actions */}
+                {e.is_global ? (
+                  <span className="text-xs px-2.5 py-1 rounded-full flex-shrink-0"
+                    style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+                    🌐 Globale
+                  </span>
+                ) : (
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                    <button
+                      onClick={() => handleEdit(e)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                    >
+                      Modifica
+                    </button>
+                    <button
+                      onClick={() => handleDelete(e.id, e.nome)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -10,6 +10,8 @@ interface Esercizio {
   nome: string
   muscoli: string[] | null
   descrizione: string | null
+  is_global: boolean
+  coach_id: string | null
 }
 
 const MUSCOLI_OPTIONS = [
@@ -34,7 +36,10 @@ export default function AtletaEserciziPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase
-      .from('esercizi').select('*').eq('coach_id', user.id).order('nome')
+      .from('esercizi').select('*')
+      .or('is_global.eq.true,coach_id.eq.' + user.id)
+      .order('is_global', { ascending: false })
+      .order('nome', { ascending: true })
     setEsercizi(data ?? [])
     setLoading(false)
   }
@@ -208,18 +213,25 @@ export default function AtletaEserciziPage() {
                   <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{e.descrizione}</p>
                 )}
               </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
-                <button onClick={() => handleEdit(e)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
-                  <FontAwesomeIcon icon={faPen} />
-                </button>
-                <button onClick={() => handleDelete(e.id, e.nome)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
-                  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </div>
+              {e.is_global ? (
+                <span className="text-xs px-2.5 py-1 rounded-full flex-shrink-0"
+                  style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+                  🌐 Globale
+                </span>
+              ) : (
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                  <button onClick={() => handleEdit(e)}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
+                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+                    <FontAwesomeIcon icon={faPen} />
+                  </button>
+                  <button onClick={() => handleDelete(e.id, e.nome)}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
+                    style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
