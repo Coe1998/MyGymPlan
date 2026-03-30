@@ -8,7 +8,7 @@ import {
   faTriangleExclamation, faChartBar, faHeart, faComment,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
   faWeightScale, faArrowTrendUp, faArrowTrendDown, faMinus,
-  faXmark, faChevronDown, faChevronUp, faArrowLeft,
+  faXmark, faChevronDown, faChevronUp, faArrowLeft, faHand,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -73,6 +73,7 @@ export default function AnalyticsPage() {
   const [sessioniDettaglio, setSessioniDettaglio] = useState<SessioneDettaglio[]>([])
   const [loadingSessioni, setLoadingSessioni] = useState(false)
   const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
+  const [assegnazioniCliente, setAssegnazioniCliente] = useState<any[]>([])
 
   const supabase = createClient()
 
@@ -217,22 +218,21 @@ export default function AnalyticsPage() {
     setClienteSelezionato(cliente)
     setSessioneAperta(null)
     setLoadingSessioni(true)
-    const { data } = await supabase
-      .from('sessioni')
-      .select(`
+    setAssegnazioniCliente([])
+    const [sessData, assData] = await Promise.all([
+      supabase.from('sessioni').select(`
         id, data, completata, durata_secondi,
         scheda_giorni ( nome ),
         log_serie (
           numero_serie, peso_kg, ripetizioni, completata,
-          scheda_esercizi (
-            serie, ripetizioni, recupero_secondi,
-            esercizi ( nome, muscoli )
-          )
+          scheda_esercizi ( serie, ripetizioni, recupero_secondi, esercizi ( nome, muscoli ) )
         )
-      `)
-      .eq('cliente_id', cliente.id)
-      .order('data', { ascending: false })
-    setSessioniDettaglio((data as any) ?? [])
+      `).eq('cliente_id', cliente.id).order('data', { ascending: false }),
+      supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
+        .eq('cliente_id', cliente.id).order('created_at', { ascending: false }),
+    ])
+    setSessioniDettaglio((sessData.data as any) ?? [])
+    setAssegnazioniCliente((assData.data as any) ?? [])
     setLoadingSessioni(false)
   }
 
@@ -240,6 +240,7 @@ export default function AnalyticsPage() {
     setClienteSelezionato(null)
     setSessioniDettaglio([])
     setSessioneAperta(null)
+    setAssegnazioniCliente([])
   }
 
   const formatDurata = (sec: number | null) => {
@@ -288,13 +289,30 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-          Analytics
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-          Panoramica completa dei tuoi clienti
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
+            Dashboard <FontAwesomeIcon icon={faHand} />
+          </p>
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+            I tuoi clienti
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+            {totaleClienti} clienti · {clientiAttivi} attivi questa settimana
+          </p>
+        </div>
+        <div className="flex gap-2 flex-shrink-0">
+          <a href="/coach/schede"
+            className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            + Scheda
+          </a>
+          <a href="/coach/clienti"
+            className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            + Cliente
+          </a>
+        </div>
       </div>
 
       {/* Alert banner — solo se ci sono alert */}
@@ -711,19 +729,122 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Contenuto */}
-            <div className="flex-1 p-5 space-y-3">
+            <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
                 <div className="py-16 text-center">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento sessioni...</p>
-                </div>
-              ) : sessioniDettaglio.length === 0 ? (
-                <div className="py-16 text-center space-y-3 rounded-2xl"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <p className="text-4xl"><FontAwesomeIcon icon={faDumbbell} /></p>
-                  <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna sessione ancora</p>
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Il cliente non ha ancora completato allenamenti</p>
+                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
                 </div>
               ) : (
+                <>
+                {/* Stats rapide */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: 'Sessioni', value: sessioniDettaglio.length, color: 'oklch(0.60 0.15 200)' },
+                    { label: 'Completate', value: sessioniDettaglio.filter(s => s.completata).length, color: 'oklch(0.65 0.18 150)' },
+                    { label: 'Schede attive', value: clienteSelezionato?.schede_attive ?? 0, color: 'oklch(0.70 0.19 46)' },
+                  ].map(s => (
+                    <div key={s.label} className="rounded-2xl p-3 text-center"
+                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Schede assegnate */}
+                <div className="rounded-2xl overflow-hidden"
+                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📋 Schede assegnate</p>
+                  </div>
+                  {assegnazioniCliente.length === 0 ? (
+                    <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda assegnata</p>
+                  ) : assegnazioniCliente.map((a: any, i: number) => (
+                    <div key={a.id} className="flex items-center gap-3 px-4 py-3"
+                      style={{ borderBottom: i < assegnazioniCliente.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      <span className="text-xs px-2 py-0.5 rounded-full"
+                        style={{
+                          background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
+                          color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                        }}>
+                        {a.attiva ? 'Attiva' : 'Inattiva'}
+                      </span>
+                      <p className="text-sm flex-1" style={{ color: 'oklch(0.85 0 0)' }}>{a.schede?.nome ?? '—'}</p>
+                      <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+                        dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Ultimo check-in */}
+                {clienteSelezionato?.ultimo_checkin && (
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    <div className="px-4 py-3 flex items-center justify-between"
+                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>❤️ Ultimo check-in</p>
+                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                        {new Date(clienteSelezionato.ultimo_checkin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-4">
+                      {[
+                        { label: 'Energia', value: clienteSelezionato.ultimo_checkin.energia, warn: clienteSelezionato.ultimo_checkin.energia <= 2 },
+                        { label: 'Sonno', value: clienteSelezionato.ultimo_checkin.sonno, warn: clienteSelezionato.ultimo_checkin.sonno <= 2 },
+                        { label: 'Stress', value: clienteSelezionato.ultimo_checkin.stress, warn: clienteSelezionato.ultimo_checkin.stress >= 4 },
+                        { label: 'Motiv.', value: clienteSelezionato.ultimo_checkin.motivazione, warn: clienteSelezionato.ultimo_checkin.motivazione <= 2 },
+                      ].map((item, i) => (
+                        <div key={item.label} className="p-3 text-center"
+                          style={{ borderRight: i < 3 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+                          <p className="text-xl font-black"
+                            style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.97 0 0)' }}>
+                            {item.value}/5
+                          </p>
+                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{item.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Peso */}
+                {clienteSelezionato && clienteSelezionato.misurazioni.length > 0 && (
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    <div className="px-4 py-3 flex items-center justify-between"
+                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>⚖️ Peso corporeo</p>
+                      <p className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+                        {clienteSelezionato.misurazioni.at(-1)?.peso_kg} kg
+                      </p>
+                    </div>
+                    {clienteSelezionato.misurazioni.length >= 2 && (
+                      <div className="p-4" style={{ height: 110 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={clienteSelezionato.misurazioni} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
+                            <XAxis dataKey="data" tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
+                            <Tooltip contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
+                              formatter={(v: any) => [`${v} kg`, 'Peso']} />
+                            <Line type="monotone" dataKey="peso_kg" stroke="oklch(0.60 0.15 200)" strokeWidth={2}
+                              dot={{ r: 3, fill: 'oklch(0.60 0.15 200)', strokeWidth: 0 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Sessioni */}
+                <div className="rounded-2xl overflow-hidden"
+                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>🏋️ Sessioni di allenamento</p>
+                  </div>
+                {sessioniDettaglio.length === 0 ? (
+                  <p className="px-4 py-6 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione ancora</p>
+                ) : (
                 sessioniDettaglio.map((sessione) => {
                   const isAperta = sessioneAperta === sessione.id
                   const serieCompletate = sessione.log_serie.filter(s => s.completata).length
@@ -838,6 +959,9 @@ export default function AnalyticsPage() {
                     </div>
                   )
                 })
+                )}
+                </div>
+                </>
               )}
             </div>
           </div>
