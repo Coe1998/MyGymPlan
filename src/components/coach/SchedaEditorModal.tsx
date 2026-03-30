@@ -59,16 +59,23 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 }) {
   const [searchP, setSearchP] = useState('')
   const [searchA, setSearchA] = useState('')
+  const [filtroMuscolo, setFiltroMuscolo] = useState('')
   const [showAlt, setShowAlt] = useState(!!form.alternativa_id)
 
+  const MUSCOLI = ['Petto', 'Dorsali', 'Spalle', 'Bicipiti', 'Tricipiti', 'Quadricipiti', 'Femorali', 'Glutei', 'Addome', 'Polpacci', 'Trapezio', 'Avambracci']
+
   const set = (key: keyof EsForm, val: string) => onChange({ ...form, [key]: val })
+  const setMany = (updates: Partial<EsForm>) => onChange({ ...form, ...updates })
   const tipo = getTipoInfo(form.tipo)
   const isGrouped = ['superset', 'giant_set'].includes(form.tipo)
 
   const primarioNome = esercizi.find(e => e.id === form.esercizio_id)?.nome ?? ''
   const altNome = esercizi.find(e => e.id === form.alternativa_id)?.nome ?? ''
 
-  const filtP = esercizi.filter(e => e.nome.toLowerCase().includes(searchP.toLowerCase())).slice(0, 15)
+  const filtP = esercizi.filter(e =>
+    e.nome.toLowerCase().includes(searchP.toLowerCase()) &&
+    (!filtroMuscolo || e.muscoli?.includes(filtroMuscolo))
+  ).slice(0, 20)
   const filtA = esercizi.filter(e =>
     e.nome.toLowerCase().includes(searchA.toLowerCase()) && e.id !== form.esercizio_id
   ).slice(0, 15)
@@ -81,6 +88,30 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
           Esercizio *
         </label>
+        {/* Muscle filter chips */}
+        {!form.esercizio_id && (
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            <button onClick={() => setFiltroMuscolo('')}
+              className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+              style={{
+                background: !filtroMuscolo ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
+                color: !filtroMuscolo ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+              }}>
+              Tutti
+            </button>
+            {MUSCOLI.map(m => (
+              <button key={m} onClick={() => setFiltroMuscolo(filtroMuscolo === m ? '' : m)}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  background: filtroMuscolo === m ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
+                  color: filtroMuscolo === m ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+                }}>
+                {m}
+              </button>
+            ))}
+          </div>
+        )}
+
         {form.esercizio_id ? (
           <div className="flex items-center gap-2">
             <div className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold"
@@ -95,11 +126,11 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           </div>
         ) : (
           <div className="space-y-1.5">
-            <input autoFocus type="text" value={searchP} onChange={e => setSearchP(e.target.value)}
+            <input type="text" value={searchP} onChange={e => setSearchP(e.target.value)}
               placeholder="Cerca esercizio..."
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
-            {searchP.length > 0 && (
+            {(searchP.length > 0 || filtroMuscolo) && (
               <div className="rounded-xl overflow-hidden max-h-44 overflow-y-auto"
                 style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
                 {filtP.length === 0
@@ -123,8 +154,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Tipo</label>
         <div className="flex flex-wrap gap-2">
           {TIPI.map(t => (
-            <button key={t.id} onClick={() => { set('tipo', t.id); if (!['superset','giant_set'].includes(t.id)) set('gruppo_id', '') }}
-              className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+            <button key={t.id} onClick={() => setMany({ tipo: t.id, gruppo_id: ['superset','giant_set'].includes(t.id) ? form.gruppo_id : '' })}
+              className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
               style={{
                 background: form.tipo === t.id ? t.bg : 'oklch(0.23 0 0)',
                 color: form.tipo === t.id ? t.color : 'oklch(0.48 0 0)',
@@ -272,7 +303,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             </div>
           ) : (
             <div className="space-y-1.5">
-              <input autoFocus type="text" value={searchA} onChange={e => setSearchA(e.target.value)}
+              <input type="text" value={searchA} onChange={e => setSearchA(e.target.value)}
                 placeholder="Cerca alternativa..."
                 className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                 style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.65 0.15 300 / 40%)', color: 'oklch(0.97 0 0)' }} />
