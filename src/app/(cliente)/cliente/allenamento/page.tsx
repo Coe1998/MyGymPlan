@@ -14,6 +14,13 @@ interface SchedaEsercizio {
   recupero_secondi: number
   note: string | null
   ordine: number
+  tipo: string
+  gruppo_id: string | null
+  drop_count: number | null
+  drop_percentage: number | null
+  rest_pause_secondi: number | null
+  piramidale_direzione: string | null
+  alternativa_esercizio_id: string | null
   esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null }
 }
 
@@ -64,6 +71,14 @@ export default function AllenamentoPage() {
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
+  const TIPO_COLORS: Record<string, { color: string; bg: string; label: string }> = {
+    superset:   { color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 15%)', label: 'Superset' },
+    giant_set:  { color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 15%)', label: 'Giant Set' },
+    dropset:    { color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 15%)',  label: 'Dropset' },
+    rest_pause: { color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 15%)', label: 'Rest-Pause' },
+    piramidale: { color: 'oklch(0.85 0.12 80)',  bg: 'oklch(0.85 0.12 80 / 15%)',  label: 'Piramidale' },
+  }
+
   const fetchGiorno = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -90,6 +105,7 @@ export default function AllenamentoPage() {
         .from('scheda_giorni')
         .select(`id, nome, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
+          tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
           esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
         )`)
         .eq('id', sessione.giorno_id)
@@ -121,6 +137,7 @@ export default function AllenamentoPage() {
       .from('scheda_giorni')
       .select(`id, nome, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
+        tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
         esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
       )`)
       .eq('id', giornoId).single()
@@ -547,15 +564,45 @@ export default function AllenamentoPage() {
 
       {/* Esercizi */}
       <div className="space-y-4">
-        {esercizi.map((ese, eseIndex) => {
+        {(() => {
+          // Compute gruppo labels
+          const gruppoLabelMap = new Map<string, string>()
+          const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+          for (const e of esercizi) {
+            if (e.gruppo_id && !gruppoLabelMap.has(e.gruppo_id)) {
+              gruppoLabelMap.set(e.gruppo_id, LETTERS[gruppoLabelMap.size % 26])
+            }
+          }
+          return esercizi.map((ese, eseIndex) => {
           const eseLog = logs[ese.id]
           const tutteCompletate = eseLog?.serie.every(s => s.completata)
+          const isGrouped = !!ese.gruppo_id
+          const tipoInfo = TIPO_COLORS[ese.tipo] ?? null
+          const gruppoLabel = gruppoLabelMap.get(ese.gruppo_id ?? '') ?? null
+          const prevEse = esercizi[eseIndex - 1]
+          const nextEse = esercizi[eseIndex + 1]
+          const isFirstInGroup = isGrouped && (!prevEse || prevEse.gruppo_id !== ese.gruppo_id)
+          const isLastInGroup = isGrouped && (!nextEse || nextEse.gruppo_id !== ese.gruppo_id)
 
           return (
-            <div key={ese.id} className="rounded-2xl overflow-hidden"
+            <div key={ese.id} style={{ marginLeft: isGrouped ? '0.75rem' : '0' }}>
+              {/* Group header */}
+              {isFirstInGroup && tipoInfo && (
+                <div className="flex items-center gap-2 mb-1.5 -ml-3">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
+                    style={{ background: tipoInfo.bg, color: tipoInfo.color }}>
+                    {gruppoLabel}
+                  </div>
+                  <span className="text-xs font-bold" style={{ color: tipoInfo.color }}>{tipoInfo.label}</span>
+                  <div className="flex-1 h-px" style={{ background: `${tipoInfo.color}30` }} />
+                </div>
+              )}
+            <div className="rounded-2xl overflow-hidden"
               style={{
                 background: 'oklch(0.18 0 0)',
-                border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}`,
+                border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : isGrouped && tipoInfo ? `${tipoInfo.color}30` : 'oklch(1 0 0 / 6%)'}`,
+                borderLeft: isGrouped && tipoInfo ? `3px solid ${tipoInfo.color}` : undefined,
+                marginBottom: isGrouped && !isLastInGroup ? '2px' : undefined,
               }}>
               {/* Modal note esercizio */}
               {noteAperta === ese.id && (ese.note || ese.esercizi.descrizione) && (
@@ -613,7 +660,27 @@ export default function AllenamentoPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
-                    <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s</p>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s</span>
+                      {ese.tipo === 'dropset' && ese.drop_count && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                          {ese.drop_count} drop -{ese.drop_percentage}%
+                        </span>
+                      )}
+                      {ese.tipo === 'rest_pause' && ese.rest_pause_secondi && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
+                          pause {ese.rest_pause_secondi}s
+                        </span>
+                      )}
+                      {ese.tipo === 'piramidale' && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.85 0.12 80 / 15%)', color: 'oklch(0.85 0.12 80)' }}>
+                          {ese.piramidale_direzione === 'ascendente' ? '↑' : '↓'} Piramidale
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -648,7 +715,29 @@ export default function AllenamentoPage() {
                     <div key={serieIndex} className="px-4 py-3"
                       style={{ background: serie.completata ? 'oklch(0.65 0.18 150 / 5%)' : 'transparent' }}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>Serie {serieIndex + 1}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>Serie {serieIndex + 1}</span>
+                          {/* Dropset: peso scalato */}
+                          {ese.tipo === 'dropset' && ese.drop_percentage && serieIndex > 0 && !serie.completata && (() => {
+                            const primaSerieLog = eseLog?.serie[0]
+                            const pesoPrima = parseFloat(primaSerieLog?.peso_kg || '0')
+                            if (!pesoPrima) return null
+                            const factor = Math.pow(1 - ese.drop_percentage / 100, serieIndex)
+                            const pesoSuggerito = Math.round((pesoPrima * factor) / 0.5) * 0.5
+                            return (
+                              <span className="text-xs px-2 py-0.5 rounded-full"
+                                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                                ~{pesoSuggerito}kg
+                              </span>
+                            )
+                          })()}
+                          {/* Piramidale: indicatore direzione */}
+                          {ese.tipo === 'piramidale' && !serie.completata && (
+                            <span className="text-xs" style={{ color: 'oklch(0.85 0.12 80)' }}>
+                              {ese.piramidale_direzione === 'ascendente' ? '↑ sali' : '↓ scendi'}
+                            </span>
+                          )}
+                        </div>
                         {confronto && !isViewMode && (
                           <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
                             Ultima: {confronto.peso_kg ?? '—'}kg × {confronto.ripetizioni ?? '—'}
@@ -705,8 +794,12 @@ export default function AllenamentoPage() {
                 })}
               </div>
             </div>
+            </div>
           )
         })}
+        </div>
+        )
+        })()}
       </div>
 
       {/* Bottone completa — solo modalità live */}
