@@ -751,7 +751,6 @@ export default function AnalyticsPage() {
             {drawerTab === 'nutrizione' ? (
               <MacroTargetForm clienteId={clienteSelezionato!.id} />
             ) : (
-            {/* Contenuto */}
             <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
                 <div className="py-16 text-center">
