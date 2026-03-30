@@ -60,6 +60,8 @@ export default function AllenamentoPage() {
   const hasAutoCompleted = useRef(false)
   const durataSecondiRef = useRef(0)
   const sessioneStartRef = useRef<number | null>(null)
+  const timerEndRef = useRef<number | null>(null)
+  const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
   const fetchGiorno = useCallback(async () => {
@@ -187,13 +189,30 @@ export default function AllenamentoPage() {
 
   useEffect(() => { fetchGiorno() }, [fetchGiorno])
 
+  // Mostra suggerimento per il primo esercizio all'apertura della sessione
+  useEffect(() => {
+    if (loading || isViewMode || esercizi.length === 0) return
+    const sug = calcolaSuggerimento(esercizi[0])
+    if (sug) setSuggerimento(sug)
+  }, [loading, esercizi, ultimaSessione])
+
   useEffect(() => { durataSecondiRef.current = durataSecondi }, [durataSecondi])
 
   useEffect(() => {
-    if (timerSecondi <= 0) { setTimerAttivo(false); return }
-    const interval = setInterval(() => setTimerSecondi(s => s - 1), 1000)
+    if (!timerAttivo) return
+    const interval = setInterval(() => {
+      if (timerEndRef.current === null) return
+      const remaining = Math.ceil((timerEndRef.current - Date.now()) / 1000)
+      if (remaining <= 0) {
+        setTimerSecondi(0)
+        setTimerAttivo(false)
+        timerEndRef.current = null
+      } else {
+        setTimerSecondi(remaining)
+      }
+    }, 500)
     return () => clearInterval(interval)
-  }, [timerAttivo, timerSecondi])
+  }, [timerAttivo])
 
   useEffect(() => {
     if (completata || loading || isViewMode) return
@@ -235,6 +254,34 @@ export default function AllenamentoPage() {
     }
   }, [logs, esercizi, isViewMode, completata, loading, sessioneId])
 
+  // ── Progressive overload suggestion ─────────────────────────────
+  const calcolaSuggerimento = (ese: SchedaEsercizio): { messaggio: string; eseNome: string } | null => {
+    const ultimeSerie = ultimaSessione[ese.id]
+    if (!ultimeSerie || ultimeSerie.length === 0) return null
+    const ripRange = ese.ripetizioni.trim()
+    let repMin: number, repMax: number
+    if (ripRange.includes('-')) {
+      const parts = ripRange.split('-')
+      repMin = parseInt(parts[0]); repMax = parseInt(parts[1])
+    } else {
+      repMin = repMax = parseInt(ripRange)
+    }
+    if (isNaN(repMin) || isNaN(repMax)) return null
+    const pesoRif = ultimeSerie[0]?.peso_kg
+    if (!pesoRif || pesoRif <= 0) return null
+    const tutteAlMax = ultimeSerie.every(s => (s.ripetizioni ?? 0) >= repMax)
+    const alcuneSottoMin = ultimeSerie.some(s => (s.ripetizioni ?? 0) < repMin)
+    if (tutteAlMax) {
+      const nuovoPeso = Math.round((pesoRif * 1.05) / 0.5) * 0.5
+      return { messaggio: `💪 Forza! Sali a ${nuovoPeso}kg oggi`, eseNome: ese.esercizi.nome }
+    } else if (alcuneSottoMin) {
+      const nuovoPeso = Math.round((pesoRif * 0.95) / 0.5) * 0.5
+      return { messaggio: `📉 Prova con ${nuovoPeso}kg, consolida prima di salire`, eseNome: ese.esercizi.nome }
+    } else {
+      return { messaggio: `🎯 Mantieni ${pesoRif}kg — chiudi il buco!`, eseNome: ese.esercizi.nome }
+    }
+  }
+
   const formatDurata = (sec: number) => {
     const h = Math.floor(sec / 3600)
     const m = Math.floor((sec % 3600) / 60)
@@ -267,7 +314,24 @@ export default function AllenamentoPage() {
     }
     if (existing) { await supabase.from('log_serie').update(payload).eq('id', existing.id) }
     else { await supabase.from('log_serie').insert(payload) }
-    if (nuovoStato) { setTimerSecondi(ese.recupero_secondi); setTimerAttivo(true) }
+    if (nuovoStato) { timerEndRef.current = Date.now() + ese.recupero_secondi * 1000; setTimerSecondi(ese.recupero_secondi); setTimerAttivo(true) }
+
+    // Suggerimento progressive overload per l'esercizio successivo
+    if (nuovoStato) {
+      const logsAggiornatiSug = {
+        ...logs,
+        [ese.id]: { ...logs[ese.id], serie: logs[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, completata: true } : s) }
+      }
+      const tutteCompletateEse = logsAggiornatiSug[ese.id].serie.every(s => s.completata)
+      if (tutteCompletateEse) {
+        const eseIndex = esercizi.findIndex(e => e.id === ese.id)
+        const prossimoEse = esercizi[eseIndex + 1]
+        if (prossimoEse) {
+          const sug = calcolaSuggerimento(prossimoEse)
+          if (sug) setSuggerimento(sug)
+        }
+      }
+    }
 
     // Se era l'ultima serie, marca la sessione come completata su Supabase
     if (nuovoStato) {
@@ -422,6 +486,29 @@ export default function AllenamentoPage() {
             style={{ width: `${progressoPerc}%`, background: 'oklch(0.60 0.15 200)' }} />
         </div>
       </div>
+
+      {/* Notifica suggerimento progressive overload */}
+      {suggerimento && !isViewMode && (
+        <div className="fixed bottom-6 left-4 right-4 z-50 max-w-2xl mx-auto"
+          style={{ filter: 'drop-shadow(0 8px 24px oklch(0 0 0 / 50%))' }}>
+          <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
+            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                {suggerimento.eseNome}
+              </p>
+              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+                {suggerimento.messaggio}
+              </p>
+            </div>
+            <button onClick={() => setSuggerimento(null)}
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
+              style={{ background: 'oklch(0.30 0 0)', color: 'oklch(0.60 0 0)' }}>
+              <FontAwesomeIcon icon={faXmark} className="text-xs" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Timer recupero — solo in modalità live */}
       {timerAttivo && !isViewMode && (
