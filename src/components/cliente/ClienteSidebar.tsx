@@ -6,12 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear } from '@fortawesome/free-solid-svg-icons'
+import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils } from '@fortawesome/free-solid-svg-icons'
 
 const navItems = [
   { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
   { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
+  { href: '/cliente/dieta', label: 'Dieta', icon: faUtensils },
   { href: '/cliente/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
