@@ -994,7 +994,6 @@ export default function SchedaEditorModal({
                                   )}
                                 </div>
                               </div>
-                              </div>{/* end flex-1 */}
                               <div className="flex gap-1.5 flex-shrink-0">
                                 <button
                                   onClick={() => {
