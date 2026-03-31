@@ -39,42 +39,17 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
     setDrawerTab('overview')
     setDietaAbilitata(false)
     setLoading(true)
-
     try {
       const [sessRes, misRes, checkinRes, assRes, dietaRes] = await Promise.all([
-        supabase.from('sessioni')
-          .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
-          .eq('cliente_id', c.cliente_id)
-          .order('data', { ascending: false })
-          .limit(20),
-        supabase.from('misurazioni')
-          .select('data, peso_kg')
-          .eq('cliente_id', c.cliente_id)
-          .not('peso_kg', 'is', null)
-          .order('data', { ascending: true })
-          .limit(20),
-        supabase.from('checkin')
-          .select('energia, sonno, stress, motivazione, data')
-          .eq('cliente_id', c.cliente_id)
-          .order('data', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase.from('assegnazioni')
-          .select('id, data_inizio, attiva, schede(nome)')
-          .eq('cliente_id', c.cliente_id)
-          .order('created_at', { ascending: false }),
-        supabase.from('coach_clienti')
-          .select('dieta_abilitata')
-          .eq('cliente_id', c.cliente_id)
-          .maybeSingle(),
+        supabase.from('sessioni').select('id, data, completata, durata_secondi, scheda_giorni(nome)').eq('cliente_id', c.cliente_id).order('data', { ascending: false }).limit(20),
+        supabase.from('misurazioni').select('data, peso_kg').eq('cliente_id', c.cliente_id).not('peso_kg', 'is', null).order('data', { ascending: true }).limit(20),
+        supabase.from('checkin').select('energia, sonno, stress, motivazione, data').eq('cliente_id', c.cliente_id).order('data', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)').eq('cliente_id', c.cliente_id).order('created_at', { ascending: false }),
+        supabase.from('coach_clienti').select('dieta_abilitata').eq('cliente_id', c.cliente_id).maybeSingle(),
       ])
-
       setDettaglio({
         sessioni: (sessRes.data as any) ?? [],
-        misurazioni: (misRes.data ?? []).map((m: any) => ({
-          data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
-          peso_kg: parseFloat(m.peso_kg),
-        })),
+        misurazioni: (misRes.data ?? []).map((m: any) => ({ data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }), peso_kg: parseFloat(m.peso_kg) })),
         ultimoCheckin: checkinRes.data as any ?? null,
         assegnazioni: (assRes.data as any) ?? [],
       })
@@ -88,9 +63,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
     if (togglingDieta || !clienteAperto) return
     setTogglingDieta(true)
     const newVal = !dietaAbilitata
-    await supabase.from('coach_clienti')
-      .update({ dieta_abilitata: newVal })
-      .eq('cliente_id', clienteAperto.cliente_id)
+    await supabase.from('coach_clienti').update({ dieta_abilitata: newVal }).eq('cliente_id', clienteAperto.cliente_id)
     setDietaAbilitata(newVal)
     setTogglingDieta(false)
   }
@@ -206,36 +179,35 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
               ))}
             </div>
 
+            {/* Toggle dieta — sempre visibile */}
+            <div className="px-5 py-3 flex items-center justify-between flex-shrink-0"
+              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.16 0 0)' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta</p>
+                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                  {dietaAbilitata ? 'Abilitato ✓' : 'Non abilitato'}
+                </p>
+              </div>
+              <button onClick={handleToggleDieta} disabled={togglingDieta}
+                className="relative flex-shrink-0"
+                style={{ opacity: togglingDieta ? 0.5 : 1 }}>
+                <div className="w-12 h-7 rounded-full transition-colors duration-200"
+                  style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                  <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
+                    style={{
+                      background: 'oklch(0.97 0 0)',
+                      transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
+                    }} />
+                </div>
+              </button>
+            </div>
+
             {loading ? (
               <div className="flex-1 flex items-center justify-center">
                 <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
               </div>
             ) : drawerTab === 'nutrizione' ? (
               <div className="flex-1 flex flex-col">
-                {/* Toggle dieta */}
-                <div className="px-5 py-4 flex items-center justify-between"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-                  <div>
-                    <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta abilitato</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-                      {dietaAbilitata ? 'Il cliente ha accesso alla sezione Dieta' : 'Il cliente non vede la sezione Dieta'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleToggleDieta}
-                    disabled={togglingDieta}
-                    className="relative flex-shrink-0 transition-opacity"
-                    style={{ opacity: togglingDieta ? 0.5 : 1 }}>
-                    <div className="w-12 h-7 rounded-full transition-colors duration-200"
-                      style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
-                      <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
-                        style={{
-                          background: 'oklch(0.97 0 0)',
-                          transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
-                        }} />
-                    </div>
-                  </button>
-                </div>
                 {dietaAbilitata ? (
                   <MacroTargetForm clienteId={clienteAperto.cliente_id} />
                 ) : (
