@@ -40,58 +40,56 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
     setDietaAbilitata(false)
     setLoading(true)
 
-    const { data: { user } } = await supabase.auth.getUser()
+    try {
+      const [sessRes, misRes, checkinRes, assRes, dietaRes] = await Promise.all([
+        supabase.from('sessioni')
+          .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
+          .eq('cliente_id', c.cliente_id)
+          .order('data', { ascending: false })
+          .limit(20),
+        supabase.from('misurazioni')
+          .select('data, peso_kg')
+          .eq('cliente_id', c.cliente_id)
+          .not('peso_kg', 'is', null)
+          .order('data', { ascending: true })
+          .limit(20),
+        supabase.from('checkin')
+          .select('energia, sonno, stress, motivazione, data')
+          .eq('cliente_id', c.cliente_id)
+          .order('data', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from('assegnazioni')
+          .select('id, data_inizio, attiva, schede(nome)')
+          .eq('cliente_id', c.cliente_id)
+          .order('created_at', { ascending: false }),
+        supabase.from('coach_clienti')
+          .select('dieta_abilitata')
+          .eq('cliente_id', c.cliente_id)
+          .maybeSingle(),
+      ])
 
-    const [sessRes, misRes, checkinRes, assRes, dietaRes] = await Promise.all([
-      supabase.from('sessioni')
-        .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
-        .eq('cliente_id', c.cliente_id)
-        .order('data', { ascending: false })
-        .limit(20),
-      supabase.from('misurazioni')
-        .select('data, peso_kg')
-        .eq('cliente_id', c.cliente_id)
-        .not('peso_kg', 'is', null)
-        .order('data', { ascending: true })
-        .limit(20),
-      supabase.from('checkin')
-        .select('energia, sonno, stress, motivazione, data')
-        .eq('cliente_id', c.cliente_id)
-        .order('data', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase.from('assegnazioni')
-        .select('id, data_inizio, attiva, schede(nome)')
-        .eq('cliente_id', c.cliente_id)
-        .order('created_at', { ascending: false }),
-      supabase.from('coach_clienti')
-        .select('dieta_abilitata')
-        .eq('coach_id', user!.id)
-        .eq('cliente_id', c.cliente_id)
-        .maybeSingle(),
-    ])
-
-    setDettaglio({
-      sessioni: (sessRes.data as any) ?? [],
-      misurazioni: (misRes.data ?? []).map((m: any) => ({
-        data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
-        peso_kg: parseFloat(m.peso_kg),
-      })),
-      ultimoCheckin: checkinRes.data as any ?? null,
-      assegnazioni: (assRes.data as any) ?? [],
-    })
-    setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
-    setLoading(false)
+      setDettaglio({
+        sessioni: (sessRes.data as any) ?? [],
+        misurazioni: (misRes.data ?? []).map((m: any) => ({
+          data: new Date(m.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }),
+          peso_kg: parseFloat(m.peso_kg),
+        })),
+        ultimoCheckin: checkinRes.data as any ?? null,
+        assegnazioni: (assRes.data as any) ?? [],
+      })
+      setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleToggleDieta = async () => {
     if (togglingDieta || !clienteAperto) return
     setTogglingDieta(true)
-    const { data: { user } } = await supabase.auth.getUser()
     const newVal = !dietaAbilitata
     await supabase.from('coach_clienti')
       .update({ dieta_abilitata: newVal })
-      .eq('coach_id', user!.id)
       .eq('cliente_id', clienteAperto.cliente_id)
     setDietaAbilitata(newVal)
     setTogglingDieta(false)
