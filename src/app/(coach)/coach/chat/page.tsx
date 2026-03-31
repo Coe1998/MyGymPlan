@@ -80,11 +80,10 @@ export default function CoachChatPage() {
         event: 'INSERT', schema: 'public', table: 'messaggi',
         filter: `cliente_id=eq.${clienteAttivo.id}`,
       }, (payload) => {
-        setMessaggi(prev => [...prev, payload.new as Messaggio])
-        // Marca letto subito se è del cliente
-        if (!(payload.new as Messaggio).da_coach) {
-          supabase.from('messaggi').update({ letto: true }).eq('id', payload.new.id)
-        }
+        const nuovo = payload.new as Messaggio
+        // Ignora i messaggi mandati da me (già aggiunti ottimisticamente)
+        if (nuovo.da_coach) return
+        setMessaggi(prev => [...prev, nuovo])
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -94,31 +93,13 @@ export default function CoachChatPage() {
     if (!testo.trim() || !clienteAttivo || !coachId) return
     const t = testo.trim()
     setTesto('')
-
-    // Aggiornamento ottimistico immediato
-    const tempId = crypto.randomUUID()
-    const tempMsg: Messaggio = {
-      id: tempId,
-      testo: t,
-      da_coach: true,
-      letto: false,
-      created_at: new Date().toISOString(),
-    }
-    setMessaggi(prev => [...prev, tempMsg])
-
-    const { error } = await supabase.from('messaggi').insert({
+    await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteAttivo.id,
       testo: t,
       da_coach: true,
     })
-
-    if (error) {
-      console.error('Errore invio messaggio:', error.message)
-      setMessaggi(prev => prev.filter(m => m.id !== tempId))
-      return
-    }
-
+    // Manda push al cliente
     fetch('/api/push/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
