@@ -80,10 +80,11 @@ export default function CoachChatPage() {
         event: 'INSERT', schema: 'public', table: 'messaggi',
         filter: `cliente_id=eq.${clienteAttivo.id}`,
       }, (payload) => {
-        const nuovo = payload.new as Messaggio
-        // Ignora i messaggi mandati da me (già aggiunti ottimisticamente)
-        if (nuovo.da_coach) return
-        setMessaggi(prev => [...prev, nuovo])
+        setMessaggi(prev => [...prev, payload.new as Messaggio])
+        // Marca letto subito se è del cliente
+        if (!(payload.new as Messaggio).da_coach) {
+          supabase.from('messaggi').update({ letto: true }).eq('id', payload.new.id)
+        }
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -93,26 +94,13 @@ export default function CoachChatPage() {
     if (!testo.trim() || !clienteAttivo || !coachId) return
     const t = testo.trim()
     setTesto('')
-
-    // Aggiornamento ottimistico
-    const tempId = crypto.randomUUID()
-    setMessaggi(prev => [...prev, {
-      id: tempId, testo: t, da_coach: true, letto: false,
-      created_at: new Date().toISOString(),
-    }])
-
-    const { error } = await supabase.from('messaggi').insert({
+    await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteAttivo.id,
       testo: t,
       da_coach: true,
     })
-
-    if (error) {
-      setMessaggi(prev => prev.filter(m => m.id !== tempId))
-      return
-    }
-
+    // Manda push al cliente
     fetch('/api/push/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -128,88 +116,181 @@ export default function CoachChatPage() {
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] max-w-5xl gap-4">
-      {/* Lista clienti */}
-      <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-        <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Chat</p>
+    <div className="max-w-5xl">
+      {/* MOBILE: se nessun cliente selezionato → lista; altrimenti → chat */}
+
+      {/* Lista clienti — visibile sempre su desktop, su mobile solo senza cliente attivo */}
+      <div className={`${clienteAttivo ? 'hidden lg:flex' : 'flex'} lg:flex flex-col`}
+        style={{ height: clienteAttivo ? undefined : 'calc(100vh - 8rem)' }}>
+
+        {/* Header mobile */}
+        <div className="lg:hidden mb-3">
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Chat</h1>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          {clienti.length === 0 ? (
-            <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
-          ) : clienti.map(c => (
-            <button key={c.id} onClick={() => setClienteAttivo(c)}
-              className="w-full flex items-center gap-3 px-4 py-3 transition-all hover:opacity-80"
-              style={{
-                background: clienteAttivo?.id === c.id ? 'oklch(0.70 0.19 46 / 12%)' : 'transparent',
-                borderLeft: clienteAttivo?.id === c.id ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
-                borderBottom: '1px solid oklch(1 0 0 / 4%)',
-              }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                {c.full_name?.charAt(0).toUpperCase()}
-              </div>
-              <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'oklch(0.90 0 0)' }}>
-                {c.full_name}
-              </p>
-              {(unread[c.id] ?? 0) > 0 && (
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
-                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
-                  {unread[c.id]}
-                </span>
-              )}
-            </button>
-          ))}
+
+        <div className="lg:hidden rounded-2xl overflow-hidden flex flex-col flex-1"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          <div className="px-4 py-4 hidden" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Seleziona cliente</p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {clienti.length === 0 ? (
+              <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
+            ) : clienti.map(c => (
+              <button key={c.id} onClick={() => setClienteAttivo(c)}
+                className="w-full flex items-center gap-3 px-4 py-4 transition-all hover:opacity-80"
+                style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                  {c.full_name?.charAt(0).toUpperCase()}
+                </div>
+                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+                  {c.full_name}
+                </p>
+                {(unread[c.id] ?? 0) > 0 && (
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                    {unread[c.id]}
+                  </span>
+                )}
+                <span style={{ color: 'oklch(0.40 0 0)' }}>›</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Area chat */}
-      {clienteAttivo ? (
-        <div className="flex-1 flex flex-col rounded-2xl overflow-hidden"
+      {/* DESKTOP: layout a due colonne */}
+      <div className="hidden lg:flex gap-4" style={{ height: 'calc(100vh - 6rem)' }}>
+        {/* Lista clienti desktop */}
+        <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          {/* Header */}
-          <div className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
+          <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Chat</p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {clienti.length === 0 ? (
+              <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
+            ) : clienti.map(c => (
+              <button key={c.id} onClick={() => setClienteAttivo(c)}
+                className="w-full flex items-center gap-3 px-4 py-3 transition-all hover:opacity-80"
+                style={{
+                  background: clienteAttivo?.id === c.id ? 'oklch(0.70 0.19 46 / 12%)' : 'transparent',
+                  borderLeft: clienteAttivo?.id === c.id ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
+                  borderBottom: '1px solid oklch(1 0 0 / 4%)',
+                }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                  {c.full_name?.charAt(0).toUpperCase()}
+                </div>
+                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+                  {c.full_name}
+                </p>
+                {(unread[c.id] ?? 0) > 0 && (
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                    {unread[c.id]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Area chat desktop */}
+        {clienteAttivo ? (
+          <div className="flex-1 flex flex-col rounded-2xl overflow-hidden"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
+              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                {clienteAttivo.full_name?.charAt(0).toUpperCase()}
+              </div>
+              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {messaggi.length === 0 && (
+                <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
+              )}
+              {messaggi.map(m => (
+                <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
+                  <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+                    style={{
+                      background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                      borderBottomRightRadius: m.da_coach ? 4 : 16,
+                      borderBottomLeftRadius: m.da_coach ? 16 : 4,
+                    }}>
+                    <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{m.testo}</p>
+                    <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
+                  </div>
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+            <div className="px-4 py-3 flex gap-3 flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+              <input type="text" value={testo} onChange={e => setTesto(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
+                placeholder="Scrivi un messaggio..."
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+              <button onClick={inviaMessaggio} disabled={!testo.trim()}
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
+                <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center rounded-2xl"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="text-center space-y-2">
+              <p className="text-3xl">💬</p>
+              <p className="text-sm font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Seleziona un cliente per chattare</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* MOBILE: area chat (quando cliente selezionato) */}
+      {clienteAttivo && (
+        <div className="lg:hidden flex flex-col rounded-2xl overflow-hidden"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)', height: 'calc(100vh - 8rem)' }}>
+          <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0"
             style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+            <button onClick={() => setClienteAttivo(null)}
+              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+              <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
+            </button>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
               style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
               {clienteAttivo.full_name?.charAt(0).toUpperCase()}
             </div>
             <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
           </div>
-
-          {/* Messaggi */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {messaggi.length === 0 && (
-              <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>
-                Nessun messaggio ancora. Inizia la conversazione!
-              </p>
+              <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
             )}
             {messaggi.map(m => (
               <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
-                <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+                <div className="max-w-xs px-4 py-2.5 rounded-2xl"
                   style={{
                     background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
                     borderBottomRightRadius: m.da_coach ? 4 : 16,
                     borderBottomLeftRadius: m.da_coach ? 16 : 4,
                   }}>
-                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>
-                    {m.testo}
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>
-                    {formatOra(m.created_at)}
-                  </p>
+                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{m.testo}</p>
+                  <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
                 </div>
               </div>
             ))}
             <div ref={bottomRef} />
           </div>
-
-          {/* Input */}
           <div className="px-4 py-3 flex gap-3 flex-shrink-0"
-            style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-            <input
-              type="text" value={testo} onChange={e => setTesto(e.target.value)}
+            style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+            <input type="text" value={testo} onChange={e => setTesto(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
               placeholder="Scrivi un messaggio..."
               className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
@@ -219,16 +300,6 @@ export default function CoachChatPage() {
               style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
               <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
             </button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex items-center justify-center rounded-2xl"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <div className="text-center space-y-2">
-            <p className="text-3xl">💬</p>
-            <p className="text-sm font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>
-              Seleziona un cliente per chattare
-            </p>
           </div>
         </div>
       )}
