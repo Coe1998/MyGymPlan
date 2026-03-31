@@ -8,7 +8,7 @@ import {
   faTriangleExclamation, faChartBar, faHeart, faComment,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
   faWeightScale, faArrowTrendUp, faArrowTrendDown, faMinus,
-  faXmark, faChevronDown, faChevronUp, faArrowLeft, faHand,
+  faXmark, faChevronDown, faChevronUp, faArrowLeft, faHand, faEye,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -63,6 +63,55 @@ interface SessioneDettaglio {
 
 type VistaTab = 'overview' | 'benessere' | 'peso' | 'attivita'
 
+function SchedaPreviewContent({ schedaId }: { schedaId: string }) {
+  const supabase = createClient()
+  const [giorni, setGiorni] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from('scheda_giorni')
+        .select('id, nome, ordine, scheda_esercizi(id, ordine, serie, ripetizioni, tipo, esercizi!scheda_esercizi_esercizio_id_fkey(nome, muscoli))')
+        .eq('scheda_id', schedaId)
+        .order('ordine')
+      setGiorni((data as any) ?? [])
+      setLoading(false)
+    }
+    fetch()
+  }, [schedaId])
+
+  if (loading) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p></div>
+  if (giorni.length === 0) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno nella scheda</p></div>
+
+  return (
+    <div className="flex-1 p-5 space-y-4">
+      {giorni.map(g => (
+        <div key={g.id} className="rounded-2xl overflow-hidden"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{g.nome}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{g.scheda_esercizi?.length ?? 0} esercizi</p>
+          </div>
+          {(g.scheda_esercizi ?? []).sort((a: any, b: any) => a.ordine - b.ordine).map((e: any, i: number) => (
+            <div key={e.id} className="flex items-center gap-3 px-4 py-3"
+              style={{ borderBottom: i < g.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate" style={{ color: 'oklch(0.85 0 0)' }}>
+                  {e.esercizi?.nome ?? '—'}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                  {e.serie} × {e.ripetizioni}
+                  {e.tipo !== 'normale' && <span className="ml-1.5 px-1.5 py-0.5 rounded text-xs" style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>{e.tipo}</span>}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function AnalyticsPage() {
   const [clientiStats, setClientiStats] = useState<ClienteStats[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,6 +138,7 @@ export default function AnalyticsPage() {
   const [schedaClonata, setSchedaClonata] = useState<{ id: string; nome: string } | null>(null)
   const [cloningScheda, setCloningScheda] = useState(false)
   const [assegnando, setAssegnando] = useState(false)
+  const [schedaPreview, setSchedaPreview] = useState<{ id: string; nome: string } | null>(null)
 
   const supabase = createClient()
 
@@ -1255,11 +1305,19 @@ export default function AnalyticsPage() {
             {schedeCoach.length === 0 ? (
               <p className="px-5 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda disponibile</p>
             ) : schedeCoach.map((s, i) => (
-              <button key={s.id} onClick={() => { setSchedaPickata(s); setAssegnaFlow('confirm') }}
-                className="w-full text-left px-5 py-3.5 transition-all hover:opacity-80"
+              <div key={s.id} className="flex items-center"
                 style={{ borderBottom: i < schedeCoach.length - 1 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
-                <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>{s.nome}</p>
-              </button>
+                <button onClick={() => { setSchedaPickata(s); setAssegnaFlow('confirm') }}
+                  className="flex-1 text-left px-5 py-3.5 transition-all hover:opacity-80">
+                  <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>{s.nome}</p>
+                </button>
+                <button onClick={e => { e.stopPropagation(); setSchedaPreview(s) }}
+                  className="w-10 h-10 flex items-center justify-center mr-3 rounded-xl flex-shrink-0"
+                  style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}
+                  title="Anteprima scheda">
+                  <FontAwesomeIcon icon={faEye} className="text-sm" />
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -1355,6 +1413,38 @@ export default function AnalyticsPage() {
         </div>
       </div>
     )}
+    {/* PREVIEW scheda — read only */}
+    {schedaPreview && (
+      <div className="fixed inset-0 z-[70] flex justify-end"
+        style={{ background: 'oklch(0 0 0 / 70%)' }}
+        onClick={() => setSchedaPreview(null)}>
+        <div className="w-full max-w-md h-full overflow-y-auto flex flex-col"
+          style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+          onClick={e => e.stopPropagation()}>
+          <div className="sticky top-0 z-10 flex items-center gap-3 px-5 py-4"
+            style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+            <button onClick={() => setSchedaPreview(null)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+            <div>
+              <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>{schedaPreview.nome}</p>
+              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>👁 Anteprima — sola lettura</p>
+            </div>
+          </div>
+          <SchedaPreviewContent schedaId={schedaPreview.id} />
+          <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+            <button onClick={() => { setSchedaPickata(schedaPreview); setSchedaPreview(null); setAssegnaFlow('confirm') }}
+              className="w-full py-3 rounded-xl text-sm font-bold"
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+              Seleziona questa scheda →
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
   </>
   )
 }
