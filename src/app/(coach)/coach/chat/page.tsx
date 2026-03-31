@@ -94,12 +94,34 @@ export default function CoachChatPage() {
     if (!testo.trim() || !clienteAttivo || !coachId) return
     const t = testo.trim()
     setTesto('')
-    await supabase.from('messaggi').insert({
+
+    // Aggiornamento ottimistico
+    const tempMsg: Messaggio = {
+      id: crypto.randomUUID(),
+      testo: t,
+      da_coach: true,
+      letto: false,
+      created_at: new Date().toISOString(),
+    }
+    setMessaggi(prev => [...prev, tempMsg])
+
+    const { data, error } = await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteAttivo.id,
       testo: t,
       da_coach: true,
-    })
+    }).select().single()
+
+    if (error) {
+      console.error('Errore invio messaggio:', error)
+      // Rimuovi messaggio ottimistico se fallisce
+      setMessaggi(prev => prev.filter(m => m.id !== tempMsg.id))
+      return
+    }
+
+    // Sostituisci il temp con quello reale
+    setMessaggi(prev => prev.map(m => m.id === tempMsg.id ? data as Messaggio : m))
+
     // Manda push al cliente
     fetch('/api/push/send', {
       method: 'POST',
