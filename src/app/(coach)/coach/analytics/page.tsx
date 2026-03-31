@@ -76,6 +76,8 @@ export default function AnalyticsPage() {
   const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
   const [assegnazioniCliente, setAssegnazioniCliente] = useState<any[]>([])
   const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
+  const [dietaAbilitata, setDietaAbilitata] = useState(false)
+  const [togglingDieta, setTogglingDieta] = useState(false)
 
   const supabase = createClient()
 
@@ -222,7 +224,8 @@ export default function AnalyticsPage() {
     setLoadingSessioni(true)
     setAssegnazioniCliente([])
     setDrawerTab('overview')
-    const [sessData, assData] = await Promise.all([
+    setDietaAbilitata(false)
+    const [sessData, assData, dietaRes] = await Promise.all([
       supabase.from('sessioni').select(`
         id, data, completata, durata_secondi,
         scheda_giorni ( nome ),
@@ -233,10 +236,21 @@ export default function AnalyticsPage() {
       `).eq('cliente_id', cliente.id).order('data', { ascending: false }),
       supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
         .eq('cliente_id', cliente.id).order('created_at', { ascending: false }),
+      supabase.from('coach_clienti').select('dieta_abilitata').eq('cliente_id', cliente.id).maybeSingle(),
     ])
     setSessioniDettaglio((sessData.data as any) ?? [])
     setAssegnazioniCliente((assData.data as any) ?? [])
+    setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
     setLoadingSessioni(false)
+  }
+
+  const handleToggleDieta = async () => {
+    if (togglingDieta || !clienteSelezionato) return
+    setTogglingDieta(true)
+    const newVal = !dietaAbilitata
+    await supabase.from('coach_clienti').update({ dieta_abilitata: newVal }).eq('cliente_id', clienteSelezionato.id)
+    setDietaAbilitata(newVal)
+    setTogglingDieta(false)
   }
 
   const chiudiCliente = () => {
@@ -748,8 +762,38 @@ export default function AnalyticsPage() {
               ))}
             </div>
 
+            {/* Toggle dieta — sempre visibile */}
+            <div className="px-5 py-3 flex items-center justify-between flex-shrink-0"
+              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.16 0 0)' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta</p>
+                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                  {dietaAbilitata ? 'Abilitato ✓' : 'Non abilitato'}
+                </p>
+              </div>
+              <button onClick={handleToggleDieta} disabled={togglingDieta}
+                className="relative flex-shrink-0"
+                style={{ opacity: togglingDieta ? 0.5 : 1 }}>
+                <div className="w-12 h-7 rounded-full transition-colors duration-200"
+                  style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                  <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
+                    style={{
+                      background: 'oklch(0.97 0 0)',
+                      transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
+                    }} />
+                </div>
+              </button>
+            </div>
+
             {drawerTab === 'nutrizione' ? (
-              <MacroTargetForm clienteId={clienteSelezionato!.id} />
+              dietaAbilitata
+                ? <MacroTargetForm clienteId={clienteSelezionato!.id} />
+                : <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
+                    <p className="text-3xl">🥗</p>
+                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>
+                      Abilita il piano dieta per impostare i macro di questo cliente
+                    </p>
+                  </div>
             ) : (
             <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
