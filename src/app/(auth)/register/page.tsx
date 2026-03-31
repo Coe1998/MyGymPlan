@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserRole } from '@/types'
@@ -91,7 +92,7 @@ function RegisterForm() {
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div>
-          <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '28px', width: 'auto' }} />
+          <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
         </div>
 
         {/* Banner invito coach */}

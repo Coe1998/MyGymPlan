@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -8,8 +8,13 @@ import {
   faClipboardList, faChartBar, faCircleCheck, faPause,
   faArrowTrendUp, faArrowTrendDown, faMinus, faUtensils,
 } from '@fortawesome/free-solid-svg-icons'
+import dynamic from 'next/dynamic'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+const WeightChart = dynamic(() => import('@/components/coach/WeightChart'), {
+  ssr: false,
+  loading: () => <div style={{ height: '100%' }} />,
+})
 
 interface Cliente {
   cliente_id: string
@@ -31,7 +36,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
   const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
   const [dietaAbilitata, setDietaAbilitata] = useState<boolean>(false)
   const [togglingDieta, setTogglingDieta] = useState(false)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const apriCliente = async (c: Cliente) => {
     setClienteAperto(c)
@@ -329,16 +334,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                     </div>
                     {dettaglio.misurazioni.length >= 2 && (
                       <div className="p-4" style={{ height: 120 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={dettaglio.misurazioni} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
-                            <XAxis dataKey="data" tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
-                            <Tooltip contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
-                              formatter={(v: any) => [`${v} kg`, 'Peso']} />
-                            <Line type="monotone" dataKey="peso_kg" stroke="oklch(0.60 0.15 200)" strokeWidth={2}
-                              dot={{ r: 3, fill: 'oklch(0.60 0.15 200)', strokeWidth: 0 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
+                        <WeightChart data={dettaglio.misurazioni} />
                       </div>
                     )}
                   </div>

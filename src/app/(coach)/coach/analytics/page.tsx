@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -64,7 +64,7 @@ interface SessioneDettaglio {
 type VistaTab = 'overview' | 'benessere' | 'peso' | 'attivita'
 
 function SchedaPreviewContent({ schedaId }: { schedaId: string }) {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [giorni, setGiorni] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -140,7 +140,7 @@ export default function AnalyticsPage() {
   const [assegnando, setAssegnando] = useState(false)
   const [schedaPreview, setSchedaPreview] = useState<{ id: string; nome: string } | null>(null)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const fetchAnalytics = async () => {
     setLoading(true)

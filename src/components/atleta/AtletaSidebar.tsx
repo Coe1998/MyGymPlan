@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -43,7 +44,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
         {/* Logo */}
         <div className="p-6" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
           <div className="flex flex-col gap-0.5">
-            <img src="/logo/Bynari_WO1.png" alt="Bynari" style={{ height: '28px', width: 'auto' }} />
+            <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
             <p className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Area Atleta</p>
           </div>
         </div>
