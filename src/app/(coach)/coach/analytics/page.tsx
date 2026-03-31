@@ -228,7 +228,7 @@ export default function AnalyticsPage() {
         scheda_giorni ( nome ),
         log_serie (
           numero_serie, peso_kg, ripetizioni, completata,
-          scheda_esercizi ( serie, ripetizioni, recupero_secondi, esercizi ( nome, muscoli ) )
+          scheda_esercizi ( serie, ripetizioni, recupero_secondi, esercizi!scheda_esercizi_esercizio_id_fkey ( nome, muscoli ) )
         )
       `).eq('cliente_id', cliente.id).order('data', { ascending: false }),
       supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
