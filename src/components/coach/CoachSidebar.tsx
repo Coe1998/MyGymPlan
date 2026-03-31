@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartBar, faUsers, faClipboardList, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar, faUsers, faClipboardList, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav principali (mobile)
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { href: '/coach/clienti', label: 'Clienti', icon: faUsers },
   { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
   { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
+  { href: '/coach/chat', label: 'Chat', icon: faComments },
 ]
 
 // Tutte le voci (desktop sidebar)

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
+import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faEllipsisVertical, faComments } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav principali (mobile) — Dieta filtrata se non abilitata
 const buildNavItems = (dietaAbilitata: boolean) => [
@@ -15,6 +15,7 @@ const buildNavItems = (dietaAbilitata: boolean) => [
   { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
   ...(dietaAbilitata ? [{ href: '/cliente/dieta', label: 'Dieta', icon: faUtensils }] : []),
+  { href: '/cliente/chat', label: 'Chat', icon: faComments },
 ]
 
 // Tutte le voci (desktop sidebar)
