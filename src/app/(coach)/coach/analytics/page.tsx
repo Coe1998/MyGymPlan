@@ -13,6 +13,7 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
+import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 
 interface Misurazione {
   data: string
@@ -80,6 +81,14 @@ export default function AnalyticsPage() {
   const [togglingDieta, setTogglingDieta] = useState(false)
   const [storicoNutrizioneCliente, setStoricoNutrizioneCliente] = useState<{ data: string; calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number }[]>([])
   const [macroTargetCliente, setMacroTargetCliente] = useState<{ calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number } | null>(null)
+
+  // Assegna scheda flow
+  const [assegnaFlow, setAssegnaFlow] = useState<null | 'pick' | 'confirm' | 'editor'>(null)
+  const [schedeCoach, setSchedeCoach] = useState<{ id: string; nome: string }[]>([])
+  const [schedaPickata, setSchedaPickata] = useState<{ id: string; nome: string } | null>(null)
+  const [schedaClonata, setSchedaClonata] = useState<{ id: string; nome: string } | null>(null)
+  const [cloningScheda, setCloningScheda] = useState(false)
+  const [assegnando, setAssegnando] = useState(false)
 
   const supabase = createClient()
 
@@ -273,6 +282,104 @@ export default function AnalyticsPage() {
     await supabase.from('coach_clienti').update({ dieta_abilitata: newVal }).eq('cliente_id', clienteSelezionato.id)
     setDietaAbilitata(newVal)
     setTogglingDieta(false)
+  }
+
+  const apriAssegnaFlow = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase.from('schede').select('id, nome').eq('coach_id', user.id).order('created_at', { ascending: false })
+    setSchedeCoach((data as any) ?? [])
+    setSchedaPickata(null)
+    setAssegnaFlow('pick')
+  }
+
+  const resetAssegnaFlow = () => {
+    setAssegnaFlow(null)
+    setSchedaPickata(null)
+    setSchedaClonata(null)
+  }
+
+  const handleAssegnaDirectly = async () => {
+    if (!schedaPickata || !clienteSelezionato) return
+    setAssegnando(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from('assegnazioni').insert({
+      scheda_id: schedaPickata.id,
+      cliente_id: clienteSelezionato.id,
+      coach_id: user.id,
+      data_inizio: new Date().toISOString().split('T')[0],
+      attiva: true,
+    })
+    // Refresh assegnazioni
+    const { data } = await supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
+      .eq('cliente_id', clienteSelezionato.id).order('created_at', { ascending: false })
+    setAssegnazioniCliente((data as any) ?? [])
+    setAssegnando(false)
+    resetAssegnaFlow()
+  }
+
+  const handleCloneScheda = async () => {
+    if (!schedaPickata || !clienteSelezionato) return
+    setCloningScheda(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    // 1. Fetch scheda originale + giorni + esercizi
+    const { data: giorni } = await supabase.from('scheda_giorni')
+      .select('id, nome, ordine, scheda_esercizi(*)')
+      .eq('scheda_id', schedaPickata.id)
+      .order('ordine')
+
+    // 2. Crea nuova scheda
+    const nomeClone = `${schedaPickata.nome} — ${clienteSelezionato.full_name ?? 'cliente'}`
+    const { data: nuovaScheda } = await supabase.from('schede')
+      .insert({ coach_id: user.id, nome: nomeClone, is_template: false })
+      .select('id, nome').single()
+    if (!nuovaScheda) { setCloningScheda(false); return }
+
+    // 3. Clona giorni e esercizi
+    for (const giorno of (giorni ?? []) as any[]) {
+      const { data: nuovoGiorno } = await supabase.from('scheda_giorni')
+        .insert({ scheda_id: nuovaScheda.id, nome: giorno.nome, ordine: giorno.ordine })
+        .select('id').single()
+      if (!nuovoGiorno) continue
+      const esercizi = (giorno.scheda_esercizi ?? []).map((e: any) => ({
+        giorno_id: nuovoGiorno.id,
+        esercizio_id: e.esercizio_id,
+        serie: e.serie, ripetizioni: e.ripetizioni,
+        recupero_secondi: e.recupero_secondi, note: e.note,
+        ordine: e.ordine, tipo: e.tipo, gruppo_id: e.gruppo_id,
+        drop_count: e.drop_count, drop_percentage: e.drop_percentage,
+        rest_pause_secondi: e.rest_pause_secondi,
+        piramidale_direzione: e.piramidale_direzione,
+        alternativa_esercizio_id: e.alternativa_esercizio_id,
+      }))
+      if (esercizi.length > 0) await supabase.from('scheda_esercizi').insert(esercizi)
+    }
+
+    setSchedaClonata({ id: nuovaScheda.id, nome: nuovaScheda.nome })
+    setCloningScheda(false)
+    setAssegnaFlow('editor')
+  }
+
+  const handleAssegnaDopoEditor = async () => {
+    if (!schedaClonata || !clienteSelezionato) return
+    setAssegnando(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from('assegnazioni').insert({
+      scheda_id: schedaClonata.id,
+      cliente_id: clienteSelezionato.id,
+      coach_id: user.id,
+      data_inizio: new Date().toISOString().split('T')[0],
+      attiva: true,
+    })
+    const { data } = await supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
+      .eq('cliente_id', clienteSelezionato.id).order('created_at', { ascending: false })
+    setAssegnazioniCliente((data as any) ?? [])
+    setAssegnando(false)
+    resetAssegnaFlow()
   }
 
   const chiudiCliente = () => {
@@ -904,8 +1011,14 @@ export default function AnalyticsPage() {
                 {/* Schede assegnate */}
                 <div className="rounded-2xl overflow-hidden"
                   style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                  <div className="px-4 py-3 flex items-center justify-between"
+                    style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
                     <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📋 Schede assegnate</p>
+                    <button onClick={apriAssegnaFlow}
+                      className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                      style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                      + Assegna
+                    </button>
                   </div>
                   {assegnazioniCliente.length === 0 ? (
                     <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda assegnata</p>
@@ -1119,5 +1232,127 @@ export default function AnalyticsPage() {
         </div>
       )}
     </div>
+
+    {/* MODALE ASSEGNA — step pick */}
+    {assegnaFlow === 'pick' && (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4"
+        style={{ background: 'oklch(0 0 0 / 70%)' }}
+        onClick={resetAssegnaFlow}>
+        <div className="w-full max-w-md rounded-3xl overflow-hidden"
+          style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}
+          onClick={e => e.stopPropagation()}>
+          <div className="px-5 py-4 flex items-center justify-between"
+            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Scegli una scheda</p>
+            <button onClick={resetAssegnaFlow}
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              <FontAwesomeIcon icon={faXmark} className="text-xs" />
+            </button>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {schedeCoach.length === 0 ? (
+              <p className="px-5 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda disponibile</p>
+            ) : schedeCoach.map((s, i) => (
+              <button key={s.id} onClick={() => { setSchedaPickata(s); setAssegnaFlow('confirm') }}
+                className="w-full text-left px-5 py-3.5 transition-all hover:opacity-80"
+                style={{ borderBottom: i < schedeCoach.length - 1 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+                <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>{s.nome}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* MODALE ASSEGNA — step confirm */}
+    {assegnaFlow === 'confirm' && schedaPickata && (
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4"
+        style={{ background: 'oklch(0 0 0 / 70%)' }}
+        onClick={resetAssegnaFlow}>
+        <div className="w-full max-w-md rounded-3xl overflow-hidden"
+          style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}
+          onClick={e => e.stopPropagation()}>
+          <div className="px-5 py-4 flex items-center justify-between"
+            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Assegna scheda</p>
+            <button onClick={() => setAssegnaFlow('pick')}
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              <FontAwesomeIcon icon={faXmark} className="text-xs" />
+            </button>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="rounded-2xl px-4 py-3"
+              style={{ background: 'oklch(0.22 0 0)' }}>
+              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>Scheda selezionata</p>
+              <p className="text-sm font-bold mt-0.5" style={{ color: 'oklch(0.97 0 0)' }}>{schedaPickata.nome}</p>
+            </div>
+
+            {/* Assegna direttamente */}
+            <div className="rounded-2xl p-4 space-y-3"
+              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Assegna direttamente</p>
+                <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+                  La scheda sarà assegnata così com'è. Per personalizzarla usa "Clona e personalizza".
+                </p>
+              </div>
+              <button onClick={handleAssegnaDirectly} disabled={assegnando}
+                className="w-full py-2.5 rounded-xl text-sm font-bold"
+                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: assegnando ? 0.6 : 1 }}>
+                {assegnando ? 'Assegnazione...' : '✓ Assegna'}
+              </button>
+            </div>
+
+            {/* Clona e personalizza */}
+            <div className="rounded-2xl p-4 space-y-3"
+              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Clona e personalizza</p>
+                <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+                  Crea una copia della scheda e modificala prima di assegnarla. L'originale resterà intatta.
+                </p>
+              </div>
+              <button onClick={handleCloneScheda} disabled={cloningScheda}
+                className="w-full py-2.5 rounded-xl text-sm font-bold"
+                style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 30%)', opacity: cloningScheda ? 0.6 : 1 }}>
+                {cloningScheda ? 'Clonazione...' : '✎ Clona e personalizza'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* EDITOR scheda clonata */}
+    {assegnaFlow === 'editor' && schedaClonata && (
+      <div className="fixed inset-0 z-[60]">
+        <SchedaEditorModal
+          schedaId={schedaClonata.id}
+          schedaNome={schedaClonata.nome}
+          onClose={() => {
+            // Mostra bottone assegna dopo editor
+            setAssegnaFlow('post-editor' as any)
+          }}
+        />
+        {/* Barra fissa in basso per assegnare */}
+        <div className="fixed bottom-0 left-0 right-0 z-[70] p-4"
+          style={{ background: 'oklch(0.13 0 0)', borderTop: '1px solid oklch(1 0 0 / 10%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+          <div className="max-w-2xl mx-auto flex gap-3">
+            <button onClick={resetAssegnaFlow}
+              className="px-4 py-3 rounded-xl text-sm font-semibold"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+              Annulla
+            </button>
+            <button onClick={handleAssegnaDopoEditor} disabled={assegnando}
+              className="flex-1 py-3 rounded-xl text-sm font-bold"
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: assegnando ? 0.6 : 1 }}>
+              {assegnando ? 'Assegnazione...' : `✓ Assegna "${schedaClonata.nome}"`}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   )
 }
