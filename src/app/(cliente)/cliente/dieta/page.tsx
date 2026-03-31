@@ -93,7 +93,7 @@ export default function DietaPage() {
     setSearchResults([])
     try {
       const res = await fetch(
-        `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,nutriments`
+        `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,nutriments`
       )
       const data = await res.json()
       setSearchResults((data.products ?? []).filter((p: any) =>
