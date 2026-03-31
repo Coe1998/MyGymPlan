@@ -1,24 +1,32 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils } from '@fortawesome/free-solid-svg-icons'
+import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 
+// Voci nav principali (mobile)
 const navItems = [
   { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
   { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
   { href: '/cliente/dieta', label: 'Dieta', icon: faUtensils },
+]
+
+// Tutte le voci (desktop sidebar)
+const navItemsAll = [
+  ...navItems,
   { href: '/cliente/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
 export default function ClienteSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -46,7 +54,7 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
             style={{ color: 'oklch(0.40 0 0)' }}>
             Navigazione
           </p>
-          {navItems.map((item) => {
+          {navItemsAll.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link key={item.href} href={item.href}
@@ -108,16 +116,44 @@ export default function ClienteSidebar({ profile }: { profile: Profile }) {
           )
         })}
 
-        {/* Profilo/Logout su mobile */}
-        <button onClick={handleLogout}
-          className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl flex-1"
-          style={{ background: 'transparent' }}>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-            style={{ background: 'oklch(0.60 0.15 200 / 20%)', color: 'oklch(0.60 0.15 200)' }}>
-            {profile.full_name?.charAt(0).toUpperCase()}
-          </div>
-          <span className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>Esci</span>
-        </button>
+        {/* Bottone "..." — apre mini menu con Impostazioni + Esci */}
+        <div className="relative flex-1 flex justify-center">
+          <button
+            onClick={() => setMenuOpen(p => !p)}
+            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
+            style={{ background: menuOpen ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
+            <FontAwesomeIcon icon={faEllipsisVertical} className="text-xl"
+              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+            <span className="text-xs font-medium"
+              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+              Altro
+            </span>
+          </button>
+
+          {/* Mini menu popup */}
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute bottom-14 right-0 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
+                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 12%)' }}>
+                <Link href="/cliente/impostazioni"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  <FontAwesomeIcon icon={faGear} className="w-4" />
+                  Impostazioni
+                </Link>
+                <button
+                  onClick={() => { setMenuOpen(false); handleLogout() }}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.65 0.18 27)' }}>
+                  <FontAwesomeIcon icon={faRightFromBracket} className="w-4" />
+                  Esci
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </nav>
     </>
   )
