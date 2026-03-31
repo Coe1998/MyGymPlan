@@ -761,8 +761,8 @@ export default function AnalyticsPage() {
                 {/* Stats rapide */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: 'Sessioni', value: sessioniDettaglio.length, color: 'oklch(0.60 0.15 200)' },
-                    { label: 'Completate', value: sessioniDettaglio.filter(s => s.completata).length, color: 'oklch(0.65 0.18 150)' },
+                    { label: 'Sessioni', value: clienteSelezionato?.totale_sessioni ?? 0, color: 'oklch(0.60 0.15 200)' },
+                    { label: 'Completate', value: loadingSessioni ? '...' : sessioniDettaglio.filter(s => s.completata).length, color: 'oklch(0.65 0.18 150)' },
                     { label: 'Schede attive', value: clienteSelezionato?.schede_attive ?? 0, color: 'oklch(0.70 0.19 46)' },
                   ].map(s => (
                     <div key={s.label} className="rounded-2xl p-3 text-center"
