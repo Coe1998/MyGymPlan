@@ -24,6 +24,11 @@ interface OFFProduct {
   }
 }
 
+interface GiornoStorico {
+  data: string
+  calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number
+}
+
 const UNITA = ['g', 'mg', 'ml', 'capsule', 'compresse', 'IU']
 
 export default function DietaPage() {
@@ -35,6 +40,8 @@ export default function DietaPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'dieta' | 'integratori'>('dieta')
   const [oggi] = useState(new Date().toISOString().split('T')[0])
+  const [storico, setStorico] = useState<GiornoStorico[]>([])
+  const [storicoEsteso, setStoricoEsteso] = useState(false)
 
   // Guard: redirect se dieta non abilitata
   useEffect(() => {
@@ -78,15 +85,37 @@ export default function DietaPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const [targetRes, pastiRes, intRes] = await Promise.all([
+    const data30ago = new Date()
+    data30ago.setDate(data30ago.getDate() - 30)
+    const data30agoStr = data30ago.toISOString().split('T')[0]
+
+    const [targetRes, pastiRes, intRes, storicoRes] = await Promise.all([
       supabase.from('macro_target').select('*').eq('cliente_id', user.id).maybeSingle(),
       supabase.from('pasto_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
       supabase.from('integrazione_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
+      supabase.from('pasto_log')
+        .select('data, calorie, proteine_g, carboidrati_g, grassi_g')
+        .eq('cliente_id', user.id)
+        .gte('data', data30agoStr)
+        .lt('data', oggi)
+        .order('data', { ascending: false }),
     ])
 
     setTarget(targetRes.data)
     setPasti(pastiRes.data ?? [])
     setIntegratori(intRes.data ?? [])
+
+    // Aggrega per giorno
+    const map = new Map<string, GiornoStorico>()
+    for (const r of (storicoRes.data ?? []) as any[]) {
+      if (!map.has(r.data)) map.set(r.data, { data: r.data, calorie: 0, proteine_g: 0, carboidrati_g: 0, grassi_g: 0 })
+      const g = map.get(r.data)!
+      g.calorie += r.calorie || 0
+      g.proteine_g += r.proteine_g || 0
+      g.carboidrati_g += r.carboidrati_g || 0
+      g.grassi_g += r.grassi_g || 0
+    }
+    setStorico(Array.from(map.values()))
     setLoading(false)
   }, [oggi])
 
@@ -482,6 +511,95 @@ export default function DietaPage() {
                 )
               })}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* STORICO */}
+      {tab === 'dieta' && !loading && storico.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: 'oklch(0.40 0 0)' }}>
+            Storico
+          </p>
+
+          {/* Ultimi 7 giorni — cards dettagliate */}
+          {storico.slice(0, 7).map(g => {
+            const data = new Date(g.data + 'T00:00:00')
+            const label = data.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+            const ok = target ? g.calorie >= target.calorie * 0.85 && g.calorie <= target.calorie * 1.15 : null
+            return (
+              <div key={g.data} className="rounded-2xl p-4 space-y-3"
+                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-bold capitalize" style={{ color: 'oklch(0.85 0 0)' }}>{label}</p>
+                  <div className="flex items-center gap-2">
+                    {ok !== null && (
+                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{
+                          background: ok ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.65 0.18 27 / 15%)',
+                          color: ok ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)',
+                        }}>
+                        {ok ? 'In target' : 'Fuori target'}
+                      </span>
+                    )}
+                    <p className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                      {Math.round(g.calorie)} kcal
+                    </p>
+                  </div>
+                </div>
+                {target && (
+                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                    <div className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min(100, target.calorie > 0 ? Math.round((g.calorie / target.calorie) * 100) : 0)}%`, background: 'oklch(0.70 0.19 46)' }} />
+                  </div>
+                )}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Proteine', val: g.proteine_g, color: 'oklch(0.60 0.15 200)', tgt: target?.proteine_g },
+                    { label: 'Carboidrati', val: g.carboidrati_g, color: 'oklch(0.70 0.19 46)', tgt: target?.carboidrati_g },
+                    { label: 'Grassi', val: g.grassi_g, color: 'oklch(0.65 0.18 150)', tgt: target?.grassi_g },
+                  ].map(m => (
+                    <div key={m.label} className="rounded-xl p-2.5" style={{ background: 'oklch(0.22 0 0)' }}>
+                      <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{Math.round(m.val)}g</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+
+          {/* Dal giorno 8 in poi — righe compatte */}
+          {storico.length > 7 && (
+            <>
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                {(storicoEsteso ? storico.slice(7) : storico.slice(7, 14)).map((g, i, arr) => {
+                  const data = new Date(g.data + 'T00:00:00')
+                  const label = data.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+                  const ok = target ? g.calorie >= target.calorie * 0.85 && g.calorie <= target.calorie * 1.15 : null
+                  return (
+                    <div key={g.data} className="flex items-center gap-3 px-4 py-3"
+                      style={{ borderBottom: i < arr.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      <div className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ background: ok === null ? 'oklch(0.35 0 0)' : ok ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }} />
+                      <p className="text-sm capitalize flex-1" style={{ color: 'oklch(0.70 0 0)' }}>{label}</p>
+                      <p className="text-sm font-bold tabular-nums" style={{ color: 'oklch(0.60 0 0)' }}>
+                        {Math.round(g.calorie)} kcal
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {storico.length > 14 && (
+                <button onClick={() => setStoricoEsteso(p => !p)}
+                  className="w-full py-3 rounded-2xl text-sm font-semibold"
+                  style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.50 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  {storicoEsteso ? 'Mostra meno' : `Mostra altri ${storico.length - 14} giorni`}
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
