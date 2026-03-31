@@ -270,7 +270,7 @@ export default function ProgressiPage() {
     if (!user) return
     const { data: logs } = await supabase
       .from('log_serie')
-      .select('peso_kg, ripetizioni, completata, scheda_esercizi!inner ( esercizi!inner ( id ) ), sessioni!inner ( data, completata, cliente_id )')
+      .select('peso_kg, ripetizioni, completata, scheda_esercizi!inner ( esercizi!scheda_esercizi_esercizio_id_fkey ( id ) ), sessioni!inner ( data, completata, cliente_id )')
       .eq('scheda_esercizi.esercizi.id', eseId)
       .eq('sessioni.cliente_id', user.id)
       .eq('sessioni.completata', true)
