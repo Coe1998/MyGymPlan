@@ -29,15 +29,20 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
   const [dettaglio, setDettaglio] = useState<ClienteDettaglio | null>(null)
   const [loading, setLoading] = useState(false)
   const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
+  const [dietaAbilitata, setDietaAbilitata] = useState<boolean>(false)
+  const [togglingDieta, setTogglingDieta] = useState(false)
   const supabase = createClient()
 
   const apriCliente = async (c: Cliente) => {
     setClienteAperto(c)
     setDettaglio(null)
     setDrawerTab('overview')
+    setDietaAbilitata(false)
     setLoading(true)
 
-    const [sessRes, misRes, checkinRes, assRes] = await Promise.all([
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const [sessRes, misRes, checkinRes, assRes, dietaRes] = await Promise.all([
       supabase.from('sessioni')
         .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
         .eq('cliente_id', c.cliente_id)
@@ -59,6 +64,11 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
         .select('id, data_inizio, attiva, schede(nome)')
         .eq('cliente_id', c.cliente_id)
         .order('created_at', { ascending: false }),
+      supabase.from('coach_clienti')
+        .select('dieta_abilitata')
+        .eq('coach_id', user!.id)
+        .eq('cliente_id', c.cliente_id)
+        .maybeSingle(),
     ])
 
     setDettaglio({
@@ -70,7 +80,21 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
       ultimoCheckin: checkinRes.data as any ?? null,
       assegnazioni: (assRes.data as any) ?? [],
     })
+    setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
     setLoading(false)
+  }
+
+  const handleToggleDieta = async () => {
+    if (togglingDieta || !clienteAperto) return
+    setTogglingDieta(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    const newVal = !dietaAbilitata
+    await supabase.from('coach_clienti')
+      .update({ dieta_abilitata: newVal })
+      .eq('coach_id', user!.id)
+      .eq('cliente_id', clienteAperto.cliente_id)
+    setDietaAbilitata(newVal)
+    setTogglingDieta(false)
   }
 
   const formatDurata = (sec: number | null) => {
@@ -189,7 +213,42 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                 <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
               </div>
             ) : drawerTab === 'nutrizione' ? (
-              <MacroTargetForm clienteId={clienteAperto.cliente_id} />
+              <div className="flex-1 flex flex-col">
+                {/* Toggle dieta */}
+                <div className="px-5 py-4 flex items-center justify-between"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta abilitato</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                      {dietaAbilitata ? 'Il cliente ha accesso alla sezione Dieta' : 'Il cliente non vede la sezione Dieta'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleToggleDieta}
+                    disabled={togglingDieta}
+                    className="relative flex-shrink-0 transition-opacity"
+                    style={{ opacity: togglingDieta ? 0.5 : 1 }}>
+                    <div className="w-12 h-7 rounded-full transition-colors duration-200"
+                      style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                      <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
+                        style={{
+                          background: 'oklch(0.97 0 0)',
+                          transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
+                        }} />
+                    </div>
+                  </button>
+                </div>
+                {dietaAbilitata ? (
+                  <MacroTargetForm clienteId={clienteAperto.cliente_id} />
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
+                    <p className="text-3xl">🥗</p>
+                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>
+                      Abilita il piano dieta per impostare i macro di questo cliente
+                    </p>
+                  </div>
+                )}
+              </div>
             ) : dettaglio && (
               <div className="flex-1 p-5 space-y-5">
 

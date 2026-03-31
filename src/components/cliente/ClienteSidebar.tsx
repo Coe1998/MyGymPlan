@@ -9,24 +9,27 @@ import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 
-// Voci nav principali (mobile)
-const navItems = [
+// Voci nav principali (mobile) — Dieta filtrata se non abilitata
+const buildNavItems = (dietaAbilitata: boolean) => [
   { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
   { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
-  { href: '/cliente/dieta', label: 'Dieta', icon: faUtensils },
+  ...(dietaAbilitata ? [{ href: '/cliente/dieta', label: 'Dieta', icon: faUtensils }] : []),
 ]
 
 // Tutte le voci (desktop sidebar)
-const navItemsAll = [
-  ...navItems,
+const buildNavItemsAll = (dietaAbilitata: boolean) => [
+  ...buildNavItems(dietaAbilitata),
   { href: '/cliente/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
-export default function ClienteSidebar({ profile }: { profile: Profile }) {
+export default function ClienteSidebar({ profile, dietaAbilitata = false }: { profile: Profile; dietaAbilitata?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const navItems = buildNavItems(dietaAbilitata)
+  const navItemsAll = buildNavItemsAll(dietaAbilitata)
 
   const handleLogout = async () => {
     const supabase = createClient()

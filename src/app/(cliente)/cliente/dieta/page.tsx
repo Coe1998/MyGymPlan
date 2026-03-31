@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons'
 
@@ -27,12 +28,28 @@ const UNITA = ['g', 'mg', 'ml', 'capsule', 'compresse', 'IU']
 
 export default function DietaPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [target, setTarget] = useState<MacroTarget | null>(null)
   const [pasti, setPasti] = useState<PastoLog[]>([])
   const [integratori, setIntegratori] = useState<IntegrazioneLog[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'dieta' | 'integratori'>('dieta')
   const [oggi] = useState(new Date().toISOString().split('T')[0])
+
+  // Guard: redirect se dieta non abilitata
+  useEffect(() => {
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('coach_clienti')
+        .select('dieta_abilitata')
+        .eq('cliente_id', user.id)
+        .maybeSingle()
+      if (!data?.dieta_abilitata) router.replace('/cliente/dashboard')
+    }
+    check()
+  }, [])
 
   // Alimento form
   const [showForm, setShowForm] = useState(false)
