@@ -271,25 +271,33 @@ export default function ProgressiPage() {
     const { data: logs } = await supabase
       .from('log_serie')
       .select('peso_kg, ripetizioni, completata, scheda_esercizi!inner ( esercizi!scheda_esercizi_esercizio_id_fkey ( id ) ), sessioni!inner ( data, completata, cliente_id )')
-      .eq('scheda_esercizi.esercizi.id', eseId)
-      .eq('sessioni.cliente_id', user.id)
-      .eq('sessioni.completata', true)
       .eq('completata', true)
-      .order('sessioni(data)', { ascending: true })
+      .eq('sessioni.completata', true)
 
-    const byData = new Map<string, { pesi: number[]; volume: number }>()
-    for (const log of (logs ?? []) as any[]) {
+    const byData = new Map<string, { pesi: number[]; volume: number; ts: number }>()
+    const filteredLogs = ((logs ?? []) as any[])
+      .filter((l: any) =>
+        l.scheda_esercizi?.esercizi?.id === eseId &&
+        l.sessioni?.cliente_id === user.id &&
+        l.sessioni?.completata === true
+      )
+      .sort((a: any, b: any) => new Date(a.sessioni.data).getTime() - new Date(b.sessioni.data).getTime())
+    for (const log of filteredLogs) {
       const data = new Date(log.sessioni.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
       const peso = parseFloat(log.peso_kg) || 0
       const reps = parseInt(log.ripetizioni) || 0
-      if (!byData.has(data)) byData.set(data, { pesi: [], volume: 0 })
+      if (!byData.has(data)) byData.set(data, { pesi: [], volume: 0, ts: new Date(log.sessioni.data).getTime() })
       const entry = byData.get(data)!
       if (peso > 0) entry.pesi.push(peso)
       entry.volume += peso * reps
     }
-    setGraficoDati(Array.from(byData.entries()).map(([data, val]) => ({
-      data, peso_max: val.pesi.length > 0 ? Math.max(...val.pesi) : 0, volume: Math.round(val.volume),
-    })))
+    setGraficoDati(
+      Array.from(byData.entries())
+        .sort(([, a], [, b]) => a.ts - b.ts)
+        .map(([data, val]) => ({
+          data, peso_max: val.pesi.length > 0 ? Math.max(...val.pesi) : 0, volume: Math.round(val.volume),
+        }))
+    )
     setLoadingGrafico(false)
   }
 
