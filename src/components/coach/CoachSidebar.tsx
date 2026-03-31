@@ -7,20 +7,23 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartBar, faUsers, faClipboardList, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList } from '@fortawesome/free-solid-svg-icons'
 
-// Voci nav principali (mobile)
-const navItems = [
+// Voci nav mobile — 5 tasti fissi
+const navItemsMobile = [
   { href: '/coach/analytics', label: 'Dashboard', icon: faChartBar },
   { href: '/coach/clienti', label: 'Clienti', icon: faUsers },
-  { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
-  { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
+  // 'allenamento' è un popup, non un link
   { href: '/coach/chat', label: 'Chat', icon: faComments },
 ]
 
 // Tutte le voci (desktop sidebar)
 const navItemsAll = [
-  ...navItems,
+  { href: '/coach/analytics', label: 'Dashboard', icon: faChartBar },
+  { href: '/coach/clienti', label: 'Clienti', icon: faUsers },
+  { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
+  { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
+  { href: '/coach/chat', label: 'Chat', icon: faComments },
   { href: '/coach/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
@@ -28,6 +31,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [allenamentoOpen, setAllenamentoOpen] = useState(false)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -102,7 +106,9 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
           borderTop: '1px solid oklch(1 0 0 / 8%)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
-        {navItems.map((item) => {
+
+        {/* Dashboard */}
+        {navItemsMobile.slice(0, 2).map((item) => {
           const isActive = pathname === item.href
           return (
             <Link key={item.href} href={item.href}
@@ -118,10 +124,60 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
           )
         })}
 
-        {/* Bottone "..." — apre mini menu con Impostazioni + Esci */}
+        {/* Allenamento popup */}
         <div className="relative flex-1 flex justify-center">
-          <button
-            onClick={() => setMenuOpen(p => !p)}
+          <button onClick={() => { setAllenamentoOpen(p => !p); setMenuOpen(false) }}
+            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
+            style={{ background: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+            <FontAwesomeIcon icon={faLayerGroup} className="text-xl"
+              style={{ color: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+            <span className="text-xs font-medium"
+              style={{ color: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+              Allenamento
+            </span>
+          </button>
+          {allenamentoOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setAllenamentoOpen(false)} />
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
+                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 12%)' }}>
+                <Link href="/coach/schede" onClick={() => setAllenamentoOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  <FontAwesomeIcon icon={faClipboardList} className="w-4" />
+                  Schede
+                </Link>
+                <Link href="/coach/esercizi" onClick={() => setAllenamentoOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)' }}>
+                  <FontAwesomeIcon icon={faDumbbell} className="w-4" />
+                  Esercizi
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Chat */}
+        {navItemsMobile.slice(2).map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link key={item.href} href={item.href}
+              className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
+              style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+              <FontAwesomeIcon icon={item.icon} className="text-xl"
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+              <span className="text-xs font-medium"
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+                {item.label}
+              </span>
+            </Link>
+          )
+        })}
+
+        {/* Altro popup */}
+        <div className="relative flex-1 flex justify-center">
+          <button onClick={() => { setMenuOpen(p => !p); setAllenamentoOpen(false) }}
             className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
             style={{ background: menuOpen ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
             <FontAwesomeIcon icon={faEllipsisVertical} className="text-xl"
@@ -131,23 +187,18 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
               Altro
             </span>
           </button>
-
-          {/* Mini menu popup */}
           {menuOpen && (
             <>
-              {/* Overlay per chiudere */}
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
               <div className="absolute bottom-14 right-0 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
                 style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 12%)' }}>
-                <Link href="/coach/impostazioni"
-                  onClick={() => setMenuOpen(false)}
+                <Link href="/coach/impostazioni" onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
                   style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
                   <FontAwesomeIcon icon={faGear} className="w-4" />
                   Impostazioni
                 </Link>
-                <button
-                  onClick={() => { setMenuOpen(false); handleLogout() }}
+                <button onClick={() => { setMenuOpen(false); handleLogout() }}
                   className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
                   style={{ color: 'oklch(0.65 0.18 27)' }}>
                   <FontAwesomeIcon icon={faRightFromBracket} className="w-4" />
