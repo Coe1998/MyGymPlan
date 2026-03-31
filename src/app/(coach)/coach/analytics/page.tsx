@@ -78,6 +78,8 @@ export default function AnalyticsPage() {
   const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
   const [dietaAbilitata, setDietaAbilitata] = useState(false)
   const [togglingDieta, setTogglingDieta] = useState(false)
+  const [storicoNutrizioneCliente, setStoricoNutrizioneCliente] = useState<{ data: string; calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number }[]>([])
+  const [macroTargetCliente, setMacroTargetCliente] = useState<{ calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number } | null>(null)
 
   const supabase = createClient()
 
@@ -225,7 +227,13 @@ export default function AnalyticsPage() {
     setAssegnazioniCliente([])
     setDrawerTab('overview')
     setDietaAbilitata(false)
-    const [sessData, assData, dietaRes] = await Promise.all([
+    setStoricoNutrizioneCliente([])
+    setMacroTargetCliente(null)
+    const data7ago = new Date()
+    data7ago.setDate(data7ago.getDate() - 7)
+    const data7agoStr = data7ago.toISOString().split('T')[0]
+    const oggi = new Date().toISOString().split('T')[0]
+    const [sessData, assData, dietaRes, pastiRes, targetRes] = await Promise.all([
       supabase.from('sessioni').select(`
         id, data, completata, durata_secondi,
         scheda_giorni ( nome ),
@@ -237,10 +245,24 @@ export default function AnalyticsPage() {
       supabase.from('assegnazioni').select('id, data_inizio, attiva, schede(nome)')
         .eq('cliente_id', cliente.id).order('created_at', { ascending: false }),
       supabase.from('coach_clienti').select('dieta_abilitata').eq('cliente_id', cliente.id).maybeSingle(),
+      supabase.from('pasto_log').select('data, calorie, proteine_g, carboidrati_g, grassi_g')
+        .eq('cliente_id', cliente.id).gte('data', data7agoStr).lte('data', oggi).order('data', { ascending: false }),
+      supabase.from('macro_target').select('calorie, proteine_g, carboidrati_g, grassi_g')
+        .eq('cliente_id', cliente.id).maybeSingle(),
     ])
     setSessioniDettaglio((sessData.data as any) ?? [])
     setAssegnazioniCliente((assData.data as any) ?? [])
     setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
+    setMacroTargetCliente((targetRes.data as any) ?? null)
+    // Aggrega pasti per giorno
+    const map = new Map<string, any>()
+    for (const r of (pastiRes.data ?? []) as any[]) {
+      if (!map.has(r.data)) map.set(r.data, { data: r.data, calorie: 0, proteine_g: 0, carboidrati_g: 0, grassi_g: 0 })
+      const g = map.get(r.data)!
+      g.calorie += r.calorie || 0; g.proteine_g += r.proteine_g || 0
+      g.carboidrati_g += r.carboidrati_g || 0; g.grassi_g += r.grassi_g || 0
+    }
+    setStoricoNutrizioneCliente(Array.from(map.values()))
     setLoadingSessioni(false)
   }
 
@@ -786,14 +808,76 @@ export default function AnalyticsPage() {
             </div>
 
             {drawerTab === 'nutrizione' ? (
-              dietaAbilitata
-                ? <MacroTargetForm clienteId={clienteSelezionato!.id} />
-                : <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
+              <div className="flex-1 flex flex-col overflow-y-auto">
+                {dietaAbilitata ? (
+                  <>
+                    <MacroTargetForm clienteId={clienteSelezionato!.id} />
+                    {storicoNutrizioneCliente.length > 0 && (
+                      <div className="px-5 pb-5 space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>
+                          Ultimi 7 giorni
+                        </p>
+                        {storicoNutrizioneCliente.map(g => {
+                          const label = new Date(g.data + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+                          const ok = macroTargetCliente ? g.calorie >= macroTargetCliente.calorie * 0.85 && g.calorie <= macroTargetCliente.calorie * 1.15 : null
+                          return (
+                            <div key={g.data} className="rounded-2xl p-4 space-y-2"
+                              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-bold capitalize" style={{ color: 'oklch(0.85 0 0)' }}>{label}</p>
+                                <div className="flex items-center gap-2">
+                                  {ok !== null && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                                      style={{
+                                        background: ok ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.75 0.15 27 / 15%)',
+                                        color: ok ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)',
+                                      }}>
+                                      {ok ? 'In target' : 'Fuori target'}
+                                    </span>
+                                  )}
+                                  <p className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                                    {Math.round(g.calorie)} kcal
+                                  </p>
+                                </div>
+                              </div>
+                              {macroTargetCliente && (
+                                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                                  <div className="h-full rounded-full"
+                                    style={{ width: `${Math.min(100, macroTargetCliente.calorie > 0 ? Math.round((g.calorie / macroTargetCliente.calorie) * 100) : 0)}%`, background: 'oklch(0.70 0.19 46)' }} />
+                                </div>
+                              )}
+                              <div className="grid grid-cols-3 gap-2">
+                                {[
+                                  { label: 'Prot', val: g.proteine_g, tgt: macroTargetCliente?.proteine_g, color: 'oklch(0.60 0.15 200)' },
+                                  { label: 'Carb', val: g.carboidrati_g, tgt: macroTargetCliente?.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
+                                  { label: 'Grassi', val: g.grassi_g, tgt: macroTargetCliente?.grassi_g, color: 'oklch(0.65 0.18 150)' },
+                                ].map(m => (
+                                  <div key={m.label} className="rounded-xl p-2" style={{ background: 'oklch(0.22 0 0)' }}>
+                                    <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{Math.round(m.val)}g</p>
+                                    <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                    {storicoNutrizioneCliente.length === 0 && (
+                      <div className="px-5 pb-5 rounded-2xl py-8 text-center">
+                        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun dato nutrizionale negli ultimi 7 giorni</p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
                     <p className="text-3xl">🥗</p>
                     <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>
                       Abilita il piano dieta per impostare i macro di questo cliente
                     </p>
                   </div>
+                )}
+              </div>
             ) : (
             <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
