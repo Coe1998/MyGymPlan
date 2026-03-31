@@ -55,8 +55,12 @@ export default function AdminDashboard() {
 
   const handleAzione = async (coachId: string, azione: 'approva' | 'sospendi' | 'riattiva') => {
     setProcessingId(coachId)
-    const nuovoStatus = azione === 'approva' || azione === 'riattiva' ? 'approved' : 'suspended'
-    await supabase.from('profiles').update({ coach_status: nuovoStatus }).eq('id', coachId)
+    const status = azione === 'approva' || azione === 'riattiva' ? 'approved' : 'suspended'
+    await fetch('/api/admin/coach-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coachId, status }),
+    })
     setProcessingId(null)
     fetchAll()
   }
