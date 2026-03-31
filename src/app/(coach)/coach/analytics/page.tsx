@@ -433,6 +433,7 @@ export default function AnalyticsPage() {
   ]
 
   return (
+    <>
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -1354,5 +1355,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
     )}
+  </>
   )
 }
