@@ -227,7 +227,6 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
               </div>
             ) : dettaglio && (
               <div className="flex-1 p-5 space-y-5">
-
                 {/* Stats rapide */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -374,8 +373,8 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                   ))}
                 </div>
 
-                {/* Bottone analytics avanzate */}
-                <div className="pt-2 pb-4">
+                {/* Bottone analytics avanzate - Ora dentro il div principale scrollabile */}
+                <div className="pt-4 pb-6">
                   <Link
                     href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
