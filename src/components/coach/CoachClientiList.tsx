@@ -74,13 +74,6 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
     setTogglingDieta(false)
   }
 
-  const formatDurata = (sec: number | null) => {
-    if (!sec) return null
-    const h = Math.floor(sec / 3600)
-    const m = Math.floor((sec % 3600) / 60)
-    return h > 0 ? `${h}h ${m}min` : `${m}min`
-  }
-
   const sessCompletate = dettaglio?.sessioni.filter(s => s.completata).length ?? 0
   const ultimoPeso = dettaglio?.misurazioni.at(-1)?.peso_kg ?? null
   const penultimoPeso = dettaglio?.misurazioni.at(-2)?.peso_kg ?? null
@@ -94,174 +87,121 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
 
   return (
     <>
-      {/* Lista clienti */}
-      {clienti.length === 0 ? (
-        <div className="py-16 text-center space-y-3">
-          <div className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></div>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Inizia aggiungendo il tuo primo cliente</p>
-          <a href="/coach/clienti"
-            className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-            + Aggiungi cliente
-          </a>
-        </div>
-      ) : (
-        <div>
-          {clienti.slice(0, 6).map((c, i) => (
-            <div key={c.cliente_id}
-              onClick={() => apriCliente(c)}
-              className="flex items-center gap-4 px-6 py-4 cursor-pointer transition-all hover:opacity-80 active:opacity-60"
-              style={{ borderBottom: i < Math.min(clienti.length, 6) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                {c.profiles?.full_name?.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.profiles?.full_name}</p>
-                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                  Aggiunto il {new Date(c.created_at).toLocaleDateString('it-IT')}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="text-xs font-medium px-3 py-1 rounded-full"
-                  style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                  Attivo
-                </div>
-                <span className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>→</span>
-              </div>
+      {/* Lista Clienti */}
+      <div>
+        {clienti.map((c, i) => (
+          <div key={c.cliente_id}
+            onClick={() => apriCliente(c)}
+            className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-white/5 transition-colors"
+            style={{ borderBottom: i < clienti.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-orange-500/20 text-orange-500">
+              {c.profiles?.full_name?.charAt(0).toUpperCase()}
             </div>
-          ))}
-        </div>
-      )}
+            <div className="flex-1">
+              <p className="font-medium text-sm text-zinc-100">{c.profiles?.full_name}</p>
+            </div>
+            <span className="text-zinc-600">→</span>
+          </div>
+        ))}
+      </div>
 
-      {/* Drawer overview cliente */}
+      {/* Drawer */}
       {clienteAperto && (
-        <div className="fixed inset-0 z-50 flex justify-end"
-          style={{ background: 'oklch(0 0 0 / 60%)' }}
-          onClick={() => setClienteAperto(null)}>
-          <div className="w-full max-w-xl h-full flex flex-col"
-            style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
-            onClick={e => e.stopPropagation()}>
-
-            {/* Header statico */}
-            <div className="flex items-center gap-4 px-5 flex-shrink-0"
-              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
-              <button onClick={() => setClienteAperto(null)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm" onClick={() => setClienteAperto(null)}>
+          <div className="w-full max-w-xl h-full bg-zinc-950 flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className="p-5 border-b border-white/10 flex items-center gap-4">
+              <button onClick={() => setClienteAperto(null)} className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center">
                 <FontAwesomeIcon icon={faXmark} />
               </button>
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                  {clienteAperto.profiles?.full_name?.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-black text-base truncate" style={{ color: 'oklch(0.97 0 0)' }}>
-                    {clienteAperto.profiles?.full_name}
-                  </p>
-                </div>
-              </div>
+              <h2 className="font-bold text-lg">{clienteAperto.profiles?.full_name}</h2>
             </div>
 
-            {/* Tabs statiche */}
-            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-              <button onClick={() => setDrawerTab('overview')}
-                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{
-                  background: drawerTab === 'overview' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                  color: drawerTab === 'overview' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
-                }}>📊 Overview</button>
-              <button onClick={() => setDrawerTab('nutrizione')}
-                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{
-                  background: drawerTab === 'nutrizione' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                  color: drawerTab === 'nutrizione' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
-                }}>🥗 Nutrizione</button>
+            {/* Tabs */}
+            <div className="flex p-2 gap-2 bg-zinc-900/50">
+              <button onClick={() => setDrawerTab('overview')} 
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${drawerTab === 'overview' ? 'bg-orange-500 text-black' : 'text-zinc-500 hover:text-white'}`}>
+                📊 OVERVIEW
+              </button>
+              <button onClick={() => setDrawerTab('nutrizione')} 
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${drawerTab === 'nutrizione' ? 'bg-orange-500 text-black' : 'text-zinc-500 hover:text-white'}`}>
+                🥗 NUTRIZIONE
+              </button>
             </div>
 
-            {/* AREA CONTENUTO SCROLLABILE */}
+            {/* Content Area */}
             <div className="flex-1 overflow-y-auto">
               {loading ? (
-                <div className="flex items-center justify-center h-32">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-                </div>
+                <div className="p-10 text-center text-zinc-500">Caricamento dati...</div>
               ) : drawerTab === 'nutrizione' ? (
                 <div className="p-5">
-                   <div className="px-5 py-3 mb-5 flex items-center justify-between rounded-2xl"
-                    style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-                    <div>
-                      <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Abilita Nutrizione</p>
-                    </div>
-                    <button onClick={handleToggleDieta} disabled={togglingDieta} className="relative">
-                      <div className="w-12 h-7 rounded-full transition-colors"
-                        style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
-                        <div className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform"
-                          style={{ transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)' }} />
-                      </div>
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-2xl mb-6 border border-white/5">
+                    <span className="font-bold">Abilita Dieta</span>
+                    <button onClick={handleToggleDieta} disabled={togglingDieta}
+                      className={`w-12 h-6 rounded-full relative transition-colors ${dietaAbilitata ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${dietaAbilitata ? 'left-7' : 'left-1'}`} />
                     </button>
                   </div>
-                  {dietaAbilitata ? <MacroTargetForm clienteId={clienteAperto.cliente_id} /> : (
-                    <p className="text-center py-10 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Abilita la sezione per gestire i macro.</p>
-                  )}
+                  {dietaAbilitata && <MacroTargetForm clienteId={clienteAperto.cliente_id} />}
                 </div>
-              ) : dettaglio && (
-                <div className="p-5 space-y-5">
-                  {/* Stats Rapide */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
-                      <p className="text-2xl font-black text-blue-400">{dettaglio.sessioni.length}</p>
-                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Sessioni</p>
-                    </div>
-                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
-                      <p className="text-2xl font-black text-emerald-400">{sessCompletate}</p>
-                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Fatte</p>
-                    </div>
-                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
-                      <p className="text-2xl font-black text-orange-400">{benessereScore ?? '—'}</p>
-                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Mood</p>
-                    </div>
-                  </div>
-
-                  {/* Peso */}
-                  {dettaglio.misurazioni.length > 0 && (
-                    <div className="rounded-2xl p-4 bg-zinc-900/50 border border-white/5">
-                      <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center gap-2">
-                          <FontAwesomeIcon icon={faWeightScale} className="text-zinc-500" />
-                          <p className="text-sm font-bold">Peso Corporeo</p>
+              ) : (
+                /* TAB OVERVIEW */
+                <div className="p-5 space-y-6">
+                  {dettaglio && (
+                    <>
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-zinc-900 p-4 rounded-2xl border border-white/5 text-center">
+                          <p className="text-2xl font-black text-orange-500">{dettaglio.sessioni.length}</p>
+                          <p className="text-[10px] text-zinc-500 uppercase">Workout</p>
                         </div>
-                        <p className="text-lg font-black">{ultimoPeso} kg</p>
+                        <div className="bg-zinc-900 p-4 rounded-2xl border border-white/5 text-center">
+                          <p className="text-2xl font-black text-emerald-500">{sessCompletate}</p>
+                          <p className="text-[10px] text-zinc-500 uppercase">Fatti</p>
+                        </div>
+                        <div className="bg-zinc-900 p-4 rounded-2xl border border-white/5 text-center">
+                          <p className="text-2xl font-black text-blue-500">{benessereScore ?? '—'}</p>
+                          <p className="text-[10px] text-zinc-500 uppercase">Mood</p>
+                        </div>
                       </div>
-                      <div className="h-24">
-                        <WeightChart data={dettaglio.misurazioni} />
+
+                      {/* Peso Section */}
+                      {dettaglio.misurazioni.length > 0 && (
+                        <div className="bg-zinc-900 p-5 rounded-2xl border border-white/5">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-sm font-bold text-zinc-400">Andamento Peso</h3>
+                            <span className="text-lg font-black">{ultimoPeso} kg</span>
+                          </div>
+                          <div className="h-32">
+                            <WeightChart data={dettaglio.misurazioni} />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ultime Sessioni */}
+                      <div className="bg-zinc-900 rounded-2xl border border-white/5 overflow-hidden">
+                        <div className="p-4 border-b border-white/5 bg-white/5">
+                          <h3 className="text-xs font-bold uppercase text-zinc-500">Ultime Attività</h3>
+                        </div>
+                        <div className="divide-y divide-white/5">
+                          {dettaglio.sessioni.slice(0, 5).map(s => (
+                            <div key={s.id} className="p-4 flex justify-between items-center">
+                              <span className="text-sm">{(s as any).scheda_giorni?.nome || 'Allenamento'}</span>
+                              <span className="text-xs text-zinc-500">{new Date(s.data).toLocaleDateString('it-IT')}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
 
-                  {/* Ultime Sessioni */}
-                  <div className="rounded-2xl overflow-hidden bg-zinc-900/50 border border-white/5">
-                    <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                      <FontAwesomeIcon icon={faChartBar} className="text-emerald-500" />
-                      <p className="text-sm font-bold">Recenti</p>
-                    </div>
-                    <div className="divide-y divide-white/5">
-                      {dettaglio.sessioni.slice(0, 5).map(s => (
-                        <div key={s.id} className="px-4 py-3 flex justify-between items-center text-sm">
-                           <p className="truncate mr-4">{(s as any).scheda_giorni?.nome ?? 'Allenamento'}</p>
-                           <p className="text-zinc-500 flex-shrink-0">{new Date(s.data).toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit'})}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* IL PULSANTE ANALYTICS - Posizionato qui per essere sempre visibile nello scroll */}
+                  {/* IL PULSANTE - FUORI DAL BLOCCO DETTAGLIO PER SICUREZZA */}
                   <div className="pt-4 pb-10">
                     <Link
                       href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
-                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-transform active:scale-95"
-                      style={{ background: 'oklch(0.70 0.19 46)', color: 'black' }}>
+                      className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-sm bg-orange-500 text-black transition-transform active:scale-95 shadow-lg shadow-orange-500/20"
+                    >
                       <FontAwesomeIcon icon={faArrowTrendUp} />
                       ANALYTICS AVANZATE →
                     </Link>
