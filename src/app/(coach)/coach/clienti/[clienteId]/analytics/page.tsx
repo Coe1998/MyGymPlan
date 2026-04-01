@@ -26,11 +26,14 @@ export default async function ClienteAnalyticsPage({
     .from('coach_clienti')
     .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name, email)')
     .eq('cliente_id', clienteId)
+  console.log('[analytics2] relazioneRows:', JSON.stringify(relazioneRows))
   const relazione = (relazioneRows ?? []).find(r => r.coach_id === user.id)
-  if (!relazione) notFound()
+  console.log('[analytics2] relazione:', JSON.stringify(relazione))
+  if (!relazione) { console.log('[analytics2] notFound: no relazione'); notFound() }
 
   const clienteProfile = (relazione as any).profiles as { full_name: string | null; email: string | null } | null
-  if (!clienteProfile) notFound()
+  console.log('[analytics2] clienteProfile:', JSON.stringify(clienteProfile))
+  if (!clienteProfile) { console.log('[analytics2] notFound: no clienteProfile'); notFound() }
 
   const [assegnazioniRes, totSessioniRes, ultimoPesoRes, primaSessioneRes] = await Promise.all([
     supabase.from('assegnazioni')
