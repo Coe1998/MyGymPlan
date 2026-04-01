@@ -140,12 +140,12 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
         <div className="fixed inset-0 z-50 flex justify-end"
           style={{ background: 'oklch(0 0 0 / 60%)' }}
           onClick={() => setClienteAperto(null)}>
-          <div className="w-full max-w-xl h-full overflow-y-auto flex flex-col"
+          <div className="w-full max-w-xl h-full flex flex-col"
             style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
             onClick={e => e.stopPropagation()}>
 
-            {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center gap-4 px-5"
+            {/* Header statico */}
+            <div className="flex items-center gap-4 px-5 flex-shrink-0"
               style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
               <button onClick={() => setClienteAperto(null)}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -161,229 +161,114 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                   <p className="font-black text-base truncate" style={{ color: 'oklch(0.97 0 0)' }}>
                     {clienteAperto.profiles?.full_name}
                   </p>
-                  <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                    Cliente dal {new Date(clienteAperto.created_at).toLocaleDateString('it-IT')}
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Drawer tabs */}
+            {/* Tabs statiche */}
             <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-              {[
-                { id: 'overview', label: '📊 Overview' },
-                { id: 'nutrizione', label: '🥗 Nutrizione' },
-              ].map(t => (
-                <button key={t.id} onClick={() => setDrawerTab(t.id as any)}
-                  className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: drawerTab === t.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    color: drawerTab === t.id ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
-                  }}>
-                  {t.label}
-                </button>
-              ))}
+              <button onClick={() => setDrawerTab('overview')}
+                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  background: drawerTab === 'overview' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                  color: drawerTab === 'overview' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
+                }}>📊 Overview</button>
+              <button onClick={() => setDrawerTab('nutrizione')}
+                className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  background: drawerTab === 'nutrizione' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                  color: drawerTab === 'nutrizione' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
+                }}>🥗 Nutrizione</button>
             </div>
 
-            {/* Toggle dieta — sempre visibile */}
-            <div className="px-5 py-3 flex items-center justify-between flex-shrink-0"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.16 0 0)' }}>
-              <div>
-                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta</p>
-                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                  {dietaAbilitata ? 'Abilitato ✓' : 'Non abilitato'}
-                </p>
-              </div>
-              <button onClick={handleToggleDieta} disabled={togglingDieta}
-                className="relative flex-shrink-0"
-                style={{ opacity: togglingDieta ? 0.5 : 1 }}>
-                <div className="w-12 h-7 rounded-full transition-colors duration-200"
-                  style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
-                  <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
-                    style={{
-                      background: 'oklch(0.97 0 0)',
-                      transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
-                    }} />
+            {/* AREA CONTENUTO SCROLLABILE */}
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center h-32">
+                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
                 </div>
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-              </div>
-            ) : drawerTab === 'nutrizione' ? (
-              <div className="flex-1 flex flex-col">
-                {dietaAbilitata ? (
-                  <MacroTargetForm clienteId={clienteAperto.cliente_id} />
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
-                    <p className="text-3xl">🥗</p>
-                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>
-                      Abilita il piano dieta per impostare i macro di questo cliente
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : dettaglio && (
-              <div className="flex-1 p-5 space-y-5">
-                {/* Stats rapide */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: 'Sessioni', value: dettaglio.sessioni.length, color: 'oklch(0.60 0.15 200)' },
-                    { label: 'Completate', value: sessCompletate, color: 'oklch(0.65 0.18 150)' },
-                    { label: 'Benessere', value: benessereScore !== null ? `${benessereScore}/5` : '—', color: 'oklch(0.70 0.19 46)' },
-                  ].map(s => (
-                    <div key={s.label} className="rounded-2xl p-4 text-center"
-                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
-                      <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</p>
+              ) : drawerTab === 'nutrizione' ? (
+                <div className="p-5">
+                   <div className="px-5 py-3 mb-5 flex items-center justify-between rounded-2xl"
+                    style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Abilita Nutrizione</p>
                     </div>
-                  ))}
-                </div>
-
-                {/* Schede assegnate */}
-                <div className="rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <div className="px-4 py-3 flex items-center gap-2"
-                    style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <FontAwesomeIcon icon={faClipboardList} style={{ color: 'oklch(0.70 0.19 46)' }} />
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Schede assegnate</p>
-                  </div>
-                  {dettaglio.assegnazioni.length === 0 ? (
-                    <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda assegnata</p>
-                  ) : dettaglio.assegnazioni.map((a, i) => (
-                    <div key={a.id} className="flex items-center gap-3 px-4 py-3"
-                      style={{ borderBottom: i < dettaglio.assegnazioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                      <span className="text-xs px-2 py-0.5 rounded-full"
-                        style={{
-                          background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                          color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
-                        }}>
-                        {a.attiva ? 'Attiva' : 'Inattiva'}
-                      </span>
-                      <p className="text-sm flex-1" style={{ color: 'oklch(0.85 0 0)' }}>
-                        {(a as any).schede?.nome ?? 'Scheda sconosciuta'}
-                      </p>
-                      <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
-                        Dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Check-in benessere */}
-                {dettaglio.ultimoCheckin && (
-                  <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <div className="px-4 py-3 flex items-center justify-between"
-                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <div className="flex items-center gap-2">
-                        <FontAwesomeIcon icon={faHeart} style={{ color: 'oklch(0.75 0.15 27)' }} />
-                        <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Ultimo check-in</p>
+                    <button onClick={handleToggleDieta} disabled={togglingDieta} className="relative">
+                      <div className="w-12 h-7 rounded-full transition-colors"
+                        style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                        <div className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform"
+                          style={{ transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)' }} />
                       </div>
-                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                        {new Date(dettaglio.ultimoCheckin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
-                      </p>
+                    </button>
+                  </div>
+                  {dietaAbilitata ? <MacroTargetForm clienteId={clienteAperto.cliente_id} /> : (
+                    <p className="text-center py-10 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Abilita la sezione per gestire i macro.</p>
+                  )}
+                </div>
+              ) : dettaglio && (
+                <div className="p-5 space-y-5">
+                  {/* Stats Rapide */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
+                      <p className="text-2xl font-black text-blue-400">{dettaglio.sessioni.length}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Sessioni</p>
                     </div>
-                    <div className="grid grid-cols-4 gap-0">
-                      {[
-                        { label: 'Energia', value: dettaglio.ultimoCheckin.energia, warn: dettaglio.ultimoCheckin.energia <= 2 },
-                        { label: 'Sonno', value: dettaglio.ultimoCheckin.sonno, warn: dettaglio.ultimoCheckin.sonno <= 2 },
-                        { label: 'Stress ↑', value: dettaglio.ultimoCheckin.stress, warn: dettaglio.ultimoCheckin.stress >= 4 },
-                        { label: 'Motiv.', value: dettaglio.ultimoCheckin.motivazione, warn: dettaglio.ultimoCheckin.motivazione <= 2 },
-                      ].map((item, i) => (
-                        <div key={item.label} className="p-4 text-center"
-                          style={{ borderRight: i < 3 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
-                          <p className="text-xl font-black"
-                            style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.97 0 0)' }}>
-                            {item.value}/5
-                          </p>
-                          <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>{item.label}</p>
+                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
+                      <p className="text-2xl font-black text-emerald-400">{sessCompletate}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Fatte</p>
+                    </div>
+                    <div className="rounded-2xl p-4 text-center bg-zinc-900/50 border border-white/5">
+                      <p className="text-2xl font-black text-orange-400">{benessereScore ?? '—'}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">Mood</p>
+                    </div>
+                  </div>
+
+                  {/* Peso */}
+                  {dettaglio.misurazioni.length > 0 && (
+                    <div className="rounded-2xl p-4 bg-zinc-900/50 border border-white/5">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-2">
+                          <FontAwesomeIcon icon={faWeightScale} className="text-zinc-500" />
+                          <p className="text-sm font-bold">Peso Corporeo</p>
+                        </div>
+                        <p className="text-lg font-black">{ultimoPeso} kg</p>
+                      </div>
+                      <div className="h-24">
+                        <WeightChart data={dettaglio.misurazioni} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ultime Sessioni */}
+                  <div className="rounded-2xl overflow-hidden bg-zinc-900/50 border border-white/5">
+                    <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
+                      <FontAwesomeIcon icon={faChartBar} className="text-emerald-500" />
+                      <p className="text-sm font-bold">Recenti</p>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {dettaglio.sessioni.slice(0, 5).map(s => (
+                        <div key={s.id} className="px-4 py-3 flex justify-between items-center text-sm">
+                           <p className="truncate mr-4">{(s as any).scheda_giorni?.nome ?? 'Allenamento'}</p>
+                           <p className="text-zinc-500 flex-shrink-0">{new Date(s.data).toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit'})}</p>
                         </div>
                       ))}
                     </div>
                   </div>
-                )}
 
-                {/* Peso */}
-                {dettaglio.misurazioni.length > 0 && (
-                  <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <div className="px-4 py-3 flex items-center justify-between"
-                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <div className="flex items-center gap-2">
-                        <FontAwesomeIcon icon={faWeightScale} style={{ color: 'oklch(0.60 0.15 200)' }} />
-                        <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Peso corporeo</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>
-                          {ultimoPeso} kg
-                        </p>
-                        {deltaPeso !== null && (
-                          <span className="text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"
-                            style={{
-                              background: deltaPeso === 0 ? 'oklch(0.22 0 0)' : deltaPeso > 0 ? 'oklch(0.60 0.15 200 / 15%)' : 'oklch(0.65 0.18 150 / 15%)',
-                              color: deltaPeso === 0 ? 'oklch(0.50 0 0)' : deltaPeso > 0 ? 'oklch(0.60 0.15 200)' : 'oklch(0.65 0.18 150)',
-                            }}>
-                            <FontAwesomeIcon icon={deltaPeso > 0 ? faArrowTrendUp : deltaPeso < 0 ? faArrowTrendDown : faMinus} />
-                            {deltaPeso > 0 ? `+${deltaPeso}` : deltaPeso} kg
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {dettaglio.misurazioni.length >= 2 && (
-                      <div className="p-4" style={{ height: 120 }}>
-                        <WeightChart data={dettaglio.misurazioni} />
-                      </div>
-                    )}
+                  {/* IL PULSANTE ANALYTICS - Posizionato qui per essere sempre visibile nello scroll */}
+                  <div className="pt-4 pb-10">
+                    <Link
+                      href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
+                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-transform active:scale-95"
+                      style={{ background: 'oklch(0.70 0.19 46)', color: 'black' }}>
+                      <FontAwesomeIcon icon={faArrowTrendUp} />
+                      ANALYTICS AVANZATE →
+                    </Link>
                   </div>
-                )}
-
-                {/* Ultime sessioni */}
-                <div className="rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <div className="px-4 py-3 flex items-center gap-2"
-                    style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <FontAwesomeIcon icon={faChartBar} style={{ color: 'oklch(0.65 0.18 150)' }} />
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Ultime sessioni</p>
-                  </div>
-                  {dettaglio.sessioni.length === 0 ? (
-                    <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione ancora</p>
-                  ) : dettaglio.sessioni.slice(0, 8).map((s, i) => (
-                    <div key={s.id} className="flex items-center gap-3 px-4 py-3"
-                      style={{ borderBottom: i < Math.min(dettaglio.sessioni.length, 8) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{
-                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.75 0.15 27 / 15%)',
-                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)',
-                        }}>
-                        <FontAwesomeIcon icon={s.completata ? faCircleCheck : faPause} className="text-xs" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate" style={{ color: 'oklch(0.85 0 0)' }}>
-                          {(s as any).scheda_giorni?.nome ?? 'Allenamento'}
-                        </p>
-                        <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
-                          {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
-                          {formatDurata(s.durata_secondi) && ` · ${formatDurata(s.durata_secondi)}`}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
-
-                {/* Bottone analytics avanzate - Ora dentro il div principale scrollabile */}
-                <div className="pt-4 pb-6">
-                  <Link
-                    href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-                    Analytics avanzate →
-                  </Link>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
