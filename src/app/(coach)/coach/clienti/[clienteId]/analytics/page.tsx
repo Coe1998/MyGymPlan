@@ -22,19 +22,17 @@ export default async function ClienteAnalyticsPage({
     .from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'coach') redirect('/login')
 
-  const { data: relazioneRows, error: relazioneError } = await supabase
+  const { data: relazioneRows } = await supabase
     .from('coach_clienti')
-    .select('coach_id')
+    .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name, email)')
     .eq('cliente_id', clienteId)
-  console.log('[analytics] user.id:', user.id)
-  console.log('[analytics] clienteId:', clienteId)
-  console.log('[analytics] relazioneRows:', JSON.stringify(relazioneRows))
-  console.log('[analytics] relazioneError:', JSON.stringify(relazioneError))
   const relazione = (relazioneRows ?? []).find(r => r.coach_id === user.id)
   if (!relazione) notFound()
 
-  const [clienteRes, assegnazioniRes, totSessioniRes, ultimoPesoRes, primaSessioneRes] = await Promise.all([
-    supabase.from('profiles').select('full_name, email').eq('id', clienteId).single(),
+  const clienteProfile = (relazione as any).profiles as { full_name: string | null; email: string | null } | null
+  if (!clienteProfile) notFound()
+
+  const [assegnazioniRes, totSessioniRes, ultimoPesoRes, primaSessioneRes] = await Promise.all([
     supabase.from('assegnazioni')
       .select('id, data_inizio, data_fine, attiva, schede ( id, nome )')
       .eq('cliente_id', clienteId)
@@ -58,9 +56,7 @@ export default async function ClienteAnalyticsPage({
       .maybeSingle(),
   ])
 
-  if (!clienteRes.data) notFound()
-
-  const cliente = clienteRes.data
+  const cliente = clienteProfile
   const assegnazioni = (assegnazioniRes.data ?? []) as any[]
   const totSessioni = totSessioniRes.count ?? 0
   const ultimoPeso = ultimoPesoRes.data?.peso_kg ?? null
