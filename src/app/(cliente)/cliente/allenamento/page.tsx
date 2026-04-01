@@ -849,11 +849,11 @@ export default function AllenamentoPage() {
                           }
                           return (
                             <div className="flex items-center gap-3">
-                              <div className="flex-1">
-                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                              <div style={{ width: '30%' }}>
+                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.40 0 0)' }}>Zavorra (kg)</label>
                                 <input type="number" inputMode="decimal" value={serie.peso_kg}
                                   onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
-                                  placeholder="0" readOnly={isViewMode}
+                                  placeholder="—" readOnly={isViewMode}
                                   className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                                   style={inputStyle} />
                               </div>
