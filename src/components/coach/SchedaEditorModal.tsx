@@ -337,24 +337,52 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         </div>
       )}
 
-      {/* ── Serie / Reps / Recupero ── */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { key: 'serie' as keyof EsForm, label: 'Serie', ph: '3' },
-          { key: 'ripetizioni' as keyof EsForm, label: 'Reps', ph: '8-12' },
-          { key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90' },
-        ].map(f => (
-          <div key={f.key} className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>{f.label}</label>
-            <input type="text" value={form[f.key] as string} onChange={e => set(f.key, e.target.value)}
-              placeholder={f.ph}
-              className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-              onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+      {/* ── Serie / Reps|Durata / Recupero ── */}
+      {(() => {
+        const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
+        const isTimer = tipoInput === 'timer'
+        const isUnilaterale = tipoInput === 'reps_unilaterale'
+        const campi = [
+          { key: 'serie' as keyof EsForm, label: 'Serie', ph: '3', hint: null },
+          {
+            key: 'ripetizioni' as keyof EsForm,
+            label: isTimer ? 'Durata (sec)' : isUnilaterale ? 'Reps (per lato)' : 'Reps',
+            ph: isTimer ? '30' : '8-12',
+            hint: isTimer ? 'secondi per serie' : isUnilaterale ? 'sx e dx separati nel logger' : null,
+          },
+          { key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90', hint: null },
+        ]
+        return (
+          <div className="grid grid-cols-3 gap-3">
+            {campi.map(f => (
+              <div key={f.key} className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
+                  {f.label}
+                </label>
+                <input
+                  type={isTimer && f.key === 'ripetizioni' ? 'number' : 'text'}
+                  min={isTimer && f.key === 'ripetizioni' ? 1 : undefined}
+                  value={form[f.key] as string}
+                  onChange={e => set(f.key, e.target.value)}
+                  placeholder={f.ph}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+                  style={{
+                    background: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 10%)' : 'oklch(0.22 0 0)',
+                    border: isTimer && f.key === 'ripetizioni' ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                    color: 'oklch(0.97 0 0)',
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+                  onBlur={e => e.target.style.borderColor = isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}
+                />
+                {f.hint && (
+                  <p className="text-xs" style={{ color: 'oklch(0.42 0 0)' }}>{f.hint}</p>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       {/* ── Note ── */}
       <div className="space-y-1.5">
