@@ -128,7 +128,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
       }
 
       const result = Array.from(map.values())
-        .filter(e => e.punti.length >= 2)
+        .filter(e => e.punti.length >= 1)
         .sort((a, b) => b.punti.length - a.punti.length)
 
       setEsercizi(result)
