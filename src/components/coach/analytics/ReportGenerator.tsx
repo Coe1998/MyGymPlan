@@ -38,6 +38,18 @@ const PERIODO_LABEL: Record<PeriodoGiorni, string> = {
   9999: 'tutto',
 }
 
+// Fixed colors for compatibility
+const COLORS = {
+  bgOverlay: 'rgba(0, 0, 0, 0.75)',
+  bgModal: '#262626',
+  bgInput: '#383838',
+  border: 'rgba(255, 255, 255, 0.1)',
+  textMain: '#F5F5F4',
+  textMuted: '#8C8C8C',
+  accent: '#E8893C',
+  success: '#5DCAA5'
+}
+
 export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, ultimoPeso, onClose }: Props) {
   const supabase = useMemo(() => createClient(), [])
   const reportRef = useRef<HTMLDivElement>(null)
@@ -96,7 +108,6 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         .in('sessione_id', sessIds)
         .eq('completata', true)
 
-      // Raggruppa per esercizio per sessione — calcola e1RM max
       const eseSessioneMap = new Map<string, Map<string, number>>()
       const eseNomiMap = new Map<string, string>()
       const muscoloVolumeMap = new Map<string, number>()
@@ -124,7 +135,6 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         }
       }
 
-      // Calcola trend e1RM per esercizio (prima metà vs seconda metà del periodo)
       const eseResult: EsercizioReport[] = []
       for (const [eseId, sessMap] of eseSessioneMap) {
         const valori = Array.from(sessMap.values()).sort((a, b) => a - b)
@@ -139,7 +149,6 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
       setEsercizi(eseResult.filter(e => e.deltaE1rm > 0).slice(0, 3))
 
-      // Muscoli — calcola vs periodo precedente
       const dataInizioPrec = periodo === 9999
         ? '2000-01-01'
         : new Date(Date.now() - periodo * 2 * msPerDay).toISOString()
@@ -182,7 +191,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
       setLoading(false)
     }
     fetchData()
-  }, [clienteId, periodo])
+  }, [clienteId, periodo, supabase])
 
   const deltaPeso = pesoInizio && ultimoPeso
     ? Math.round((ultimoPeso - pesoInizio) * 10) / 10
@@ -190,15 +199,20 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
   const generaImmagine = async (): Promise<string | null> => {
     if (!reportRef.current) return null
-    const html2canvas = (await import('html2canvas')).default
-    const canvas = await html2canvas(reportRef.current, {
-      backgroundColor: '#111111',
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-    })
-    return canvas.toDataURL('image/png', 0.95)
+    try {
+        const html2canvas = (await import('html2canvas')).default
+        const canvas = await html2canvas(reportRef.current, {
+          backgroundColor: '#111111',
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          logging: false,
+        })
+        return canvas.toDataURL('image/png', 0.95)
+    } catch (err) {
+        console.error("Canvas capture error:", err)
+        return null
+    }
   }
 
   const dataUrlToBlob = (dataUrl: string): Blob => {
@@ -242,10 +256,10 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         .from('reports')
         .upload(fileName, blob, { contentType: 'image/png', upsert: false })
 
-    if (error || !upload) { setSending(false); return }
+      if (error || !upload) { setSending(false); return }
 
-    const { data: urlData } = supabase.storage.from('reports').getPublicUrl(fileName)
-    const publicUrl = urlData?.publicUrl
+      const { data: urlData } = supabase.storage.from('reports').getPublicUrl(fileName)
+      const publicUrl = urlData?.publicUrl
 
       if (!publicUrl) { setSending(false); return }
 
@@ -269,19 +283,19 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-      style={{ background: 'oklch(0 0 0 / 75%)', backdropFilter: 'blur(8px)' }}
+      style={{ backgroundColor: COLORS.bgOverlay, backdropFilter: 'blur(8px)' }}
       onClick={onClose}>
       <div
         className="w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
-        style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(1 0 0 / 10%)', maxHeight: '92vh' }}
+        style={{ backgroundColor: COLORS.bgModal, border: `1px solid ${COLORS.border}`, maxHeight: '92vh' }}
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-          <p className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Genera report</p>
+          style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+          <p className="font-bold" style={{ color: COLORS.textMain }}>Genera report</p>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+            style={{ backgroundColor: '#383838', color: COLORS.textMuted }}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -289,7 +303,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: COLORS.textMuted }}>
               Messaggio del coach (opzionale)
             </label>
             <textarea
@@ -298,23 +312,21 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
               placeholder="es. Ottimo lavoro questo mese! La tua costanza sta dando risultati..."
               rows={3}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-              onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+              style={{ backgroundColor: COLORS.bgInput, border: `1px solid ${COLORS.border}`, color: COLORS.textMain }}
             />
           </div>
 
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: COLORS.textMuted }}>
               Anteprima
             </p>
 
             {loading ? (
               <div className="rounded-2xl py-12 text-center"
-                style={{ background: 'oklch(0.12 0 0)' }}>
+                style={{ backgroundColor: '#1f1f1f' }}>
                 <FontAwesomeIcon icon={faSpinner} className="animate-spin text-xl"
-                  style={{ color: 'oklch(0.70 0.19 46)' }} />
+                  style={{ color: COLORS.accent }} />
               </div>
             ) : (
               <div
@@ -324,16 +336,16 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
                   borderRadius: 16,
                   padding: 24,
                   width: '100%',
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  fontFamily: 'sans-serif', // Simpler font stack for canvas
                 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#E8893C', letterSpacing: '0.05em' }}>BYNARI</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.accent, letterSpacing: '0.05em' }}>BYNARI</div>
                     <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>
                       Report · ultimi {periodoLabel} · {dataOggi}
                     </div>
                   </div>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(232,137,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#E8893C' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '18px', background: 'rgba(232,137,60,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: COLORS.accent }}>
                     {iniziali}
                   </div>
                 </div>
@@ -342,19 +354,19 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
                 {ultimoPeso && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 16 }}>{ultimoPeso} kg</div>}
 
                 {messaggio.trim() && (
-                  <div style={{ background: 'rgba(232,137,60,0.1)', borderLeft: '3px solid #E8893C', borderRadius: '0 8px 8px 0', padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.5 }}>
+                  <div style={{ background: 'rgba(232,137,60,0.1)', borderLeft: `3px solid ${COLORS.accent}`, borderRadius: '0 8px 8px 0', padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: 1.5 }}>
                     "{messaggio.trim()}"
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                   {[
                     { val: kpi.sessioni, lbl: 'Sessioni' },
                     { val: `${kpi.completamento}%`, lbl: 'Completamento' },
                     { val: kpi.benessere ?? '—', lbl: 'Benessere' },
                   ].map(k => (
-                    <div key={k.lbl} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: '#E8893C', lineHeight: 1 }}>{k.val}</div>
+                    <div key={k.lbl} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.accent, lineHeight: 1 }}>{k.val}</div>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>{k.lbl}</div>
                     </div>
                   ))}
@@ -362,7 +374,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
                 {esercizi.length > 0 && (
                   <>
-                    <div style={{ height: 0.5, background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
                     <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
                       I tuoi punti forti
                     </div>
@@ -370,9 +382,9 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
                       <div key={e.nome} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', flex: 1 }}>{e.nome}</div>
                         <div style={{ width: 80, height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${Math.min(e.deltaE1rm, 100)}%`, background: '#5DCAA5', borderRadius: 3 }} />
+                          <div style={{ height: '100%', width: `${Math.min(e.deltaE1rm, 100)}%`, background: COLORS.success, borderRadius: 3 }} />
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: '#5DCAA5', width: 42, textAlign: 'right' }}>+{e.deltaE1rm}%</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.success, width: 42, textAlign: 'right' }}>+{e.deltaE1rm}%</div>
                       </div>
                     ))}
                   </>
@@ -380,7 +392,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
                 {muscoliCalo.length > 0 && (
                   <>
-                    <div style={{ height: 0.5, background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
                     <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
                       Su cui lavorare
                     </div>
@@ -388,9 +400,9 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
                       <div key={m.muscolo} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', flex: 1 }}>{m.muscolo}</div>
                         <div style={{ width: 80, height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', width: `${Math.min(Math.abs(m.delta), 100)}%`, background: '#E8893C', borderRadius: 3 }} />
+                          <div style={{ height: '100%', width: `${Math.min(Math.abs(m.delta), 100)}%`, background: COLORS.accent, borderRadius: 3 }} />
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: '#E8893C', width: 42, textAlign: 'right' }}>{m.delta}%</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.accent, width: 42, textAlign: 'right' }}>{m.delta}%</div>
                       </div>
                     ))}
                   </>
@@ -398,7 +410,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
                 {deltaPeso !== null && (
                   <>
-                    <div style={{ height: 0.5, background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '12px 0' }} />
                     <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 8 }}>
                       Peso corporeo
                     </div>
@@ -406,7 +418,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', flex: 1 }}>
                         {pesoInizio} kg → {ultimoPeso} kg
                       </div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: deltaPeso < 0 ? '#5DCAA5' : deltaPeso > 0 ? '#E8893C' : 'rgba(255,255,255,0.4)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: deltaPeso < 0 ? COLORS.success : deltaPeso > 0 ? COLORS.accent : 'rgba(255,255,255,0.4)' }}>
                         {deltaPeso > 0 ? '+' : ''}{deltaPeso} kg
                       </div>
                     </div>
@@ -415,7 +427,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>Generato il {dataOggi}</div>
-                  <div style={{ fontSize: 10, color: '#E8893C', fontWeight: 600 }}>bynari.app</div>
+                  <div style={{ fontSize: 10, color: COLORS.accent, fontWeight: 600 }}>bynari.app</div>
                 </div>
               </div>
             )}
@@ -423,12 +435,12 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         </div>
 
         <div className="px-5 py-4 flex gap-3 flex-shrink-0"
-          style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+          style={{ borderTop: `1px solid ${COLORS.border}` }}>
           <button
             onClick={handleSalvaImmagine}
             disabled={loading || saving}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.80 0 0)', border: '1px solid oklch(1 0 0 / 8%)', opacity: loading ? 0.5 : 1 }}>
+            style={{ backgroundColor: COLORS.bgInput, color: '#CCCCCC', border: `1px solid ${COLORS.border}`, opacity: loading ? 0.5 : 1 }}>
             {saving
               ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
               : <FontAwesomeIcon icon={faDownload} />}
@@ -438,7 +450,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
             onClick={handleInviaChat}
             disabled={loading || sending}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', opacity: loading ? 0.5 : 1 }}>
+            style={{ backgroundColor: COLORS.accent, color: '#1A1A1A', opacity: loading ? 0.5 : 1 }}>
             {sending
               ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
               : <FontAwesomeIcon icon={faPaperPlane} />}
