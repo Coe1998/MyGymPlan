@@ -215,21 +215,23 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                       </div>
                     </>
                   )}
-
-                  {/* IL PULSANTE ANALYTICS - ORA E' POSIZIONATO QUI PER ESSERE SEMPRE VISIBILE IN OVERVIEW */}
-                  <div className="pt-4 pb-12">
-                    <Link
-                      href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
-                      className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all active:scale-95"
-                      style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
-                    >
-                      <FontAwesomeIcon icon={faArrowTrendUp} />
-                      ANALYTICS AVANZATE →
-                    </Link>
-                  </div>
                 </div>
               )}
             </div>
+
+            {/* Footer fisso - pulsante analytics sempre visibile */}
+            {!loading && drawerTab === 'overview' && (
+              <div className="flex-shrink-0 p-4" style={{ borderTop: '1px solid oklch(1 0 0 / 8%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)', background: 'oklch(0.13 0 0)' }}>
+                <Link
+                  href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all active:scale-95"
+                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
+                >
+                  <FontAwesomeIcon icon={faArrowTrendUp} />
+                  ANALYTICS AVANZATE →
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
