@@ -17,6 +17,14 @@ export default async function ClienteDashboard() {
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'cliente') redirect('/coach/dashboard')
 
+  // Cleanup sessioni incomplete > 24h
+  const ventiquattroOreFA = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  await supabase.from('sessioni')
+    .delete()
+    .eq('cliente_id', user.id)
+    .eq('completata', false)
+    .lt('data', ventiquattroOreFA)
+
   const inizioSettimana = new Date()
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
