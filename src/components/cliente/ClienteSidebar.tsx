@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -29,6 +29,12 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [allenamentoUrl, setAllenamentoUrl] = useState('/cliente/allenamento')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bynari_allenamento_url')
+    if (saved) setAllenamentoUrl(saved)
+  }, [pathname])
 
   const navItems = buildNavItems(dietaAbilitata)
   const navItemsAll = buildNavItemsAll(dietaAbilitata)
@@ -60,9 +66,12 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             Navigazione
           </p>
           {navItemsAll.map((item) => {
-            const isActive = pathname === item.href
+            const href = item.href === '/cliente/allenamento' ? allenamentoUrl : item.href
+            const isActive = pathname.startsWith('/cliente/allenamento')
+              ? item.href === '/cliente/allenamento'
+              : pathname === item.href
             return (
-              <Link key={item.href} href={item.href}
+              <Link key={item.href} href={href}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{
                   background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
@@ -107,9 +116,12 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
         {navItems.map((item) => {
-          const isActive = pathname === item.href
+          const href = item.href === '/cliente/allenamento' ? allenamentoUrl : item.href
+          const isActive = pathname.startsWith('/cliente/allenamento')
+            ? item.href === '/cliente/allenamento'
+            : pathname === item.href
           return (
-            <Link key={item.href} href={item.href}
+            <Link key={item.href} href={href}
               className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
               style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
               <FontAwesomeIcon icon={item.icon} className="text-2xl" />

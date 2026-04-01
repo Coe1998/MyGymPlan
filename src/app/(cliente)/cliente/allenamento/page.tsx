@@ -189,6 +189,10 @@ export default function AllenamentoPage() {
       sessioneStartRef.current = new Date(nuova!.data).getTime()
     }
     setSessioneId(sessId)
+    // Salva l'URL della sessione attiva nel localStorage per il nav
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bynari_allenamento_url', `/cliente/allenamento?giorno=${giornoId}&assegnazione=${assegnazioneId}`)
+    }
 
     const { data: logEsistenti } = await supabase.from('log_serie').select('*').eq('sessione_id', sessId)
 
@@ -303,7 +307,10 @@ export default function AllenamentoPage() {
       supabase.from('sessioni')
         .update({ completata: true, durata_secondi: durataCorrente })
         .eq('id', sessioneId)
-        .then(() => setCompletata(true))
+        .then(() => {
+          if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
+          setCompletata(true)
+        })
     }
   }, [logs, esercizi, isViewMode, completata, loading, sessioneId])
 
@@ -496,6 +503,7 @@ export default function AllenamentoPage() {
     await supabase.from('sessioni')
       .update({ completata: true, durata_secondi: durataSecondi })
       .eq('id', sessioneId)
+    if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
     setCompletata(true)
     setSaving(false)
   }
