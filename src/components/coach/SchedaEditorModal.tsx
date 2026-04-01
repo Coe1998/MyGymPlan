@@ -64,6 +64,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
   const [searchP, setSearchP] = useState('')
   const [searchA, setSearchA] = useState('')
   const [filtroMuscolo, setFiltroMuscolo] = useState('')
+  const [filtroTipoInput, setFiltroTipoInput] = useState<'reps' | 'reps_unilaterale' | 'timer' | ''>('')
   const [showAlt, setShowAlt] = useState(!!form.alternativa_id)
   const [showCreaEse, setShowCreaEse] = useState(false)
   const [nuovoNome, setNuovoNome] = useState('')
@@ -87,9 +88,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       is_global: false,
     }).select().single()
     if (data) {
-      // Add to local list and select it
-      onChange({ ...form, esercizio_id: data.id })
-      setSearchP('')
+      selectEsercizio(data.id)
       setShowCreaEse(false)
       setNuovoNome('')
       setNuovoMuscoli([])
@@ -107,11 +106,24 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
   const filtP = esercizi.filter(e =>
     e.nome.toLowerCase().includes(searchP.toLowerCase()) &&
-    (!filtroMuscolo || e.muscoli?.includes(filtroMuscolo))
+    (!filtroMuscolo || e.muscoli?.includes(filtroMuscolo)) &&
+    (!filtroTipoInput || e.tipo_input === filtroTipoInput)
   ).slice(0, 20)
   const filtA = esercizi.filter(e =>
     e.nome.toLowerCase().includes(searchA.toLowerCase()) && e.id !== form.esercizio_id
   ).slice(0, 15)
+
+  const selectEsercizio = (id: string) => {
+    const ese = esercizi.find(e => e.id === id)
+    const isTimer = ese?.tipo_input === 'timer'
+    onChange({
+      ...form,
+      esercizio_id: id,
+      ripetizioni: isTimer ? '30' : form.ripetizioni === '30' ? '8-12' : form.ripetizioni,
+      progressione_tipo: isTimer ? 'durata' : form.progressione_tipo === 'durata' ? 'peso' : form.progressione_tipo,
+    })
+    setSearchP('')
+  }
 
   return (
     <div className="p-4 space-y-4">
@@ -140,6 +152,27 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                   color: filtroMuscolo === m ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
                 }}>
                 {m}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Tipo input filter chips */}
+        {!form.esercizio_id && (
+          <div className="flex gap-1.5 mb-2">
+            {[
+              { id: '' as const, label: 'Tutti i tipi' },
+              { id: 'reps' as const, label: 'Reps' },
+              { id: 'reps_unilaterale' as const, label: 'Unilaterale' },
+              { id: 'timer' as const, label: 'Timer' },
+            ].map(f => (
+              <button key={f.id} onClick={() => setFiltroTipoInput(f.id)}
+                className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  background: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                  color: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                  border: filtroTipoInput === f.id ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid transparent',
+                }}>
+                {f.label}
               </button>
             ))}
           </div>
@@ -220,7 +253,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                       <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
                     </div>
                   : filtP.map((e, i) => (
-                    <button key={e.id} onClick={() => { set('esercizio_id', e.id); setSearchP('') }}
+                    <button key={e.id} onClick={() => { selectEsercizio(e.id) }}
                       className="w-full text-left px-4 py-2.5 transition-all active:opacity-60"
                       style={{ borderBottom: i < filtP.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none' }}>
                       <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{e.nome}</p>
@@ -753,7 +786,7 @@ export default function SchedaEditorModal({
       esercizio_id: f.esercizio_id,
       alternativa_esercizio_id: f.alternativa_id || null,
       serie: parseInt(f.serie) || 3,
-      ripetizioni: f.ripetizioni || '8-12',
+      ripetizioni: f.ripetizioni.trim() || (f.progressione_tipo === 'durata' ? '30' : '8-12'),
       recupero_secondi: parseInt(f.recupero) || 90,
       note: f.note.trim() || null,
       ordine,
