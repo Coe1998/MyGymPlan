@@ -21,13 +21,20 @@ interface SchedaEsercizio {
   rest_pause_secondi: number | null
   piramidale_direzione: string | null
   alternativa_esercizio_id: string | null
-  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null }
+  prepara_secondi: number | null
+  progressione_tipo: string
+  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' }
 }
 
 interface LogSerie {
   numero_serie: number
   peso_kg: string
   ripetizioni: string
+  reps_sx: string
+  reps_dx: string
+  durata_secondi: string
+  rpe: string
+  rir: string
   completata: boolean
 }
 
@@ -63,6 +70,11 @@ export default function AllenamentoPage() {
   const [durataSecondi, setDurataSecondi] = useState(0)
   const [sessioneData, setSessioneData] = useState<string | null>(null)
   const [noteAperta, setNoteAperta] = useState<string | null>(null)
+  const [richiede_rpe, setRichiede_rpe] = useState(false)
+  const [richiede_rir, setRichiede_rir] = useState(false)
+  const [rpeRirPicker, setRpeRirPicker] = useState<{ eseId: string; serieIndex: number } | null>(null)
+  const [eseTimerState, setEseTimerState] = useState<{ eseId: string; serieIndex: number; fase: 'pre' | 'run'; secondi: number } | null>(null)
+  const eseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
   const durataSecondiRef = useRef(0)
@@ -106,7 +118,8 @@ export default function AllenamentoPage() {
         .select(`id, nome, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
           tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
-          esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
+          prepara_secondi, progressione_tipo,
+          esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
         )`)
         .eq('id', sessione.giorno_id)
         .single()
@@ -122,7 +135,7 @@ export default function AllenamentoPage() {
         const serieLog: LogSerie[] = []
         for (let i = 1; i <= ese.serie; i++) {
           const es = logEsistenti?.find((l: any) => l.scheda_esercizio_id === ese.id && l.numero_serie === i)
-          serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', completata: es?.completata ?? false })
+          serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi?.toString() ?? '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
         }
         logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
       }
@@ -191,12 +204,24 @@ export default function AllenamentoPage() {
     }
     setUltimaSessione(ultimaMap)
 
+    // Fetch RPE/RIR flags from scheda
+    if (eserciziOrdinati.length > 0) {
+      const firstEse = eserciziOrdinati[0]
+      const { data: giornoScheda } = await supabase
+        .from('scheda_giorni').select('scheda_id').eq('id', giornoId).single()
+      if (giornoScheda?.scheda_id) {
+        const { data: scheda } = await supabase
+          .from('schede').select('richiede_rpe, richiede_rir').eq('id', giornoScheda.scheda_id).single()
+        if (scheda) { setRichiede_rpe(scheda.richiede_rpe); setRichiede_rir(scheda.richiede_rir) }
+      }
+    }
+
     const logsInit: Record<string, EsercizioLog> = {}
     for (const ese of eserciziOrdinati) {
       const serieLog: LogSerie[] = []
       for (let i = 1; i <= ese.serie; i++) {
         const es = logEsistenti?.find(l => l.scheda_esercizio_id === ese.id && l.numero_serie === i)
-        serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', completata: es?.completata ?? false })
+        serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi?.toString() ?? '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
       }
       logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
     }
@@ -306,7 +331,7 @@ export default function AllenamentoPage() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
-  const updateLog = (eseId: string, serieIndex: number, field: 'peso_kg' | 'ripetizioni', value: string) => {
+  const updateLog = (eseId: string, serieIndex: number, field: keyof LogSerie, value: string) => {
     if (isViewMode) return
     setLogs(prev => ({
       ...prev,
@@ -325,13 +350,26 @@ export default function AllenamentoPage() {
     }))
     const { data: existing } = await supabase.from('log_serie').select('id')
       .eq('sessione_id', sessioneId).eq('scheda_esercizio_id', ese.id).eq('numero_serie', serieIndex + 1).single()
+    const tipoInput = ese.esercizi.tipo_input ?? 'reps'
     const payload = {
       sessione_id: sessioneId, scheda_esercizio_id: ese.id, numero_serie: serieIndex + 1,
-      peso_kg: parseFloat(log.peso_kg) || null, ripetizioni: parseInt(log.ripetizioni) || null, completata: nuovoStato,
+      peso_kg: parseFloat(log.peso_kg) || null,
+      ripetizioni: tipoInput === 'reps' ? (parseInt(log.ripetizioni) || null) : null,
+      reps_sx: tipoInput === 'reps_unilaterale' ? (parseInt(log.reps_sx) || null) : null,
+      reps_dx: tipoInput === 'reps_unilaterale' ? (parseInt(log.reps_dx) || null) : null,
+      durata_secondi: tipoInput === 'timer' ? (parseInt(log.durata_secondi) || null) : null,
+      rpe: log.rpe ? parseFloat(log.rpe) : null,
+      rir: log.rir ? parseInt(log.rir) : null,
+      completata: nuovoStato,
     }
     if (existing) { await supabase.from('log_serie').update(payload).eq('id', existing.id) }
     else { await supabase.from('log_serie').insert(payload) }
-    if (nuovoStato) { timerEndRef.current = Date.now() + ese.recupero_secondi * 1000; setTimerSecondi(ese.recupero_secondi); setTimerAttivo(true) }
+    if (nuovoStato) {
+      timerEndRef.current = Date.now() + ese.recupero_secondi * 1000
+      setTimerSecondi(ese.recupero_secondi)
+      setTimerAttivo(true)
+      if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
+    }
 
     // Suggerimento progressive overload per l'esercizio successivo
     if (nuovoStato) {
@@ -744,50 +782,168 @@ export default function AllenamentoPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
-                          <input type="number" inputMode="decimal" value={serie.peso_kg}
-                            onChange={(e) => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
-                            placeholder="0" readOnly={isViewMode}
-                            className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
-                            style={{
-                              background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
-                              border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`,
-                              color: 'oklch(0.97 0 0)',
-                            }} />
-                        </div>
-                        <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
-                        <div className="flex-1">
-                          <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps</label>
-                          <input type="number" inputMode="numeric" value={serie.ripetizioni}
-                            onChange={(e) => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
-                            placeholder="0" readOnly={isViewMode}
-                            className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
-                            style={{
-                              background: serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
-                              border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`,
-                              color: 'oklch(0.97 0 0)',
-                            }} />
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <label className="text-xs mb-1 block opacity-0">✓</label>
-                          <button onClick={() => !isViewMode && toggleSerie(ese, serieIndex)}
-                            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
-                            style={{
-                              background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
-                              border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
-                              cursor: isViewMode ? 'default' : 'pointer',
-                            }}>
-                            {serie.completata
-                              ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                              : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
-                          </button>
-                          {miglioramento === 'up' && <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>▲</span>}
-                          {miglioramento === 'down' && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
-                          {miglioramento === 'equal' && <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>＝</span>}
-                        </div>
-                      </div>
+                      {/* ── Input adattivo al tipo_input ── */}
+                      {(() => {
+                        const tipoInput = ese.esercizi.tipo_input ?? 'reps'
+                        const inputBg = serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)'
+                        const inputBorder = `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`
+                        const inputStyle = { background: inputBg, border: inputBorder, color: 'oklch(0.97 0 0)' }
+                        const checkBtn = (
+                          <div className="flex flex-col items-center gap-1">
+                            <label className="text-xs mb-1 block opacity-0">✓</label>
+                            <button onClick={() => !isViewMode && toggleSerie(ese, serieIndex)}
+                              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                              style={{
+                                background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
+                                border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                cursor: isViewMode ? 'default' : 'pointer',
+                              }}>
+                              {serie.completata
+                                ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
+                                : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                            </button>
+                            {miglioramento === 'up' && <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>▲</span>}
+                            {miglioramento === 'down' && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
+                            {miglioramento === 'equal' && <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>＝</span>}
+                          </div>
+                        )
+
+                        if (tipoInput === 'timer') {
+                          const isActive = eseTimerState?.eseId === ese.id && eseTimerState?.serieIndex === serieIndex
+                          const isPre = isActive && eseTimerState?.fase === 'pre'
+                          const isRun = isActive && eseTimerState?.fase === 'run'
+                          const durataTarget = parseInt(ese.ripetizioni) || 30
+                          const handleTimerStart = () => {
+                            if (serie.completata || isViewMode) return
+                            if (eseTimerRef.current) clearInterval(eseTimerRef.current)
+                            const hasPre = (ese.prepara_secondi ?? 0) > 0
+                            if (hasPre) {
+                              setEseTimerState({ eseId: ese.id, serieIndex, fase: 'pre', secondi: ese.prepara_secondi! })
+                              eseTimerRef.current = setInterval(() => {
+                                setEseTimerState(prev => {
+                                  if (!prev || prev.fase !== 'pre') return prev
+                                  if (prev.secondi <= 1) {
+                                    clearInterval(eseTimerRef.current!)
+                                    eseTimerRef.current = setInterval(() => {
+                                      setEseTimerState(p => p ? { ...p, fase: 'run', secondi: (p.secondi || 0) + 1 } : p)
+                                    }, 1000)
+                                    return { ...prev, fase: 'run', secondi: 0 }
+                                  }
+                                  return { ...prev, secondi: prev.secondi - 1 }
+                                })
+                              }, 1000)
+                            } else {
+                              setEseTimerState({ eseId: ese.id, serieIndex, fase: 'run', secondi: 0 })
+                              eseTimerRef.current = setInterval(() => {
+                                setEseTimerState(p => p ? { ...p, secondi: p.secondi + 1 } : p)
+                              }, 1000)
+                            }
+                          }
+                          const handleTimerStop = () => {
+                            if (eseTimerRef.current) { clearInterval(eseTimerRef.current); eseTimerRef.current = null }
+                            const durataEffettiva = eseTimerState?.fase === 'run' ? eseTimerState.secondi : 0
+                            updateLog(ese.id, serieIndex, 'durata_secondi', String(durataEffettiva))
+                            setEseTimerState(null)
+                            toggleSerie(ese, serieIndex)
+                          }
+                          return (
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                                <input type="number" inputMode="decimal" value={serie.peso_kg}
+                                  onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
+                                  placeholder="0" readOnly={isViewMode}
+                                  className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                  style={inputStyle} />
+                              </div>
+                              <div className="flex-1 flex flex-col items-center gap-1">
+                                <label className="text-xs mb-1 block self-start" style={{ color: 'oklch(0.50 0 0)' }}>
+                                  {serie.completata ? `${serie.durata_secondi || '—'}s` : isPre ? `VIA tra ${eseTimerState?.secondi}s` : isRun ? `${eseTimerState?.secondi}s` : `Obiettivo: ${durataTarget}s`}
+                                </label>
+                                {serie.completata ? (
+                                  <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold"
+                                    style={inputStyle}>{serie.durata_secondi || '—'}s</div>
+                                ) : isRun ? (
+                                  <button onClick={handleTimerStop}
+                                    className="w-full px-3 py-3 rounded-xl text-base text-center font-bold transition-all active:scale-95"
+                                    style={{ background: 'oklch(0.65 0.22 27 / 20%)', border: '2px solid oklch(0.65 0.22 27 / 50%)', color: 'oklch(0.75 0.15 27)' }}>
+                                    stop {eseTimerState?.secondi}s
+                                  </button>
+                                ) : isPre ? (
+                                  <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold"
+                                    style={{ background: 'oklch(0.70 0.19 46 / 15%)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.70 0.19 46)' }}>
+                                    {eseTimerState?.secondi}s
+                                  </div>
+                                ) : (
+                                  <button onClick={handleTimerStart}
+                                    className="w-full px-3 py-3 rounded-xl text-base text-center font-bold transition-all active:scale-95"
+                                    style={{ background: 'oklch(0.60 0.15 200 / 15%)', border: '1px solid oklch(0.60 0.15 200 / 40%)', color: 'oklch(0.60 0.15 200)' }}>
+                                    start
+                                  </button>
+                                )}
+                              </div>
+                              {checkBtn}
+                            </div>
+                          )
+                        }
+
+                        if (tipoInput === 'reps_unilaterale') {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                                <input type="number" inputMode="decimal" value={serie.peso_kg}
+                                  onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
+                                  placeholder="0" readOnly={isViewMode}
+                                  className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                  style={inputStyle} />
+                              </div>
+                              <span className="text-sm" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
+                              <div className="flex-1">
+                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>SX</label>
+                                <input type="number" inputMode="numeric" value={serie.reps_sx}
+                                  onChange={e => updateLog(ese.id, serieIndex, 'reps_sx', e.target.value)}
+                                  placeholder="0" readOnly={isViewMode}
+                                  className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                  style={inputStyle} />
+                              </div>
+                              <div className="flex-1">
+                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>DX</label>
+                                <input type="number" inputMode="numeric" value={serie.reps_dx}
+                                  onChange={e => updateLog(ese.id, serieIndex, 'reps_dx', e.target.value)}
+                                  placeholder="0" readOnly={isViewMode}
+                                  className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                  style={inputStyle} />
+                              </div>
+                              {checkBtn}
+                            </div>
+                          )
+                        }
+
+                        // Default: reps classiche
+                        return (
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                              <input type="number" inputMode="decimal" value={serie.peso_kg}
+                                onChange={(e) => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
+                                placeholder="0" readOnly={isViewMode}
+                                className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                style={inputStyle} />
+                            </div>
+                            <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
+                            <div className="flex-1">
+                              <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps</label>
+                              <input type="number" inputMode="numeric" value={serie.ripetizioni}
+                                onChange={(e) => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
+                                placeholder="0" readOnly={isViewMode}
+                                className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                style={inputStyle} />
+                            </div>
+                            {checkBtn}
+                          </div>
+                        )
+                      })()}
                     </div>
                   )
                 })}
@@ -797,6 +953,75 @@ export default function AllenamentoPage() {
           )
         })}
       </div>
+
+      {/* RPE/RIR picker — bottom sheet dopo completamento serie */}
+      {rpeRirPicker && !isViewMode && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'oklch(0 0 0 / 50%)' }}
+          onClick={() => setRpeRirPicker(null)}>
+          <div className="w-full max-w-2xl rounded-t-3xl p-6 space-y-5"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Intensità serie {rpeRirPicker.serieIndex + 1}</p>
+              <button onClick={() => setRpeRirPicker(null)}
+                className="text-xs px-3 py-1.5 rounded-lg"
+                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>Salta</button>
+            </div>
+            {richiede_rpe && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                  RPE — quanto è stato difficile?
+                </p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[6, 7, 8, 9, 10].map(v => {
+                    const sel = logs[rpeRirPicker.eseId]?.serie[rpeRirPicker.serieIndex]?.rpe === String(v)
+                    return (
+                      <button key={v} onClick={() => updateLog(rpeRirPicker.eseId, rpeRirPicker.serieIndex, 'rpe', String(v))}
+                        className="py-3 rounded-xl font-bold text-sm transition-all"
+                        style={{
+                          background: sel ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                          color: sel ? 'oklch(0.13 0 0)' : 'oklch(0.60 0 0)',
+                          border: sel ? 'none' : '1px solid oklch(1 0 0 / 8%)',
+                        }}>
+                        {v}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            {richiede_rir && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                  RIR — reps rimaste nel serbatoio?
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {['0', '1', '2', '3+'].map(v => {
+                    const sel = logs[rpeRirPicker.eseId]?.serie[rpeRirPicker.serieIndex]?.rir === v
+                    return (
+                      <button key={v} onClick={() => updateLog(rpeRirPicker.eseId, rpeRirPicker.serieIndex, 'rir', v)}
+                        className="py-3 rounded-xl font-bold text-sm transition-all"
+                        style={{
+                          background: sel ? 'oklch(0.60 0.15 200)' : 'oklch(0.22 0 0)',
+                          color: sel ? 'oklch(0.13 0 0)' : 'oklch(0.60 0 0)',
+                          border: sel ? 'none' : '1px solid oklch(1 0 0 / 8%)',
+                        }}>
+                        {v}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            <button onClick={() => setRpeRirPicker(null)}
+              className="w-full py-3 rounded-xl font-bold text-sm"
+              style={{ background: 'oklch(0.65 0.18 150)', color: 'oklch(0.13 0 0)' }}>
+              Conferma
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Bottone completa — solo modalità live */}
       {!completata && !isViewMode && (
