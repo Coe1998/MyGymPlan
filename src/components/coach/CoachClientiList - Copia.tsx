@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faXmark, faDumbbell, faWeightScale, faHeart,
   faClipboardList, faChartBar, faCircleCheck, faPause,
-  faArrowTrendUp, faArrowTrendDown, faMinus,
+  faArrowTrendUp, faArrowTrendDown, faMinus, faUtensils,
 } from '@fortawesome/free-solid-svg-icons'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -374,6 +374,8 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                   ))}
                 </div>
 
+              </div>
+
                 {/* Bottone analytics avanzate */}
                 <div className="pt-2 pb-4">
                   <Link
@@ -383,6 +385,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                     Analytics avanzate →
                   </Link>
                 </div>
+
               </div>
             )}
           </div>
