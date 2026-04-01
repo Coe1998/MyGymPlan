@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
 
-interface Esercizio { id: string; nome: string; muscoli: string[] | null }
+interface Esercizio { id: string; nome: string; muscoli: string[] | null; tipo_input?: 'reps' | 'reps_unilaterale' | 'timer' }
 
 interface SchedaEsercizio {
   id: string; esercizio_id: string; serie: number; ripetizioni: string
@@ -14,6 +14,8 @@ interface SchedaEsercizio {
   drop_count: number | null; drop_percentage: number | null
   rest_pause_secondi: number | null; piramidale_direzione: string | null
   alternativa_esercizio_id: string | null
+  prepara_secondi: number | null
+  progressione_tipo: string
   esercizi: Esercizio
   alternativa_esercizi?: Esercizio | null
 }
@@ -26,6 +28,7 @@ interface EsForm {
   tipo: string; gruppo_id: string
   drop_count: string; drop_pct: string
   rest_pause_sec: string; piramide_dir: string
+  prepara_secondi: string; progressione_tipo: string
 }
 
 const EMPTY: EsForm = {
@@ -34,6 +37,7 @@ const EMPTY: EsForm = {
   tipo: 'normale', gruppo_id: '',
   drop_count: '2', drop_pct: '20',
   rest_pause_sec: '15', piramide_dir: 'ascendente',
+  prepara_secondi: '', progressione_tipo: 'peso',
 }
 
 const TIPI = [
@@ -363,6 +367,73 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
       </div>
 
+      {/* ── Progressione ── */}
+      {(() => {
+        const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
+        const opzioni = tipoInput === 'timer'
+          ? [
+              { id: 'durata', label: '+ Durata', sub: 'aumenta i secondi' },
+              { id: 'serie',  label: '+ Serie',  sub: 'aggiungi una serie' },
+              { id: 'manuale', label: 'Manuale', sub: 'coach decide' },
+            ]
+          : [
+              { id: 'peso',   label: '+ Peso',   sub: 'es. +5%' },
+              { id: 'serie',  label: '+ Serie',  sub: 'aggiungi una serie' },
+              { id: 'reps',   label: '+ Reps',   sub: 'aumenta il range' },
+              { id: 'manuale', label: 'Manuale', sub: 'coach decide' },
+            ]
+        return (
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+              Progressione
+            </label>
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${opzioni.length}, 1fr)` }}>
+              {opzioni.map(opt => {
+                const sel = form.progressione_tipo === opt.id
+                return (
+                  <button key={opt.id} type="button"
+                    onClick={() => set('progressione_tipo', opt.id)}
+                    className="flex flex-col items-center px-2 py-2 rounded-xl transition-all"
+                    style={{
+                      background: sel ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
+                      border: sel ? '1px solid oklch(0.65 0.18 150 / 50%)' : '1px solid oklch(1 0 0 / 8%)',
+                    }}>
+                    <span className="text-xs font-bold" style={{ color: sel ? 'oklch(0.65 0.18 150)' : 'oklch(0.65 0 0)' }}>
+                      {opt.label}
+                    </span>
+                    <span className="text-xs mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>{opt.sub}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* ── Pre-countdown (solo per esercizi timer) ── */}
+      {esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer' && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+            Pre-countdown preparazione
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="number" min="0" max="60"
+              value={form.prepara_secondi}
+              onChange={e => set('prepara_secondi', e.target.value)}
+              placeholder="0"
+              className="w-24 px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+            />
+            <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+              sec · il countdown non viene loggato, parte prima del timer reale
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ── Alternativa ── */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -460,6 +531,20 @@ export default function SchedaEditorModal({
   const [saving, setSaving] = useState(false)
   const [schedaNomeEdit, setSchedaNomeEdit] = useState(schedaNome)
   const [savingNome, setSavingNome] = useState(false)
+  const [richiede_rpe, setRichiede_rpe] = useState(false)
+  const [richiede_rir, setRichiede_rir] = useState(false)
+  const [savingToggle, setSavingToggle] = useState(false)
+
+  const handleToggleRPE = async (val: boolean) => {
+    setRichiede_rpe(val); setSavingToggle(true)
+    await supabase.from('schede').update({ richiede_rpe: val }).eq('id', schedaId)
+    setSavingToggle(false)
+  }
+  const handleToggleRIR = async (val: boolean) => {
+    setRichiede_rir(val); setSavingToggle(true)
+    await supabase.from('schede').update({ richiede_rir: val }).eq('id', schedaId)
+    setSavingToggle(false)
+  }
 
   const handleSaveNome = async () => {
     if (!schedaNomeEdit.trim() || schedaNomeEdit === schedaNome) return
@@ -473,7 +558,7 @@ export default function SchedaEditorModal({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const [giorniRes, eserciziRes] = await Promise.all([
+    const [giorniRes, eserciziRes, schedaRes] = await Promise.all([
       supabase.from('scheda_giorni')
         .select(`
           id, nome, ordine,
@@ -481,21 +566,30 @@ export default function SchedaEditorModal({
             id, esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine,
             tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi,
             piramidale_direzione, alternativa_esercizio_id,
-            esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli ),
+            prepara_secondi, progressione_tipo,
+            esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, tipo_input ),
             alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
           )
         `)
         .eq('scheda_id', schedaId)
         .order('ordine'),
       supabase.from('esercizi')
-        .select('id, nome, muscoli')
+        .select('id, nome, muscoli, tipo_input')
         .or('is_global.eq.true,coach_id.eq.' + user.id)
         .order('nome'),
+      supabase.from('schede')
+        .select('richiede_rpe, richiede_rir')
+        .eq('id', schedaId)
+        .single(),
     ])
 
     const giorniData = (giorniRes.data as any) ?? []
     setGiorni(giorniData)
     setEsercizi(eserciziRes.data ?? [])
+    if (schedaRes.data) {
+      setRichiede_rpe(schedaRes.data.richiede_rpe ?? false)
+      setRichiede_rir(schedaRes.data.richiede_rir ?? false)
+    }
     if (giorniData.length > 0 && !activeGiorno) {
       setActiveGiorno(giorniData[0].id)
     }
@@ -641,6 +735,8 @@ export default function SchedaEditorModal({
       drop_percentage: f.tipo === 'dropset' ? (parseInt(f.drop_pct) || 20) : null,
       rest_pause_secondi: f.tipo === 'rest_pause' ? (parseInt(f.rest_pause_sec) || 15) : null,
       piramidale_direzione: f.tipo === 'piramidale' ? f.piramide_dir : null,
+      prepara_secondi: f.prepara_secondi ? (parseInt(f.prepara_secondi) || null) : null,
+      progressione_tipo: f.progressione_tipo || 'peso',
     }
   }
 
@@ -920,7 +1016,60 @@ export default function SchedaEditorModal({
           </div>
         ) : (
           <>
-            {/* ── Day tabs ── */}
+        {/* ── Impostazioni scheda (RPE / RIR) ── */}
+        {!loading && (
+          <div className="flex items-center gap-4 px-5 py-2.5 flex-shrink-0"
+            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.13 0 0)' }}>
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>
+              Misura intensità
+            </span>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <div
+                onClick={() => handleToggleRPE(!richiede_rpe)}
+                className="relative flex-shrink-0"
+                style={{
+                  width: 32, height: 18,
+                  borderRadius: 9,
+                  background: richiede_rpe ? 'oklch(0.70 0.19 46)' : 'oklch(0.28 0 0)',
+                  transition: 'background 0.2s',
+                  cursor: 'pointer',
+                }}>
+                <div style={{
+                  position: 'absolute', top: 2, left: richiede_rpe ? 14 : 2,
+                  width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                  transition: 'left 0.2s',
+                }} />
+              </div>
+              <span className="text-xs font-medium" style={{ color: richiede_rpe ? 'oklch(0.75 0.10 46)' : 'oklch(0.45 0 0)' }}>
+                RPE
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <div
+                onClick={() => handleToggleRIR(!richiede_rir)}
+                className="relative flex-shrink-0"
+                style={{
+                  width: 32, height: 18,
+                  borderRadius: 9,
+                  background: richiede_rir ? 'oklch(0.70 0.19 46)' : 'oklch(0.28 0 0)',
+                  transition: 'background 0.2s',
+                  cursor: 'pointer',
+                }}>
+                <div style={{
+                  position: 'absolute', top: 2, left: richiede_rir ? 14 : 2,
+                  width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                  transition: 'left 0.2s',
+                }} />
+              </div>
+              <span className="text-xs font-medium" style={{ color: richiede_rir ? 'oklch(0.75 0.10 46)' : 'oklch(0.45 0 0)' }}>
+                RIR
+              </span>
+            </label>
+            {savingToggle && <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>salvataggio...</span>}
+          </div>
+        )}
+
+        {/* ── Day tabs ── */}
             <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto flex-shrink-0 scrollbar-none"
               style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
               {giorni.map(g => (
@@ -1048,6 +1197,16 @@ export default function SchedaEditorModal({
                                   <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
                                     {ese.recupero_secondi}s rec.
                                   </span>
+                                  {ese.progressione_tipo && ese.progressione_tipo !== 'peso' && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.18 150 / 10%)', color: 'oklch(0.65 0.18 150)' }}>
+                                      prog. {ese.progressione_tipo}
+                                    </span>
+                                  )}
+                                  {ese.prepara_secondi && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.70 0.19 46 / 10%)', color: 'oklch(0.70 0.19 46)' }}>
+                                      {ese.prepara_secondi}s prep.
+                                    </span>
+                                  )}
                                   {ese.tipo === 'dropset' && ese.drop_count && (
                                     <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.70 0.19 46 / 10%)', color: 'oklch(0.70 0.19 46)' }}>
                                       {ese.drop_count} drop · -{ese.drop_percentage}%
@@ -1093,6 +1252,8 @@ export default function SchedaEditorModal({
                                       drop_pct: String(ese.drop_percentage ?? 20),
                                       rest_pause_sec: String(ese.rest_pause_secondi ?? 15),
                                       piramide_dir: ese.piramidale_direzione ?? 'ascendente',
+                                      prepara_secondi: ese.prepara_secondi ? String(ese.prepara_secondi) : '',
+                                      progressione_tipo: ese.progressione_tipo ?? 'peso',
                                     })
                                   }}
                                   className="w-8 h-8 rounded-lg flex items-center justify-center"
