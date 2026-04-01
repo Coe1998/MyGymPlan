@@ -928,69 +928,53 @@ export default function AnalyticsPage() {
                 )}
 
                 {/* Peso */}
-                {clienteSelezionato && clienteSelezionato.misurazioni.length > 0 && (
-                  <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <div className="px-4 py-3 flex items-center justify-between"
-                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>⚖️ Peso corporeo</p>
-                      <p className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>
-                        {clienteSelezionato.misurazioni.at(-1)?.peso_kg} kg
-                      </p>
-                    </div>
-                    {clienteSelezionato.misurazioni.length >= 2 && (
-                      <div className="p-4" style={{ height: 110 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={clienteSelezionato.misurazioni} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
-                            <XAxis dataKey="data" tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }} tickLine={false} axisLine={false} domain={['auto', 'auto']} />
-                            <Tooltip contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
-                              formatter={(v: any) => [`${v} kg`, 'Peso']} />
-                            <Line type="monotone" dataKey="peso_kg" stroke="oklch(0.60 0.15 200)" strokeWidth={2}
-                              dot={{ r: 3, fill: 'oklch(0.60 0.15 200)', strokeWidth: 0 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
+                {clienteSelezionato && clienteSelezionato.misurazioni.length > 0 && (() => {
+                  const ultimo = clienteSelezionato.misurazioni.at(-1)
+                  const penultimo = clienteSelezionato.misurazioni.at(-2)
+                  const delta = ultimo && penultimo
+                    ? Math.round((ultimo.peso_kg - penultimo.peso_kg) * 10) / 10
+                    : null
+                  return (
+                    <div className="rounded-2xl px-4 py-3 flex items-center justify-between"
+                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <div className="flex items-center gap-2">
+                        <span>⚖️</span>
+                        <div>
+                          <p className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Peso corporeo</p>
+                          <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{ultimo?.data}</p>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
+                      <div className="text-right">
+                        <p className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+                          {ultimo?.peso_kg} kg
+                        </p>
+                        {delta !== null && (
+                          <p className="text-xs" style={{ color: delta > 0 ? 'oklch(0.60 0.15 200)' : delta < 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
+                            {delta > 0 ? '+' : ''}{delta} kg
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
 
-                {/* Sessioni */}
+                {/* Sessioni — ultime 4, non espandibili */}
                 <div className="rounded-2xl overflow-hidden"
                   style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
                   <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>🏋️ Sessioni di allenamento</p>
+                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>🏋️ Ultime sessioni</p>
                   </div>
-                {sessioniDettaglio.length === 0 ? (
-                  <p className="px-4 py-6 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione ancora</p>
-                ) : (
-                sessioniDettaglio.map((sessione) => {
-                  const isAperta = sessioneAperta === sessione.id
-                  const serieCompletate = sessione.log_serie.filter(s => s.completata).length
-                  const serieTotali = sessione.log_serie.length
-                  const volumeTotale = sessione.log_serie
-                    .filter(s => s.completata)
-                    .reduce((acc, s) => acc + ((s.peso_kg ?? 0) * (s.ripetizioni ?? 0)), 0)
-
-                  // Raggruppa log per esercizio
-                  const eserciziMap = new Map<string, { nome: string; muscoli: string[] | null; serie: LogSerie[] }>()
-                  for (const log of sessione.log_serie) {
-                    const nome = log.scheda_esercizi?.esercizi?.nome ?? 'Esercizio'
-                    if (!eserciziMap.has(nome)) {
-                      eserciziMap.set(nome, { nome, muscoli: log.scheda_esercizi?.esercizi?.muscoli ?? null, serie: [] })
-                    }
-                    eserciziMap.get(nome)!.serie.push(log)
-                  }
-                  const esercizi = Array.from(eserciziMap.values())
-
-                  return (
-                    <div key={sessione.id} className="rounded-2xl overflow-hidden"
-                      style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${sessione.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(1 0 0 / 6%)'}` }}>
-
-                      {/* Header sessione — cliccabile */}
-                      <div className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                        style={{ borderBottom: isAperta ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}
-                        onClick={() => setSessioneAperta(isAperta ? null : sessione.id)}>
+                  {sessioniDettaglio.length === 0 ? (
+                    <p className="px-4 py-6 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione ancora</p>
+                  ) : sessioniDettaglio.slice(0, 4).map((sessione, i) => {
+                    const serieCompletate = sessione.log_serie.filter(s => s.completata).length
+                    const serieTotali = sessione.log_serie.length
+                    const volumeTotale = sessione.log_serie
+                      .filter(s => s.completata)
+                      .reduce((acc, s) => acc + ((s.peso_kg ?? 0) * (s.ripetizioni ?? 0)), 0)
+                    return (
+                      <div key={sessione.id} className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderBottom: i < Math.min(sessioniDettaglio.length, 4) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                           style={{
                             background: sessione.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.75 0.15 27 / 15%)',
@@ -999,86 +983,27 @@ export default function AnalyticsPage() {
                           <FontAwesomeIcon icon={sessione.completata ? faCircleCheck : faDumbbell} className="text-xs" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                          <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>
                             {(sessione as any).scheda_giorni?.nome ?? 'Allenamento'}
                           </p>
                           <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                            {new Date(sessione.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                            {new Date(sessione.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                             {formatDurata(sessione.durata_secondi) && ` · ${formatDurata(sessione.durata_secondi)}`}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <div className="text-right">
-                            <p className="text-xs font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
-                              {serieCompletate}/{serieTotali} serie
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+                            {serieCompletate}/{serieTotali} serie
+                          </p>
+                          {volumeTotale > 0 && (
+                            <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                              {Math.round(volumeTotale).toLocaleString('it-IT')} kg
                             </p>
-                            {volumeTotale > 0 && (
-                              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                                {Math.round(volumeTotale).toLocaleString('it-IT')} kg vol.
-                              </p>
-                            )}
-                          </div>
-                          <FontAwesomeIcon icon={isAperta ? faChevronUp : faChevronDown}
-                            className="text-xs" style={{ color: 'oklch(0.45 0 0)' }} />
+                          )}
                         </div>
                       </div>
-
-                      {/* Dettaglio esercizi */}
-                      {isAperta && (
-                        <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
-                          {esercizi.map((ese) => (
-                            <div key={ese.nome} className="px-4 py-3 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{ese.nome}</p>
-                                {ese.muscoli && ese.muscoli.length > 0 && (
-                                  <span className="text-xs px-2 py-0.5 rounded-full"
-                                    style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
-                                    {ese.muscoli[0]}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="space-y-1">
-                                {ese.serie
-                                  .sort((a, b) => a.numero_serie - b.numero_serie)
-                                  .map((serie) => (
-                                    <div key={serie.numero_serie}
-                                      className="flex items-center gap-3 px-3 py-2 rounded-xl"
-                                      style={{
-                                        background: serie.completata ? 'oklch(0.65 0.18 150 / 8%)' : 'oklch(0.22 0 0)',
-                                        border: `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(1 0 0 / 5%)'}`,
-                                      }}>
-                                      <span className="text-xs font-bold w-14 flex-shrink-0"
-                                        style={{ color: 'oklch(0.50 0 0)' }}>
-                                        Serie {serie.numero_serie}
-                                      </span>
-                                      {serie.completata ? (
-                                        <>
-                                          <span className="text-sm font-black flex-1"
-                                            style={{ color: 'oklch(0.97 0 0)' }}>
-                                            {serie.peso_kg ?? '—'} kg
-                                          </span>
-                                          <span className="text-sm font-black"
-                                            style={{ color: 'oklch(0.97 0 0)' }}>
-                                            × {serie.ripetizioni ?? '—'} reps
-                                          </span>
-                                          <span className="text-xs ml-1" style={{ color: 'oklch(0.65 0.18 150)' }}>✓</span>
-                                        </>
-                                      ) : (
-                                        <span className="text-xs flex-1" style={{ color: 'oklch(0.40 0 0)' }}>
-                                          Non completata
-                                        </span>
-                                      )}
-                                    </div>
-                                  ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })
-                )}
+                    )
+                  })}
                 </div>
 
                 {/* Pulsante analytics avanzate */}
