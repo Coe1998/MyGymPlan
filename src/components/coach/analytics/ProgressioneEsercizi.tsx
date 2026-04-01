@@ -258,7 +258,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                       <Tooltip
                         contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
                         labelStyle={{ color: 'oklch(0.70 0 0)' }}
-                        formatter={(val: any, name?: string) => {
+                        formatter={(val: any, name?: any) => {
                           if (name === 'e1rm') return [`${val} ${isTimer ? 's' : 'kg'}`, isTimer ? 'Durata' : 'e1RM']
                           return [`${Math.round(val).toLocaleString('it-IT')} ${isTimer ? 's' : 'kg'}`, 'Volume']
                         }}
