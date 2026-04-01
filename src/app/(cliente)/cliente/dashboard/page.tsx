@@ -6,6 +6,7 @@ import { faDumbbell, faCalendarDays, faHand, faClipboardList, faPersonRunning } 
 import SessioniList from '@/components/cliente/SessioniList'
 import ClienteOnboarding from '@/components/shared/ClienteOnboarding'
 import SchedeSelector from '@/components/cliente/SchedeSelector'
+import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -20,7 +21,10 @@ export default async function ClienteDashboard() {
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
 
-  const [assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes] = await Promise.all([
+  const oggi = new Date()
+  oggi.setHours(0, 0, 0, 0)
+
+  const [assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes, checkinOggiRes, ultimoPesoRes] = await Promise.all([
     supabase.from('assegnazioni')
       .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
       .eq('cliente_id', user.id).eq('attiva', true).order('created_at', { ascending: false }),
@@ -30,12 +34,25 @@ export default async function ClienteDashboard() {
     supabase.from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id),
     supabase.from('sessioni').select('id', { count: 'exact' })
       .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString()),
+    supabase.from('checkin')
+      .select('id, energia, sonno, stress, motivazione')
+      .eq('cliente_id', user.id)
+      .gte('data', oggi.toISOString())
+      .maybeSingle(),
+    supabase.from('misurazioni')
+      .select('peso_kg, data')
+      .eq('cliente_id', user.id)
+      .order('data', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const assegnazioni = assegnazioniRes.data
   const ultimeSessioni = ultimeSessioniRes.data
   const totaleSessioni = totaleRes.count
   const sessioniSettimana = settimanaRes.count
+  const checkinOggi = checkinOggiRes.data
+  const ultimoPeso = ultimoPesoRes.data
 
   const ora = new Date().getHours()
   const saluto = ora < 12 ? 'Buongiorno' : ora < 18 ? 'Buon pomeriggio' : 'Buonasera'
@@ -57,6 +74,13 @@ export default async function ClienteDashboard() {
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
+
+      {/* Card Check-in + Peso */}
+      <CheckinPesoCards
+        checkinFatto={!!checkinOggi}
+        ultimoPeso={ultimoPeso?.peso_kg ?? null}
+        ultimoPesoData={ultimoPeso?.data ?? null}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
