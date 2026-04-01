@@ -377,16 +377,17 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
               </div>
             )}
 
-            {/* Bottone analytics avanzate */}
-            <div className="px-5 pb-6 pt-3">
-              <Link
-                href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
-                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-                Analytics avanzate →
-              </Link>
-            </div>
+                {/* Bottone analytics avanzate */}
+                <div className="pt-2 pb-4">
+                  <Link
+                    href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+                    Analytics avanzate →
+                  </Link>
+                </div>
 
+              </div>
           </div>
         </div>
       )}
