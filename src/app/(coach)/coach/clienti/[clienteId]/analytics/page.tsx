@@ -1,5 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+'use client'
+
+import { use, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import AnalyticsHeader from '@/components/coach/analytics/AnalyticsHeader'
 import ProgressioneEsercizi from '@/components/coach/analytics/ProgressioneEsercizi'
@@ -8,62 +11,104 @@ import PatternBenessere from '@/components/coach/analytics/PatternBenessere'
 import AndamentoPeso from '@/components/coach/analytics/AndamentoPeso'
 import StoricoSessioni from '@/components/coach/analytics/StoricoSessioni'
 
-export default async function ClienteAnalyticsPage({
+interface Assegnazione {
+  id: string
+  data_inizio: string | null
+  data_fine: string | null
+  attiva: boolean
+  schede: { id: string; nome: string } | null
+}
+
+interface PageData {
+  nomeCliente: string
+  assegnazioni: Assegnazione[]
+  totSessioni: number
+  ultimoPeso: number | null
+  clienteDal: string | null
+}
+
+export default function ClienteAnalyticsPage({
   params,
 }: {
   params: Promise<{ clienteId: string }>
 }) {
-  const { clienteId } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { clienteId } = use(params)
+  const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
+  const [data, setData] = useState<PageData | null>(null)
+  const [stato, setStato] = useState<'loading' | 'forbidden' | 'ok'>('loading')
 
-  const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'coach') redirect('/login')
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.replace('/login'); return }
 
-  const { data: relazioneRows } = await supabase
-    .from('coach_clienti')
-    .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name, email)')
-    .eq('cliente_id', clienteId)
-  console.log('[analytics2] relazioneRows:', JSON.stringify(relazioneRows))
-  const relazione = (relazioneRows ?? []).find(r => r.coach_id === user.id)
-  console.log('[analytics2] relazione:', JSON.stringify(relazione))
-  if (!relazione) { console.log('[analytics2] notFound: no relazione'); notFound() }
+      const [profileRes, relazioneRes] = await Promise.all([
+        supabase.from('profiles').select('role').eq('id', user.id).single(),
+        supabase.from('coach_clienti')
+          .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name, email)')
+          .eq('cliente_id', clienteId),
+      ])
 
-  const clienteProfile = (relazione as any).profiles as { full_name: string | null; email: string | null } | null
-  console.log('[analytics2] clienteProfile:', JSON.stringify(clienteProfile))
-  if (!clienteProfile) { console.log('[analytics2] notFound: no clienteProfile'); notFound() }
+      if (profileRes.data?.role !== 'coach') { router.replace('/login'); return }
 
-  const [assegnazioniRes, totSessioniRes, ultimoPesoRes, primaSessioneRes] = await Promise.all([
-    supabase.from('assegnazioni')
-      .select('id, data_inizio, data_fine, attiva, schede ( id, nome )')
-      .eq('cliente_id', clienteId)
-      .order('created_at', { ascending: false }),
-    supabase.from('sessioni')
-      .select('id', { count: 'exact', head: true })
-      .eq('cliente_id', clienteId)
-      .eq('completata', true),
-    supabase.from('misurazioni')
-      .select('peso_kg, data')
-      .eq('cliente_id', clienteId)
-      .order('data', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase.from('sessioni')
-      .select('data')
-      .eq('cliente_id', clienteId)
-      .eq('completata', true)
-      .order('data', { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ])
+      const relazione = (relazioneRes.data ?? []).find((r: any) => r.coach_id === user.id)
+      if (!relazione) { setStato('forbidden'); return }
 
-  const cliente = clienteProfile
-  const assegnazioni = (assegnazioniRes.data ?? []) as any[]
-  const totSessioni = totSessioniRes.count ?? 0
-  const ultimoPeso = ultimoPesoRes.data?.peso_kg ?? null
-  const clienteDal = primaSessioneRes.data?.data ?? null
+      const clienteProfile = (relazione as any).profiles as { full_name: string | null; email: string | null } | null
+      const nomeCliente = clienteProfile?.full_name ?? clienteProfile?.email ?? 'Cliente'
+
+      const [assegRes, sessCountRes, pesoRes, primaSessioneRes] = await Promise.all([
+        supabase.from('assegnazioni')
+          .select('id, data_inizio, data_fine, attiva, schede ( id, nome )')
+          .eq('cliente_id', clienteId)
+          .order('created_at', { ascending: false }),
+        supabase.from('sessioni')
+          .select('id', { count: 'exact', head: true })
+          .eq('cliente_id', clienteId)
+          .eq('completata', true),
+        supabase.from('misurazioni')
+          .select('peso_kg, data')
+          .eq('cliente_id', clienteId)
+          .order('data', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from('sessioni')
+          .select('data')
+          .eq('cliente_id', clienteId)
+          .eq('completata', true)
+          .order('data', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ])
+
+      setData({
+        nomeCliente,
+        assegnazioni: (assegRes.data ?? []) as Assegnazione[],
+        totSessioni: sessCountRes.count ?? 0,
+        ultimoPeso: pesoRes.data?.peso_kg ?? null,
+        clienteDal: primaSessioneRes.data?.data ?? null,
+      })
+      setStato('ok')
+    }
+    fetchData()
+  }, [clienteId])
+
+  if (stato === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+      </div>
+    )
+  }
+
+  if (stato === 'forbidden') {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Cliente non trovato.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -78,16 +123,16 @@ export default async function ClienteAnalyticsPage({
 
       <AnalyticsHeader
         clienteId={clienteId}
-        nomeCliente={cliente.full_name ?? cliente.email ?? 'Cliente'}
-        assegnazioni={assegnazioni}
-        totSessioni={totSessioni}
-        ultimoPeso={ultimoPeso}
-        clienteDal={clienteDal}
+        nomeCliente={data!.nomeCliente}
+        assegnazioni={data!.assegnazioni}
+        totSessioni={data!.totSessioni}
+        ultimoPeso={data!.ultimoPeso}
+        clienteDal={data!.clienteDal}
       />
 
       <ProgressioneEsercizi
         clienteId={clienteId}
-        assegnazioni={assegnazioni}
+        assegnazioni={data!.assegnazioni}
       />
 
       <MassimoMuscoli clienteId={clienteId} />
