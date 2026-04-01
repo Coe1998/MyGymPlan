@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import Link from 'next/link'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 
@@ -1079,6 +1080,16 @@ export default function AnalyticsPage() {
                 })
                 )}
                 </div>
+
+                {/* Pulsante analytics avanzate */}
+                <Link
+                  href={`/coach/clienti/${clienteSelezionato.id}/analytics`}
+                  className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all active:scale-95"
+                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
+                >
+                  <FontAwesomeIcon icon={faArrowTrendUp} />
+                  ANALYTICS AVANZATE →
+                </Link>
                 </>
               )}
             </div>
