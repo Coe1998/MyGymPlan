@@ -119,17 +119,21 @@ const URL_REGEX = /(https?:\/\/[^\s]+)/g
 
 const renderTesto = (testo: string, daCoach: boolean) => {
   const parti = testo.split(URL_REGEX)
-  return parti.map((parte, i) =>
-    URL_REGEX.test(parte) ? (
+  return parti.map((parte, i) => {
+    if (!URL_REGEX.test(parte)) return <span key={i}>{parte}</span>
+    const isImg = /\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(parte)
+    if (isImg) return (
+      <img key={i} src={parte} alt="Report" className="rounded-xl mt-1 max-w-full"
+        style={{ display: 'block', maxWidth: 280 }} />
+    )
+    return (
       <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
         className="underline break-all"
         style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
         {parte}
       </a>
-    ) : (
-      <span key={i}>{parte}</span>
     )
-  )
+  })
 }
 
   return (

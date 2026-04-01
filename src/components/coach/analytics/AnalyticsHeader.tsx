@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPrint, faDumbbell, faCalendarDays, faHeartPulse, faWeightScale } from '@fortawesome/free-solid-svg-icons'
+import ReportGenerator from './ReportGenerator'
 
 interface Assegnazione {
   id: string
@@ -36,6 +37,7 @@ export default function AnalyticsHeader({
 }: Props) {
   const supabase = useMemo(() => createClient(), [])
   const [periodo, setPeriodo] = useState<PeriodoGiorni>(90)
+  const [showReport, setShowReport] = useState(false)
   const [kpi, setKpi] = useState<{
     sessioni: number; sessioniPrec: number
     benessere: number | null; benesserePrec: number | null
@@ -98,7 +100,7 @@ export default function AnalyticsHeader({
     return { val: d, str: d > 0 ? `+${str}` : str }
   }
 
-  const handlePrint = () => window.print()
+
 
   return (
     <div className="space-y-5">
@@ -116,7 +118,7 @@ export default function AnalyticsHeader({
           </div>
         </div>
         <button
-          onClick={handlePrint}
+          onClick={() => setShowReport(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95"
           style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.65 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
           <FontAwesomeIcon icon={faPrint} />
@@ -211,6 +213,17 @@ export default function AnalyticsHeader({
           )}
         </div>
       </div>
+
+      {showReport && kpi && (
+        <ReportGenerator
+          clienteId={clienteId}
+          nomeCliente={nomeCliente}
+          periodo={periodo}
+          kpi={{ sessioni: kpi.sessioni, completamento: kpi.completamento, benessere: kpi.benessere }}
+          ultimoPeso={ultimoPeso}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   )
 }
