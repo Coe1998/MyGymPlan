@@ -61,6 +61,9 @@ interface Checkin {
 }
 
 const EMOJI_VOTO: (IconDefinition | null)[] = [null, faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars]
+// Per lo stress la scala è invertita: 1=basso(positivo), 5=alto(negativo)
+const getEmojiCheckin = (key: string, value: number): IconDefinition | null =>
+  key === 'stress' ? EMOJI_VOTO[6 - value] ?? null : EMOJI_VOTO[value] ?? null
 
 interface WeekData {
   label: string
@@ -955,14 +958,14 @@ export default function ProgressiPage() {
             {checkinOggi ? (
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Energia', value: checkinOggi.energia },
-                  { label: 'Sonno', value: checkinOggi.sonno },
-                  { label: 'Stress', value: checkinOggi.stress },
-                  { label: 'Motivazione', value: checkinOggi.motivazione },
+                  { label: 'Energia', key: 'energia', value: checkinOggi.energia },
+                  { label: 'Sonno', key: 'sonno', value: checkinOggi.sonno },
+                  { label: 'Stress', key: 'stress', value: checkinOggi.stress },
+                  { label: 'Motivazione', key: 'motivazione', value: checkinOggi.motivazione },
                 ].map(item => (
                   <div key={item.label} className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
                     <p className="text-xs mb-1" style={{ color: 'oklch(0.55 0 0)' }}>{item.label}</p>
-                    <p className="text-2xl">{EMOJI_VOTO[item.value] && <FontAwesomeIcon icon={EMOJI_VOTO[item.value]!} />}</p>
+                    <p className="text-2xl">{getEmojiCheckin(item.key, item.value) && <FontAwesomeIcon icon={getEmojiCheckin(item.key, item.value)!} />}</p>
                     <p className="text-xs font-bold mt-1" style={{ color: 'oklch(0.97 0 0)' }}>{item.value}/5</p>
                   </div>
                 ))}
@@ -976,7 +979,12 @@ export default function ProgressiPage() {
                   { label: 'Motivazione ad allenarti', key: 'motivazione' as const },
                 ].map(item => (
                   <div key={item.key} className="space-y-2">
-                    <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{item.label}</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{item.label}</label>
+                      {item.key === 'stress' && (
+                        <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>1 = basso · 5 = alto</span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map(v => (
                         <button key={v} onClick={() => setNewCheckin(p => ({ ...p, [item.key]: v }))}
@@ -985,7 +993,7 @@ export default function ProgressiPage() {
                             background: newCheckin[item.key] === v ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
                             border: newCheckin[item.key] === v ? '2px solid oklch(0.60 0.15 200)' : '2px solid transparent',
                           }}>
-                          {EMOJI_VOTO[v] ? <FontAwesomeIcon icon={EMOJI_VOTO[v]!} /> : null}
+                          {getEmojiCheckin(item.key, v) ? <FontAwesomeIcon icon={getEmojiCheckin(item.key, v)!} /> : null}
                         </button>
                       ))}
                     </div>
@@ -1031,13 +1039,13 @@ export default function ProgressiPage() {
                     </p>
                     <div className="flex gap-4">
                       {[
-                        { label: 'Energia', value: c.energia },
-                        { label: 'Sonno', value: c.sonno },
-                        { label: 'Stress', value: c.stress },
-                        { label: 'Motivazione', value: c.motivazione },
+                        { label: 'Energia', key: 'energia', value: c.energia },
+                        { label: 'Sonno', key: 'sonno', value: c.sonno },
+                        { label: 'Stress', key: 'stress', value: c.stress },
+                        { label: 'Motivazione', key: 'motivazione', value: c.motivazione },
                       ].map(item => (
                         <div key={item.label} className="text-center">
-                          <p className="text-xl">{EMOJI_VOTO[item.value] && <FontAwesomeIcon icon={EMOJI_VOTO[item.value]!} />}</p>
+                          <p className="text-xl">{getEmojiCheckin(item.key, item.value) && <FontAwesomeIcon icon={getEmojiCheckin(item.key, item.value)!} />}</p>
                           <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{item.label.slice(0, 3)}</p>
                         </div>
                       ))}

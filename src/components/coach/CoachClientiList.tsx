@@ -290,7 +290,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                       {[
                         { label: 'Energia', value: dettaglio.ultimoCheckin.energia, warn: dettaglio.ultimoCheckin.energia <= 2 },
                         { label: 'Sonno', value: dettaglio.ultimoCheckin.sonno, warn: dettaglio.ultimoCheckin.sonno <= 2 },
-                        { label: 'Stress', value: dettaglio.ultimoCheckin.stress, warn: dettaglio.ultimoCheckin.stress >= 4 },
+                        { label: 'Stress ↑', value: dettaglio.ultimoCheckin.stress, warn: dettaglio.ultimoCheckin.stress >= 4 },
                         { label: 'Motiv.', value: dettaglio.ultimoCheckin.motivazione, warn: dettaglio.ultimoCheckin.motivazione <= 2 },
                       ].map((item, i) => (
                         <div key={item.label} className="p-4 text-center"
