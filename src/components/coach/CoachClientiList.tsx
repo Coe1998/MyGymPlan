@@ -375,7 +375,6 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                 </div>
 
               </div>
-            )}
 
                 {/* Bottone analytics avanzate */}
                 <div className="pt-2 pb-4">
@@ -388,6 +387,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                 </div>
 
               </div>
+            )}
           </div>
         </div>
       )}
