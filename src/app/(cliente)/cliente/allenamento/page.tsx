@@ -47,6 +47,9 @@ interface UltimaSessioneSerie {
   numero_serie: number
   peso_kg: number | null
   ripetizioni: number | null
+  reps_sx: number | null
+  reps_dx: number | null
+  durata_secondi: number | null
 }
 
 export default function AllenamentoPage() {
@@ -196,11 +199,18 @@ export default function AllenamentoPage() {
     const ultimaMap: Record<string, UltimaSessioneSerie[]> = {}
     if (sessioniPrecedenti && sessioniPrecedenti.length > 0) {
       const { data: logsUltima } = await supabase.from('log_serie')
-        .select('scheda_esercizio_id, numero_serie, peso_kg, ripetizioni')
+        .select('scheda_esercizio_id, numero_serie, peso_kg, ripetizioni, reps_sx, reps_dx, durata_secondi')
         .eq('sessione_id', sessioniPrecedenti[0].id)
       for (const log of (logsUltima ?? [])) {
         if (!ultimaMap[log.scheda_esercizio_id]) ultimaMap[log.scheda_esercizio_id] = []
-        ultimaMap[log.scheda_esercizio_id].push({ numero_serie: log.numero_serie, peso_kg: log.peso_kg, ripetizioni: log.ripetizioni })
+        ultimaMap[log.scheda_esercizio_id].push({
+          numero_serie: log.numero_serie,
+          peso_kg: log.peso_kg,
+          ripetizioni: log.ripetizioni,
+          reps_sx: log.reps_sx,
+          reps_dx: log.reps_dx,
+          durata_secondi: log.durata_secondi,
+        })
       }
     }
     setUltimaSessione(ultimaMap)
@@ -301,27 +311,101 @@ export default function AllenamentoPage() {
   const calcolaSuggerimento = (ese: SchedaEsercizio): { messaggio: string; eseNome: string } | null => {
     const ultimeSerie = ultimaSessione[ese.id]
     if (!ultimeSerie || ultimeSerie.length === 0) return null
-    const ripRange = ese.ripetizioni.trim()
-    let repMin: number, repMax: number
-    if (ripRange.includes('-')) {
-      const parts = ripRange.split('-')
-      repMin = parseInt(parts[0]); repMax = parseInt(parts[1])
-    } else {
-      repMin = repMax = parseInt(ripRange)
+    const tipoInput = ese.esercizi.tipo_input ?? 'reps'
+    const progTipo = ese.progressione_tipo ?? 'peso'
+    const nome = ese.esercizi.nome
+
+    // Manuale: nessun suggerimento automatico
+    if (progTipo === 'manuale') return null
+
+    // ── Parsing range reps ──────────────────────────────────────
+    const parseRange = (s: string): { min: number; max: number } | null => {
+      const t = s.trim()
+      if (t.includes('-')) {
+        const parts = t.split('-')
+        const min = parseInt(parts[0]); const max = parseInt(parts[1])
+        if (isNaN(min) || isNaN(max)) return null
+        return { min, max }
+      }
+      const v = parseInt(t)
+      if (isNaN(v)) return null
+      return { min: v, max: v }
     }
-    if (isNaN(repMin) || isNaN(repMax)) return null
+
+    // ── TIMER: progressione durata ───────────────────────────────
+    if (tipoInput === 'timer' || progTipo === 'durata') {
+      const targetSec = parseInt(ese.ripetizioni) || 30
+      const tutteAlTarget = ultimeSerie.every(s => (s.durata_secondi ?? 0) >= targetSec)
+      const alcuneSottoTarget = ultimeSerie.some(s => (s.durata_secondi ?? 0) < targetSec * 0.8)
+      if (tutteAlTarget) {
+        const nuovaDurata = targetSec + (targetSec >= 60 ? 10 : 5)
+        return { messaggio: `⏱ Obiettivo raggiunto! Punta a ${nuovaDurata}s`, eseNome: nome }
+      } else if (alcuneSottoTarget) {
+        return { messaggio: `⏱ Consolida ${targetSec}s prima di salire`, eseNome: nome }
+      } else {
+        const mediaEffettiva = Math.round(ultimeSerie.reduce((a, s) => a + (s.durata_secondi ?? 0), 0) / ultimeSerie.length)
+        return { messaggio: `⏱ Media ${mediaEffettiva}s — mantieni e completa tutte le serie`, eseNome: nome }
+      }
+    }
+
+    // ── REPS (classiche o unilaterali) ──────────────────────────
+    const range = parseRange(ese.ripetizioni)
+    if (!range) return null
+    const { min: repMin, max: repMax } = range
+
+    // Per unilaterale usa il lato debole (MIN sx/dx)
+    const getRepsEffettive = (s: UltimaSessioneSerie): number => {
+      if (tipoInput === 'reps_unilaterale') {
+        const sx = s.reps_sx ?? 0; const dx = s.reps_dx ?? 0
+        if (sx === 0 && dx === 0) return 0
+        if (sx === 0) return dx
+        if (dx === 0) return sx
+        return Math.min(sx, dx)
+      }
+      return s.ripetizioni ?? 0
+    }
+
+    const tutteAlMax = ultimeSerie.every(s => getRepsEffettive(s) >= repMax)
+    const alcuneSottoMin = ultimeSerie.some(s => getRepsEffettive(s) < repMin)
     const pesoRif = ultimeSerie[0]?.peso_kg
+
+    if (progTipo === 'serie') {
+      // Progressione: aggiungi una serie
+      if (tutteAlMax) {
+        const serieAttuali = ese.serie
+        return { messaggio: `📈 Ottimo! Il coach valuterà di aggiungere una ${serieAttuali + 1}ª serie`, eseNome: nome }
+      } else if (alcuneSottoMin) {
+        return pesoRif && pesoRif > 0
+          ? { messaggio: `🎯 Consolida ${pesoRif}kg su tutte le serie prima di aggiungerne una`, eseNome: nome }
+          : { messaggio: `🎯 Completa tutte le serie nel range prima di aggiungerne una`, eseNome: nome }
+      } else {
+        return pesoRif && pesoRif > 0
+          ? { messaggio: `🎯 Mantieni ${pesoRif}kg — quasi pronto per una serie in più`, eseNome: nome }
+          : null
+      }
+    }
+
+    if (progTipo === 'reps') {
+      // Progressione: aumenta il range reps
+      if (tutteAlMax) {
+        return { messaggio: `📈 Range completato! Il coach valuterà di alzare le reps target`, eseNome: nome }
+      } else if (alcuneSottoMin) {
+        return { messaggio: `🎯 Completa tutte le serie nel range ${repMin}–${repMax} prima di salire`, eseNome: nome }
+      } else {
+        return null
+      }
+    }
+
+    // progTipo === 'peso' (default)
     if (!pesoRif || pesoRif <= 0) return null
-    const tutteAlMax = ultimeSerie.every(s => (s.ripetizioni ?? 0) >= repMax)
-    const alcuneSottoMin = ultimeSerie.some(s => (s.ripetizioni ?? 0) < repMin)
     if (tutteAlMax) {
       const nuovoPeso = Math.round((pesoRif * 1.05) / 0.5) * 0.5
-      return { messaggio: `💪 Forza! Sali a ${nuovoPeso}kg oggi`, eseNome: ese.esercizi.nome }
+      return { messaggio: `💪 Forza! Sali a ${nuovoPeso}kg oggi`, eseNome: nome }
     } else if (alcuneSottoMin) {
       const nuovoPeso = Math.round((pesoRif * 0.95) / 0.5) * 0.5
-      return { messaggio: `📉 Prova con ${nuovoPeso}kg, consolida prima di salire`, eseNome: ese.esercizi.nome }
+      return { messaggio: `📉 Prova con ${nuovoPeso}kg, consolida prima di salire`, eseNome: nome }
     } else {
-      return { messaggio: `🎯 Mantieni ${pesoRif}kg — chiudi il buco!`, eseNome: ese.esercizi.nome }
+      return { messaggio: `🎯 Mantieni ${pesoRif}kg — chiudi il buco!`, eseNome: nome }
     }
   }
 
