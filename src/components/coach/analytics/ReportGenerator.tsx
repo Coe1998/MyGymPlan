@@ -217,7 +217,11 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
       useCORS: true,
       allowTaint: true,
       logging: false,
-      onclone: (_doc, el) => cleanOklch(el),
+      onclone: (clonedDoc, el) => {
+        // Rimuove tutti i CSS della pagina — il report usa solo stili inline hex
+        clonedDoc.querySelectorAll('link[rel="stylesheet"], style').forEach(s => s.remove())
+        cleanOklch(el)
+      },
     })
     return canvas.toDataURL('image/png', 0.95)
   }
