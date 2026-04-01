@@ -260,7 +260,123 @@ VAPID_PRIVATE_KEY (push notifications)
 
 ---
 
-## Note Importanti per Modifiche Future
+## Roadmap Sprint
+
+### ✅ COMPLETATO (Sprint 1-3 + parziale Sprint 4)
+
+**Sprint 1-2:** Setup base, auth, ruoli, schede, esercizi, sessioni, check-in, misurazioni, analytics coach, admin dashboard, notifiche Telegram, PWA.
+
+**Sprint 3 — Nutrizione:**
+- Tabelle DB: `macro_target`, `pasto_log`, `integrazione_log`
+- Pagina dieta cliente con Open Food Facts (subdomain `it.` per risultati in italiano)
+- Tab Nutrizione nel drawer coach per impostare macro target
+- Toggle dieta per cliente (coach abilita/disabilita da drawer — colonna `dieta_abilitata` su `coach_clienti`)
+- Storico 7 giorni dettagliato + compatto per i giorni precedenti nella pagina dieta cliente
+- Vista nutrizione coach nel drawer: storico 7 giorni del cliente con barre macro
+
+**Sprint 4 — parziale:**
+- Chat realtime coach-cliente (tabella `messaggi`, Supabase Realtime + `REPLICA IDENTITY FULL` + `supabase_realtime` publication)
+- Push notifications PWA (VAPID keys, tabella `push_subscriptions`, service worker aggiornato)
+- Assegna scheda dal drawer analytics — diretto o clona+editor
+- Anteprima scheda read-only nel picker assegnazione
+- Fix approvazione coach via API route con service role (`/api/admin/coach-status`)
+- Navbar coach mobile: popup "Allenamento" (Schede+Esercizi) + "Altro" (Impostazioni+Esci) — 5 voci totali
+- Navbar cliente mobile: voce Chat aggiunta, menu "Altro" con Impostazioni+Esci
+
+---
+
+### 🔄 SPRINT 4 — in corso
+
+**Aggiunte:**
+- [ ] Algoritmi rischio cliente + Alert avanzati coach
+
+---
+
+### 📋 SPRINT 5 — definito
+
+**Aggiunte:**
+- [ ] Home cliente: 2 card in cima (Check-in oggi + Peso oggi) con stato fatto/da fare + modal backdrop blur per compilare senza uscire dalla home
+- [ ] Chat: messaggi con allegato — pulsante "allega" per selezionare scheda o sessione, appare come card cliccabile nel messaggio
+- [ ] Triple Progression intra-serie: dopo conferma serie (solo se NON è l'ultima), suggerisce peso calcolato (+5% arrotondato allo 0.5 se reps > range, -7.5% se reps < range). Messaggio con peso esatto, non percentuale. Post-esercizio (ultima serie) suggerisce per sessione successiva.
+- [ ] Atleta: implementare limiti free + PRO paywall
+
+**Modifiche:**
+- [ ] Progressi cliente: rimuovere misurazioni/foto/check-in, lasciare solo grafici
+- [ ] Dashboard coach: rimuovere tab Benessere e Peso (ridondanti col drawer), potenziare tab Alert
+- [ ] Alert coach avanzati: inattivo 4+ giorni, check-in mancante 4+ giorni, check-in negativi consecutivi (energia/sonno/motivazione bassa, stress alto), calo volume allenamento, peso anomalo
+- [ ] Fix scala stress ovunque: stress alto = negativo (invertire — ad oggi è al contrario sia lato cliente che nel drawer coach)
+- [ ] Atleta: audit completo area atleta + allineamento a tutte le modifiche fatte su coach/cliente
+
+---
+
+### 🎮 LIMITI PIANO ATLETA (da implementare)
+
+**FREE:**
+- 1 scheda, max 4 giorni per scheda
+- Logger base: info ultima volta + PR badge
+- Share card
+- Timer recupero
+- ❌ Double/Triple progression (suggerimento peso)
+- ❌ Grafici progressi
+- ❌ Check-in benessere
+- ❌ Misurazioni/foto
+- ❌ Storico sessioni completo (solo ultime 5)
+- ❌ Tecniche avanzate (superset, dropset, rest-pause, piramidale, giant set)
+
+**PRO:**
+- Schede illimitate, giorni illimitati
+- Triple Progression completa
+- Grafici progressi completi
+- Check-in benessere
+- Misurazioni/foto
+- Storico sessioni completo
+- Tecniche avanzate
+
+---
+
+### 🚀 CRITICO PRE-LANCIO
+
+**Aggiunte:**
+- [ ] Privacy Policy + Terms (GDPR)
+- [ ] Stripe pagamenti + pricing tiers coach (Free 3 clienti / Starter / Pro / Studio)
+
+---
+
+### 📌 FUTURE
+
+**Aggiunte:**
+- [ ] Video upload esercizi (Supabase Storage)
+- [ ] Notifiche email coach via Resend (da fare insieme agli alert)
+- [ ] Push PWA quando timer recupero finisce
+
+**Modifiche:**
+- [ ] Redesign mobile scheda allenamento (righe espandibili)
+
+---
+
+## Note DB Importanti
+
+- **`coach_clienti`** ha colonna `dieta_abilitata boolean default false` — controlla se il cliente vede la sezione Dieta
+- **`messaggi`** ha `REPLICA IDENTITY FULL` e `ALTER PUBLICATION supabase_realtime ADD TABLE messaggi` — necessario per il realtime
+- **`push_subscriptions`** — una riga per utente (UNIQUE su `user_id`), subscription JSON per Web Push
+- **FK ambigue su `scheda_esercizi`**: dopo aggiunta `alternativa_esercizio_id`, qualsiasi join verso `esercizi` da `scheda_esercizi` DEVE usare `esercizi!scheda_esercizi_esercizio_id_fkey`
+
+## Note Architetturali
+
+- Server components nei layout per protezione ruoli; client components per interattività
+- Service role key usata SOLO nelle API routes (`/api/admin/`, `/api/push/send`)
+- Supabase free: 500MB DB, 1GB storage
+- Vercel free: cron funziona, cold start ~200ms
+- PWA installabile su iOS 16.4+ da Safari
+- Safe area inset top gestita con `env(safe-area-inset-top)` per Dynamic Island
+
+## Working Style (importante per Claude)
+- File completi pronti da incollare, non patch manuali
+- Sempre fornire git add . && git commit -m "..." && git push alla fine
+- Quando si fa una modifica a un file già uploadato, richiederlo aggiornato prima di modificarlo
+- Errori di build JSX frequenti su file grandi — verificare sempre la struttura prima di fare output
+- Usare `maybeSingle()` invece di `single()` per query che potrebbero non trovare risultati
+
 
 1. **React Compiler è attivo** — Non aggiungere `useMemo`/`useCallback` manualmente a meno che non sia strettamente necessario (come `createClient()`). Il compiler ottimizza automaticamente la maggior parte dei casi.
 
