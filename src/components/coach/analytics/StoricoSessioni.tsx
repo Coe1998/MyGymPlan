@@ -19,6 +19,7 @@ interface LogSerie {
   ripetizioni: number | null
   completata: boolean
   nomeEsercizio: string
+  ordine: number
 }
 
 const PAGE_SIZE = 10
@@ -70,7 +71,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
     setLoadingLog(id)
     const { data } = await supabase
       .from('log_serie')
-      .select('numero_serie, peso_kg, ripetizioni, completata, scheda_esercizi(esercizi!scheda_esercizi_esercizio_id_fkey(nome))')
+      .select('numero_serie, peso_kg, ripetizioni, completata, scheda_esercizi(ordine, esercizi!scheda_esercizi_esercizio_id_fkey(nome))')
       .eq('sessione_id', id)
       .order('numero_serie')
     const mapped: LogSerie[] = (data ?? []).map((r: any) => ({
@@ -79,6 +80,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
       ripetizioni: r.ripetizioni,
       completata: r.completata,
       nomeEsercizio: r.scheda_esercizi?.esercizi?.nome ?? 'Esercizio',
+      ordine: r.scheda_esercizi?.ordine ?? 999,
     }))
     setLogMap(prev => ({ ...prev, [id]: mapped }))
     setLoadingLog(null)
@@ -97,7 +99,11 @@ export default function StoricoSessioni({ clienteId }: Props) {
       if (!map.has(l.nomeEsercizio)) map.set(l.nomeEsercizio, [])
       map.get(l.nomeEsercizio)!.push(l)
     }
-    return Array.from(map.entries())
+    return Array.from(map.entries()).sort((a, b) => {
+      const ordineA = Math.min(...a[1].map(s => s.ordine))
+      const ordineB = Math.min(...b[1].map(s => s.ordine))
+      return ordineA - ordineB
+    })
   }
 
   return (

@@ -22,6 +22,7 @@ interface EsercizioData {
   eseId: string
   nome: string
   tipoInput: string
+  muscoli: string[]
   punti: { data: string; e1rm: number; volume: number; pesoMax: number }[]
 }
 
@@ -37,6 +38,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
   const [loading, setLoading] = useState(true)
   const [showAll, setShowAll] = useState(false)
   const [giorni, setGiorni] = useState(GIORNI_DEFAULT)
+  const [muscoloFiltro, setMuscoloFiltro] = useState<string | null>(null)
 
   useEffect(() => {
     const fetch = async () => {
@@ -49,7 +51,6 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
         .from('sessioni')
         .select('id, data')
         .eq('cliente_id', clienteId)
-        .eq('completata', true)
         .gte('data', dataInizio)
         .order('data', { ascending: true })
 
@@ -63,7 +64,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
         .select(`
           sessione_id, peso_kg, ripetizioni, reps_sx, reps_dx, durata_secondi, completata,
           scheda_esercizi!inner (
-            esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, tipo_input )
+            esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, tipo_input, muscoli )
           )
         `)
         .in('sessione_id', sessIds)
@@ -77,7 +78,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
       for (const log of logs as any[]) {
         const ese = log.scheda_esercizi?.esercizi
         if (!ese) continue
-        const { id: eseId, nome, tipo_input: tipoInput } = ese
+        const { id: eseId, nome, tipo_input: tipoInput, muscoli } = ese
         const data = sessDateMap[log.sessione_id]?.split('T')[0] ?? ''
         const peso = parseFloat(log.peso_kg) || 0
         const reps = parseInt(log.ripetizioni) || 0
@@ -98,7 +99,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
           vol = peso * reps
         }
 
-        if (!map.has(eseId)) map.set(eseId, { eseId, nome, tipoInput, punti: [] })
+        if (!map.has(eseId)) map.set(eseId, { eseId, nome, tipoInput, muscoli: Array.isArray(muscoli) ? muscoli : [], punti: [] })
         if (!sessioneEseMap.has(log.sessione_id)) sessioneEseMap.set(log.sessione_id, new Map())
         const sessEse = sessioneEseMap.get(log.sessione_id)!
         const existing = sessEse.get(eseId) ?? { e1rmMax: 0, volume: 0, pesoMax: 0 }
@@ -153,7 +154,17 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
   }
 
   const eff = calcolaEfficienza()
-  const listaEsercizi = showAll ? esercizi : esercizi.slice(0, 8)
+
+  const tuttiMuscoli = useMemo(() => {
+    const set = new Set<string>()
+    for (const e of esercizi) for (const m of e.muscoli) if (m) set.add(m)
+    return Array.from(set).sort()
+  }, [esercizi])
+
+  const eserciziFiltrati = muscoloFiltro
+    ? esercizi.filter(e => e.muscoli.includes(muscoloFiltro))
+    : esercizi
+  const listaEsercizi = showAll ? eserciziFiltrati : eserciziFiltrati.slice(0, 8)
 
   return (
     <div className="rounded-2xl overflow-hidden"
@@ -185,6 +196,33 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
           </div>
         ) : (
           <>
+            {tuttiMuscoli.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => { setMuscoloFiltro(null); setShowAll(false) }}
+                  className="text-xs px-3 py-1 rounded-full font-medium transition-all"
+                  style={{
+                    background: muscoloFiltro === null ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                    color: muscoloFiltro === null ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                    border: muscoloFiltro === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                  }}>
+                  Tutti
+                </button>
+                {tuttiMuscoli.map(m => (
+                  <button key={m}
+                    onClick={() => { setMuscoloFiltro(m === muscoloFiltro ? null : m); setShowAll(false) }}
+                    className="text-xs px-3 py-1 rounded-full font-medium transition-all capitalize"
+                    style={{
+                      background: muscoloFiltro === m ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                      color: muscoloFiltro === m ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                      border: muscoloFiltro === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                    }}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2 mb-5">
               {listaEsercizi.map(e => (
                 <button key={e.eseId}
@@ -198,11 +236,11 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   {e.nome}
                 </button>
               ))}
-              {!showAll && esercizi.length > 8 && (
+              {!showAll && eserciziFiltrati.length > 8 && (
                 <button onClick={() => setShowAll(true)}
                   className="text-xs px-3 py-1.5 rounded-full"
                   style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.50 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-                  +{esercizi.length - 8} altri
+                  +{eserciziFiltrati.length - 8} altri
                 </button>
               )}
             </div>
