@@ -22,12 +22,11 @@ export default async function ClienteAnalyticsPage({
     .from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'coach') redirect('/login')
 
-  const { data: relazione } = await supabase
+  const { data: relazioneRows } = await supabase
     .from('coach_clienti')
-    .select('cliente_id')
-    .eq('coach_id', user.id)
+    .select('coach_id')
     .eq('cliente_id', clienteId)
-    .maybeSingle()
+  const relazione = (relazioneRows ?? []).find(r => r.coach_id === user.id)
   if (!relazione) notFound()
 
   const [clienteRes, assegnazioniRes, totSessioniRes, ultimoPesoRes, primaSessioneRes] = await Promise.all([
