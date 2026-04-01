@@ -151,7 +151,8 @@ export default function AllenamentoPage() {
       .select(`id, nome, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
         tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
-        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione )
+        prepara_secondi, progressione_tipo,
+        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
       )`)
       .eq('id', giornoId).single()
 
@@ -698,7 +699,7 @@ export default function AllenamentoPage() {
                   <div className="min-w-0">
                     <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni} · {ese.recupero_secondi}s</span>
+                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ' reps'} · {ese.recupero_secondi}s rec.</span>
                       {ese.tipo === 'dropset' && ese.drop_count && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
                           style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
