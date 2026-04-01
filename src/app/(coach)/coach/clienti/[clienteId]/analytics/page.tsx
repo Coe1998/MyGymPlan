@@ -22,10 +22,14 @@ export default async function ClienteAnalyticsPage({
     .from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'coach') redirect('/login')
 
-  const { data: relazioneRows } = await supabase
+  const { data: relazioneRows, error: relazioneError } = await supabase
     .from('coach_clienti')
     .select('coach_id')
     .eq('cliente_id', clienteId)
+  console.log('[analytics] user.id:', user.id)
+  console.log('[analytics] clienteId:', clienteId)
+  console.log('[analytics] relazioneRows:', JSON.stringify(relazioneRows))
+  console.log('[analytics] relazioneError:', JSON.stringify(relazioneError))
   const relazione = (relazioneRows ?? []).find(r => r.coach_id === user.id)
   if (!relazione) notFound()
 
