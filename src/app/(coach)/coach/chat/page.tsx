@@ -115,6 +115,23 @@ export default function CoachChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
+const URL_REGEX = /(https?:\/\/[^\s]+)/g
+
+const renderTesto = (testo: string, daCoach: boolean) => {
+  const parti = testo.split(URL_REGEX)
+  return parti.map((parte, i) =>
+    URL_REGEX.test(parte) ? (
+      <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
+        className="underline break-all"
+        style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
+        {parte}
+      </a>
+    ) : (
+      <span key={i}>{parte}</span>
+    )
+  )
+}
+
   return (
     <div className="max-w-5xl">
       {/* MOBILE: se nessun cliente selezionato → lista; altrimenti → chat */}
@@ -221,7 +238,7 @@ export default function CoachChatPage() {
                       borderBottomRightRadius: m.da_coach ? 4 : 16,
                       borderBottomLeftRadius: m.da_coach ? 16 : 4,
                     }}>
-                    <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{m.testo}</p>
+                    <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{renderTesto(m.testo, m.da_coach)}</p>
                     <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
                   </div>
                 </div>
@@ -281,7 +298,7 @@ export default function CoachChatPage() {
                     borderBottomRightRadius: m.da_coach ? 4 : 16,
                     borderBottomLeftRadius: m.da_coach ? 16 : 4,
                   }}>
-                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{m.testo}</p>
+                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{renderTesto(m.testo, m.da_coach)}</p>
                   <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
                 </div>
               </div>

@@ -134,6 +134,23 @@ export default function ClienteChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
+const URL_REGEX = /(https?:\/\/[^\s]+)/g
+
+const renderTesto = (testo: string, daCoach: boolean) => {
+  const parti = testo.split(URL_REGEX)
+  return parti.map((parte, i) =>
+    URL_REGEX.test(parte) ? (
+      <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
+        className="underline break-all"
+        style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
+        {parte}
+      </a>
+    ) : (
+      <span key={i}>{parte}</span>
+    )
+  )
+}
+
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
@@ -183,8 +200,8 @@ export default function ClienteChatPage() {
                   borderBottomLeftRadius: m.da_coach ? 4 : 16,
                   borderBottomRightRadius: m.da_coach ? 16 : 4,
                 }}>
-                <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
-                  {m.testo}
+                <p className="text-sm break-words" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
+                  {renderTesto(m.testo, m.da_coach)}
                 </p>
                 <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.45 0 0)' : 'oklch(0.30 0 0)' }}>
                   {formatOra(m.created_at)}
