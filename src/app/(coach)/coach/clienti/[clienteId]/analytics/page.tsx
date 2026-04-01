@@ -84,7 +84,7 @@ export default function ClienteAnalyticsPage({
 
       setData({
         nomeCliente,
-        assegnazioni: (assegRes.data ?? []) as Assegnazione[],
+        assegnazioni: (assegRes.data ?? []) as unknown as Assegnazione[],
         totSessioni: sessCountRes.count ?? 0,
         ultimoPeso: pesoRes.data?.peso_kg ?? null,
         clienteDal: primaSessioneRes.data?.data ?? null,
