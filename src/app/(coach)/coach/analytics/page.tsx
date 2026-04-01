@@ -197,6 +197,27 @@ export default function AnalyticsPage() {
     const tutteMisurazioni = misRes.data ?? []
     const tutteAssegAttive = assegAttiveRes.data ?? []
 
+    // Fetch log_serie per sessioni ultimi 30gg — per alert volume/completamento/esercizi saltati
+    const trenta_giorni_fa = new Date(Date.now() - 30 * 86400000).toISOString()
+    const sessRecenti = tutteSessioni.filter(s => s.data >= trenta_giorni_fa).map(s => s.id)
+    const logSerieMap = new Map<string, { completata: boolean; peso_kg: number | null; ripetizioni: number | null; esercizio_id: string | null }[]>()
+    if (sessRecenti.length > 0) {
+      const { data: logSerieData } = await supabase
+        .from('log_serie')
+        .select('sessione_id, completata, peso_kg, ripetizioni, scheda_esercizi!inner(esercizio_id)')
+        .in('sessione_id', sessRecenti)
+      for (const l of (logSerieData ?? []) as any[]) {
+        const sid = l.sessione_id
+        if (!logSerieMap.has(sid)) logSerieMap.set(sid, [])
+        logSerieMap.get(sid)!.push({
+          completata: l.completata,
+          peso_kg: l.peso_kg,
+          ripetizioni: l.ripetizioni,
+          esercizio_id: l.scheda_esercizi?.esercizio_id ?? null,
+        })
+      }
+    }
+
     // Conta sessioni totali per il badge
     const sessioniPerCliente = new Map<string, typeof tutteSessioni>()
     for (const s of tutteSessioni) {
@@ -205,10 +226,14 @@ export default function AnalyticsPage() {
     }
     setTotaleSessioni(tutteSessioni.length)
 
-    // Ultimo checkin per cliente
+    // Checkin per cliente (tutti, già ordinati desc — uso ultimi 3 per alert consecutivi)
     const ultimoCheckinPerCliente = new Map<string, any>()
+    const ultimi3CheckinPerCliente = new Map<string, any[]>()
     for (const c of tuttiCheckin) {
       if (!ultimoCheckinPerCliente.has(c.cliente_id)) ultimoCheckinPerCliente.set(c.cliente_id, c)
+      const lista = ultimi3CheckinPerCliente.get(c.cliente_id) ?? []
+      if (lista.length < 3) lista.push(c)
+      ultimi3CheckinPerCliente.set(c.cliente_id, lista)
     }
 
     // Misurazioni per cliente
@@ -240,18 +265,109 @@ export default function AnalyticsPage() {
       const ultimoCheckin = ultimoCheckinPerCliente.get(clienteId) ?? null
 
       const alert: string[] = []
-      if (giorniInattivo !== null && giorniInattivo > 10 && sessioni.length > 0)
+
+      // ── 1. Inattività ─────────────────────────────────────────────
+      if (sessioni.length === 0) {
+        alert.push('Non si è mai allenato')
+      } else if (giorniInattivo !== null && giorniInattivo >= 4) {
         alert.push(`Inattivo da ${giorniInattivo} giorni`)
-      if (sessioni.length === 0) alert.push('Non si è mai allenato')
-      if (ultimoCheckin) {
+      }
+
+      // ── 2. Check-in mancante ──────────────────────────────────────
+      if (!ultimoCheckin) {
+        alert.push('Nessun check-in ancora')
+      } else {
+        const giorniSenzaCheckin = Math.floor((Date.now() - new Date(ultimoCheckin.data).getTime()) / (1000 * 60 * 60 * 24))
+        if (giorniSenzaCheckin >= 4) alert.push(`Check-in mancante da ${giorniSenzaCheckin} giorni`)
+
+        // ── 3. Check-in negativi consecutivi ─────────────────────────
+        const ultimi3 = ultimi3CheckinPerCliente.get(clienteId) ?? []
+        if (ultimi3.length >= 3) {
+          const isCritico = (c: any) =>
+            c.energia <= 2 || c.sonno <= 2 || c.stress >= 4 || c.motivazione <= 2
+          if (ultimi3.every(isCritico)) {
+            alert.push('3+ check-in negativi consecutivi')
+          }
+        }
+
+        // Check-in singolo critico
         if (ultimoCheckin.stress >= 4) alert.push('Stress elevato')
         if (ultimoCheckin.energia <= 2) alert.push('Energia bassa')
         if (ultimoCheckin.motivazione <= 2) alert.push('Motivazione bassa')
         if (ultimoCheckin.sonno <= 2) alert.push('Sonno scarso')
-        const giorniSenzaCheckin = Math.floor((Date.now() - new Date(ultimoCheckin.data).getTime()) / (1000 * 60 * 60 * 24))
-        if (giorniSenzaCheckin > 7) alert.push('Nessun check-in da 7+ giorni')
-      } else {
-        alert.push('Nessun check-in ancora')
+      }
+
+      // ── 4. Peso anomalo ────────────────────────────────────────────
+      const misCliente = misurazioniPerCliente.get(clienteId) ?? []
+      if (misCliente.length >= 2) {
+        const ultima = misCliente[misCliente.length - 1]?.peso_kg
+        const penultima = misCliente[misCliente.length - 2]?.peso_kg
+        if (ultima && penultima) {
+          const deltaPeso = Math.abs(ultima - penultima)
+          if (deltaPeso >= 3) {
+            alert.push(`Variazione peso anomala: ${ultima > penultima ? '+' : '-'}${deltaPeso.toFixed(1)} kg`)
+          }
+        }
+      }
+
+      // ── 5, 6, 7: Alert basati su log_serie ────────────────────────
+      const sessRecentiCliente = sessioni
+        .filter(s => s.data >= trenta_giorni_fa)
+        .slice(0, 6)
+
+      if (sessRecentiCliente.length > 0) {
+        // 5. Sessione incompleta — ultima sessione < 80% serie completate
+        const ultimaSessId = sessRecentiCliente[0]?.id
+        if (ultimaSessId) {
+          const logUltima = logSerieMap.get(ultimaSessId) ?? []
+          if (logUltima.length > 0) {
+            const completate = logUltima.filter(l => l.completata).length
+            const perc = completate / logUltima.length
+            if (perc < 0.8) {
+              alert.push(`Ultima sessione incompleta (${Math.round(perc * 100)}%)`)
+            }
+          }
+        }
+
+        // 6. Esercizi sistematicamente saltati — stesso esercizio a 0 nelle ultime 2 sessioni
+        if (sessRecentiCliente.length >= 2) {
+          const eseCount = new Map<string, number>()
+          const eseSkipped = new Map<string, number>()
+          for (const sess of sessRecentiCliente.slice(0, 2)) {
+            const log = logSerieMap.get(sess.id) ?? []
+            const eseInSess = new Set(log.map(l => l.esercizio_id).filter(Boolean))
+            for (const eseId of eseInSess) {
+              if (!eseId) continue
+              eseCount.set(eseId, (eseCount.get(eseId) ?? 0) + 1)
+              const tutteCompletate = log.filter(l => l.esercizio_id === eseId).every(l => !l.completata)
+              if (tutteCompletate) eseSkipped.set(eseId, (eseSkipped.get(eseId) ?? 0) + 1)
+            }
+          }
+          for (const [eseId, skippedCount] of eseSkipped) {
+            if (skippedCount >= 2 && (eseCount.get(eseId) ?? 0) >= 2) {
+              alert.push('Esercizio sistematicamente saltato')
+              break
+            }
+          }
+        }
+
+        // 7. Calo volume — avg ultime 3 sessioni vs 3 precedenti
+        if (sessRecentiCliente.length >= 4) {
+          const calcVolume = (ids: string[]) => {
+            let tot = 0, count = 0
+            for (const id of ids) {
+              const log = logSerieMap.get(id) ?? []
+              const vol = log.filter(l => l.completata).reduce((a, l) => a + ((l.peso_kg ?? 0) * (l.ripetizioni ?? 0)), 0)
+              if (vol > 0) { tot += vol; count++ }
+            }
+            return count > 0 ? tot / count : 0
+          }
+          const volRecente = calcVolume(sessRecentiCliente.slice(0, 3).map(s => s.id))
+          const volPrecedente = calcVolume(sessRecentiCliente.slice(3, 6).map(s => s.id))
+          if (volPrecedente > 0 && volRecente < volPrecedente * 0.7) {
+            alert.push('Calo volume allenamento −30%+')
+          }
+        }
       }
 
       stats.push({
@@ -680,14 +796,21 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
 
-                      {/* Alert list */}
+                      {/* Alert list con colori per categoria */}
                       <div className="flex flex-wrap gap-2">
-                        {c.alert.map((alert, i) => (
-                          <span key={i} className="text-xs px-3 py-1.5 rounded-full font-medium"
-                            style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.85 0.10 46)' }}>
-                            <FontAwesomeIcon icon={faTriangleExclamation} /> {alert}
-                          </span>
-                        ))}
+                        {c.alert.map((alert, i) => {
+                          const isRed = alert.includes('Inattivo') || alert.includes('mai allenato') || alert.includes('incompleta') || alert.includes('saltato') || alert.includes('Calo volume')
+                          const isOrange = alert.includes('Stress') || alert.includes('negativi') || alert.includes('anomala')
+                          const isYellow = alert.includes('Check-in') || alert.includes('Energia') || alert.includes('Motivazione') || alert.includes('Sonno')
+                          const bg = isRed ? 'oklch(0.65 0.22 27 / 18%)' : isOrange ? 'oklch(0.70 0.19 46 / 18%)' : 'oklch(0.75 0.15 80 / 18%)'
+                          const color = isRed ? 'oklch(0.75 0.15 27)' : isOrange ? 'oklch(0.75 0.14 46)' : 'oklch(0.80 0.12 80)'
+                          return (
+                            <span key={i} className="text-xs px-3 py-1.5 rounded-full font-medium"
+                              style={{ background: bg, color }}>
+                              <FontAwesomeIcon icon={faTriangleExclamation} /> {alert}
+                            </span>
+                          )
+                        })}
                       </div>
                     </div>
                   ))}
