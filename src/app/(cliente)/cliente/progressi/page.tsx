@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -775,40 +776,6 @@ export default function ProgressiPage() {
       {/* TAB: MISURAZIONI */}
       {tab === 'misurazioni' && (
         <div className="space-y-5">
-          <div className="rounded-2xl p-5 space-y-4"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Registra peso corporeo</h2>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-xs mb-1.5 block" style={{ color: 'oklch(0.60 0 0)' }}>Peso (kg)</label>
-                <input type="number" inputMode="decimal" value={newPeso}
-                  onChange={(e) => setNewPeso(e.target.value)} placeholder="es. 75.5"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                  onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
-                  onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs mb-1.5 block" style={{ color: 'oklch(0.60 0 0)' }}>Note (opzionale)</label>
-                <input type="text" value={newMisNote}
-                  onChange={(e) => setNewMisNote(e.target.value)} placeholder="es. mattino a digiuno"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                  onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
-                  onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
-              </div>
-            </div>
-            <button onClick={handleSaveMisurazione} disabled={savingMis || !newPeso.trim()}
-              className="w-full py-3 rounded-xl text-sm font-semibold transition-all"
-              style={{
-                background: !newPeso.trim() ? 'oklch(0.22 0 0)' : 'oklch(0.60 0.15 200)',
-                color: !newPeso.trim() ? 'oklch(0.40 0 0)' : 'oklch(0.13 0 0)',
-                cursor: !newPeso.trim() ? 'not-allowed' : 'pointer',
-              }}>
-              {savingMis ? 'Salvataggio...' : '+ Registra peso'}
-            </button>
-          </div>
-
           {misurazioni.length >= 2 && (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -971,55 +938,20 @@ export default function ProgressiPage() {
                 ))}
               </div>
             ) : (
-              <div className="space-y-4">
-                {[
-                  { label: 'Come ti senti di energia?', key: 'energia' as const },
-                  { label: 'Hai dormito bene?', key: 'sonno' as const },
-                  { label: 'Livello di stress', key: 'stress' as const },
-                  { label: 'Motivazione ad allenarti', key: 'motivazione' as const },
-                ].map(item => (
-                  <div key={item.key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{item.label}</label>
-                      {item.key === 'stress' && (
-                        <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>1 = basso · 5 = alto</span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      {[1, 2, 3, 4, 5].map(v => (
-                        <button key={v} onClick={() => setNewCheckin(p => ({ ...p, [item.key]: v }))}
-                          className="flex-1 py-2.5 rounded-xl text-xl transition-all active:scale-95"
-                          style={{
-                            background: newCheckin[item.key] === v ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                            border: newCheckin[item.key] === v ? '2px solid oklch(0.60 0.15 200)' : '2px solid transparent',
-                          }}>
-                          {getEmojiCheckin(item.key, v) ? <FontAwesomeIcon icon={getEmojiCheckin(item.key, v)!} /> : null}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note (opzionale)</label>
-                  <textarea value={newCheckin.note}
-                    onChange={(e) => setNewCheckin(p => ({ ...p, note: e.target.value }))}
-                    placeholder="Come stai? Qualcosa da segnalare al coach?"
-                    rows={2} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                    onFocus={(e) => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
-                    onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1">
+                  <p className="text-sm font-medium" style={{ color: 'oklch(0.70 0 0)' }}>
+                    Nessun check-in oggi
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                    Inseriscilo dalla home per non perdere il tracciamento
+                  </p>
                 </div>
-                <button onClick={handleSaveCheckin}
-                  disabled={savingCheckin || !newCheckin.energia || !newCheckin.sonno || !newCheckin.stress || !newCheckin.motivazione}
-                  className="w-full py-3 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: (!newCheckin.energia || !newCheckin.sonno || !newCheckin.stress || !newCheckin.motivazione)
-                      ? 'oklch(0.22 0 0)' : 'oklch(0.60 0.15 200)',
-                    color: (!newCheckin.energia || !newCheckin.sonno || !newCheckin.stress || !newCheckin.motivazione)
-                      ? 'oklch(0.40 0 0)' : 'oklch(0.13 0 0)',
-                  }}>
-                  {savingCheckin ? 'Salvataggio...' : 'Invia check-in'}
-                </button>
+                <Link href="/cliente/dashboard"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold flex-shrink-0 transition-all active:scale-95"
+                  style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.13 0 0)' }}>
+                  Vai alla home
+                </Link>
               </div>
             )}
           </div>
