@@ -188,32 +188,43 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
     ? Math.round((ultimoPeso - pesoInizio) * 10) / 10
     : null
 
-  const generaImmagine = async (): Promise<Blob | null> => {
+  const generaImmagine = async (): Promise<string | null> => {
     if (!reportRef.current) return null
-    try {
-      const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: '#111111',
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      })
-      return new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png', 0.95))
-    } catch {
-      return null
-    }
+    const html2canvas = (await import('html2canvas')).default
+    const canvas = await html2canvas(reportRef.current, {
+      backgroundColor: '#111111',
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+    })
+    return canvas.toDataURL('image/png', 0.95)
+  }
+
+  const dataUrlToBlob = (dataUrl: string): Blob => {
+    const arr = dataUrl.split(',')
+    const mime = arr[0].match(/:(.*?);/)![1]
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while (n--) u8arr[n] = bstr.charCodeAt(n)
+    return new Blob([u8arr], { type: mime })
   }
 
   const handleSalvaImmagine = async () => {
     setSaving(true)
-    const blob = await generaImmagine()
-    if (blob) {
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `report-${nomeCliente.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`
-      a.click()
-      URL.revokeObjectURL(url)
+    try {
+      const dataUrl = await generaImmagine()
+      if (dataUrl) {
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = `report-${nomeCliente.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      }
+    } catch (e) {
+      console.error('Report generation error:', e)
     }
     setSaving(false)
   }
@@ -221,30 +232,36 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
   const handleInviaChat = async () => {
     if (!coachId) return
     setSending(true)
-    const blob = await generaImmagine()
-    if (!blob) { setSending(false); return }
+    try {
+      const dataUrl = await generaImmagine()
+      if (!dataUrl) { setSending(false); return }
+      const blob = dataUrlToBlob(dataUrl)
 
-    const fileName = `report-${clienteId}-${Date.now()}.png`
-    const { data: upload, error } = await supabase.storage
-      .from('reports')
-      .upload(fileName, blob, { contentType: 'image/png', upsert: false })
+      const fileName = `report-${clienteId}-${Date.now()}.png`
+      const { data: upload, error } = await supabase.storage
+        .from('reports')
+        .upload(fileName, blob, { contentType: 'image/png', upsert: false })
 
     if (error || !upload) { setSending(false); return }
 
     const { data: urlData } = supabase.storage.from('reports').getPublicUrl(fileName)
     const publicUrl = urlData?.publicUrl
 
-    if (!publicUrl) { setSending(false); return }
+      if (!publicUrl) { setSending(false); return }
 
-    await supabase.from('messaggi').insert({
-      coach_id: coachId,
-      cliente_id: clienteId,
-      testo: publicUrl,
-      da_coach: true,
-    })
+      await supabase.from('messaggi').insert({
+        coach_id: coachId,
+        cliente_id: clienteId,
+        testo: publicUrl,
+        da_coach: true,
+      })
 
-    setSending(false)
-    onClose()
+      setSending(false)
+      onClose()
+    } catch (e) {
+      console.error('Send report error:', e)
+      setSending(false)
+    }
   }
 
   const iniziali = nomeCliente.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
