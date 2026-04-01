@@ -46,7 +46,7 @@ export default function ClienteAnalyticsPage({
       const [profileRes, relazioneRes] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', user.id).single(),
         supabase.from('coach_clienti')
-          .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name, email)')
+          .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name)')
           .eq('cliente_id', clienteId),
       ])
 
@@ -55,8 +55,8 @@ export default function ClienteAnalyticsPage({
       const relazione = (relazioneRes.data ?? []).find((r: any) => r.coach_id === user.id)
       if (!relazione) { setStato('forbidden'); return }
 
-      const clienteProfile = (relazione as any).profiles as { full_name: string | null; email: string | null } | null
-      const nomeCliente = clienteProfile?.full_name ?? clienteProfile?.email ?? 'Cliente'
+      const clienteProfile = (relazione as any).profiles as { full_name: string | null } | null
+      const nomeCliente = clienteProfile?.full_name ?? 'Cliente'
 
       const [assegRes, sessCountRes, pesoRes, primaSessioneRes] = await Promise.all([
         supabase.from('assegnazioni')
