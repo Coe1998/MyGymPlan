@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faDumbbell, faCalendarDays, faClipboardList,
-  faCircleCheck, faPause, faPersonRunning, faHand,
+  faHand,
 } from '@fortawesome/free-solid-svg-icons'
 import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
+import UltimeSessioniList from '@/components/atleta/UltimeSessioniList'
 
 export default async function AtletaDashboard() {
   const supabase = await createClient()
@@ -167,42 +168,7 @@ export default async function AtletaDashboard() {
           <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Ultimi allenamenti</h2>
         </div>
 
-        {!ultimeSessioni || ultimeSessioni.length === 0 ? (
-          <div className="py-12 text-center space-y-3">
-            <p className="text-4xl"><FontAwesomeIcon icon={faPersonRunning} /></p>
-            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun allenamento ancora</p>
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Inizia dalla scheda qui sopra</p>
-          </div>
-        ) : (
-          <div>
-            {(ultimeSessioni as any[]).map((s, i) => (
-              <div key={s.id} className="flex items-center gap-4 px-6 py-4"
-                style={{ borderBottom: i < ultimeSessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
-                  <FontAwesomeIcon
-                    icon={s.completata ? faCircleCheck : faPause}
-                    style={{ color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)' }} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
-                    {s.scheda_giorni?.nome ?? 'Allenamento'}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-                    {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </p>
-                </div>
-                <span className="text-xs px-2.5 py-1 rounded-full"
-                  style={{
-                    background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                    color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
-                  }}>
-                  {s.completata ? 'Completato' : 'Incompleto'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <UltimeSessioniList sessioni={(ultimeSessioni as any) ?? []} />
       </div>
     </div>
   )
