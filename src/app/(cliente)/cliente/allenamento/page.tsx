@@ -438,9 +438,9 @@ export default function AllenamentoPage() {
     }))
   }
 
-  const toggleSerie = async (ese: SchedaEsercizio, serieIndex: number) => {
+  const toggleSerie = async (ese: SchedaEsercizio, serieIndex: number, overrides?: Partial<LogSerie>) => {
     if (!sessioneId || isViewMode) return
-    const log = logs[ese.id]?.serie[serieIndex]
+    const log = { ...logs[ese.id]?.serie[serieIndex], ...overrides }
     if (!log) return
     const nuovoStato = !log.completata
     setLogs(prev => ({
@@ -944,7 +944,7 @@ export default function AllenamentoPage() {
                             const durataEffettiva = eseTimerState?.fase === 'run' ? eseTimerState.secondi : 0
                             updateLog(ese.id, serieIndex, 'durata_secondi', String(durataEffettiva))
                             setEseTimerState(null)
-                            toggleSerie(ese, serieIndex)
+                            toggleSerie(ese, serieIndex, { durata_secondi: String(durataEffettiva) })
                           }
                           return (
                             <div className="flex items-center gap-3">
