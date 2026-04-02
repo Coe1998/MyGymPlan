@@ -15,20 +15,20 @@ function useInView(threshold = 0.15) {
 }
 
 const COACH_BENEFITS = [
-  { num: '01', title: '7 alert intelligenti per cliente', body: "Inattività, check-in mancanti, calo volume −30%, sessioni incomplete, stress elevato, variazione peso anomala, esercizi saltati. Tocca l'alert e vedi i dati specifici." },
-  { num: '02', title: 'Analytics avanzate per ogni cliente', body: 'e1RM stimato per esercizio, volume per gruppo muscolare, pattern benessere settimanale, andamento peso. Tutto aggregato in una pagina.' },
-  { num: '03', title: 'Report condivisibile in un click', body: "Genera un'immagine con i progressi del cliente — punti forti, muscoli da migliorare, KPI del periodo. Inviala in chat o salvala sul dispositivo." },
-  { num: '04', title: 'Schede avanzate in 3 minuti', body: 'Superset, dropset, piramidale, RPE/RIR, timer, unilaterale. Assegna la scheda e il cliente la vede subito sull'app.' },
-  { num: '05', title: 'Progressione automatica dei carichi', body: "Triple Progression inter-sessione: l'algoritmo suggerisce peso, serie o reps ottimali per ogni cliente. Zero calcoli manuali." },
-  { num: '06', title: 'Tutto in un posto solo', body: 'Scheda, chat, report, progressi, piano alimentare. Smetti di usare 4 app diverse per ogni cliente.' },
+  { num: "01", title: "7 alert intelligenti per cliente", body: "Inattività, check-in mancanti, calo volume −30%, sessioni incomplete, stress elevato, variazione peso anomala, esercizi saltati. Tocca l'alert e vedi i dati specifici." },
+  { num: "02", title: "Analytics avanzate per ogni cliente", body: "e1RM stimato per esercizio, volume per gruppo muscolare, pattern benessere settimanale, andamento peso. Tutto aggregato in una pagina." },
+  { num: "03", title: "Report condivisibile in un click", body: "Genera un'immagine con i progressi del cliente — punti forti, muscoli da migliorare, KPI del periodo. Inviala in chat o salvala sul dispositivo." },
+  { num: "04", title: "Schede avanzate in 3 minuti", body: "Superset, dropset, piramidale, RPE/RIR, timer, unilaterale. Assegna la scheda e il cliente la vede subito sull'app." },
+  { num: "05", title: "Progressione automatica dei carichi", body: "Triple Progression inter-sessione: l'algoritmo suggerisce peso, serie o reps ottimali per ogni cliente. Zero calcoli manuali." },
+  { num: "06", title: "Tutto in un posto solo", body: "Scheda, chat, report, progressi, piano alimentare. Smetti di usare 4 app diverse per ogni cliente." },
 ]
 
 const ATLETA_FEATURES = [
-  { num: '01', title: 'Triple Progression automatica', body: "Finisci una sessione e l'app calcola quanto caricare nella prossima. Peso, serie o reps — scegli tu la direzione, l'algoritmo fa i conti." },
-  { num: '02', title: 'Forza stimata (e1RM) e grafici muscoli', body: 'Traccia la forza stimata per ogni esercizio settimana dopo settimana. Vedi quali muscoli stai sviluppando e dove sei indietro.' },
-  { num: '03', title: 'Share card con i tuoi highlight', body: 'Finito l'allenamento, genera una card con i tuoi record — "Planche 36s", "Panca +5kg". Condividila sui social con un tap.' },
-  { num: '04', title: 'Schede avanzate come un pro', body: 'Crea le tue schede con superset, dropset, timer, unilaterale, RPE. Lo stesso editor dei coach professionisti.' },
-  { num: '05', title: 'Check-in e benessere', body: 'Logga energia, sonno, stress e motivazione ogni giorno. Capisci quando spingere e quando recuperare.' },
+  { num: "01", title: "Triple Progression automatica", body: "Finisci una sessione e l'app calcola quanto caricare nella prossima. Peso, serie o reps — scegli tu la direzione, l'algoritmo fa i conti." },
+  { num: "02", title: "Forza stimata (e1RM) e grafici muscoli", body: "Traccia la forza stimata per ogni esercizio settimana dopo settimana. Vedi quali muscoli stai sviluppando e dove sei indietro." },
+  { num: "03", title: "Share card con i tuoi highlight", body: "Finito l'allenamento, genera una card con i tuoi record — Planche 36s, Panca +5kg. Condividila sui social con un tap." },
+  { num: "04", title: "Schede avanzate come un pro", body: "Crea le tue schede con superset, dropset, timer, unilaterale, RPE. Lo stesso editor dei coach professionisti." },
+  { num: "05", title: "Check-in e benessere", body: "Logga energia, sonno, stress e motivazione ogni giorno. Capisci quando spingere e quando recuperare." },
 ]
 
 const STEPS = [
