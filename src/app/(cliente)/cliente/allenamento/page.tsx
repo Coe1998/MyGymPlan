@@ -138,7 +138,7 @@ export default function AllenamentoPage() {
         const serieLog: LogSerie[] = []
         for (let i = 1; i <= ese.serie; i++) {
           const es = logEsistenti?.find((l: any) => l.scheda_esercizio_id === ese.id && l.numero_serie === i)
-          serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi?.toString() ?? '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
+          serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi != null ? es.durata_secondi.toString() : '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
         }
         logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
       }
@@ -243,7 +243,7 @@ export default function AllenamentoPage() {
       const serieLog: LogSerie[] = []
       for (let i = 1; i <= ese.serie; i++) {
         const es = logEsistenti?.find(l => l.scheda_esercizio_id === ese.id && l.numero_serie === i)
-        serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi?.toString() ?? '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
+        serieLog.push({ numero_serie: i, peso_kg: es?.peso_kg?.toString() ?? '', ripetizioni: es?.ripetizioni?.toString() ?? '', reps_sx: es?.reps_sx?.toString() ?? '', reps_dx: es?.reps_dx?.toString() ?? '', durata_secondi: es?.durata_secondi != null ? es.durata_secondi.toString() : '', rpe: es?.rpe?.toString() ?? '', rir: es?.rir?.toString() ?? '', completata: es?.completata ?? false })
       }
       logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
     }
@@ -958,11 +958,11 @@ export default function AllenamentoPage() {
                               </div>
                               <div className="flex-1 flex flex-col items-center gap-1">
                                 <label className="text-xs mb-1 block self-start" style={{ color: 'oklch(0.50 0 0)' }}>
-                                  {serie.completata ? `${serie.durata_secondi || '—'}s` : isPre ? `VIA tra ${eseTimerState?.secondi}s` : isRun ? `${eseTimerState?.secondi}s` : `Obiettivo: ${durataTarget}s`}
+                                  {serie.completata ? (serie.durata_secondi && serie.durata_secondi !== '0' ? `${serie.durata_secondi}s` : '—') : isPre ? `VIA tra ${eseTimerState?.secondi}s` : isRun ? `${eseTimerState?.secondi}s` : `Obiettivo: ${durataTarget}s`}
                                 </label>
                                 {serie.completata ? (
                                   <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold"
-                                    style={inputStyle}>{serie.durata_secondi || '—'}s</div>
+                                    style={inputStyle}>{serie.durata_secondi !== '' && serie.durata_secondi !== '0' && serie.durata_secondi ? `${serie.durata_secondi}s` : '—'}</div>
                                 ) : isRun ? (
                                   <button onClick={handleTimerStop}
                                     className="w-full px-3 py-3 rounded-xl text-base text-center font-bold transition-all active:scale-95"
