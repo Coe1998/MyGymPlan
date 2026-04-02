@@ -37,7 +37,7 @@ interface ClienteStats {
     note: string | null
   } | null
   misurazioni: Misurazione[]
-  alert: string[]
+  alert: { label: string; dettaglio: string }[]
 }
 
 interface LogSerie {
@@ -122,6 +122,7 @@ export default function AnalyticsPage() {
   const [totaleAssegnazioni, setTotaleAssegnazioni] = useState(0)
   const [totaleSessioni, setTotaleSessioni] = useState(0)
   const [clienteSelezionato, setClienteSelezionato] = useState<ClienteStats | null>(null)
+  const [alertAperto, setAlertAperto] = useState<{ clienteId: string; idx: number } | null>(null)
   const [sessioniDettaglio, setSessioniDettaglio] = useState<SessioneDettaglio[]>([])
   const [loadingSessioni, setLoadingSessioni] = useState(false)
   const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
@@ -268,17 +269,17 @@ export default function AnalyticsPage() {
 
       // ── 1. Inattività ─────────────────────────────────────────────
       if (sessioni.length === 0) {
-        alert.push('Non si è mai allenato')
+        alert.push({ label: 'Non si è mai allenato', dettaglio: 'Questo cliente non ha ancora completato nessuna sessione di allenamento.' })
       } else if (giorniInattivo !== null && giorniInattivo >= 4) {
-        alert.push(`Inattivo da ${giorniInattivo} giorni`)
+        alert.push({ label: `Inattivo da ${giorniInattivo} giorni`, dettaglio: `Ultima sessione registrata ${giorniInattivo} giorni fa (${ultimaSessione ? new Date(ultimaSessione).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) : '—'}). Soglia: 4 giorni.` })
       }
 
       // ── 2. Check-in mancante ──────────────────────────────────────
       if (!ultimoCheckin) {
-        alert.push('Nessun check-in ancora')
+        alert.push({ label: 'Nessun check-in ancora', dettaglio: 'Il cliente non ha mai compilato un check-in giornaliero.' })
       } else {
         const giorniSenzaCheckin = Math.floor((Date.now() - new Date(ultimoCheckin.data).getTime()) / (1000 * 60 * 60 * 24))
-        if (giorniSenzaCheckin >= 4) alert.push(`Check-in mancante da ${giorniSenzaCheckin} giorni`)
+        if (giorniSenzaCheckin >= 4) alert.push({ label: `Check-in mancante da ${giorniSenzaCheckin} giorni`, dettaglio: `Ultimo check-in: ${new Date(ultimoCheckin!.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}. Soglia: 4 giorni senza compilare.` })
 
         // ── 3. Check-in negativi consecutivi ─────────────────────────
         const ultimi3 = ultimi3CheckinPerCliente.get(clienteId) ?? []
@@ -286,15 +287,15 @@ export default function AnalyticsPage() {
           const isCritico = (c: any) =>
             c.energia <= 2 || c.sonno <= 2 || c.stress >= 4 || c.motivazione <= 2
           if (ultimi3.every(isCritico)) {
-            alert.push('3+ check-in negativi consecutivi')
+            alert.push({ label: '3+ check-in negativi consecutivi', dettaglio: `Ultimi 3 check-in tutti critici (energia ≤2, stress ≥4 o motivazione ≤2). Ultimo: E${ultimi3[0]?.energia} S${ultimi3[0]?.sonno} St${ultimi3[0]?.stress} M${ultimi3[0]?.motivazione}.` })
           }
         }
 
         // Check-in singolo critico
-        if (ultimoCheckin.stress >= 4) alert.push('Stress elevato')
-        if (ultimoCheckin.energia <= 2) alert.push('Energia bassa')
-        if (ultimoCheckin.motivazione <= 2) alert.push('Motivazione bassa')
-        if (ultimoCheckin.sonno <= 2) alert.push('Sonno scarso')
+        if (ultimoCheckin.stress >= 4) alert.push({ label: 'Stress elevato', dettaglio: `Ultimo check-in: stress ${ultimoCheckin.stress}/5 (${new Date(ultimoCheckin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}). Scala: 1=basso, 5=alto.` })
+        if (ultimoCheckin.energia <= 2) alert.push({ label: 'Energia bassa', dettaglio: `Ultimo check-in: energia ${ultimoCheckin.energia}/5 (${new Date(ultimoCheckin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}).` })
+        if (ultimoCheckin.motivazione <= 2) alert.push({ label: 'Motivazione bassa', dettaglio: `Ultimo check-in: motivazione ${ultimoCheckin.motivazione}/5 (${new Date(ultimoCheckin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}).` })
+        if (ultimoCheckin.sonno <= 2) alert.push({ label: 'Sonno scarso', dettaglio: `Ultimo check-in: sonno ${ultimoCheckin.sonno}/5 (${new Date(ultimoCheckin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}).` })
       }
 
       // ── 4. Peso anomalo ────────────────────────────────────────────
@@ -305,7 +306,7 @@ export default function AnalyticsPage() {
         if (ultima && penultima) {
           const deltaPeso = Math.abs(ultima - penultima)
           if (deltaPeso >= 3) {
-            alert.push(`Variazione peso anomala: ${ultima > penultima ? '+' : '-'}${deltaPeso.toFixed(1)} kg`)
+            alert.push({ label: `Variazione peso anomala: ${ultima > penultima ? '+' : ''}${(ultima - penultima).toFixed(1)} kg`, dettaglio: `Da ${penultima} kg → ${ultima} kg. Variazione di ${deltaPeso.toFixed(1)} kg tra le ultime 2 misurazioni.` })
           }
         }
       }
@@ -324,7 +325,7 @@ export default function AnalyticsPage() {
             const completate = logUltima.filter(l => l.completata).length
             const perc = completate / logUltima.length
             if (perc < 0.8) {
-              alert.push(`Ultima sessione incompleta (${Math.round(perc * 100)}%)`)
+              alert.push({ label: `Ultima sessione incompleta (${Math.round(perc * 100)}%)`, dettaglio: `${completate} serie completate su ${logUltima.length} totali (${Math.round(perc * 100)}%). Soglia: 80%.` })
             }
           }
         }
@@ -345,7 +346,7 @@ export default function AnalyticsPage() {
           }
           for (const [eseId, skippedCount] of eseSkipped) {
             if (skippedCount >= 2 && (eseCount.get(eseId) ?? 0) >= 2) {
-              alert.push('Esercizio sistematicamente saltato')
+              alert.push({ label: 'Esercizio sistematicamente saltato', dettaglio: 'Un esercizio è stato saltato (0 serie completate) nelle ultime 2 sessioni consecutive.' })
               break
             }
           }
@@ -365,7 +366,7 @@ export default function AnalyticsPage() {
           const volRecente = calcVolume(sessRecentiCliente.slice(0, 3).map(s => s.id))
           const volPrecedente = calcVolume(sessRecentiCliente.slice(3, 6).map(s => s.id))
           if (volPrecedente > 0 && volRecente < volPrecedente * 0.7) {
-            alert.push('Calo volume allenamento −30%+')
+            alert.push({ label: 'Calo volume allenamento −30%+', dettaglio: `Media ultime 3 sessioni: ${Math.round(volRecente).toLocaleString('it-IT')} kg×reps vs ${Math.round(volPrecedente).toLocaleString('it-IT')} kg×reps nelle 3 precedenti (−${Math.round((1 - volRecente/volPrecedente)*100)}%).` })
           }
         }
       }
@@ -796,19 +797,30 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
 
-                      {/* Alert list con colori per categoria */}
+                      {/* Alert list con popover dettaglio */}
                       <div className="flex flex-wrap gap-2">
-                        {c.alert.map((alert, i) => {
-                          const isRed = alert.includes('Inattivo') || alert.includes('mai allenato') || alert.includes('incompleta') || alert.includes('saltato') || alert.includes('Calo volume')
-                          const isOrange = alert.includes('Stress') || alert.includes('negativi') || alert.includes('anomala')
-                          const isYellow = alert.includes('Check-in') || alert.includes('Energia') || alert.includes('Motivazione') || alert.includes('Sonno')
+                        {c.alert.map((a, i) => {
+                          const isRed = a.label.includes('Inattivo') || a.label.includes('mai allenato') || a.label.includes('incompleta') || a.label.includes('saltato') || a.label.includes('Calo volume')
+                          const isOrange = a.label.includes('Stress') || a.label.includes('negativi') || a.label.includes('anomala')
                           const bg = isRed ? 'oklch(0.65 0.22 27 / 18%)' : isOrange ? 'oklch(0.70 0.19 46 / 18%)' : 'oklch(0.75 0.15 80 / 18%)'
                           const color = isRed ? 'oklch(0.75 0.15 27)' : isOrange ? 'oklch(0.75 0.14 46)' : 'oklch(0.80 0.12 80)'
+                          const isOpen = alertAperto?.clienteId === c.id && alertAperto?.idx === i
                           return (
-                            <span key={i} className="text-xs px-3 py-1.5 rounded-full font-medium"
-                              style={{ background: bg, color }}>
-                              <FontAwesomeIcon icon={faTriangleExclamation} /> {alert}
-                            </span>
+                            <div key={i} className="relative">
+                              <button
+                                onClick={() => setAlertAperto(isOpen ? null : { clienteId: c.id, idx: i })}
+                                className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+                                style={{ background: bg, color, outline: isOpen ? `2px solid ${color}` : 'none', outlineOffset: 1 }}>
+                                <FontAwesomeIcon icon={faTriangleExclamation} /> {a.label}
+                              </button>
+                              {isOpen && (
+                                <div className="absolute bottom-full left-0 mb-2 z-50 w-64 rounded-2xl px-4 py-3 text-xs"
+                                  style={{ background: 'oklch(0.20 0 0)', border: `1px solid ${color}`, color: 'oklch(0.80 0 0)', lineHeight: 1.6, boxShadow: '0 8px 24px oklch(0 0 0 / 40%)' }}>
+                                  <p style={{ color, fontWeight: 600, marginBottom: 4 }}>{a.label}</p>
+                                  <p>{a.dettaglio}</p>
+                                </div>
+                              )}
+                            </div>
                           )
                         })}
                       </div>
