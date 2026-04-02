@@ -52,7 +52,7 @@ const TIPI = [
 const getTipoInfo = (tipo: string) => TIPI.find(t => t.id === tipo) ?? TIPI[0]
 
 // ── Sub-component: exercise form ─────────────────────────────────
-function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, saving }: {
+function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, saving, onQuickAdd }: {
   form: EsForm
   onChange: (f: EsForm) => void
   esercizi: Esercizio[]
@@ -60,6 +60,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
   onSave: () => void
   onCancel: () => void
   saving: boolean
+  onQuickAdd?: (eseId: string, esercizio: Esercizio) => void
 }) {
   const [searchP, setSearchP] = useState('')
   const [searchA, setSearchA] = useState('')
@@ -115,6 +116,12 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
   const selectEsercizio = (id: string) => {
     const ese = esercizi.find(e => e.id === id)
+    if (!ese) return
+    if (onQuickAdd) {
+      onQuickAdd(id, ese)
+      setSearchP('')
+      return
+    }
     const isTimer = ese?.tipo_input === 'timer'
     onChange({
       ...form,
@@ -552,7 +559,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
       {/* ── Actions ── */}
       <div className="flex gap-3 pt-1">
-        <button onClick={onSave} disabled={saving || !form.esercizio_id}
+        {!onQuickAdd && <button onClick={onSave} disabled={saving || !form.esercizio_id}
           className="flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
           style={{
             background: !form.esercizio_id ? 'oklch(0.28 0 0)' : 'oklch(0.70 0.19 46)',
@@ -561,7 +568,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           }}>
           <FontAwesomeIcon icon={faCheck} />
           {saving ? 'Salvataggio...' : 'Salva'}
-        </button>
+        </button>}
         <button onClick={onCancel}
           className="px-5 py-3 rounded-xl text-sm font-medium"
           style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
@@ -587,6 +594,11 @@ export default function SchedaEditorModal({
   const [newGiornoNome, setNewGiornoNome] = useState('')
   const [addingEse, setAddingEse] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  // Pending exercises — in memoria, salvati tutti insieme al fondo
+  const [pendingEsercizi, setPendingEsercizi] = useState<{
+    tempId: string; giornoId: string; eseId: string; esercizio: any; form: EsForm; expanded: boolean
+  }[]>([])
+  const [savingPending, setSavingPending] = useState(false)
   const [form, setForm] = useState<EsForm>(EMPTY)
   const [editForm, setEditForm] = useState<EsForm>(EMPTY)
   const [saving, setSaving] = useState(false)
@@ -799,6 +811,39 @@ export default function SchedaEditorModal({
       prepara_secondi: f.prepara_secondi ? (parseInt(f.prepara_secondi) || null) : null,
       progressione_tipo: f.progressione_tipo || 'peso',
     }
+  }
+
+  const handleQuickAdd = (eseId: string, esercizio: any) => {
+    if (!activeGiorno) return
+    const isTimer = esercizio.tipo_input === 'timer'
+    const defaultForm: EsForm = {
+      ...EMPTY,
+      esercizio_id: eseId,
+      ripetizioni: isTimer ? '30' : '8-12',
+      progressione_tipo: isTimer ? 'durata' : 'peso',
+    }
+    setPendingEsercizi(prev => [...prev, {
+      tempId: crypto.randomUUID(),
+      giornoId: activeGiorno,
+      eseId,
+      esercizio,
+      form: defaultForm,
+      expanded: false,
+    }])
+  }
+
+  const handleSavePending = async () => {
+    const forCurrentGiorno = pendingEsercizi.filter(p => p.giornoId === activeGiorno)
+    if (forCurrentGiorno.length === 0) return
+    setSavingPending(true)
+    const giorno = giorni.find(g => g.id === activeGiorno)
+    const baseOrdine = giorno?.scheda_esercizi?.length ?? 0
+    await Promise.all(forCurrentGiorno.map((p, i) =>
+      supabase.from('scheda_esercizi').insert(buildPayload(p.form, p.giornoId, baseOrdine + i))
+    ))
+    setPendingEsercizi(prev => prev.filter(p => p.giornoId !== activeGiorno))
+    setSavingPending(false)
+    await fetchAll()
   }
 
   const handleSaveEse = async () => {
@@ -1345,7 +1390,51 @@ export default function SchedaEditorModal({
                     )
                   })}
 
-                  {/* Add exercise */}
+                  {/* Pending exercises — placeholder cards */}
+                  {pendingEsercizi.filter(p => p.giornoId === activeGiorno).map(p => (
+                    <div key={p.tempId} className="rounded-2xl overflow-hidden"
+                      style={{ background: 'oklch(0.19 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)' }}>
+                      <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
+                        onClick={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: !x.expanded } : x))}>
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                          style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
+                          +
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold truncate" style={{ color: 'oklch(0.97 0 0)' }}>{p.esercizio.nome}</p>
+                          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                            {p.form.serie}×{p.form.ripetizioni} · {p.form.recupero}s rec. · {p.form.progressione_tipo}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                            da salvare
+                          </span>
+                          <button onClick={e => { e.stopPropagation(); setPendingEsercizi(prev => prev.filter(x => x.tempId !== p.tempId)) }}
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.70 0.20 27)' }}>
+                            <FontAwesomeIcon icon={faXmark} className="text-xs" />
+                          </button>
+                        </div>
+                      </div>
+                      {p.expanded && (
+                        <div style={{ borderTop: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+                          <EsercizioForm
+                            form={p.form}
+                            onChange={newForm => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, form: newForm } : x))}
+                            esercizi={esercizi}
+                            gruppi={gruppiGiorno}
+                            onSave={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
+                            onCancel={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
+                            saving={false}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Add exercise — search panel */}
                   {addingEse ? (
                     <div className="rounded-2xl overflow-hidden"
                       style={{ background: 'oklch(0.19 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
@@ -1357,6 +1446,7 @@ export default function SchedaEditorModal({
                         onSave={handleSaveEse}
                         onCancel={() => { setAddingEse(false); setForm(EMPTY) }}
                         saving={saving}
+                        onQuickAdd={(eseId, ese) => { handleQuickAdd(eseId, ese); }}
                       />
                     </div>
                   ) : (
@@ -1369,6 +1459,22 @@ export default function SchedaEditorModal({
                         border: '2px dashed oklch(0.70 0.19 46 / 25%)',
                       }}>
                       <FontAwesomeIcon icon={faPlus} /> Aggiungi esercizio
+                    </button>
+                  )}
+
+                  {/* Salva tutto button */}
+                  {pendingEsercizi.filter(p => p.giornoId === activeGiorno).length > 0 && (
+                    <button
+                      onClick={handleSavePending}
+                      disabled={savingPending}
+                      className="w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all active:scale-95"
+                      style={{
+                        background: 'oklch(0.70 0.19 46)',
+                        color: 'oklch(0.11 0 0)',
+                      }}>
+                      {savingPending
+                        ? 'Salvataggio...'
+                        : `Salva ${pendingEsercizi.filter(p => p.giornoId === activeGiorno).length} esercizi`}
                     </button>
                   )}
                 </>
