@@ -3,31 +3,39 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faHouse, faDumbbell, faClipboardList, faListCheck,
-  faRightFromBracket, faRocket, faLock, faGear,
+  faRightFromBracket, faRocket, faGear, faChartLine,
 } from '@fortawesome/free-solid-svg-icons'
 
-const navItems = [
+const NAV_BASE = [
   { href: '/atleta/dashboard', label: 'Home', icon: faHouse },
   { href: '/atleta/allenamento', label: 'Allena', icon: faDumbbell },
   { href: '/atleta/schede', label: 'Schede', icon: faClipboardList },
   { href: '/atleta/esercizi', label: 'Esercizi', icon: faListCheck },
-  { href: '/atleta/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
-const navItemsLocked = [
-  { href: '/atleta/progressi', label: 'Progressi', icon: faLock, locked: true },
-]
+const NAV_PROGRESSI = { href: '/atleta/progressi', label: 'Progressi', icon: faChartLine }
+const NAV_IMPOSTAZIONI = { href: '/atleta/impostazioni', label: 'Impostazioni', icon: faGear }
 
 export default function AtletaSidebar({ profile }: { profile: Profile }) {
   const pathname = usePathname()
   const router = useRouter()
   const isPro = profile.piano === 'pro'
+  const [allenamentoUrl, setAllenamentoUrl] = useState('/atleta/allenamento')
+
+  useEffect(() => {
+    const saved = localStorage.getItem('bynari_allenamento_url')
+    if (saved && saved.startsWith('/atleta/')) setAllenamentoUrl(saved)
+  }, [pathname])
+
+  const navItems = [...NAV_BASE, ...(isPro ? [NAV_PROGRESSI] : []), NAV_IMPOSTAZIONI]
+  const navItemsMobile = [...NAV_BASE, ...(isPro ? [NAV_PROGRESSI] : [])]
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -55,9 +63,10 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
             style={{ color: 'oklch(0.40 0 0)' }}>Navigazione</p>
 
           {navItems.map((item) => {
+            const href = item.label === 'Allena' ? allenamentoUrl : item.href
             const isActive = pathname.startsWith(item.href)
             return (
-              <Link key={item.href} href={item.href}
+              <Link key={item.href} href={href}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{
                   background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent',
@@ -70,21 +79,21 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
             )
           })}
 
-          {/* Voci bloccate */}
-          {navItemsLocked.map((item) => (
-            <Link key={item.href} href={item.href}
+          {/* Progressi bloccato — solo free */}
+          {!isPro && (
+            <Link href="/atleta/progressi"
               className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all opacity-50 hover:opacity-70"
               style={{ color: 'oklch(0.45 0 0)', borderLeft: '3px solid transparent' }}>
               <div className="flex items-center gap-3">
-                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                {item.label}
+                <FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />
+                Progressi
               </div>
               <span className="text-xs px-1.5 py-0.5 rounded"
                 style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
                 Pro
               </span>
             </Link>
-          ))}
+          )}
         </nav>
 
         {/* Upgrade banner — solo free */}
@@ -135,10 +144,11 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
           borderTop: '1px solid oklch(1 0 0 / 8%)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
-        {navItems.map((item) => {
+        {navItemsMobile.map((item) => {
+          const href = item.label === 'Allena' ? allenamentoUrl : item.href
           const isActive = pathname.startsWith(item.href)
           return (
-            <Link key={item.href} href={item.href}
+            <Link key={item.href} href={href}
               className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
               style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
               <FontAwesomeIcon icon={item.icon} className="text-xl"
@@ -150,14 +160,18 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
             </Link>
           )
         })}
-        <button onClick={handleLogout}
-          className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl flex-1">
+        <Link href="/atleta/impostazioni"
+          className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
+          style={{ background: pathname.startsWith('/atleta/impostazioni') ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
           <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
             style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
             {profile.full_name?.charAt(0).toUpperCase()}
           </div>
-          <span className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>Esci</span>
-        </button>
+          <span className="text-xs font-medium"
+            style={{ color: pathname.startsWith('/atleta/impostazioni') ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+            Profilo
+          </span>
+        </Link>
       </nav>
     </>
   )

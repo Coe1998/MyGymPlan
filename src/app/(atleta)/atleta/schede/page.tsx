@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboardList, faPlus, faTrash, faArrowRight, faLock } from '@fortawesome/free-solid-svg-icons'
+import { faClipboardList, faCircleCheck, faXmark, faCopy, faHourglass } from '@fortawesome/free-solid-svg-icons'
 import { PIANI } from '@/lib/piani'
 import PaywallModal from '@/components/shared/PaywallModal'
+import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 
 interface Scheda {
   id: string
@@ -14,28 +14,30 @@ interface Scheda {
   descrizione: string | null
   created_at: string
   scheda_giorni: { id: string }[]
+  assegnazioni: { id: string; attiva: boolean }[]
 }
 
 export default function AtletaSchedePage() {
-  const supabase = createClient()
-  const router = useRouter()
+  const supabase = useMemo(() => createClient(), [])
   const [schede, setSchede] = useState<Scheda[]>([])
   const [piano, setPiano] = useState<'free' | 'pro'>('free')
+  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [showPaywall, setShowPaywall] = useState(false)
-  const [creando, setCreando] = useState(false)
-  const [nomeNuova, setNomeNuova] = useState('')
-  const [showForm, setShowForm] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [editingScheda, setEditingScheda] = useState<{ id: string; nome: string } | null>(null)
 
   const fetchSchede = async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    setUserId(user.id)
     const { data: profile } = await supabase.from('profiles').select('piano').eq('id', user.id).single()
     setPiano(profile?.piano ?? 'free')
     const { data } = await supabase
       .from('schede')
-      .select('id, nome, descrizione, created_at, scheda_giorni ( id )')
+      .select('id, nome, descrizione, created_at, scheda_giorni ( id ), assegnazioni ( id, attiva )')
       .eq('coach_id', user.id)
       .order('created_at', { ascending: false })
     setSchede((data as any) ?? [])
@@ -47,25 +49,26 @@ export default function AtletaSchedePage() {
   const limite = PIANI[piano].max_schede
   const limitaRaggiunto = schede.length >= limite
 
-  const handleNuovaScheda = () => {
+  const handleNuovaScheda = async () => {
     if (limitaRaggiunto) { setShowPaywall(true); return }
-    setShowForm(true)
-  }
-
-  const handleCreaScheda = async () => {
-    if (!nomeNuova.trim()) return
-    setCreando(true)
+    setCreating(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { setCreating(false); return }
 
-    // Crea scheda
     const { data: nuova } = await supabase
       .from('schede')
-      .insert({ coach_id: user.id, nome: nomeNuova.trim(), is_template: false })
+      .insert({ coach_id: user.id, nome: 'Nuova scheda', is_template: false })
       .select().single()
 
     if (nuova) {
-      // Auto-assegnazione: il coach_id e cliente_id sono lo stesso utente
+      // Disattiva assegnazioni precedenti
+      await supabase.from('assegnazioni')
+        .update({ attiva: false })
+        .eq('cliente_id', user.id)
+        .eq('coach_id', user.id)
+        .eq('attiva', true)
+
+      // Auto-assegnazione self-service
       await supabase.from('assegnazioni').insert({
         scheda_id: nuova.id,
         cliente_id: user.id,
@@ -73,136 +76,203 @@ export default function AtletaSchedePage() {
         data_inizio: new Date().toISOString().split('T')[0],
         attiva: true,
       })
-      router.push(`/atleta/schede/${nuova.id}`)
+
+      setEditingScheda({ id: nuova.id, nome: nuova.nome })
     }
-    setCreando(false)
+    setCreating(false)
   }
 
   const handleDelete = async (id: string, nome: string) => {
-    if (!confirm(`Eliminare la scheda "${nome}"? Tutti i dati verranno persi.`)) return
+    if (!confirm(`Eliminare la scheda "${nome}"? Questa azione è irreversibile.`)) return
     await supabase.from('schede').delete().eq('id', id)
     fetchSchede()
   }
 
+  const handleDuplica = async (scheda: Scheda) => {
+    if (limitaRaggiunto) { setShowPaywall(true); return }
+    setDuplicating(scheda.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setDuplicating(null); return }
+
+    const { data: nuovaScheda } = await supabase
+      .from('schede')
+      .insert({ coach_id: user.id, nome: `${scheda.nome} (copia)`, descrizione: scheda.descrizione, is_template: false })
+      .select().single()
+
+    if (!nuovaScheda) { setDuplicating(null); return }
+
+    const { data: giorni } = await supabase
+      .from('scheda_giorni')
+      .select('id, nome, ordine, scheda_esercizi ( esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine )')
+      .eq('scheda_id', scheda.id).order('ordine')
+
+    if (giorni && giorni.length > 0) {
+      for (const giorno of giorni) {
+        const { data: nuovoGiorno } = await supabase
+          .from('scheda_giorni')
+          .insert({ scheda_id: nuovaScheda.id, nome: giorno.nome, ordine: giorno.ordine })
+          .select().single()
+        if (nuovoGiorno && (giorno as any).scheda_esercizi?.length > 0) {
+          await supabase.from('scheda_esercizi').insert(
+            (giorno as any).scheda_esercizi.map((se: any) => ({
+              giorno_id: nuovoGiorno.id, esercizio_id: se.esercizio_id,
+              serie: se.serie, ripetizioni: se.ripetizioni,
+              recupero_secondi: se.recupero_secondi, note: se.note, ordine: se.ordine,
+            }))
+          )
+        }
+      }
+    }
+
+    setDuplicating(null)
+    fetchSchede()
+  }
+
+  const handleAttivaScheda = async (schedaId: string) => {
+    if (!userId) return
+    await supabase.from('assegnazioni')
+      .update({ attiva: false })
+      .eq('cliente_id', userId)
+      .eq('coach_id', userId)
+      .eq('attiva', true)
+
+    const existing = await supabase.from('assegnazioni')
+      .select('id').eq('scheda_id', schedaId).eq('cliente_id', userId).eq('coach_id', userId).maybeSingle()
+
+    if (existing.data) {
+      await supabase.from('assegnazioni').update({ attiva: true }).eq('id', existing.data.id)
+    } else {
+      await supabase.from('assegnazioni').insert({
+        scheda_id: schedaId, cliente_id: userId, coach_id: userId,
+        data_inizio: new Date().toISOString().split('T')[0], attiva: true,
+      })
+    }
+    fetchSchede()
+  }
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl">
       {showPaywall && (
         <PaywallModal
           titolo="Sblocca più schede"
-          descrizione={`Con il piano Free puoi creare ${limite === 1 ? 'solo 1 scheda' : `${limite} schede`}. Passa a Pro per schede illimitate, più giorni e tutte le funzionalità avanzate.`}
+          descrizione={`Con il piano Free puoi creare ${limite === 1 ? 'solo 1 scheda' : `${limite} schede`}. Passa a Pro per schede illimitate e tutte le funzionalità avanzate.`}
           onClose={() => setShowPaywall(false)}
         />
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Schede</h1>
-          <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
-            {schede.length}/{limite === Infinity ? '∞' : limite} schede utilizzate
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+            Schede
+          </h1>
+          <p className="mt-0.5 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+            {loading ? '...' : `${schede.length}/${limite === Infinity ? '∞' : limite} schede`}
           </p>
         </div>
-        <button onClick={handleNuovaScheda}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{
-            background: limitaRaggiunto ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)',
-            color: limitaRaggiunto ? 'oklch(0.50 0 0)' : 'oklch(0.13 0 0)',
-            border: limitaRaggiunto ? '1px solid oklch(1 0 0 / 8%)' : 'none',
-          }}>
-          {limitaRaggiunto
-            ? <><FontAwesomeIcon icon={faLock} /> Limite raggiunto</>
-            : <><FontAwesomeIcon icon={faPlus} /> Nuova scheda</>}
+        <button onClick={handleNuovaScheda} disabled={creating}
+          className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          {creating ? '...' : '+ Nuova'}
         </button>
       </div>
 
-      {/* Banner limite raggiunto */}
-      {limitaRaggiunto && piano === 'free' && (
-        <div className="rounded-2xl p-4 flex items-center gap-4"
-          style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
-          <FontAwesomeIcon icon={faLock} style={{ color: 'oklch(0.70 0.19 46)' }} className="text-xl flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>Limite piano Free raggiunto</p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>
-              Passa a Pro per schede illimitate, fino a ∞ giorni e tutte le funzionalità.
-            </p>
-          </div>
-          <button onClick={() => setShowPaywall(true)}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold flex-shrink-0"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
-            Vai a Pro
-          </button>
+      {/* Lista */}
+      <div className="rounded-2xl overflow-hidden"
+        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="px-5 py-4 flex items-center justify-between"
+          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Le tue schede</h2>
+          <span className="text-xs font-semibold px-3 py-1 rounded-full"
+            style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+            {schede.length} totali
+          </span>
         </div>
-      )}
 
-      {/* Form nuova scheda */}
-      {showForm && (
-        <div className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Nuova scheda</h2>
-          <input type="text" value={nomeNuova} onChange={e => setNomeNuova(e.target.value)}
-            placeholder='es. "Push / Pull / Legs", "Full Body"' autoFocus
-            className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-            onKeyDown={e => e.key === 'Enter' && handleCreaScheda()}
-            onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
-          <div className="flex gap-3">
-            <button onClick={handleCreaScheda} disabled={creando || !nomeNuova.trim()}
-              className="px-6 py-2.5 rounded-xl text-sm font-semibold"
-              style={{
-                background: !nomeNuova.trim() ? 'oklch(0.35 0 0)' : 'oklch(0.70 0.19 46)',
-                color: 'oklch(0.13 0 0)',
-              }}>
-              {creando ? 'Creazione...' : 'Crea e modifica →'}
-            </button>
-            <button onClick={() => { setShowForm(false); setNomeNuova('') }}
-              className="px-6 py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-              Annulla
-            </button>
+        {loading ? (
+          <div className="py-16 text-center">
+            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
           </div>
-        </div>
-      )}
-
-      {/* Lista schede */}
-      {loading ? (
-        <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-      ) : schede.length === 0 ? (
-        <div className="rounded-2xl py-16 text-center space-y-3"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-5xl"><FontAwesomeIcon icon={faClipboardList} /></p>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda ancora</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Crea la tua prima scheda di allenamento</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {(schede as any[]).map((s) => (
-            <div key={s.id} className="rounded-2xl p-5 flex items-center gap-4 group"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{s.nome}</p>
-                {s.descrizione && (
-                  <p className="text-sm mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{s.descrizione}</p>
-                )}
-                <p className="text-xs mt-2" style={{ color: 'oklch(0.40 0 0)' }}>
-                  {s.scheda_giorni?.length ?? 0} giorni ·{' '}
-                  {new Date(s.created_at).toLocaleDateString('it-IT')}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button onClick={() => router.push(`/atleta/schede/${s.id}`)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
-                  style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                  Modifica <FontAwesomeIcon icon={faArrowRight} />
-                </button>
-                <button onClick={() => handleDelete(s.id, s.nome)}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                  style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
-                  <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                </button>
-              </div>
+        ) : schede.length === 0 ? (
+          <div className="py-16 text-center space-y-3">
+            <div className="text-5xl" style={{ color: 'oklch(0.35 0 0)' }}>
+              <FontAwesomeIcon icon={faClipboardList} />
             </div>
-          ))}
-        </div>
+            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda ancora</p>
+            <button onClick={handleNuovaScheda}
+              className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              + Crea scheda
+            </button>
+          </div>
+        ) : (
+          <div>
+            {schede.map((s, i) => {
+              const assegnazioniAttive = s.assegnazioni?.filter((a: any) => a.attiva) ?? []
+              const isAttiva = assegnazioniAttive.length > 0
+
+              return (
+                <div key={s.id}
+                  className="flex items-center gap-3 px-4 py-4 group transition-colors cursor-pointer hover:bg-white/2"
+                  style={{ borderBottom: i < schede.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
+                  onClick={() => setEditingScheda({ id: s.id, nome: s.nome })}>
+
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                    style={{ background: isAttiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 10%)' }}>
+                    <FontAwesomeIcon icon={isAttiva ? faCircleCheck : faClipboardList}
+                      style={{ color: isAttiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)' }} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold truncate" style={{ color: 'oklch(0.97 0 0)' }}>{s.nome}</p>
+                      {isAttiva && (
+                        <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
+                          style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+                          Attiva
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>
+                      {s.scheda_giorni?.length ?? 0} giorni ·{' '}
+                      {new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-1.5 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {!isAttiva && (
+                      <button onClick={() => handleAttivaScheda(s.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                        style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)', border: '1px solid oklch(0.65 0.18 150 / 25%)' }}>
+                        Attiva
+                      </button>
+                    )}
+                    <button onClick={() => handleDuplica(s)} disabled={duplicating === s.id}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+                      style={{ background: 'oklch(0.55 0.20 300 / 15%)', color: 'oklch(0.65 0.15 300)', border: '1px solid oklch(0.55 0.20 300 / 20%)' }}
+                      title="Duplica">
+                      <FontAwesomeIcon icon={duplicating === s.id ? faHourglass : faCopy} />
+                    </button>
+                    <button onClick={() => handleDelete(s.id, s.nome)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all"
+                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}
+                      title="Elimina">
+                      <FontAwesomeIcon icon={faXmark} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {editingScheda && (
+        <SchedaEditorModal
+          schedaId={editingScheda.id}
+          schedaNome={editingScheda.nome}
+          onClose={() => { setEditingScheda(null); fetchSchede() }}
+        />
       )}
     </div>
   )

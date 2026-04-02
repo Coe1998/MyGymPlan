@@ -148,6 +148,9 @@ export default function AllenamentoPage() {
       setSessioneData(nuova!.data)
     }
     setSessioneId(sessId)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bynari_allenamento_url', `/atleta/allenamento?giorno=${giornoId}&assegnazione=${assegnazioneId}`)
+    }
 
     const { data: logEsistenti } = await supabase.from('log_serie').select('*').eq('sessione_id', sessId)
 
@@ -235,6 +238,7 @@ export default function AllenamentoPage() {
     setSaving(true)
     if (durataRef.current) clearInterval(durataRef.current)
     await supabase.from('sessioni').update({ completata: true }).eq('id', sessioneId)
+    if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
     setCompletata(true)
     setSaving(false)
   }

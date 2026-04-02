@@ -28,7 +28,7 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Rotte protette — redirect al login se non autenticato
-  const protectedRoutes = ['/coach', '/cliente']
+  const protectedRoutes = ['/coach', '/cliente', '/atleta']
   const isProtected = protectedRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
   )

@@ -6,6 +6,7 @@ import {
   faDumbbell, faCalendarDays, faClipboardList,
   faCircleCheck, faPause, faPersonRunning, faHand,
 } from '@fortawesome/free-solid-svg-icons'
+import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
 
 export default async function AtletaDashboard() {
   const supabase = await createClient()
@@ -43,15 +44,25 @@ export default async function AtletaDashboard() {
     .limit(5)
 
   // Stats
-  const { count: totaleSessioni } = await supabase
-    .from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id)
-
   const inizioSettimana = new Date()
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
-  const { count: sessioniSettimana } = await supabase
-    .from('sessioni').select('id', { count: 'exact' })
-    .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString())
+  const oggi = new Date(); oggi.setHours(0, 0, 0, 0)
+
+  const [totaleRes, settimanaRes, checkinOggiRes, ultimoPesoRes] = await Promise.all([
+    supabase.from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id),
+    supabase.from('sessioni').select('id', { count: 'exact' })
+      .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString()),
+    supabase.from('checkin').select('id').eq('cliente_id', user.id)
+      .gte('data', oggi.toISOString()).maybeSingle(),
+    supabase.from('misurazioni').select('peso_kg, data').eq('cliente_id', user.id)
+      .order('data', { ascending: false }).limit(1).maybeSingle(),
+  ])
+
+  const totaleSessioni = totaleRes.count
+  const sessioniSettimana = settimanaRes.count
+  const checkinOggi = checkinOggiRes.data
+  const ultimoPeso = ultimoPesoRes.data
 
   const ora = new Date().getHours()
   const saluto = ora < 12 ? 'Buongiorno' : ora < 18 ? 'Buon pomeriggio' : 'Buonasera'
@@ -73,6 +84,13 @@ export default async function AtletaDashboard() {
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
+
+      {/* Card Check-in + Peso */}
+      <CheckinPesoCards
+        checkinFatto={!!checkinOggi}
+        ultimoPeso={ultimoPeso?.peso_kg ?? null}
+        ultimoPesoData={ultimoPeso?.data ?? null}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
