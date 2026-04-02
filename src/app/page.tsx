@@ -15,18 +15,20 @@ function useInView(threshold = 0.15) {
 }
 
 const COACH_BENEFITS = [
-  { num: '01', title: 'Sai chi sta per mollare', body: 'Vedi chi non si allena da giorni, chi ha lo stress alle stelle, chi dorme male. Intervieni prima che ti disdica.' },
-  { num: '02', title: 'Schede pronte in 3 minuti', body: 'Crea una scheda, salvala come template, assegnala a più clienti in un tap. Niente più Excel o PDF sparsi.' },
-  { num: '03', title: 'I clienti si allenano davvero', body: 'L\'app guida il cliente serie per serie con timer automatico. Più autonomia per loro, meno messaggi alle 22 per te.' },
-  { num: '04', title: 'Tutto in un posto solo', body: 'Scheda, piano alimentare, progressi, messaggi. Smetti di usare 4 app diverse per ogni cliente.' },
-  { num: '05', title: 'Progressione automatica dei carichi', body: 'I nostri algoritmi analizzano le performance storiche e suggeriscono l\'aumento di carico ideale per ogni cliente. Meno calcoli manuali per te, più risultati costanti per loro.' },
+  { num: '01', title: '7 alert intelligenti per cliente', body: "Inattività, check-in mancanti, calo volume −30%, sessioni incomplete, stress elevato, variazione peso anomala, esercizi saltati. Tocca l'alert e vedi i dati specifici." },
+  { num: '02', title: 'Analytics avanzate per ogni cliente', body: 'e1RM stimato per esercizio, volume per gruppo muscolare, pattern benessere settimanale, andamento peso. Tutto aggregato in una pagina.' },
+  { num: '03', title: 'Report condivisibile in un click', body: "Genera un'immagine con i progressi del cliente — punti forti, muscoli da migliorare, KPI del periodo. Inviala in chat o salvala sul dispositivo." },
+  { num: '04', title: 'Schede avanzate in 3 minuti', body: 'Superset, dropset, piramidale, RPE/RIR, timer, unilaterale. Assegna la scheda e il cliente la vede subito sull'app.' },
+  { num: '05', title: 'Progressione automatica dei carichi', body: "Triple Progression inter-sessione: l'algoritmo suggerisce peso, serie o reps ottimali per ogni cliente. Zero calcoli manuali." },
+  { num: '06', title: 'Tutto in un posto solo', body: 'Scheda, chat, report, progressi, piano alimentare. Smetti di usare 4 app diverse per ogni cliente.' },
 ]
 
 const ATLETA_FEATURES = [
-  { num: '01', title: 'Suggerimento carico in tempo reale', body: 'Logga una serie e l\'algoritmo ti dice subito quanto caricare nella successiva. Autoregolazione precisa, serie per serie, basata sulla tua performance attuale.' },
-  { num: '02', title: 'Vedi i progressi davvero', body: 'Grafici peso massimo e volume per esercizio. La curva di forza che cresce settimana dopo settimana.' },
-  { num: '03', title: 'Condividi i tuoi risultati', body: 'Card stile Strava con i tuoi highlight. Un tap e la condividi dove vuoi.' },
-  { num: '04', title: 'Tieni traccia di come stai', body: 'Check-in energia, sonno, stress. Capisci quando spingerti e quando recuperare.' },
+  { num: '01', title: 'Triple Progression automatica', body: "Finisci una sessione e l'app calcola quanto caricare nella prossima. Peso, serie o reps — scegli tu la direzione, l'algoritmo fa i conti." },
+  { num: '02', title: 'Forza stimata (e1RM) e grafici muscoli', body: 'Traccia la forza stimata per ogni esercizio settimana dopo settimana. Vedi quali muscoli stai sviluppando e dove sei indietro.' },
+  { num: '03', title: 'Share card con i tuoi highlight', body: 'Finito l'allenamento, genera una card con i tuoi record — "Planche 36s", "Panca +5kg". Condividila sui social con un tap.' },
+  { num: '04', title: 'Schede avanzate come un pro', body: 'Crea le tue schede con superset, dropset, timer, unilaterale, RPE. Lo stesso editor dei coach professionisti.' },
+  { num: '05', title: 'Check-in e benessere', body: 'Logga energia, sonno, stress e motivazione ogni giorno. Capisci quando spingere e quando recuperare.' },
 ]
 
 const STEPS = [
@@ -93,11 +95,24 @@ function MockDashboard() {
           </div>
         </div>
         {/* Alert */}
-        <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: 'oklch(0.75 0.15 27 / 10%)', border: '1px solid oklch(0.75 0.15 27 / 25%)' }}>
-          <div className="text-lg">⚠️</div>
-          <div>
-            <div className="text-xs font-bold" style={{ color: 'oklch(0.85 0.12 50)' }}>3 clienti non si allenano da 5+ giorni</div>
-            <div className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>Marco R. · Giulia T. · Andrea M.</div>
+        <div className="space-y-2">
+          <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: 'oklch(0.75 0.15 27 / 10%)', border: '1px solid oklch(0.75 0.15 27 / 25%)' }}>
+            <div className="text-lg">⚠️</div>
+            <div className="flex-1">
+              <div className="text-xs font-bold" style={{ color: 'oklch(0.85 0.12 50)' }}>3 clienti non si allenano da 5+ giorni</div>
+              <div className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>Marco R. · Giulia T. · Andrea M.</div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 px-1">
+            {[
+              { label: 'Calo volume −38%', color: 'oklch(0.75 0.15 27)', bg: 'oklch(0.65 0.22 27 / 18%)' },
+              { label: 'Stress elevato', color: 'oklch(0.75 0.14 46)', bg: 'oklch(0.70 0.19 46 / 18%)' },
+              { label: 'Check-in mancante 6gg', color: 'oklch(0.80 0.12 80)', bg: 'oklch(0.75 0.15 80 / 18%)' },
+            ].map(a => (
+              <span key={a.label} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: a.bg, color: a.color }}>
+                ▲ {a.label}
+              </span>
+            ))}
           </div>
         </div>
         {/* Client list */}
@@ -508,13 +523,13 @@ export default function LandingPage() {
               {
                 name: 'Pro', price: '???', period: 'coming soon',
                 color: 'oklch(0.70 0.19 46)',
-                features: ['Schede illimitate', 'Giorni illimitati', 'Progressi & grafici', 'Foto & misurazioni', 'Check-in benessere'],
+                features: ['Schede illimitate', 'Triple Progression automatica', 'e1RM & grafici forza', 'Muscoli & benessere analytics', 'Check-in & misurazioni', 'Share card highlight'],
                 cta: 'Avvisami al lancio', href: '#waitlist', highlight: true,
               },
               {
                 name: 'Coach', price: '???', period: 'coming soon',
                 color: 'oklch(0.65 0.18 150)',
-                features: ['Tutto il Pro', 'Clienti illimitati', 'Dashboard analytics', 'PDF alimentare', 'Alert clienti inattivi'],
+                features: ['Clienti illimitati', '7 alert intelligenti', 'Analytics avanzate (e1RM, muscoli)', 'Report condivisibile in chat', 'Chat integrata + piano alimentare'],
                 cta: 'Avvisami al lancio', href: '#waitlist', highlight: false,
               },
             ].map((plan, i) => (
