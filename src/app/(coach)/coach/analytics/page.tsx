@@ -265,7 +265,7 @@ export default function AnalyticsPage() {
         : null
       const ultimoCheckin = ultimoCheckinPerCliente.get(clienteId) ?? null
 
-      const alert: string[] = []
+      const alert: { label: string; dettaglio: string }[] = []
 
       // ── 1. Inattività ─────────────────────────────────────────────
       if (sessioni.length === 0) {
