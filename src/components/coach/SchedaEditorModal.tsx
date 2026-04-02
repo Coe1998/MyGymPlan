@@ -651,8 +651,8 @@ export default function SchedaEditorModal({
       setRichiede_rpe(schedaRes.data.richiede_rpe ?? false)
       setRichiede_rir(schedaRes.data.richiede_rir ?? false)
     }
-    if (giorniData.length > 0 && !activeGiorno) {
-      setActiveGiorno(giorniData[0].id)
+    if (giorniData.length > 0) {
+      setActiveGiorno(prev => prev ?? giorniData[0].id)
     }
     setLoading(false)
   }, [schedaId])
