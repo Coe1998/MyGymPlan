@@ -1426,7 +1426,7 @@ export default function SchedaEditorModal({
                       const tempId = crypto.randomUUID()
                       setPendingEsercizi(prev => [
                         ...prev.map(x => ({ ...x, expanded: false })),
-                        { tempId, giornoId: activeGiorno, form: { ...EMPTY }, expanded: true },
+                        { tempId, giornoId: activeGiorno, form: { ...EMPTY }, expanded: false },
                       ])
                     }}
                     className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
