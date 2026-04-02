@@ -71,12 +71,16 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSaving(false); return }
-    const oggi = new Date().toISOString().split('T')[0]
-    await supabase.from('misurazioni').upsert({ cliente_id: user.id, peso_kg: peso, data: oggi }, { onConflict: 'cliente_id,data' })
-    setPesoSalvato(peso)
-    setPesoSalvatoData(new Date().toISOString())
-    setNuovoPeso('')
-    setOpenModal(null)
+    const { error } = await supabase.from('misurazioni').insert({
+      cliente_id: user.id,
+      peso_kg: peso,
+    })
+    if (!error) {
+      setPesoSalvato(peso)
+      setPesoSalvatoData(new Date().toISOString())
+      setNuovoPeso('')
+      setOpenModal(null)
+    }
     setSaving(false)
   }
 
