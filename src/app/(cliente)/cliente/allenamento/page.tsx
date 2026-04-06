@@ -23,6 +23,7 @@ interface SchedaEsercizio {
   alternativa_esercizio_id: string | null
   prepara_secondi: number | null
   progressione_tipo: string
+  warmup_serie: { peso: string; reps: string }[]
   esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' }
 }
 
@@ -61,6 +62,7 @@ export default function AllenamentoPage() {
   const supabase = createClient()
 
   const [giornoNome, setGiornoNome] = useState('')
+  const [warmupNote, setWarmupNote] = useState<string | null>(null)
   const [esercizi, setEsercizi] = useState<SchedaEsercizio[]>([])
   const [logs, setLogs] = useState<Record<string, EsercizioLog>>({})
   const [ultimaSessione, setUltimaSessione] = useState<Record<string, UltimaSessioneSerie[]>>({})
@@ -112,16 +114,17 @@ export default function AllenamentoPage() {
       setCompletata(sessione.completata)
       setSessioneData(sessione.data)
       setGiornoNome((sessione as any).scheda_giorni?.nome ?? '')
+      setWarmupNote((giorno as any)?.warmup_note ?? null)
 
       // Calcola durata approssimativa (non disponibile, usiamo 0)
       setDurataSecondi(0)
 
       const { data: giorno } = await supabase
         .from('scheda_giorni')
-        .select(`id, nome, scheda_esercizi (
+        .select(`id, nome, warmup_note, scheda_esercizi (
           id, serie, ripetizioni, recupero_secondi, note, ordine,
           tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
-          prepara_secondi, progressione_tipo,
+          prepara_secondi, progressione_tipo, warmup_serie,
           esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
         )`)
         .eq('id', sessione.giorno_id)
@@ -151,16 +154,17 @@ export default function AllenamentoPage() {
 
     const { data: giorno } = await supabase
       .from('scheda_giorni')
-      .select(`id, nome, scheda_esercizi (
+      .select(`id, nome, warmup_note, scheda_esercizi (
         id, serie, ripetizioni, recupero_secondi, note, ordine,
         tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
-        prepara_secondi, progressione_tipo,
+        prepara_secondi, progressione_tipo, warmup_serie,
         esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
       )`)
       .eq('id', giornoId).single()
 
     if (!giorno) { setLoading(false); return }
     setGiornoNome((giorno as any).nome)
+    setWarmupNote((giorno as any).warmup_note ?? null)
     const eserciziOrdinati = ((giorno as any).scheda_esercizi ?? []).sort((a: any, b: any) => a.ordine - b.ordine)
     setEsercizi(eserciziOrdinati)
 
@@ -708,6 +712,22 @@ export default function AllenamentoPage() {
       )}
 
 
+      {/* Warmup generale */}
+      {warmupNote && !isViewMode && (
+        <div className="rounded-2xl px-4 py-3 flex items-start gap-3"
+          style={{ background: 'oklch(0.65 0.18 150 / 8%)', border: '1px solid oklch(0.65 0.18 150 / 25%)' }}>
+          <span className="text-lg flex-shrink-0">🔥</span>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.65 0.18 150)' }}>
+              Warmup generale
+            </p>
+            <p className="text-sm whitespace-pre-line" style={{ color: 'oklch(0.75 0 0)', lineHeight: 1.6 }}>
+              {warmupNote}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Esercizi */}
       <div className="space-y-4">
         {esercizi.map((ese, eseIndex) => {
@@ -844,6 +864,31 @@ export default function AllenamentoPage() {
               </div>
 
               <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
+                {/* Warmup specifico serie */}
+                {!isViewMode && (ese.warmup_serie ?? []).length > 0 && (
+                  <>
+                    {(ese.warmup_serie ?? []).map((w, wi) => (
+                      <div key={`w${wi}`} className="px-4 py-2.5 flex items-center gap-3"
+                        style={{ background: 'oklch(0.65 0.18 150 / 4%)', borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                        <span className="text-xs font-bold w-16 flex-shrink-0"
+                          style={{ color: 'oklch(0.65 0.18 150)' }}>
+                          W{wi + 1}
+                        </span>
+                        <span className="text-sm font-black" style={{ color: 'oklch(0.70 0 0)' }}>
+                          {w.peso ? `${w.peso} kg` : 'Barra'} × {w.reps} reps
+                        </span>
+                        <span className="text-xs ml-auto" style={{ color: 'oklch(0.40 0 0)' }}>warmup</span>
+                      </div>
+                    ))}
+                    <div className="px-4 py-1.5 flex items-center gap-2"
+                      style={{ background: 'oklch(0.65 0.18 150 / 3%)' }}>
+                      <div className="flex-1 h-px" style={{ background: 'oklch(0.65 0.18 150 / 20%)' }} />
+                      <span className="text-xs font-bold uppercase tracking-widest"
+                        style={{ color: 'oklch(0.65 0.18 150 / 60%)' }}>serie lavoranti</span>
+                      <div className="flex-1 h-px" style={{ background: 'oklch(0.65 0.18 150 / 20%)' }} />
+                    </div>
+                  </>
+                )}
                 {eseLog?.serie.map((serie, serieIndex) => {
                   const confronto = !isViewMode ? getConfronto(ese.id, serieIndex) : null
                   const miglioramento = !isViewMode ? getMiglioramento(ese.id, serieIndex) : null

@@ -16,11 +16,12 @@ interface SchedaEsercizio {
   alternativa_esercizio_id: string | null
   prepara_secondi: number | null
   progressione_tipo: string
+  warmup_serie: { peso: string; reps: string }[]
   esercizi: Esercizio
   alternativa_esercizi?: Esercizio | null
 }
 
-interface Giorno { id: string; nome: string; ordine: number; scheda_esercizi: SchedaEsercizio[] }
+interface Giorno { id: string; nome: string; ordine: number; warmup_note: string | null; scheda_esercizi: SchedaEsercizio[] }
 
 interface EsForm {
   esercizio_id: string; alternativa_id: string
@@ -29,6 +30,7 @@ interface EsForm {
   drop_count: string; drop_pct: string
   rest_pause_sec: string; piramide_dir: string
   prepara_secondi: string; progressione_tipo: string
+  warmup_serie: string // JSON string of {peso,reps}[]
 }
 
 const EMPTY: EsForm = {
@@ -38,6 +40,7 @@ const EMPTY: EsForm = {
   drop_count: '2', drop_pct: '20',
   rest_pause_sec: '15', piramide_dir: 'ascendente',
   prepara_secondi: '', progressione_tipo: 'peso',
+  warmup_serie: '[]',
 }
 
 const TIPI = [
@@ -428,6 +431,78 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
       </div>
 
+      {/* ── Warmup specifico ── */}
+      {form.esercizio_id && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.65 0.18 150)' }}>
+              Warmup specifico
+            </label>
+            <button
+              onClick={() => {
+                const current = JSON.parse(form.warmup_serie || '[]')
+                set('warmup_serie', JSON.stringify([...current, { peso: '', reps: '10' }]))
+              }}
+              className="text-xs px-2.5 py-1 rounded-lg font-semibold"
+              style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+              + Serie
+            </button>
+          </div>
+          {(() => {
+            const warmup: { peso: string; reps: string }[] = JSON.parse(form.warmup_serie || '[]')
+            if (warmup.length === 0) return (
+              <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+                Nessuna serie warmup — premi + Serie per aggiungerne una
+              </p>
+            )
+            return (
+              <div className="space-y-1.5">
+                {warmup.map((w, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-xs w-14 flex-shrink-0 text-center font-bold"
+                      style={{ color: 'oklch(0.65 0.18 150)' }}>
+                      W{i + 1}
+                    </span>
+                    <input
+                      type="text" value={w.peso}
+                      onChange={e => {
+                        const updated = [...warmup]
+                        updated[i] = { ...updated[i], peso: e.target.value }
+                        set('warmup_serie', JSON.stringify(updated))
+                      }}
+                      placeholder="Peso (kg)"
+                      className="flex-1 px-2.5 py-2 rounded-xl text-sm outline-none text-center"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                    />
+                    <span style={{ color: 'oklch(0.35 0 0)' }}>×</span>
+                    <input
+                      type="text" value={w.reps}
+                      onChange={e => {
+                        const updated = [...warmup]
+                        updated[i] = { ...updated[i], reps: e.target.value }
+                        set('warmup_serie', JSON.stringify(updated))
+                      }}
+                      placeholder="Reps"
+                      className="flex-1 px-2.5 py-2 rounded-xl text-sm outline-none text-center"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                    />
+                    <button
+                      onClick={() => {
+                        const updated = warmup.filter((_, idx) => idx !== i)
+                        set('warmup_serie', JSON.stringify(updated))
+                      }}
+                      className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.70 0.20 27)' }}>
+                      <FontAwesomeIcon icon={faXmark} className="text-xs" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
       {/* ── Progressione ── */}
       {(() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
@@ -626,12 +701,12 @@ export default function SchedaEditorModal({
     const [giorniRes, eserciziRes, schedaRes] = await Promise.all([
       supabase.from('scheda_giorni')
         .select(`
-          id, nome, ordine,
+          id, nome, ordine, warmup_note,
           scheda_esercizi (
             id, esercizio_id, serie, ripetizioni, recupero_secondi, note, ordine,
             tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi,
             piramidale_direzione, alternativa_esercizio_id,
-            prepara_secondi, progressione_tipo,
+            prepara_secondi, progressione_tipo, warmup_serie,
             esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, tipo_input ),
             alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
           )
@@ -802,6 +877,7 @@ export default function SchedaEditorModal({
       piramidale_direzione: f.tipo === 'piramidale' ? f.piramide_dir : null,
       prepara_secondi: f.prepara_secondi ? (parseInt(f.prepara_secondi) || null) : null,
       progressione_tipo: f.progressione_tipo || 'peso',
+      warmup_serie: f.warmup_serie ? JSON.parse(f.warmup_serie) : [],
     }
   }
 
@@ -1207,6 +1283,28 @@ export default function SchedaEditorModal({
                     </button>
                   </div>
 
+                  {/* Warmup generale */}
+                  <div className="rounded-2xl p-4 space-y-2"
+                    style={{ background: 'oklch(0.65 0.18 150 / 6%)', border: '1px solid oklch(0.65 0.18 150 / 20%)' }}>
+                    <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.65 0.18 150)' }}>
+                      🔥 Warmup generale
+                    </p>
+                    <textarea
+                      value={giorni.find(g => g.id === activeGiorno)?.warmup_note ?? ''}
+                      onChange={async e => {
+                        const val = e.target.value
+                        setGiorni(prev => prev.map(g => g.id === activeGiorno ? { ...g, warmup_note: val } : g))
+                        await supabase.from('scheda_giorni').update({ warmup_note: val }).eq('id', activeGiorno)
+                      }}
+                      placeholder="es. 5 min cyclette · mobilità spalle · 10 hip circles..."
+                      rows={2}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      onFocus={e => e.target.style.borderColor = 'oklch(0.65 0.18 150 / 60%)'}
+                      onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+                    />
+                  </div>
+
                   {/* Exercises */}
                   {eserciziGiorno.map((ese, i) => {
                     const gruppoLabel = getGruppoLabel(ese.gruppo_id)
@@ -1333,6 +1431,7 @@ export default function SchedaEditorModal({
                                       piramide_dir: ese.piramidale_direzione ?? 'ascendente',
                                       prepara_secondi: ese.prepara_secondi ? String(ese.prepara_secondi) : '',
                                       progressione_tipo: ese.progressione_tipo ?? 'peso',
+                                      warmup_serie: JSON.stringify(ese.warmup_serie ?? []),
                                     })
                                   }}
                                   className="w-8 h-8 rounded-lg flex items-center justify-center"
