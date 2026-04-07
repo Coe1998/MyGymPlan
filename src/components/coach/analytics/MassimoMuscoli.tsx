@@ -43,33 +43,20 @@ export default function MassimoMuscoli({ clienteId }: Props) {
         const { data: logs } = await supabase
           .from('log_serie')
           .select(`
-            peso_kg, ripetizioni, reps_sx, reps_dx, completata,
+            completata,
             scheda_esercizi!inner (
-              esercizi!scheda_esercizi_esercizio_id_fkey ( muscoli, tipo_input )
+              esercizi!scheda_esercizi_esercizio_id_fkey ( muscoli )
             )
           `)
           .in('sessione_id', sessIds)
           .eq('completata', true)
 
         const map = new Map<string, number>()
+        // Conta serie completate per muscolo — non kg×reps (distorto dal carico)
         for (const log of (logs ?? []) as any[]) {
-          const ese = log.scheda_esercizi?.esercizi
-          const muscoli: string[] = ese?.muscoli ?? []
-          const tipoInput = ese?.tipo_input ?? 'reps'
-          const peso = parseFloat(log.peso_kg) || 0
-          const reps = parseInt(log.ripetizioni) || 0
-          const repsSx = parseInt(log.reps_sx) || 0
-          const repsDx = parseInt(log.reps_dx) || 0
-
-          let vol = 0
-          if (tipoInput === 'reps_unilaterale') {
-            vol = peso * (Math.min(repsSx || reps, repsDx || reps) * 2)
-          } else if (tipoInput !== 'timer') {
-            vol = peso * reps
-          }
-
+          const muscoli: string[] = log.scheda_esercizi?.esercizi?.muscoli ?? []
           for (const m of muscoli) {
-            map.set(m, (map.get(m) ?? 0) + vol)
+            map.set(m, (map.get(m) ?? 0) + 1)
           }
         }
         return map
@@ -94,7 +81,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
     fetch()
   }, [clienteId])
 
-  const maxVolume = dati[0]?.volume ?? 1
+  const maxSerie = dati[0]?.volume ?? 1
   const lista = showAll ? dati : dati.slice(0, 6)
 
   const insights = useMemo(() => {
@@ -124,7 +111,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
       <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
         <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Muscoli più lavorati</h2>
         <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-          Volume ultimi 90gg vs 90gg precedenti
+          Serie completate ultimi 90gg vs 90gg precedenti
         </p>
       </div>
 
@@ -149,7 +136,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
                     style={{ background: 'oklch(0.25 0 0)' }}>
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
-                        width: `${Math.round((m.volume / maxVolume) * 100)}%`,
+                        width: `${Math.round((m.volume / maxSerie) * 100)}%`,
                         background: m.delta >= 0 ? 'oklch(0.70 0.19 46)' : 'oklch(0.60 0.15 200)',
                       }} />
                   </div>
