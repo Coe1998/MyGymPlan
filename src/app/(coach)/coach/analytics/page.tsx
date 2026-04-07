@@ -120,6 +120,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<VistaTab>('overview')
   const [totaleClienti, setTotaleClienti] = useState(0)
+  const [clientiNuovi, setClientiNuovi] = useState(0)
   const [totaleSchede, setTotaleSchede] = useState(0)
   const [totaleAssegnazioni, setTotaleAssegnazioni] = useState(0)
   const [totaleSessioni, setTotaleSessioni] = useState(0)
@@ -156,7 +157,7 @@ export default function AnalyticsPage() {
     // ── 1. Fetch base in parallelo ────────────────────────────────
     const [clientiRes, schedeRes, assegnazioniRes] = await Promise.all([
       supabase.from('coach_clienti')
-        .select('cliente_id, profiles!coach_clienti_cliente_id_fkey (id, full_name)')
+        .select('cliente_id, created_at, profiles!coach_clienti_cliente_id_fkey (id, full_name)')
         .eq('coach_id', user.id),
       supabase.from('schede').select('id').eq('coach_id', user.id),
       supabase.from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true),
@@ -164,6 +165,8 @@ export default function AnalyticsPage() {
 
     const clientiData = clientiRes.data ?? []
     setTotaleClienti(clientiData.length)
+    const setteGiorniFa = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    setClientiNuovi(clientiData.filter((c: any) => c.created_at >= setteGiorniFa).length)
     setTotaleSchede(schedeRes.data?.length ?? 0)
     setTotaleAssegnazioni(assegnazioniRes.data?.length ?? 0)
 
@@ -607,9 +610,19 @@ export default function AnalyticsPage() {
           <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
             I tuoi clienti
           </h1>
-          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-            {totaleClienti} clienti · {clientiAttivi} attivi questa settimana
-          </p>
+          <div className="flex items-center gap-4 mt-1">
+            {[
+              { label: 'Totali', value: totaleClienti, color: 'oklch(0.50 0 0)' },
+              { label: 'Nuovi', value: clientiNuovi, color: 'oklch(0.70 0.19 46)' },
+              { label: 'Attivi', value: clientiAttivi, color: 'oklch(0.65 0.18 150)' },
+            ].map((s, i) => (
+              <div key={s.label} className="flex items-center gap-2">
+                {i > 0 && <span style={{ color: 'oklch(0.30 0 0)' }}>·</span>}
+                <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
+                <span className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <a href="/coach/schede"
