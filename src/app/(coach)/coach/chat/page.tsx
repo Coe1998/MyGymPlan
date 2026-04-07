@@ -125,11 +125,7 @@ export default function CoachChatPage() {
   const inviaAllegato = async (metadata: object) => {
     if (!clienteAttivo || !coachId) return
     setShowAllegati(false)
-    const tempId = crypto.randomUUID()
-    setMessaggi(prev => [...prev, {
-      id: tempId, testo: null, da_coach: true, letto: false,
-      created_at: new Date().toISOString(), metadata: metadata as any,
-    }])
+    // Niente ottimistico: lascia fare al realtime (stesso comportamento di inviaMessaggio)
     await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteAttivo.id,

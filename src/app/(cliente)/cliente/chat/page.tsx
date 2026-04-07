@@ -130,7 +130,7 @@ export default function ClienteChatPage() {
     await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteId,
-      testo: null,
+      testo: null,      // richiede ALTER TABLE messaggi ALTER COLUMN testo DROP NOT NULL
       da_coach: false,
       metadata,
     })
