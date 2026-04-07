@@ -86,10 +86,10 @@ export default async function StampaSchedaPage({ params }: { params: Promise<{ i
     <>
       <style>{`
         * { box-sizing: border-box; }
-        body {
+        html, body {
           font-family: 'Helvetica Neue', Arial, sans-serif;
-          background: white;
-          color: #111;
+          background: white !important;
+          color: #111 !important;
           margin: 0;
           padding: 0;
         }
