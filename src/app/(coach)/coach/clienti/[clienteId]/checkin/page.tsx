@@ -3,7 +3,7 @@
 import { use, useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCalendarDays, faVideo, faPhone, faPerson, faCheck, faXmark, faArrowLeft, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { faCalendarDays, faVideo, faPhone, faPerson, faCheck, faXmark, faArrowLeft, faChevronLeft, faChevronRight, faPlus } from '@fortawesome/free-solid-svg-icons'
 import Link from 'next/link'
 
 interface Appuntamento {
@@ -140,13 +140,13 @@ function WeekCalendar({
 
                   return (
                     <div key={a.id}
-                      className="absolute left-0.5 right-0.5 rounded-lg px-1.5 overflow-hidden cursor-pointer"
+                      className="absolute left-0.5 right-0.5 rounded-lg px-1.5 overflow-visible cursor-pointer"
                       style={{
                         top: `${top}px`,
                         height: `${height}px`,
                         background: colors.bg,
                         borderLeft: `2px solid ${colors.border}`,
-                        zIndex: isCurrentCliente ? 2 : 1,
+                        zIndex: tooltip === a.id ? 30 : isCurrentCliente ? 2 : 1,
                       }}
                       onClick={() => setTooltip(tooltip === a.id ? null : a.id)}>
                       <p className="text-xs font-semibold leading-tight truncate mt-0.5" style={{ color: colors.text }}>
@@ -202,6 +202,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [weekOffset, setWeekOffset] = useState(0)
+  const [showForm, setShowForm] = useState(false)
 
   // Form state
   const [data, setData] = useState('')
@@ -292,12 +293,23 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
           <FontAwesomeIcon icon={faArrowLeft} />
           Clienti
         </Link>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
-          Check-in con {nomeCliente}
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-          {futuri.length} programmati · {storici.length} passati
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+              Check-in con {nomeCliente}
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+              {futuri.length} programmati · {storici.length} passati
+            </p>
+          </div>
+          <button
+            onClick={() => setShowForm(p => !p)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-all active:scale-95"
+            style={{ background: showForm ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)', color: showForm ? 'oklch(0.55 0 0)' : 'oklch(0.11 0 0)' }}>
+            <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
+            {showForm ? 'Chiudi' : 'Nuovo'}
+          </button>
+        </div>
       </div>
 
       {/* Calendario settimanale */}
@@ -350,8 +362,8 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
       </div>
 
       {/* Form nuovo appuntamento */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+      {showForm && <div className="rounded-2xl overflow-hidden"
+        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
         <div className="px-5 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
           <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
             <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.70 0.19 46)' }} />
@@ -410,7 +422,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
             {saving ? 'Salvataggio...' : 'Fissa appuntamento'}
           </button>
         </form>
-      </div>
+      </div>}
 
       {/* Storico di questo cliente */}
       {!loading && storici.length > 0 && (

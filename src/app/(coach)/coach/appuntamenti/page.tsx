@@ -156,20 +156,27 @@ export default function AppuntamentiPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div>
+        <div className="flex items-start justify-between gap-3">
           <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Appuntamenti</h1>
-          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
-            {futuri.length} programmati
-          </p>
+          <button
+            onClick={() => setShowForm(p => !p)}
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-all active:scale-95"
+            style={{ background: showForm ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)', color: showForm ? 'oklch(0.55 0 0)' : 'oklch(0.11 0 0)' }}>
+            <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
+            {showForm ? 'Chiudi' : 'Nuovo'}
+          </button>
         </div>
-        <button
-          onClick={() => setShowForm(p => !p)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-all active:scale-95"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
-          <FontAwesomeIcon icon={faPlus} />
-          Nuovo
-        </button>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{futuri.length} programmati</p>
+          <button
+            onClick={() => setShowForm(p => !p)}
+            className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all active:scale-95"
+            style={{ background: showForm ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)', color: showForm ? 'oklch(0.55 0 0)' : 'oklch(0.11 0 0)' }}>
+            <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
+            {showForm ? 'Chiudi' : 'Nuovo'}
+          </button>
+        </div>
       </div>
 
       {/* Form nuovo appuntamento */}
