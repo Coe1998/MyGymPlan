@@ -119,7 +119,6 @@ export default function AllenamentoPage() {
         body: 'Pronti per la prossima serie.',
         icon: '/logo/Bynari_WO1.png',
         tag: 'recupero',
-        renotify: true,
         silent: true,
       })
     }
