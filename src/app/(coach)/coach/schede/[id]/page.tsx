@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash, faTableList } from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash, faTableList, faPrint } from '@fortawesome/free-solid-svg-icons'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 import { generateNoteAnamnesi, type NotaAnamnesi } from '@/lib/anamnesi-notes'
 
@@ -357,6 +357,16 @@ export default function SchedaDetailPage() {
 				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
 				<FontAwesomeIcon icon={faTableList} /> Editor scheda
 			  </button>
+			  <a
+				href={`/coach/schede/${schedaId}/stampa`}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 flex items-center gap-2"
+				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+			  >
+				<FontAwesomeIcon icon={faPrint} />
+				Stampa
+			  </a>
 			</div>
 		  </div>
 		</div>

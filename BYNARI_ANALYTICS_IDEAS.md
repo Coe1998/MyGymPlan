@@ -221,7 +221,7 @@ Logger modulare per tipo scheda (calisthenics, powerlifting, functional)
 🗄️ BACKLOG
 
 Tips allenamento/dieta per atleta PRO (AI)
-Suggerimenti scheda AI da storico cliente
+Suggerimenti scheda AI da storico cliente (fixare problemi su grafico volume in quanto ad oggi non e' proporzionato)
 White-label per palestre (piano Enterprise)
 Video upload esercizi
 Notifiche email via Resend
