@@ -15,6 +15,8 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import Link from 'next/link'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
+import AnamnesIDrawer from '@/components/coach/AnamnesIDrawer'
+import { generateNoteAnamnesi } from '@/lib/anamnesi-notes'
 
 interface Misurazione {
   data: string
@@ -141,6 +143,8 @@ export default function AnalyticsPage() {
   const [cloningScheda, setCloningScheda] = useState(false)
   const [assegnando, setAssegnando] = useState(false)
   const [schedaPreview, setSchedaPreview] = useState<{ id: string; nome: string } | null>(null)
+  const [anamnesICliente, setAnamnesICliente] = useState<any>(null)
+  const [showAnamnesIDrawer, setShowAnamnesIDrawer] = useState(false)
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -406,6 +410,7 @@ export default function AnalyticsPage() {
     setDietaAbilitata(false)
     setStoricoNutrizioneCliente([])
     setMacroTargetCliente(null)
+    setAnamnesICliente(null)
     const data7ago = new Date()
     data7ago.setDate(data7ago.getDate() - 7)
     const data7agoStr = data7ago.toISOString().split('T')[0]
@@ -440,6 +445,9 @@ export default function AnalyticsPage() {
       g.carboidrati_g += r.carboidrati_g || 0; g.grassi_g += r.grassi_g || 0
     }
     setStoricoNutrizioneCliente(Array.from(map.values()))
+    // Fetch anamnesi per note di programmazione
+    const { data: anamnesIData } = await supabase.from('anamnesi').select('*').eq('cliente_id', cliente.id).maybeSingle()
+    setAnamnesICliente(anamnesIData ?? null)
     setLoadingSessioni(false)
   }
 
@@ -863,6 +871,13 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
               </div>
+              {/* Anamnesi eye button */}
+              <button onClick={() => setShowAnamnesIDrawer(true)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
+                style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}
+                title="Vedi anamnesi">
+                <FontAwesomeIcon icon={faEye} className="text-sm" />
+              </button>
             </div>
 
             {/* Drawer tabs */}
@@ -1223,6 +1238,25 @@ export default function AnalyticsPage() {
               <p className="text-sm font-bold mt-0.5" style={{ color: 'oklch(0.97 0 0)' }}>{schedaPickata.nome}</p>
             </div>
 
+            {/* Note anamnesi */}
+            {anamnesICliente && (() => {
+              const note = generateNoteAnamnesi(anamnesICliente)
+              if (note.length === 0) return null
+              return (
+                <div className="rounded-2xl p-4 space-y-2"
+                  style={{ background: 'oklch(0.75 0.18 80 / 8%)', border: '1px solid oklch(0.75 0.18 80 / 25%)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.75 0.18 80)' }}>
+                    📋 Note dal profilo cliente
+                  </p>
+                  {note.map((n, i) => (
+                    <p key={i} className="text-xs leading-relaxed" style={{ color: 'oklch(0.75 0 0)' }}>
+                      {n.testo}
+                    </p>
+                  ))}
+                </div>
+              )
+            })()}
+
             {/* Assegna direttamente */}
             <div className="rounded-2xl p-4 space-y-3"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -1320,6 +1354,16 @@ export default function AnalyticsPage() {
       </div>
     )}
 
+    {/* ANAMNESI DRAWER */}
+    {showAnamnesIDrawer && clienteSelezionato && (
+      <AnamnesIDrawer
+        clienteId={clienteSelezionato.id}
+        clienteNome={clienteSelezionato.full_name ?? 'Cliente'}
+        onClose={() => setShowAnamnesIDrawer(false)}
+      />
+    )}
+
   </>
   )
 }
+

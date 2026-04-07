@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleCheck, faUser, faPen, faTriangleExclamation, faCalendarDays, faNoteSticky, faXmark, faGripVertical, faFilePdf, faUpload, faTrash, faTableList } from '@fortawesome/free-solid-svg-icons'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
+import { generateNoteAnamnesi, type NotaAnamnesi } from '@/lib/anamnesi-notes'
 
 interface Esercizio { id: string; nome: string; muscoli: string[] | null }
 interface SchedaEsercizio {
@@ -57,6 +58,7 @@ export default function SchedaDetailPage() {
   const [assegnaError, setAssegnaError] = useState<string | null>(null)
   const [uploadingPdf, setUploadingPdf] = useState<string | null>(null) // assegnazione id in corso
   const [showEditor, setShowEditor] = useState(false)
+  const [noteAnamnesi, setNoteAnamnesi] = useState<NotaAnamnesi[]>([])
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const pdfTargetAssId = useRef<string | null>(null)
 
@@ -424,7 +426,14 @@ export default function SchedaDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Cliente</label>
-                <select value={selectedCliente} onChange={(e) => setSelectedCliente(e.target.value)}
+                <select value={selectedCliente} onChange={async (e) => {
+                  setSelectedCliente(e.target.value)
+                  setNoteAnamnesi([])
+                  if (e.target.value) {
+                    const { data } = await supabase.from('anamnesi').select('*').eq('cliente_id', e.target.value).maybeSingle()
+                    if (data) setNoteAnamnesi(generateNoteAnamnesi(data))
+                  }
+                }}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
                   style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: selectedCliente ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)' }}>
                   <option value="">Seleziona cliente...</option>
@@ -456,6 +465,18 @@ export default function SchedaDetailPage() {
               <div className="px-4 py-3 rounded-xl text-sm"
                 style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
                 <FontAwesomeIcon icon={faTriangleExclamation} /> {assegnaError}
+              </div>
+            )}
+            {/* Note anamnesi cliente selezionato */}
+            {noteAnamnesi.length > 0 && (
+              <div className="rounded-2xl p-4 space-y-2"
+                style={{ background: 'oklch(0.75 0.18 80 / 8%)', border: '1px solid oklch(0.75 0.18 80 / 25%)' }}>
+                <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.75 0.18 80)' }}>
+                  📋 Note dal profilo cliente
+                </p>
+                {noteAnamnesi.map((n, i) => (
+                  <p key={i} className="text-xs leading-relaxed" style={{ color: 'oklch(0.75 0 0)' }}>{n.testo}</p>
+                ))}
               </div>
             )}
             <div className="flex gap-3">

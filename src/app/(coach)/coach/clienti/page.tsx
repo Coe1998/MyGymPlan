@@ -5,8 +5,9 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faTriangleExclamation, faCircleCheck, faUsers,
-  faLink, faCopy, faCheck, faClock, faXmark,
+  faLink, faCopy, faCheck, faClock, faXmark, faEye,
 } from '@fortawesome/free-solid-svg-icons'
+import AnamnesIDrawer from '@/components/coach/AnamnesIDrawer'
 
 interface Cliente {
   cliente_id: string
@@ -33,6 +34,10 @@ export default function ClientiPage() {
   const [copied, setCopied] = useState(false)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
+  // Anamnesi drawer
+  const [anamnesIClienteId, setAnamnesIClienteId] = useState<string | null>(null)
+  const [anamnesIClienteNome, setAnamnesIClienteNome] = useState('')
+
   const supabase = useMemo(() => createClient(), [])
 
   const fetchAll = async () => {
@@ -40,11 +45,9 @@ export default function ClientiPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Profilo coach (per il codice)
     const { data: profile } = await supabase
       .from('profiles').select('coach_code').eq('id', user.id).single()
 
-    // Genera codice se non esiste ancora
     if (!profile?.coach_code) {
       const newCode = Math.random().toString(36).substring(2, 10).toUpperCase()
       await supabase.from('profiles').update({ coach_code: newCode }).eq('id', user.id)
@@ -53,7 +56,6 @@ export default function ClientiPage() {
       setCoachCode(profile.coach_code)
     }
 
-    // Clienti attivi
     const { data: clientiData } = await supabase
       .from('coach_clienti')
       .select(`cliente_id, created_at, profiles!coach_clienti_cliente_id_fkey (id, full_name, avatar_url)`)
@@ -61,7 +63,6 @@ export default function ClientiPage() {
       .order('created_at', { ascending: false })
     setClienti((clientiData as any) ?? [])
 
-    // Inviti pending
     const { data: invitiData } = await supabase
       .from('coach_inviti')
       .select(`id, created_at, stato, profiles!coach_inviti_cliente_id_fkey (full_name)`)
@@ -140,7 +141,6 @@ export default function ClientiPage() {
             </p>
           </div>
         </div>
-
         <div className="flex gap-3">
           <div className="flex-1 px-4 py-3 rounded-xl text-sm font-mono truncate"
             style={{ background: 'oklch(0.14 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.60 0 0)' }}>
@@ -165,9 +165,7 @@ export default function ClientiPage() {
           <div className="px-6 py-4 flex items-center gap-3"
             style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.75 0.18 80 / 8%)' }}>
             <FontAwesomeIcon icon={faClock} style={{ color: 'oklch(0.75 0.18 80)' }} />
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
-              Richieste in attesa
-            </h2>
+            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Richieste in attesa</h2>
             <span className="text-xs font-bold px-2.5 py-1 rounded-full ml-auto"
               style={{ background: 'oklch(0.75 0.18 80 / 20%)', color: 'oklch(0.75 0.18 80)' }}>
               {inviti.length}
@@ -189,17 +187,13 @@ export default function ClientiPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  onClick={() => handleAzione(inv.id, 'approva')}
-                  disabled={processingId === inv.id}
+                <button onClick={() => handleAzione(inv.id, 'approva')} disabled={processingId === inv.id}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
                   style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
                   <FontAwesomeIcon icon={faCircleCheck} />
                   {processingId === inv.id ? '...' : 'Approva'}
                 </button>
-                <button
-                  onClick={() => handleAzione(inv.id, 'rifiuta')}
-                  disabled={processingId === inv.id}
+                <button onClick={() => handleAzione(inv.id, 'rifiuta')} disabled={processingId === inv.id}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
                   style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
                   <FontAwesomeIcon icon={faXmark} />
@@ -211,7 +205,7 @@ export default function ClientiPage() {
         </div>
       )}
 
-      {/* ── Aggiungi via email (metodo vecchio, tenuto per retrocompatibilità) ── */}
+      {/* ── Aggiungi via email ── */}
       <div className="rounded-2xl p-6 space-y-4"
         style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
         <div>
@@ -297,9 +291,20 @@ export default function ClientiPage() {
                   style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
                   Attivo
                 </div>
+                {/* Anamnesi eye button */}
+                <button
+                  onClick={() => {
+                    setAnamnesIClienteId(c.cliente_id)
+                    setAnamnesIClienteNome(c.profiles?.full_name ?? 'Cliente')
+                  }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all hover:opacity-80"
+                  style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}
+                  title="Vedi anamnesi">
+                  <FontAwesomeIcon icon={faEye} className="text-sm" />
+                </button>
                 <button
                   onClick={() => handleRemove(c.cliente_id, c.profiles?.full_name ?? 'questo cliente')}
-                  className="opacity-0 group-hover:opacity-100 ml-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  className="opacity-0 group-hover:opacity-100 ml-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
                   Rimuovi
                 </button>
@@ -308,6 +313,15 @@ export default function ClientiPage() {
           </div>
         )}
       </div>
+
+      {/* Drawer anamnesi */}
+      {anamnesIClienteId && (
+        <AnamnesIDrawer
+          clienteId={anamnesIClienteId}
+          clienteNome={anamnesIClienteNome}
+          onClose={() => setAnamnesIClienteId(null)}
+        />
+      )}
     </div>
   )
 }
