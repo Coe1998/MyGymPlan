@@ -7,6 +7,8 @@ import { faMoon, faSun, faDownload } from '@fortawesome/free-solid-svg-icons'
 interface EsercizioHighlight {
   nome: string
   pesoMax: number
+  tipoInput?: string
+  durataMax?: number
 }
 
 interface Props {
@@ -15,12 +17,14 @@ interface Props {
   serie: number
   durata: string
   esercizi: EsercizioHighlight[] // tutti gli esercizi della sessione
+  coachNome?: string | null
 }
 
-export default function ShareOverlay({ giornoNome, volume, serie, durata, esercizi }: Props) {
+export default function ShareOverlay({ giornoNome, volume, serie, durata, esercizi, coachNome }: Props) {
   const [tema, setTema] = useState<'dark' | 'light'>('dark')
   const [downloading, setDownloading] = useState(false)
   const [selezionati, setSelezionati] = useState<EsercizioHighlight[]>([])
+  const [showCoach, setShowCoach] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const isDark = tema === 'dark'
@@ -97,9 +101,17 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
     // Stats
     ctx.textAlign = 'left'
+    const hasHighlights = selezionati.length > 0
     const allRows = [
-      ...stats.map(s => ({ label: s.label, value: s.value, isAccent: false })),
-      ...selezionati.map(s => ({ label: `\u25cf ${s.nome}`, value: `${s.pesoMax} kg`, isAccent: true })),
+      ...stats.map(s => ({ label: s.label, value: s.value, isAccent: false, isHeader: false })),
+      ...(hasHighlights ? [{ label: 'HIGHLIGHTS', value: '', isAccent: false, isHeader: true }] : []),
+      ...selezionati.map(s => ({
+        label: `\u25cf ${s.nome}`,
+        value: s.tipoInput === 'timer' ? `${s.durataMax ?? 0}s` : `${s.pesoMax} kg`,
+        isAccent: true,
+        isHeader: false,
+      })),
+      ...(showCoach && coachNome ? [{ label: 'Coach', value: coachNome, isAccent: false, isHeader: false }] : []),
     ]
 
     allRows.forEach((row, i) => {
@@ -109,6 +121,15 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
       if (i > 0) {
         ctx.fillStyle = dividerColor
         ctx.fillRect(padH, rowY - 1, W - padH * 2, 0.5)
+      }
+
+      // Header "HIGHLIGHTS"
+      if ((row as any).isHeader) {
+        ctx.font = '900 9px "Big Shoulders Display", sans-serif'
+        ctx.fillStyle = dividerColor
+        ctx.textAlign = 'left'
+        ctx.fillText('— ' + row.label + ' —', padH, rowY + 28)
+        return
       }
 
       // Label
@@ -125,7 +146,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         : '800 21px "Big Shoulders Display", sans-serif'
       ctx.fillStyle = row.isAccent ? accent : textPrimary
       ctx.textAlign = 'right'
-      ctx.fillText(row.value, W - padH, rowY + (row.isAccent ? 24 : 28))
+      if (row.value) ctx.fillText(row.value, W - padH, rowY + (row.isAccent ? 24 : 28))
     })
 
     y += allRows.length * (rowH + 1) + padV
@@ -207,6 +228,22 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         ))}
       </div>
 
+      {/* Flag nome coach */}
+      {coachNome && (
+        <div className="flex items-center justify-center">
+          <button onClick={() => setShowCoach(p => !p)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: showCoach ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+              color: showCoach ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+              border: `1px solid ${showCoach ? 'oklch(0.60 0.15 200 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+            }}>
+            <span style={{ fontSize: 10 }}>{showCoach ? '✓' : '○'}</span>
+            Mostra coach: {coachNome}
+          </button>
+        </div>
+      )}
+
       {/* Selezione esercizi highlight */}
       {esercizi.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
@@ -255,7 +292,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
                   </div>
                   <span className="text-sm font-bold flex-shrink-0"
                     style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
-                    {ese.pesoMax} kg
+                    {ese.tipoInput === 'timer' ? `${ese.durataMax ?? 0}s` : `${ese.pesoMax} kg`}
                   </span>
                 </button>
               )

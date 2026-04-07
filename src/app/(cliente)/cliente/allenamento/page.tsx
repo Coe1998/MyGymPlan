@@ -73,6 +73,8 @@ export default function AllenamentoPage() {
   const [timerAttivo, setTimerAttivo] = useState(false)
   const [timerSecondi, setTimerSecondi] = useState(0)
   const [durataSecondi, setDurataSecondi] = useState(0)
+  const [durataSessioneDB, setDurataSessioneDB] = useState<number | null>(null)
+  const [coachNome, setCoachNome] = useState<string | null>(null)
   const [sessioneData, setSessioneData] = useState<string | null>(null)
   const [noteAperta, setNoteAperta] = useState<string | null>(null)
   const [richiede_rpe, setRichiede_rpe] = useState(false)
@@ -148,6 +150,10 @@ export default function AllenamentoPage() {
   const fetchGiorno = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
+    // Fetch nome coach se esiste
+    supabase.from('coach_clienti').select('profiles!coach_clienti_coach_id_fkey(full_name)').eq('cliente_id', user?.id ?? '').maybeSingle().then(({ data: cc }) => {
+      if (cc) setCoachNome((cc as any).profiles?.full_name ?? null)
+    })
     if (!user) return
     userIdRef.current = user.id
 
@@ -680,18 +686,26 @@ export default function AllenamentoPage() {
     return null
   }
 
-  const calcolaEserciziHighlight = (): { nome: string; pesoMax: number }[] => {
+  const calcolaEserciziHighlight = (): { nome: string; pesoMax: number; tipoInput: string; durataMax: number }[] => {
     return esercizi
       .map(ese => {
         const eseLog = logs[ese.id]
         if (!eseLog) return null
+        const tipoInput = ese.esercizi.tipo_input ?? 'reps'
+        if (tipoInput === 'timer') {
+          const durate = eseLog.serie
+            .filter(s => s.completata && parseInt(s.durata_secondi) > 0)
+            .map(s => parseInt(s.durata_secondi))
+          if (durate.length === 0) return null
+          return { nome: ese.esercizi.nome, pesoMax: 0, tipoInput, durataMax: Math.max(...durate) }
+        }
         const pesi = eseLog.serie
           .filter(s => s.completata && parseFloat(s.peso_kg) > 0)
           .map(s => parseFloat(s.peso_kg))
         if (pesi.length === 0) return null
-        return { nome: ese.esercizi.nome, pesoMax: Math.max(...pesi) }
+        return { nome: ese.esercizi.nome, pesoMax: Math.max(...pesi), tipoInput, durataMax: 0 }
       })
-      .filter(Boolean) as { nome: string; pesoMax: number }[]
+      .filter(Boolean) as { nome: string; pesoMax: number; tipoInput: string; durataMax: number }[]
   }
 
   const getConfronto = (eseId: string, serieIndex: number) =>
@@ -1363,8 +1377,9 @@ export default function AllenamentoPage() {
               giornoNome={giornoNome}
               volume={Math.round(volumeTotale)}
               serie={serieCompletate}
-              durata={formatDurata(durataSecondi)}
+              durata={formatDurata(durataSessioneDB ?? durataSecondi)}
               esercizi={calcolaEserciziHighlight()}
+              coachNome={coachNome}
             />
           </div>
 
