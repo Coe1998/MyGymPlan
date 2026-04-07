@@ -16,8 +16,8 @@ function RegisterForm() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // Se arriva con codice invito → forza ruolo atleta e non mostrare selezione
-  const [role, setRole] = useState<UserRole>(inviteCode ? 'atleta' : 'atleta')
+  // FIX: ruolo corretto per utenti invitati da un coach → 'cliente', non 'atleta'
+  const [role, setRole] = useState<UserRole>(inviteCode ? 'cliente' : 'atleta')
   const [coachNome, setCoachNome] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -27,7 +27,8 @@ function RegisterForm() {
     if (!inviteCode) return
     const supabase = createClient()
     supabase.from('profiles').select('full_name')
-      .eq('coach_code', inviteCode).eq('role', 'coach').single()
+      // FIX: toUpperCase() — i codici sono stored uppercase nel DB
+      .eq('coach_code', inviteCode.toUpperCase()).eq('role', 'coach').single()
       .then(({ data }) => setCoachNome(data?.full_name ?? null))
   }, [inviteCode])
 
@@ -52,9 +53,9 @@ function RegisterForm() {
 
     // Se c'è un codice invito → crea il record in coach_inviti
     if (inviteCode && signUpData.user) {
-      // Trova il coach
+      // FIX: toUpperCase() — i codici sono stored uppercase nel DB
       const { data: coach } = await supabase
-        .from('profiles').select('id').eq('coach_code', inviteCode).single()
+        .from('profiles').select('id').eq('coach_code', inviteCode.toUpperCase()).single()
 
       if (coach) {
         // Piccolo delay per aspettare che il profilo venga creato dal trigger
