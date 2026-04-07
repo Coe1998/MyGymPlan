@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash, faClockRotateLeft, faCopy } from '@fortawesome/free-solid-svg-icons'
 
 interface MacroTarget {
   calorie: number
@@ -97,6 +97,15 @@ export default function DietaPage() {
 
   // Collapsed groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
+
+  // Copia pasto / giornata
+  const [copiaPastoAperto, setCopiaPastoAperto] = useState<string | null>(null)
+  const [storicoPerPasto, setStoricoPerPasto] = useState<PastoLog[]>([])
+  const [loadingStoricoPerPasto, setLoadingStoricoPerPasto] = useState(false)
+  const [copiaGiornataAperta, setCopiaGiornataAperta] = useState(false)
+  const [storicoGiornate, setStoricoGiornate] = useState<{ data: string; items: PastoLog[] }[]>([])
+  const [loadingGiornate, setLoadingGiornate] = useState(false)
+  const [copiando, setCopiando] = useState(false)
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -247,6 +256,96 @@ export default function DietaPage() {
   const handleDeleteAlimento = async (id: string) => {
     await supabase.from('pasto_log').delete().eq('id', id)
     fetchAll()
+  }
+
+  const apriCopiaPasto = async (nomePasto: string) => {
+    if (copiaPastoAperto === nomePasto) { setCopiaPastoAperto(null); return }
+    setCopiaPastoAperto(nomePasto)
+    setStoricoPerPasto([])
+    setLoadingStoricoPerPasto(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase
+      .from('pasto_log').select('*')
+      .eq('cliente_id', user.id).eq('gruppo_nome', nomePasto).neq('data', oggi)
+      .order('data', { ascending: false }).limit(150)
+    setStoricoPerPasto(data ?? [])
+    setLoadingStoricoPerPasto(false)
+  }
+
+  const apriCopiaGiornata = async () => {
+    setCopiaGiornataAperta(true)
+    setLoadingGiornate(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase
+      .from('pasto_log').select('*')
+      .eq('cliente_id', user.id).neq('data', oggi)
+      .order('data', { ascending: false }).limit(300)
+    const map = new Map<string, PastoLog[]>()
+    for (const item of (data ?? []) as PastoLog[]) {
+      if (!map.has(item.data)) map.set(item.data, [])
+      map.get(item.data)!.push(item)
+    }
+    setStoricoGiornate(Array.from(map.entries()).slice(0, 7).map(([d, items]) => ({ data: d, items })))
+    setLoadingGiornate(false)
+  }
+
+  const handleCopiaPasto = async (items: PastoLog[]) => {
+    if (!items.length || copiando) return
+    setCopiando(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const nomePasto = items[0].gruppo_nome
+    const esistente = pasti.find(p => p.gruppo_nome === nomePasto)
+    const gId = esistente?.gruppo_id ?? crypto.randomUUID()
+    await supabase.from('pasto_log').insert(
+      items.map(item => ({
+        cliente_id: user.id, data: oggi,
+        alimento_nome: item.alimento_nome, quantita_g: item.quantita_g,
+        calorie: item.calorie, proteine_g: item.proteine_g,
+        carboidrati_g: item.carboidrati_g, grassi_g: item.grassi_g,
+        gruppo_nome: item.gruppo_nome, gruppo_id: gId,
+      }))
+    )
+    setCopiaPastoAperto(null)
+    setCopiando(false)
+    fetchAll()
+  }
+
+  const handleCopiaGiornata = async (items: PastoLog[]) => {
+    if (!items.length || copiando) return
+    setCopiando(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const groupIdMap = new Map<string, string>()
+    for (const item of items) {
+      if (item.gruppo_id && !groupIdMap.has(item.gruppo_id)) {
+        const esistente = pasti.find(p => p.gruppo_nome === item.gruppo_nome)
+        groupIdMap.set(item.gruppo_id, esistente?.gruppo_id ?? crypto.randomUUID())
+      }
+    }
+    await supabase.from('pasto_log').insert(
+      items.map(item => ({
+        cliente_id: user.id, data: oggi,
+        alimento_nome: item.alimento_nome, quantita_g: item.quantita_g,
+        calorie: item.calorie, proteine_g: item.proteine_g,
+        carboidrati_g: item.carboidrati_g, grassi_g: item.grassi_g,
+        gruppo_nome: item.gruppo_nome,
+        gruppo_id: item.gruppo_id ? (groupIdMap.get(item.gruppo_id) ?? null) : null,
+      }))
+    )
+    setCopiaGiornataAperta(false)
+    setCopiando(false)
+    fetchAll()
+  }
+
+  const formatDataStorico = (dataStr: string) => {
+    const d = new Date(dataStr + 'T00:00:00')
+    const oggi_ = new Date(); oggi_.setHours(0, 0, 0, 0)
+    const ieri = new Date(oggi_); ieri.setDate(ieri.getDate() - 1)
+    if (d.toDateString() === ieri.toDateString()) return 'Ieri'
+    return d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
   }
 
   const perc = (val: number, target: number) => Math.min(100, target > 0 ? Math.round((val / target) * 100) : 0)
@@ -451,19 +550,32 @@ export default function DietaPage() {
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => setPastiSaltati(prev => {
-                        const n = new Set(prev)
-                        n.has(i) ? n.delete(i) : n.add(i)
-                        return n
-                      })}
-                      className="text-xs px-2.5 py-1 rounded-lg font-medium transition-all"
-                      style={{
-                        background: saltato ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.22 27 / 12%)',
-                        color: saltato ? 'oklch(0.70 0.19 46)' : 'oklch(0.65 0.22 27)',
-                      }}>
-                      {saltato ? 'Ripristina' : 'Salta'}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      {!saltato && (
+                        <button
+                          onClick={() => apriCopiaPasto(pasto.nome)}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                          style={{
+                            background: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                            color: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                          }}>
+                          <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setPastiSaltati(prev => {
+                          const n = new Set(prev)
+                          n.has(i) ? n.delete(i) : n.add(i)
+                          return n
+                        })}
+                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition-all"
+                        style={{
+                          background: saltato ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.22 27 / 12%)',
+                          color: saltato ? 'oklch(0.70 0.19 46)' : 'oklch(0.65 0.22 27)',
+                        }}>
+                        {saltato ? 'Ripristina' : 'Salta'}
+                      </button>
+                    </div>
                   </div>
 
                   {!saltato && macro && (
@@ -482,6 +594,49 @@ export default function DietaPage() {
                           <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}</p>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Storico pasto — pannello inline */}
+                  {!saltato && copiaPastoAperto === pasto.nome && (
+                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid oklch(0.60 0.15 200 / 20%)', background: 'oklch(0.16 0 0)' }}>
+                      <p className="text-xs font-semibold px-3 py-2" style={{ color: 'oklch(0.60 0.15 200)', borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
+                        Copia {pasto.nome} da...
+                      </p>
+                      {loadingStoricoPerPasto ? (
+                        <p className="text-xs text-center py-4" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                      ) : (() => {
+                        const perGiorno = new Map<string, PastoLog[]>()
+                        for (const item of storicoPerPasto) {
+                          if (!perGiorno.has(item.data)) perGiorno.set(item.data, [])
+                          perGiorno.get(item.data)!.push(item)
+                        }
+                        const giorni = Array.from(perGiorno.entries()).slice(0, 7)
+                        if (giorni.length === 0) return (
+                          <p className="text-xs text-center py-4" style={{ color: 'oklch(0.45 0 0)' }}>
+                            Nessuno storico per questo pasto
+                          </p>
+                        )
+                        return giorni.map(([d, items]) => {
+                          const kcal = Math.round(items.reduce((a, x) => a + (x.calorie || 0), 0))
+                          const preview = items.slice(0, 3).map(x => x.alimento_nome).join(', ')
+                          return (
+                            <button key={d} onClick={() => handleCopiaPasto(items)} disabled={copiando}
+                              className="w-full text-left px-3 py-2.5 flex items-center justify-between gap-2 transition-all hover:opacity-80"
+                              style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold" style={{ color: 'oklch(0.85 0 0)' }}>{formatDataStorico(d)}</p>
+                                <p className="text-xs truncate mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>
+                                  {preview}{items.length > 3 ? ` +${items.length - 3}` : ''}
+                                </p>
+                              </div>
+                              <span className="text-xs font-bold flex-shrink-0" style={{ color: 'oklch(0.60 0.15 200)' }}>
+                                {kcal} kcal →
+                              </span>
+                            </button>
+                          )
+                        })
+                      })()}
                     </div>
                   )}
                 </div>
@@ -555,6 +710,54 @@ export default function DietaPage() {
       {/* TAB: DIETA */}
       {tab === 'dieta' && (
         <div className="space-y-3">
+
+          {/* Copia giornata intera */}
+          {!copiaGiornataAperta ? (
+            <button onClick={apriCopiaGiornata}
+              className="w-full py-2.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
+              style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              <FontAwesomeIcon icon={faCopy} className="text-xs" /> Copia giornata precedente
+            </button>
+          ) : (
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Copia giornata da...</p>
+                <button onClick={() => setCopiaGiornataAperta(false)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.50 0 0)' }}>
+                  <FontAwesomeIcon icon={faXmark} className="text-xs" />
+                </button>
+              </div>
+              {loadingGiornate ? (
+                <p className="text-sm text-center py-6" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+              ) : storicoGiornate.length === 0 ? (
+                <p className="text-sm text-center py-6" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno precedente trovato</p>
+              ) : (
+                <div>
+                  {storicoGiornate.map(({ data: d, items }) => {
+                    const totKcal = Math.round(items.reduce((a, x) => a + (x.calorie || 0), 0))
+                    const nomiPasti = Array.from(new Set(items.map(x => x.gruppo_nome).filter(Boolean)))
+                    return (
+                      <button key={d} onClick={() => handleCopiaGiornata(items)} disabled={copiando}
+                        className="w-full text-left px-4 py-3 flex items-center justify-between transition-all hover:opacity-80"
+                        style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                        <div>
+                          <p className="text-sm font-bold" style={{ color: 'oklch(0.90 0 0)' }}>{formatDataStorico(d)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                            {nomiPasti.length > 0 ? nomiPasti.join(' · ') : `${items.length} alimenti`}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold flex-shrink-0 ml-3" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                          {totKcal} kcal →
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Form aggiungi alimento */}
           {showForm ? (
             <div className="rounded-2xl p-5 space-y-4"
