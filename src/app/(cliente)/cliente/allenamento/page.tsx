@@ -86,6 +86,7 @@ export default function AllenamentoPage() {
   const sessioneStartRef = useRef<number | null>(null)
   const timerEndRef = useRef<number | null>(null)
   const userIdRef = useRef<string | null>(null)
+  const scheduledPushIdRef = useRef<string | null>(null)
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
@@ -106,22 +107,34 @@ export default function AllenamentoPage() {
     } catch {}
   }
 
-  function notificaFineRecupero() {
+  function feedbackLocale() {
     playBeep()
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate([200, 100, 200])
     }
+  }
+
+  async function scheduleTimerPush(fireAt: number) {
     if (!userIdRef.current) return
-    fetch('/api/push/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: userIdRef.current,
-        title: 'Recupero terminato! 💪',
-        body: 'Pronti per la prossima serie.',
-        url: '/cliente/allenamento',
-      }),
-    }).catch(() => {})
+    try {
+      const res = await fetch('/api/push/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fireAt: new Date(fireAt).toISOString(),
+          title: 'Recupero terminato! 💪',
+          body: 'Pronti per la prossima serie.',
+          url: '/cliente/allenamento',
+        }),
+      })
+      const data = await res.json()
+      scheduledPushIdRef.current = data.id ?? null
+    } catch {}
+  }
+
+  function cancelTimerPush() {
+    scheduledPushIdRef.current = null
+    fetch('/api/push/schedule', { method: 'DELETE' }).catch(() => {})
   }
 
   const TIPO_COLORS: Record<string, { color: string; bg: string; label: string }> = {
@@ -371,7 +384,8 @@ export default function AllenamentoPage() {
         setTimerAttivo(false)
         timerEndRef.current = null
         localStorage.removeItem('bynari_timer_end')
-        notificaFineRecupero()
+        cancelTimerPush()  // il server non deve mandare il doppio
+        feedbackLocale()   // beep + vibrazione immediati
       } else {
         setTimerSecondi(remaining)
       }
@@ -391,7 +405,8 @@ export default function AllenamentoPage() {
         setTimerAttivo(false)
         timerEndRef.current = null
         localStorage.removeItem('bynari_timer_end')
-        notificaFineRecupero()
+        // Il server push è già partito — solo feedback locale
+        feedbackLocale()
       }
     }
     document.addEventListener('visibilitychange', onVisible)
@@ -591,6 +606,7 @@ export default function AllenamentoPage() {
       localStorage.setItem('bynari_timer_end', endTs.toString())
       setTimerSecondi(ese.recupero_secondi)
       setTimerAttivo(true)
+      scheduleTimerPush(endTs)
       if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
     }
 
@@ -823,7 +839,7 @@ export default function AllenamentoPage() {
               <div className="text-2xl font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
                 {Math.floor(timerSecondi / 60).toString().padStart(2, '0')}:{(timerSecondi % 60).toString().padStart(2, '0')}
               </div>
-              <button onClick={() => setTimerAttivo(false)}
+              <button onClick={() => { setTimerAttivo(false); cancelTimerPush() }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium"
                 style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
                 Salta
