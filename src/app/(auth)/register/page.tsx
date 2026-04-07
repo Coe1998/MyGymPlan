@@ -16,18 +16,16 @@ function RegisterForm() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  // FIX: ruolo corretto per utenti invitati da un coach → 'cliente', non 'atleta'
-  const [role, setRole] = useState<UserRole>(inviteCode ? 'cliente' : 'atleta')
+  // Ruolo sempre 'atleta' — diventa 'cliente' solo quando il coach approva
+  const [role, setRole] = useState<UserRole>('atleta')
   const [coachNome, setCoachNome] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Recupera il nome del coach dal codice invito
   useEffect(() => {
     if (!inviteCode) return
     const supabase = createClient()
     supabase.from('profiles').select('full_name')
-      // FIX: toUpperCase() — i codici sono stored uppercase nel DB
       .eq('coach_code', inviteCode.toUpperCase()).eq('role', 'coach').single()
       .then(({ data }) => setCoachNome(data?.full_name ?? null))
   }, [inviteCode])
@@ -51,32 +49,25 @@ function RegisterForm() {
       return
     }
 
-    // Se c'è un codice invito → crea il record in coach_inviti
+    // Se c'è un codice invito → API route con service role per bypassare RLS
     if (inviteCode && signUpData.user) {
-      // FIX: toUpperCase() — i codici sono stored uppercase nel DB
-      const { data: coach } = await supabase
-        .from('profiles').select('id').eq('coach_code', inviteCode.toUpperCase()).single()
-
-      if (coach) {
-        // Piccolo delay per aspettare che il profilo venga creato dal trigger
-        await new Promise(r => setTimeout(r, 1500))
-        await supabase.from('coach_inviti').insert({
-          coach_id: coach.id,
+      await fetch('/api/coach/registra-invito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invite_code: inviteCode.toUpperCase(),
           cliente_id: signUpData.user.id,
-          stato: 'pending',
-        })
-        router.push('/atleta/dashboard?invito=inviato')
-        return
-      }
+        }),
+      })
+      router.push('/atleta/dashboard?invito=inviato')
+      return
     }
 
     if (role === 'coach') {
-      // Piccolo delay per aspettare che il trigger crei il profilo
       await new Promise(r => setTimeout(r, 1500))
       await supabase.from('profiles')
         .update({ coach_status: 'pending' })
         .eq('id', signUpData.user!.id)
-      // Notifica Telegram admin
       fetch('/api/notify/nuovo-coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,12 +82,10 @@ function RegisterForm() {
   return (
     <div className="min-h-screen flex items-center justify-center p-8" style={{ background: 'oklch(0.13 0 0)' }}>
       <div className="w-full max-w-md space-y-8">
-        {/* Logo */}
         <div>
           <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
         </div>
 
-        {/* Banner invito coach */}
         {inviteCode && (
           <div className="px-4 py-3 rounded-xl text-sm"
             style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.80 0 0)' }}>
@@ -113,7 +102,6 @@ function RegisterForm() {
           <p style={{ color: 'oklch(0.60 0 0)' }}>Inizia subito, è gratuito</p>
         </div>
 
-        {/* Role selector — nascosto se arriva da invito coach */}
         {!inviteCode && (
           <div className="grid grid-cols-2 gap-3">
             {[
