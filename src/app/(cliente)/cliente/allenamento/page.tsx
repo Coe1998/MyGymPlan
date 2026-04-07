@@ -151,7 +151,7 @@ export default function AllenamentoPage() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     // Fetch nome coach se esiste
-    supabase.from('coach_clienti').select('profiles!coach_clienti_coach_id_fkey(full_name)').eq('cliente_id', user?.id ?? '').maybeSingle().then(({ data: cc }) => {
+    if (user) supabase.from('coach_clienti').select('profiles!coach_clienti_coach_id_fkey(full_name)').eq('cliente_id', user.id).maybeSingle().then(({ data: cc }) => {
       if (cc) setCoachNome((cc as any).profiles?.full_name ?? null)
     })
     if (!user) return

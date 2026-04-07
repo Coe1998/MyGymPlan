@@ -72,7 +72,11 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     const rowH = 46
     const highlightRowH = 38
     const logoH = 62
-    const totalRows = stats.length + selezionati.length
+    const hasHighlights = selezionati.length > 0
+    const totalRows = stats.length
+      + (hasHighlights ? 1 : 0)  // riga HIGHLIGHTS
+      + selezionati.length
+      + (showCoach && coachNome ? 1 : 0)  // riga coach
     const totalH = padV + titleH + (totalRows * rowH) + ((totalRows - 1) * 1) + padV + logoH + padV
 
     canvas.width = W * scale
@@ -101,7 +105,6 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
     // Stats
     ctx.textAlign = 'left'
-    const hasHighlights = selezionati.length > 0
     const allRows = [
       ...stats.map(s => ({ label: s.label, value: s.value, isAccent: false, isHeader: false })),
       ...(hasHighlights ? [{ label: 'HIGHLIGHTS', value: '', isAccent: false, isHeader: true }] : []),
@@ -126,7 +129,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
       // Header "HIGHLIGHTS"
       if ((row as any).isHeader) {
         ctx.font = '900 9px "Big Shoulders Display", sans-serif'
-        ctx.fillStyle = dividerColor
+        ctx.fillStyle = accent
         ctx.textAlign = 'left'
         ctx.fillText('— ' + row.label + ' —', padH, rowY + 28)
         return
