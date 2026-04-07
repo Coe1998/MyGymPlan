@@ -7,6 +7,7 @@ import SessioniList from '@/components/cliente/SessioniList'
 import ClienteOnboarding from '@/components/shared/ClienteOnboarding'
 import SchedeSelector from '@/components/cliente/SchedeSelector'
 import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
+import AppuntamentiWidget from '@/components/cliente/AppuntamentiWidget'
 import AnamnesITrigger from '@/components/cliente/AnamnesITrigger'
 import { getTodayMacros } from '@/lib/getTodayMacros'
 import { getCarbUX } from '@/lib/getCarbUX'
@@ -138,6 +139,9 @@ export default async function ClienteDashboard() {
         ultimoPeso={ultimoPeso?.peso_kg ?? null}
         ultimoPesoData={ultimoPeso?.data ?? null}
       />
+
+      {/* Appuntamenti */}
+      <AppuntamentiWidget />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">

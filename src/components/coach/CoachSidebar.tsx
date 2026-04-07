@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav mobile — 5 tasti fissi
 const navItemsMobile = [
@@ -21,7 +21,8 @@ const navItemsMobile = [
 // Tutte le voci (desktop sidebar)
 const navItemsAll = [
   { href: '/coach/analytics', label: 'Dashboard', icon: faChartBar },
-  { href: '/coach/clienti', label: 'Clienti', icon: faUsers },
+  { href: '/coach/clienti', label: 'Gestione clienti', icon: faUsers },
+  { href: '/coach/appuntamenti', label: 'Appuntamenti', icon: faCalendarDays },
   { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
   { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
   { href: '/coach/chat', label: 'Chat', icon: faComments },
@@ -33,6 +34,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [allenamentoOpen, setAllenamentoOpen] = useState(false)
+  const [clientiOpen, setClientiOpen] = useState(false)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -109,7 +111,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
         }}>
 
         {/* Dashboard */}
-        {navItemsMobile.slice(0, 2).map((item) => {
+        {navItemsMobile.slice(0, 1).map((item) => {
           const isActive = pathname === item.href
           return (
             <Link key={item.href} href={item.href}
@@ -124,6 +126,40 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
             </Link>
           )
         })}
+
+        {/* Clienti popup */}
+        <div className="relative flex-1 flex justify-center">
+          <button onClick={() => { setClientiOpen(p => !p); setAllenamentoOpen(false); setMenuOpen(false) }}
+            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
+            style={{ background: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+            <FontAwesomeIcon icon={faUsers} className="text-xl"
+              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+            <span className="text-xs font-medium"
+              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+              Clienti
+            </span>
+          </button>
+          {clientiOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setClientiOpen(false)} />
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-48"
+                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 12%)' }}>
+                <Link href="/coach/clienti" onClick={() => setClientiOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  <FontAwesomeIcon icon={faUsers} className="w-4" />
+                  Gestione clienti
+                </Link>
+                <Link href="/coach/appuntamenti" onClick={() => setClientiOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)' }}>
+                  <FontAwesomeIcon icon={faCalendarDays} className="w-4" />
+                  Appuntamenti
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Allenamento popup */}
         <div className="relative flex-1 flex justify-center">

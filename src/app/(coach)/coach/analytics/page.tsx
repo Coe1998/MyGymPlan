@@ -7,7 +7,7 @@ import {
   faUsers, faClipboardList, faCircleCheck, faDumbbell,
   faTriangleExclamation, faChartBar, faComment,
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
-  faArrowTrendUp, faArrowTrendDown, faMinus,
+  faArrowTrendUp, faArrowTrendDown, faMinus, faCalendarDays,
   faXmark, faChevronDown, faChevronUp, faArrowLeft, faHand, faEye,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
@@ -1410,6 +1410,14 @@ export default function AnalyticsPage() {
                 >
                   <FontAwesomeIcon icon={faArrowTrendUp} />
                   ANALYTICS AVANZATE →
+                </Link>
+                <Link
+                  href={`/coach/clienti/${clienteSelezionato.id}/checkin`}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                  style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}
+                >
+                  <FontAwesomeIcon icon={faCalendarDays} />
+                  GESTIONE CHECK-IN →
                 </Link>
                 </>
               )}
