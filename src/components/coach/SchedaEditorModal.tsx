@@ -668,6 +668,8 @@ export default function SchedaEditorModal({
   const [savingPending, setSavingPending] = useState(false)
   const [form, setForm] = useState<EsForm>(EMPTY)
   const [editForm, setEditForm] = useState<EsForm>(EMPTY)
+  const [editFiltroMuscolo, setEditFiltroMuscolo] = useState('')
+  const [editExpandedAdv, setEditExpandedAdv] = useState(false)
   const [saving, setSaving] = useState(false)
   const [schedaNomeEdit, setSchedaNomeEdit] = useState(schedaNome)
   const [savingNome, setSavingNome] = useState(false)
@@ -1402,6 +1404,8 @@ export default function SchedaEditorModal({
                                   onClick={() => {
                                     setEditingId(ese.id)
                                     setAddingEse(false)
+                                    setEditFiltroMuscolo('')
+                                    setEditExpandedAdv(false)
                                     setEditForm({
                                       esercizio_id: ese.esercizio_id,
                                       alternativa_id: ese.alternativa_esercizio_id ?? '',
@@ -1432,16 +1436,214 @@ export default function SchedaEditorModal({
                               </div>
                             </div>
                           ) : (
-                            // Edit form
-                            <EsercizioForm
-                              form={editForm}
-                              onChange={setEditForm}
-                              esercizi={esercizi}
-                              gruppi={gruppiGiorno}
-                              onSave={handleSaveEdit}
-                              onCancel={() => setEditingId(null)}
-                              saving={saving}
-                            />
+                            // Edit form — mobile: EsercizioForm, desktop: riga inline
+                            <>
+                              {/* MOBILE */}
+                              <div className="lg:hidden">
+                                <EsercizioForm
+                                  form={editForm}
+                                  onChange={setEditForm}
+                                  esercizi={esercizi}
+                                  gruppi={gruppiGiorno}
+                                  onSave={handleSaveEdit}
+                                  onCancel={() => setEditingId(null)}
+                                  saving={saving}
+                                />
+                              </div>
+
+                              {/* DESKTOP: riga inline */}
+                              <div className="hidden lg:block px-2 py-2 space-y-1">
+                                {/* Riga base */}
+                                <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
+                                  style={{
+                                    gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px',
+                                    background: 'oklch(0.19 0 0)',
+                                    border: '1px solid oklch(0.60 0.15 200 / 40%)',
+                                  }}>
+                                  {/* # placeholder */}
+                                  <span />
+                                  {/* Filtro muscolo */}
+                                  <select
+                                    value={editFiltroMuscolo}
+                                    onChange={e => { setEditFiltroMuscolo(e.target.value); setEditForm(f => ({ ...f, esercizio_id: '' })) }}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editFiltroMuscolo ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                    <option value="">Tutti</option>
+                                    {['Petto','Dorsali','Spalle','Bicipiti','Tricipiti','Quadricipiti','Femorali','Glutei','Addome','Polpacci','Trapezio','Avambracci'].map(m => (
+                                      <option key={m} value={m}>{m}</option>
+                                    ))}
+                                  </select>
+                                  {/* Esercizio */}
+                                  <select
+                                    value={editForm.esercizio_id}
+                                    onChange={e => setEditForm(f => ({ ...f, esercizio_id: e.target.value }))}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editForm.esercizio_id ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                    <option value="">Cerca esercizio...</option>
+                                    {esercizi
+                                      .filter(e => !editFiltroMuscolo || e.muscoli?.includes(editFiltroMuscolo))
+                                      .map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                                  </select>
+                                  {/* Tipo */}
+                                  <select
+                                    value={editForm.tipo}
+                                    onChange={e => setEditForm(f => ({ ...f, tipo: e.target.value }))}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    <option value="normale">Normale</option>
+                                    <option value="superset">Superset</option>
+                                    <option value="giant_set">Giant Set</option>
+                                    <option value="dropset">Dropset</option>
+                                    <option value="rest_pause">Rest-Pause</option>
+                                    <option value="piramidale">Piramidale</option>
+                                  </select>
+                                  {/* Serie */}
+                                  <input type="number" min="1" max="20"
+                                    value={editForm.serie}
+                                    onChange={e => setEditForm(f => ({ ...f, serie: e.target.value }))}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  {/* Reps */}
+                                  <input type="text"
+                                    value={editForm.ripetizioni}
+                                    onChange={e => setEditForm(f => ({ ...f, ripetizioni: e.target.value }))}
+                                    placeholder="8-12"
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  {/* Recupero */}
+                                  <input type="number"
+                                    value={editForm.recupero}
+                                    onChange={e => setEditForm(f => ({ ...f, recupero: e.target.value }))}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  {/* Progressione */}
+                                  <select
+                                    value={editForm.progressione_tipo}
+                                    onChange={e => setEditForm(f => ({ ...f, progressione_tipo: e.target.value }))}
+                                    className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    <option value="peso">Peso</option>
+                                    <option value="reps">Reps</option>
+                                    <option value="serie">Serie</option>
+                                    <option value="durata">Durata</option>
+                                    <option value="nessuna">Nessuna</option>
+                                  </select>
+                                  {/* Toggle avanzate */}
+                                  <button
+                                    onClick={() => setEditExpandedAdv(v => !v)}
+                                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all"
+                                    style={{
+                                      background: editExpandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                                      color: editExpandedAdv ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                                      border: '1px solid oklch(1 0 0 / 10%)',
+                                    }}
+                                    title="Opzioni avanzate">▾</button>
+                                  {/* Annulla */}
+                                  <button
+                                    onClick={() => setEditingId(null)}
+                                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs"
+                                    style={{ background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.70 0.20 27)' }}>✕</button>
+                                </div>
+
+                                {/* Pannello avanzato */}
+                                {editExpandedAdv && (
+                                  <div className="px-2 py-3 rounded-xl space-y-3"
+                                    style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                    <div className="grid grid-cols-4 gap-3">
+                                      <div className="space-y-1 col-span-2">
+                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Alternativa</label>
+                                        <select
+                                          value={editForm.alternativa_id}
+                                          onChange={e => setEditForm(f => ({ ...f, alternativa_id: e.target.value }))}
+                                          className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editForm.alternativa_id ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                          <option value="">Nessuna alternativa</option>
+                                          {esercizi.filter(e => e.id !== editForm.esercizio_id).map(e => (
+                                            <option key={e.id} value={e.id}>{e.nome}</option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Prepara (s)</label>
+                                        <input type="number"
+                                          value={editForm.prepara_secondi}
+                                          onChange={e => setEditForm(f => ({ ...f, prepara_secondi: e.target.value }))}
+                                          placeholder="es. 10"
+                                          className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      </div>
+                                      {editForm.tipo === 'dropset' && (
+                                        <>
+                                          <div className="space-y-1">
+                                            <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop count</label>
+                                            <input type="number" min="1" max="5"
+                                              value={editForm.drop_count}
+                                              onChange={e => setEditForm(f => ({ ...f, drop_count: e.target.value }))}
+                                              className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          </div>
+                                          <div className="space-y-1">
+                                            <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop %</label>
+                                            <input type="number" min="5" max="50"
+                                              value={editForm.drop_pct}
+                                              onChange={e => setEditForm(f => ({ ...f, drop_pct: e.target.value }))}
+                                              className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          </div>
+                                        </>
+                                      )}
+                                      {editForm.tipo === 'rest_pause' && (
+                                        <div className="space-y-1">
+                                          <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Pausa (s)</label>
+                                          <input type="number"
+                                            value={editForm.rest_pause_sec}
+                                            onChange={e => setEditForm(f => ({ ...f, rest_pause_sec: e.target.value }))}
+                                            className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                        </div>
+                                      )}
+                                      {editForm.tipo === 'piramidale' && (
+                                        <div className="space-y-1 col-span-2">
+                                          <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Direzione</label>
+                                          <select
+                                            value={editForm.piramide_dir}
+                                            onChange={e => setEditForm(f => ({ ...f, piramide_dir: e.target.value }))}
+                                            className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                            <option value="ascendente">Ascendente</option>
+                                            <option value="discendente">Discendente</option>
+                                            <option value="doppia">Doppia</option>
+                                          </select>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Note tecniche</label>
+                                      <input type="text"
+                                        value={editForm.note}
+                                        onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))}
+                                        placeholder="Indicazioni tecniche, avvertenze..."
+                                        className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Bottoni salva/annulla */}
+                                <div className="flex gap-2 px-2">
+                                  <button onClick={handleSaveEdit} disabled={saving}
+                                    className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
+                                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                                    {saving ? 'Salvataggio...' : 'Salva modifiche'}
+                                  </button>
+                                  <button onClick={() => setEditingId(null)}
+                                    className="px-4 py-2 rounded-xl text-xs font-medium"
+                                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                    Annulla
+                                  </button>
+                                </div>
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
