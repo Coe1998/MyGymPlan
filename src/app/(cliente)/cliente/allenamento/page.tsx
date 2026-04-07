@@ -190,6 +190,8 @@ export default function AllenamentoPage() {
       } else {
         // Sessione già completata — pulisci localStorage
         if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
+        localStorage.removeItem(`bynari_logs_draft_${sessId}`)
+        localStorage.removeItem('bynari_timer_end')
       }
     } else {
       const { data: nuova } = await supabase.from('sessioni')
@@ -252,7 +254,45 @@ export default function AllenamentoPage() {
       logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
     }
     setLogs(logsInit)
+    // Restore draft dal localStorage se esiste
+    const draftKey = `bynari_logs_draft_${sessId}`
+    const draft = typeof window !== 'undefined' ? localStorage.getItem(draftKey) : null
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft)
+        setLogs(prev => {
+          const merged: typeof prev = { ...prev }
+          for (const eseId of Object.keys(parsed)) {
+            if (merged[eseId]) {
+              merged[eseId] = {
+                ...merged[eseId],
+                serie: merged[eseId].serie.map((s, i) => {
+                  if (s.completata) return s
+                  const d = parsed[eseId]?.serie?.[i]
+                  if (!d) return s
+                  return { ...s, ...d }
+                })
+              }
+            }
+          }
+          return merged
+        })
+      } catch { /* ignore */ }
+    }
     setLoading(false)
+    // Restore timer recupero se attivo
+    const savedTimerEnd = typeof window !== 'undefined' ? localStorage.getItem('bynari_timer_end') : null
+    if (savedTimerEnd) {
+      const endTs = parseInt(savedTimerEnd)
+      const remaining = Math.ceil((endTs - Date.now()) / 1000)
+      if (remaining > 0) {
+        timerEndRef.current = endTs
+        setTimerSecondi(remaining)
+        setTimerAttivo(true)
+      } else {
+        localStorage.removeItem('bynari_timer_end')
+      }
+    }
   }, [giornoId, assegnazioneId, sessioneIdParam])
 
   useEffect(() => { fetchGiorno() }, [fetchGiorno])
@@ -266,6 +306,24 @@ export default function AllenamentoPage() {
 
   useEffect(() => { durataSecondiRef.current = durataSecondi }, [durataSecondi])
 
+  // Persiste i valori non completati in localStorage come draft
+  useEffect(() => {
+    if (!sessioneId || completata || loading) return
+    const draft: Record<string, { serie: { peso_kg: string; ripetizioni: string; reps_sx: string; reps_dx: string; durata_secondi: string }[] }> = {}
+    for (const [eseId, logEse] of Object.entries(logs)) {
+      draft[eseId] = {
+        serie: logEse.serie.map(s => ({
+          peso_kg: s.peso_kg,
+          ripetizioni: s.ripetizioni,
+          reps_sx: s.reps_sx,
+          reps_dx: s.reps_dx,
+          durata_secondi: s.durata_secondi,
+        }))
+      }
+    }
+    localStorage.setItem(`bynari_logs_draft_${sessioneId}`, JSON.stringify(draft))
+  }, [logs, sessioneId, completata, loading])
+
   useEffect(() => {
     if (!timerAttivo) return
     const interval = setInterval(() => {
@@ -275,6 +333,7 @@ export default function AllenamentoPage() {
         setTimerSecondi(0)
         setTimerAttivo(false)
         timerEndRef.current = null
+        localStorage.removeItem('bynari_timer_end')
       } else {
         setTimerSecondi(remaining)
       }
@@ -320,6 +379,8 @@ export default function AllenamentoPage() {
         .eq('id', sessioneId)
         .then(() => {
           if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
+          if (sessioneId) localStorage.removeItem(`bynari_logs_draft_${sessioneId}`)
+          localStorage.removeItem('bynari_timer_end')
           setCompletata(true)
         })
     }
@@ -468,7 +529,9 @@ export default function AllenamentoPage() {
     if (existing) { await supabase.from('log_serie').update(payload).eq('id', existing.id) }
     else { await supabase.from('log_serie').insert(payload) }
     if (nuovoStato) {
-      timerEndRef.current = Date.now() + ese.recupero_secondi * 1000
+      const endTs = Date.now() + ese.recupero_secondi * 1000
+      timerEndRef.current = endTs
+      localStorage.setItem('bynari_timer_end', endTs.toString())
       setTimerSecondi(ese.recupero_secondi)
       setTimerAttivo(true)
       if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
@@ -515,6 +578,8 @@ export default function AllenamentoPage() {
       .update({ completata: true, durata_secondi: durataSecondi })
       .eq('id', sessioneId)
     if (typeof window !== 'undefined') localStorage.removeItem('bynari_allenamento_url')
+    if (sessioneId) localStorage.removeItem(`bynari_logs_draft_${sessioneId}`)
+    localStorage.removeItem('bynari_timer_end')
     setCompletata(true)
     setSaving(false)
   }
