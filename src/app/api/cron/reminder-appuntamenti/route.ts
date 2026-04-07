@@ -15,10 +15,9 @@ export async function GET(request: Request) {
 
   const now = new Date()
 
-  // Finestre: 24h ahead e 15min ahead (±5 min di tolleranza)
+  // Cerca appuntamenti nelle prossime 24h (finestra larga: da ora a +25h)
   const windows = [
-    { label: 'domani', from: addMinutes(now, 24 * 60 - 5), to: addMinutes(now, 24 * 60 + 5) },
-    { label: 'tra 15 minuti', from: addMinutes(now, 15 - 5), to: addMinutes(now, 15 + 5) },
+    { label: 'oggi o domani', from: now, to: addMinutes(now, 25 * 60) },
   ]
 
   const righe: string[] = []
