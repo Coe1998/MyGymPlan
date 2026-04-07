@@ -75,6 +75,34 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
     })
   }, [numPasti])
 
+  // Ricalcola macro globali dai pasti custom in realtime
+  useEffect(() => {
+    const hasCustom = pastiConfig.some(p => p.macro_custom)
+    if (!hasCustom || pastiConfig.length === 0) return
+
+    const kcalTotal = parseInt(calorie) || 0
+    let customProt = 0, customCarb = 0, customGrassi = 0
+    let nonCustomPct = 0
+
+    for (const p of pastiConfig) {
+      if (p.macro_custom) {
+        const kcalPasto = kcalTotal * p.percentuale / 100
+        customProt += (kcalPasto * (p.prot_pct ?? 0) / 100) / 4
+        customCarb += (kcalPasto * (p.carb_pct ?? 0) / 100) / 4
+        customGrassi += (kcalPasto * (p.grassi_pct ?? 0) / 100) / 9
+      } else {
+        nonCustomPct += p.percentuale
+      }
+    }
+
+    const scale = 1 - nonCustomPct / 100
+    if (scale <= 0) return
+
+    setProteine(String(Math.round(customProt / scale)))
+    setCarboidrati(String(Math.round(customCarb / scale)))
+    setGrassi(String(Math.round(customGrassi / scale)))
+  }, [pastiConfig, calorie])
+
   const handleSave = async () => {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
