@@ -182,7 +182,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
 
   useEffect(() => {
     if (canvasRef.current) drawCard(canvasRef.current)
-  }, [tema, selezionati, giornoNome, volume, serie, durata])
+  }, [tema, selezionati, giornoNome, volume, serie, durata, showCoach, coachInput])
 
   const handleDownload = async () => {
     const canvas = canvasRef.current
