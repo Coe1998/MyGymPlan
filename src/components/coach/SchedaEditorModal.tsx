@@ -1133,7 +1133,7 @@ export default function SchedaEditorModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
       style={{ background: 'oklch(0 0 0 / 75%)', backdropFilter: 'blur(10px)' }}>
-      <div className="w-full max-w-2xl flex flex-col rounded-3xl overflow-hidden"
+      <div className="w-full max-w-2xl lg:max-w-5xl flex flex-col rounded-3xl overflow-hidden"
         style={{
           background: 'oklch(0.15 0 0)',
           border: '1px solid oklch(1 0 0 / 10%)',
@@ -1453,7 +1453,7 @@ export default function SchedaEditorModal({
                   {/* Header colonne desktop */}
                   {pendingEsercizi.filter(p => p.giornoId === activeGiorno).length > 0 && (
                     <div className="hidden lg:grid gap-2 px-2 pb-1"
-                      style={{ gridTemplateColumns: '20px 80px 1fr 80px 60px 60px 60px 110px 30px 30px' }}>
+                      style={{ gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px' }}>
                       {['#', 'Muscolo', 'Esercizio', 'Tipo', 'Ser.', 'Reps', 'Rec.', 'Progr.', '', ''].map((h, i) => (
                         <span key={i} className="text-xs font-semibold uppercase tracking-wider"
                           style={{ color: 'oklch(0.40 0 0)' }}>{h}</span>
@@ -1520,7 +1520,7 @@ export default function SchedaEditorModal({
                         {/* Riga base */}
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
-                            gridTemplateColumns: '20px 80px 1fr 80px 60px 60px 60px 110px 30px 30px',
+                            gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px',
                             background: p.form.esercizio_id ? 'oklch(0.19 0 0)' : 'oklch(0.17 0 0)',
                             border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.70 0.19 46 / 25%)'}`,
                           }}>
