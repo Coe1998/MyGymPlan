@@ -26,6 +26,7 @@ interface Misurazione {
 interface ClienteStats {
   id: string
   full_name: string | null
+  created_at: string
   schede_attive: number
   totale_sessioni: number
   ultima_sessione: string | null
@@ -119,6 +120,7 @@ export default function AnalyticsPage() {
   const [clientiStats, setClientiStats] = useState<ClienteStats[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<VistaTab>('overview')
+  const [ordinamento, setOrdinamento] = useState<'alert' | 'ultima_attivita' | 'piu_recenti' | 'piu_vecchi' | 'nome'>('alert')
   const [totaleClienti, setTotaleClienti] = useState(0)
   const [clientiNuovi, setClientiNuovi] = useState(0)
   const [totaleSchede, setTotaleSchede] = useState(0)
@@ -381,6 +383,7 @@ export default function AnalyticsPage() {
       stats.push({
         id: clienteId,
         full_name: profile?.full_name,
+        created_at: (clientiData.find((c: any) => c.cliente_id === clienteId) as any)?.created_at ?? '',
         schede_attive: assegAttivePerCliente.get(clienteId) ?? 0,
         totale_sessioni: sessioni.length,
         ultima_sessione: ultimaSessione,
@@ -591,6 +594,32 @@ export default function AnalyticsPage() {
   const clientiConAlert = clientiStats.filter(c => c.alert.length > 0)
   const clientiAttivi = clientiStats.filter(c => c.giorni_inattivo !== null && c.giorni_inattivo <= 7).length
 
+  const setteGiorniFaMs = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const isNuovo = (c: ClienteStats) => new Date(c.created_at).getTime() >= setteGiorniFaMs
+
+  const clientiOrdinati = [...clientiStats].sort((a, b) => {
+    switch (ordinamento) {
+      case 'alert':
+        if (a.alert.length !== b.alert.length) return b.alert.length - a.alert.length
+        if (a.giorni_inattivo === null) return 1
+        if (b.giorni_inattivo === null) return -1
+        return b.giorni_inattivo - a.giorni_inattivo
+      case 'ultima_attivita':
+        if (!a.ultima_sessione && !b.ultima_sessione) return 0
+        if (!a.ultima_sessione) return 1
+        if (!b.ultima_sessione) return -1
+        return new Date(b.ultima_sessione).getTime() - new Date(a.ultima_sessione).getTime()
+      case 'piu_recenti':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case 'piu_vecchi':
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      case 'nome':
+        return (a.full_name ?? '').localeCompare(b.full_name ?? '', 'it')
+      default:
+        return 0
+    }
+  })
+
   const overviewStats = [
     { label: 'Clienti totali', value: totaleClienti, icon: faUsers, color: 'oklch(0.60 0.15 200)' },
     { label: 'Schede create', value: totaleSchede, icon: faClipboardList, color: 'oklch(0.70 0.19 46)' },
@@ -707,6 +736,27 @@ export default function AnalyticsPage() {
         <>
           {/* TAB: ATTIVITÀ */}
           {tab === 'overview' && (
+            <>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>Ordina:</span>
+              {([
+                { id: 'alert', label: '⚠ Alert' },
+                { id: 'ultima_attivita', label: '🕐 Ultima attività' },
+                { id: 'piu_recenti', label: '🆕 Più recenti' },
+                { id: 'piu_vecchi', label: '📅 Più vecchi' },
+                { id: 'nome', label: 'A→Z Nome' },
+              ] as const).map(o => (
+                <button key={o.id} onClick={() => setOrdinamento(o.id)}
+                  className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
+                  style={{
+                    background: ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                    color: ordinamento === o.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+                    border: `1px solid ${ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'oklch(1 0 0 / 8%)'}`,
+                  }}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
             <div className="rounded-2xl overflow-hidden"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
               {/* Header colonne */}
@@ -718,18 +768,26 @@ export default function AnalyticsPage() {
                 ))}
               </div>
 
-              {clientiStats.map((c, i) => {
+              {clientiOrdinati.map((c, i) => {
                 const stato = getStatoCliente(c.giorni_inattivo, c.totale_sessioni)
                 return (
                   <div key={c.id}
                     onClick={() => apriCliente(c)}
                     className="px-5 py-4 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center flex flex-col gap-2 cursor-pointer transition-colors hover:opacity-80"
-                    style={{ borderBottom: i < clientiStats.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < clientiOrdinati.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
                     {/* Cliente */}
                     <div className="lg:col-span-4 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                        style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                        {c.full_name?.charAt(0).toUpperCase()}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                          style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+                          {c.full_name?.charAt(0).toUpperCase()}
+                        </div>
+                        {isNuovo(c) && (
+                          <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
+                            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', fontSize: '0.6rem' }}>
+                            NEW
+                          </span>
+                        )}
                       </div>
                       <div>
                         <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
@@ -784,6 +842,7 @@ export default function AnalyticsPage() {
                 )
               })}
             </div>
+            </>
           )}
 
           {/* TAB: ALERT */}
@@ -805,9 +864,17 @@ export default function AnalyticsPage() {
                     <div key={c.id} className="rounded-2xl p-5 space-y-3"
                       style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                          style={{ background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)' }}>
-                          {c.full_name?.charAt(0).toUpperCase()}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                            style={{ background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)' }}>
+                            {c.full_name?.charAt(0).toUpperCase()}
+                          </div>
+                          {isNuovo(c) && (
+                            <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
+                              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', fontSize: '0.6rem' }}>
+                              NEW
+                            </span>
+                          )}
                         </div>
                         <div>
                           <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
