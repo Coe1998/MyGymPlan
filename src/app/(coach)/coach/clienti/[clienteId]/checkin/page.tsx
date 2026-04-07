@@ -3,23 +3,194 @@
 import { use, useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCalendarDays, faVideo, faPhone, faPerson, faCheck, faXmark, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { faCalendarDays, faVideo, faPhone, faPerson, faCheck, faXmark, faArrowLeft, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import Link from 'next/link'
 
 interface Appuntamento {
   id: string
+  cliente_id: string
   data_ora: string
   durata_minuti: number
   tipo: string
   link: string | null
   note: string | null
   stato: string
+  profiles?: { full_name: string | null }
 }
 
-const TIPO_ICON: Record<string, any> = {
-  videocall: faVideo,
-  chiamata: faPhone,
-  presenza: faPerson,
+const TIPO_COLOR: Record<string, { bg: string; border: string; text: string }> = {
+  videocall: { bg: 'oklch(0.60 0.15 200 / 20%)', border: 'oklch(0.60 0.15 200)', text: 'oklch(0.75 0.12 200)' },
+  chiamata:  { bg: 'oklch(0.70 0.19 46 / 20%)',  border: 'oklch(0.70 0.19 46)',  text: 'oklch(0.80 0.15 46)' },
+  presenza:  { bg: 'oklch(0.65 0.18 150 / 20%)', border: 'oklch(0.65 0.18 150)', text: 'oklch(0.75 0.14 150)' },
+}
+const TIPO_ICON: Record<string, any> = { videocall: faVideo, chiamata: faPhone, presenza: faPerson }
+
+const HOUR_START = 8
+const HOUR_END = 22
+const TOTAL_HOURS = HOUR_END - HOUR_START
+const PX_PER_HOUR = 64
+
+function getMondayOf(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function WeekCalendar({
+  allApps,
+  clienteId,
+  weekOffset,
+  onDelete,
+}: {
+  allApps: Appuntamento[]
+  clienteId: string
+  weekOffset: number
+  onDelete: (id: string, stato: 'completato' | 'annullato') => void
+}) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const weekStart = getMondayOf(new Date(today.getTime() + weekOffset * 7 * 86400000))
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart)
+    d.setDate(d.getDate() + i)
+    return d
+  })
+
+  const hours = Array.from({ length: TOTAL_HOURS }, (_, i) => HOUR_START + i)
+
+  const appsInWeek = allApps.filter(a => {
+    const d = new Date(a.data_ora)
+    d.setHours(0, 0, 0, 0)
+    return d >= days[0] && d <= days[6] && a.stato === 'programmato'
+  })
+
+  const [tooltip, setTooltip] = useState<string | null>(null)
+
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+
+      {/* Header giorni */}
+      <div className="grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+        <div />
+        {days.map((d, i) => {
+          const isToday = d.getTime() === today.getTime()
+          return (
+            <div key={i} className="py-3 text-center">
+              <p className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>
+                {d.toLocaleDateString('it-IT', { weekday: 'short' }).toUpperCase()}
+              </p>
+              <div className={`mx-auto mt-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold`}
+                style={{
+                  background: isToday ? 'oklch(0.60 0.15 200)' : 'transparent',
+                  color: isToday ? 'white' : 'oklch(0.75 0 0)',
+                }}>
+                {d.getDate()}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Grid ore */}
+      <div className="overflow-y-auto" style={{ maxHeight: `${PX_PER_HOUR * 8}px` }}>
+        <div className="relative grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)', height: `${PX_PER_HOUR * TOTAL_HOURS}px` }}>
+
+          {/* Righe ore — label + linea */}
+          {hours.map(h => (
+            <div key={h} className="contents">
+              <div className="absolute text-right pr-2"
+                style={{ top: `${(h - HOUR_START) * PX_PER_HOUR - 8}px`, left: 0, width: '44px' }}>
+                <span className="text-xs" style={{ color: 'oklch(0.35 0 0)' }}>{h}:00</span>
+              </div>
+              {/* Linea orizzontale su tutta la griglia */}
+              <div className="absolute left-11 right-0"
+                style={{ top: `${(h - HOUR_START) * PX_PER_HOUR}px`, borderTop: '1px solid oklch(1 0 0 / 5%)' }} />
+            </div>
+          ))}
+
+          {/* Colonne giorni */}
+          {days.map((d, colIdx) => {
+            const dayApps = appsInWeek.filter(a => {
+              const ad = new Date(a.data_ora)
+              ad.setHours(0, 0, 0, 0)
+              return ad.getTime() === d.getTime()
+            })
+
+            return (
+              <div key={colIdx} className="relative"
+                style={{
+                  gridColumn: colIdx + 2,
+                  gridRow: 1,
+                  borderLeft: '1px solid oklch(1 0 0 / 5%)',
+                }}>
+                {dayApps.map(a => {
+                  const startDate = new Date(a.data_ora)
+                  const startMin = (startDate.getHours() - HOUR_START) * 60 + startDate.getMinutes()
+                  const top = (startMin / 60) * PX_PER_HOUR
+                  const height = Math.max((a.durata_minuti / 60) * PX_PER_HOUR, 20)
+                  const isCurrentCliente = a.cliente_id === clienteId
+                  const colors = isCurrentCliente
+                    ? (TIPO_COLOR[a.tipo] ?? TIPO_COLOR.videocall)
+                    : { bg: 'oklch(0.25 0 0)', border: 'oklch(0.35 0 0)', text: 'oklch(0.50 0 0)' }
+
+                  return (
+                    <div key={a.id}
+                      className="absolute left-0.5 right-0.5 rounded-lg px-1.5 overflow-hidden cursor-pointer"
+                      style={{
+                        top: `${top}px`,
+                        height: `${height}px`,
+                        background: colors.bg,
+                        borderLeft: `2px solid ${colors.border}`,
+                        zIndex: isCurrentCliente ? 2 : 1,
+                      }}
+                      onClick={() => setTooltip(tooltip === a.id ? null : a.id)}>
+                      <p className="text-xs font-semibold leading-tight truncate mt-0.5" style={{ color: colors.text }}>
+                        {new Date(a.data_ora).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                        {height > 30 && <> · {a.profiles?.full_name ?? '—'}</>}
+                      </p>
+
+                      {/* Tooltip azioni */}
+                      {tooltip === a.id && isCurrentCliente && (
+                        <div className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden shadow-xl min-w-44"
+                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 14%)' }}
+                          onClick={e => e.stopPropagation()}>
+                          <div className="px-3 py-2" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                            <p className="text-xs font-bold" style={{ color: 'oklch(0.85 0 0)' }}>
+                              {a.profiles?.full_name} · {new Date(a.data_ora).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} {new Date(a.data_ora).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{a.durata_minuti}min · {a.tipo}</p>
+                            {a.link && <a href={a.link} target="_blank" rel="noopener noreferrer" className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Link →</a>}
+                            {a.note && <p className="text-xs italic mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{a.note}</p>}
+                          </div>
+                          <div className="flex">
+                            <button onClick={() => { onDelete(a.id, 'completato'); setTooltip(null) }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold"
+                              style={{ color: 'oklch(0.65 0.18 150)', borderRight: '1px solid oklch(1 0 0 / 8%)' }}>
+                              <FontAwesomeIcon icon={faCheck} /> Fatto
+                            </button>
+                            <button onClick={() => { onDelete(a.id, 'annullato'); setTooltip(null) }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium"
+                              style={{ color: 'oklch(0.75 0.15 27)' }}>
+                              <FontAwesomeIcon icon={faXmark} /> Annulla
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function CheckinPage({ params }: { params: Promise<{ clienteId: string }> }) {
@@ -27,9 +198,10 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
   const supabase = useMemo(() => createClient(), [])
 
   const [nomeCliente, setNomeCliente] = useState('')
-  const [appuntamenti, setAppuntamenti] = useState<Appuntamento[]>([])
+  const [allApps, setAllApps] = useState<Appuntamento[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [weekOffset, setWeekOffset] = useState(0)
 
   // Form state
   const [data, setData] = useState('')
@@ -41,15 +213,19 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
 
   const fetchAll = async () => {
     setLoading(true)
-    const [profileRes, appRes] = await Promise.all([
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    const [profileRes, allAppsRes] = await Promise.all([
       supabase.from('profiles').select('full_name').eq('id', clienteId).single(),
+      // Fetch ALL coach appointments for the calendar (full picture)
       supabase.from('appuntamenti')
-        .select('id, data_ora, durata_minuti, tipo, link, note, stato')
-        .eq('cliente_id', clienteId)
-        .order('data_ora', { ascending: false }),
+        .select('id, cliente_id, data_ora, durata_minuti, tipo, link, note, stato, profiles!appuntamenti_cliente_id_fkey(full_name)')
+        .eq('coach_id', user.id)
+        .order('data_ora'),
     ])
     setNomeCliente(profileRes.data?.full_name ?? 'Cliente')
-    setAppuntamenti((appRes.data as any) ?? [])
+    setAllApps((allAppsRes.data as any) ?? [])
     setLoading(false)
   }
 
@@ -84,9 +260,18 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
     fetchAll()
   }
 
-  const now = new Date()
-  const futuri = appuntamenti.filter(a => new Date(a.data_ora) >= now && a.stato === 'programmato')
-  const storici = appuntamenti.filter(a => new Date(a.data_ora) < now || a.stato !== 'programmato')
+  const clienteApps = allApps.filter(a => a.cliente_id === clienteId)
+  const futuri = clienteApps.filter(a => new Date(a.data_ora) >= new Date() && a.stato === 'programmato')
+  const storici = clienteApps.filter(a => new Date(a.data_ora) < new Date() || a.stato !== 'programmato')
+
+  const weekStart = getMondayOf(new Date(Date.now() + weekOffset * 7 * 86400000))
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const labelSettimana = weekOffset === 0
+    ? 'Questa settimana'
+    : weekOffset === 1 ? 'Prossima settimana'
+    : weekOffset === -1 ? 'Settimana scorsa'
+    : `${weekStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} – ${weekEnd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}`
 
   const inputStyle = {
     background: 'oklch(0.14 0 0)',
@@ -99,9 +284,9 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-5xl">
       <div>
-        <Link href={`/coach/clienti`}
+        <Link href="/coach/clienti"
           className="inline-flex items-center gap-2 text-sm mb-4"
           style={{ color: 'oklch(0.50 0 0)' }}>
           <FontAwesomeIcon icon={faArrowLeft} />
@@ -113,6 +298,55 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
         <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
           {futuri.length} programmati · {storici.length} passati
         </p>
+      </div>
+
+      {/* Calendario settimanale */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setWeekOffset(p => p - 1)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-white/8"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+            </button>
+            <p className="text-sm font-semibold" style={{ color: 'oklch(0.75 0 0)' }}>{labelSettimana}</p>
+            <button onClick={() => setWeekOffset(p => p + 1)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-white/8"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
+            </button>
+            {weekOffset !== 0 && (
+              <button onClick={() => setWeekOffset(0)} className="text-xs font-medium" style={{ color: 'oklch(0.60 0.15 200)' }}>
+                Oggi
+              </button>
+            )}
+          </div>
+          {/* Legenda */}
+          <div className="hidden sm:flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm" style={{ background: 'oklch(0.60 0.15 200 / 30%)', borderLeft: '2px solid oklch(0.60 0.15 200)' }} />
+              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{nomeCliente}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm" style={{ background: 'oklch(0.25 0 0)', borderLeft: '2px solid oklch(0.35 0 0)' }} />
+              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Altri clienti</span>
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="rounded-2xl py-16 text-center"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+          </div>
+        ) : (
+          <WeekCalendar
+            allApps={allApps}
+            clienteId={clienteId}
+            weekOffset={weekOffset}
+            onDelete={handleStato}
+          />
+        )}
       </div>
 
       {/* Form nuovo appuntamento */}
@@ -178,51 +412,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
         </form>
       </div>
 
-      {/* Prossimi appuntamenti */}
-      {!loading && futuri.length > 0 && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'oklch(0.50 0 0)' }}>
-            Programmati
-          </p>
-          <div className="space-y-2">
-            {futuri.map(a => (
-              <div key={a.id} className="rounded-2xl p-4 flex items-center gap-3"
-                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
-                  <FontAwesomeIcon icon={TIPO_ICON[a.tipo] ?? faCalendarDays} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
-                    {new Date(a.data_ora).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
-                    {new Date(a.data_ora).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-                    {' · '}{a.durata_minuti} min · {a.tipo}
-                    {a.link && <> · <a href={a.link} target="_blank" rel="noopener noreferrer"
-                      style={{ color: 'oklch(0.60 0.15 200)' }}>Link</a></>}
-                  </p>
-                  {a.note && <p className="text-xs mt-0.5 italic" style={{ color: 'oklch(0.45 0 0)' }}>{a.note}</p>}
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => handleStato(a.id, 'completato')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                    style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                    <FontAwesomeIcon icon={faCheck} />
-                  </button>
-                  <button onClick={() => handleStato(a.id, 'annullato')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                    style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
-                    <FontAwesomeIcon icon={faXmark} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Storico */}
+      {/* Storico di questo cliente */}
       {!loading && storici.length > 0 && (
         <div>
           <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'oklch(0.40 0 0)' }}>

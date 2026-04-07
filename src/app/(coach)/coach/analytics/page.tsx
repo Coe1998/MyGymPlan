@@ -156,6 +156,7 @@ export default function AnalyticsPage() {
   const [schedaPreview, setSchedaPreview] = useState<{ id: string; nome: string } | null>(null)
   const [anamnesICliente, setAnamnesICliente] = useState<any>(null)
   const [showAnamnesIDrawer, setShowAnamnesIDrawer] = useState(false)
+  const [prossimiCheckin, setProssimiCheckin] = useState<any[]>([])
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -165,13 +166,23 @@ export default function AnalyticsPage() {
     if (!user) return
 
     // ── 1. Fetch base in parallelo ────────────────────────────────
-    const [clientiRes, schedeRes, assegnazioniRes] = await Promise.all([
+    const settePiorniFuturi = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const [clientiRes, schedeRes, assegnazioniRes, checkinImminentiRes] = await Promise.all([
       supabase.from('coach_clienti')
         .select('cliente_id, created_at, profiles!coach_clienti_cliente_id_fkey (id, full_name)')
         .eq('coach_id', user.id),
       supabase.from('schede').select('id').eq('coach_id', user.id),
       supabase.from('assegnazioni').select('id').eq('coach_id', user.id).eq('attiva', true),
+      supabase.from('appuntamenti')
+        .select('id, cliente_id, data_ora, durata_minuti, tipo, profiles!appuntamenti_cliente_id_fkey(full_name)')
+        .eq('coach_id', user.id)
+        .eq('stato', 'programmato')
+        .gte('data_ora', new Date().toISOString())
+        .lte('data_ora', settePiorniFuturi)
+        .order('data_ora')
+        .limit(5),
     ])
+    setProssimiCheckin((checkinImminentiRes.data as any) ?? [])
 
     const clientiData = clientiRes.data ?? []
     setTotaleClienti(clientiData.length)
@@ -712,6 +723,43 @@ export default function AnalyticsPage() {
           </div>
         ))}
       </div>
+
+      {/* Prossimi check-in */}
+      {prossimiCheckin.length > 0 && (
+        <div className="rounded-2xl overflow-hidden"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
+          <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+              <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.60 0.15 200)' }} />
+              Prossimi check-in
+            </p>
+            <Link href="/coach/appuntamenti" className="text-xs font-medium" style={{ color: 'oklch(0.60 0.15 200)' }}>
+              Tutti →
+            </Link>
+          </div>
+          {prossimiCheckin.map((a: any, i: number) => {
+            const dataOra = new Date(a.data_ora)
+            const oggi = new Date(); oggi.setHours(0,0,0,0)
+            const domani = new Date(oggi); domani.setDate(domani.getDate() + 1)
+            const gg = dataOra < domani
+              ? `Oggi ${dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`
+              : dataOra < new Date(domani.getTime() + 86400000)
+              ? `Domani ${dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`
+              : dataOra.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+            return (
+              <Link key={a.id} href={`/coach/clienti/${a.cliente_id}/checkin`}
+                className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
+                style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.60 0.15 200)' }} />
+                <p className="flex-1 text-sm font-semibold truncate" style={{ color: 'oklch(0.85 0 0)' }}>
+                  {(a as any).profiles?.full_name ?? 'Cliente'}
+                </p>
+                <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>{gg} · {a.durata_minuti}min</p>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
