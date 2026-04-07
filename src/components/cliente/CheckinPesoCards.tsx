@@ -25,14 +25,14 @@ type CheckinKey = typeof CHECKIN_CAMPI[number]['key']
 
 interface Props {
   checkinFatto: boolean
-  willTrain: boolean | null
+  willTrain?: boolean | null
   ultimoPeso: number | null
   ultimoPesoData: string | null
 }
 
 export default function CheckinPesoCards({
   checkinFatto: checkinFattoInit,
-  willTrain: willTrainInit,
+  willTrain: willTrainInit = null,
   ultimoPeso,
   ultimoPesoData,
 }: Props) {
