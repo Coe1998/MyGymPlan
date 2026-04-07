@@ -663,6 +663,7 @@ export default function SchedaEditorModal({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [pendingEsercizi, setPendingEsercizi] = useState<{
     tempId: string; giornoId: string; form: EsForm; expanded: boolean
+    filtroMuscolo: string; expandedAdv: boolean
   }[]>([])
   const [savingPending, setSavingPending] = useState(false)
   const [form, setForm] = useState<EsForm>(EMPTY)
@@ -1448,57 +1449,373 @@ export default function SchedaEditorModal({
                   })}
 
                   {/* Pending placeholders */}
+
+                  {/* Header colonne desktop */}
+                  {pendingEsercizi.filter(p => p.giornoId === activeGiorno).length > 0 && (
+                    <div className="hidden lg:grid gap-2 px-2 pb-1"
+                      style={{ gridTemplateColumns: '20px 80px 1fr 80px 60px 60px 60px 110px 30px 30px' }}>
+                      {['#', 'Muscolo', 'Esercizio', 'Tipo', 'Ser.', 'Reps', 'Rec.', 'Progr.', '', ''].map((h, i) => (
+                        <span key={i} className="text-xs font-semibold uppercase tracking-wider"
+                          style={{ color: 'oklch(0.40 0 0)' }}>{h}</span>
+                      ))}
+                    </div>
+                  )}
+
                   {pendingEsercizi.filter(p => p.giornoId === activeGiorno).map(p => (
-                    <div key={p.tempId} className="rounded-2xl overflow-hidden"
-                      style={{ background: 'oklch(0.19 0 0)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
-                      {/* Header placeholder */}
-                      <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
-                        onClick={() => setPendingEsercizi(prev => prev.map(x =>
-                          x.tempId === p.tempId ? { ...x, expanded: !x.expanded } : { ...x, expanded: false }
-                        ))}>
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold"
-                          style={{
-                            background: p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.70 0.19 46 / 20%)',
-                            color: p.form.esercizio_id ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)',
-                          }}>
-                          {p.form.esercizio_id ? '✓' : '?'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {p.form.esercizio_id ? (
-                            <>
-                              <p className="text-sm font-bold truncate" style={{ color: 'oklch(0.97 0 0)' }}>
-                                {esercizi.find(e => e.id === p.form.esercizio_id)?.nome ?? 'Esercizio'}
+                    <div key={p.tempId}>
+
+                      {/* MOBILE: card espandibile — invariato */}
+                      <div className="lg:hidden rounded-2xl overflow-hidden"
+                        style={{ background: 'oklch(0.19 0 0)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
+                        <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
+                          onClick={() => setPendingEsercizi(prev => prev.map(x =>
+                            x.tempId === p.tempId ? { ...x, expanded: !x.expanded } : { ...x, expanded: false }
+                          ))}>
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold"
+                            style={{
+                              background: p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.70 0.19 46 / 20%)',
+                              color: p.form.esercizio_id ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)',
+                            }}>
+                            {p.form.esercizio_id ? '✓' : '?'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            {p.form.esercizio_id ? (
+                              <>
+                                <p className="text-sm font-bold truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                                  {esercizi.find(e => e.id === p.form.esercizio_id)?.nome ?? 'Esercizio'}
+                                </p>
+                                <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                                  {p.form.serie}×{p.form.ripetizioni} · {p.form.recupero}s rec.
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-sm font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                                Tocca per configurare
                               </p>
-                              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                                {p.form.serie}×{p.form.ripetizioni} · {p.form.recupero}s rec.
-                              </p>
-                            </>
-                          ) : (
-                            <p className="text-sm font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                              Tocca per configurare
-                            </p>
-                          )}
+                            )}
+                          </div>
+                          <button onClick={e => { e.stopPropagation(); setPendingEsercizi(prev => prev.filter(x => x.tempId !== p.tempId)) }}
+                            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.70 0.20 27)' }}>
+                            <FontAwesomeIcon icon={faXmark} className="text-xs" />
+                          </button>
                         </div>
-                        <button onClick={e => { e.stopPropagation(); setPendingEsercizi(prev => prev.filter(x => x.tempId !== p.tempId)) }}
-                          className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                          style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.70 0.20 27)' }}>
-                          <FontAwesomeIcon icon={faXmark} className="text-xs" />
-                        </button>
+                        {p.expanded && (
+                          <div style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+                            <EsercizioForm
+                              form={p.form}
+                              onChange={newForm => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, form: newForm } : x))}
+                              esercizi={esercizi}
+                              gruppi={gruppiGiorno}
+                              onSave={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
+                              onCancel={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
+                              saving={false}
+                            />
+                          </div>
+                        )}
                       </div>
-                      {/* Expanded config */}
-                      {p.expanded && (
-                        <div style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
-                          <EsercizioForm
-                            form={p.form}
-                            onChange={newForm => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, form: newForm } : x))}
-                            esercizi={esercizi}
-                            gruppi={gruppiGiorno}
-                            onSave={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
-                            onCancel={() => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, expanded: false } : x))}
-                            saving={false}
-                          />
+
+                      {/* DESKTOP: riga inline */}
+                      <div className="hidden lg:block">
+                        {/* Riga base */}
+                        <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
+                          style={{
+                            gridTemplateColumns: '20px 80px 1fr 80px 60px 60px 60px 110px 30px 30px',
+                            background: p.form.esercizio_id ? 'oklch(0.19 0 0)' : 'oklch(0.17 0 0)',
+                            border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.70 0.19 46 / 25%)'}`,
+                          }}>
+                          {/* # */}
+                          <span className="text-xs font-bold" style={{ color: 'oklch(0.45 0 0)' }}>
+                            {(giorni.find(g => g.id === activeGiorno)?.scheda_esercizi?.length ?? 0) +
+                              pendingEsercizi.filter(x => x.giornoId === activeGiorno).indexOf(p) + 1}
+                          </span>
+                          {/* Filtro muscolo */}
+                          <select
+                            value={p.filtroMuscolo}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, filtroMuscolo: e.target.value, form: { ...x.form, esercizio_id: '' } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.filtroMuscolo ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            <option value="">Tutti</option>
+                            {['Petto','Dorsali','Spalle','Bicipiti','Tricipiti','Quadricipiti','Femorali','Glutei','Addome','Polpacci','Trapezio','Avambracci'].map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                          {/* Esercizio */}
+                          <select
+                            value={p.form.esercizio_id}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, esercizio_id: e.target.value } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.form.esercizio_id ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            <option value="">Cerca esercizio...</option>
+                            {esercizi
+                              .filter(e => !p.filtroMuscolo || e.muscoli?.includes(p.filtroMuscolo))
+                              .map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+                          </select>
+                          {/* Tipo */}
+                          <select
+                            value={p.form.tipo}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, tipo: e.target.value } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                            <option value="normale">Normale</option>
+                            <option value="superset">Superset</option>
+                            <option value="giant_set">Giant Set</option>
+                            <option value="dropset">Dropset</option>
+                            <option value="rest_pause">Rest-Pause</option>
+                            <option value="piramidale">Piramidale</option>
+                          </select>
+                          {/* Serie */}
+                          <input type="number" min="1" max="20"
+                            value={p.form.serie}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, serie: e.target.value } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                          {/* Reps */}
+                          <input type="text"
+                            value={p.form.ripetizioni}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, ripetizioni: e.target.value } } : x
+                            ))}
+                            placeholder="8-12"
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                          {/* Recupero */}
+                          <input type="number"
+                            value={p.form.recupero}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, recupero: e.target.value } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                          {/* Progressione */}
+                          <select
+                            value={p.form.progressione_tipo}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, progressione_tipo: e.target.value } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                            <option value="peso">Peso</option>
+                            <option value="reps">Reps</option>
+                            <option value="serie">Serie</option>
+                            <option value="durata">Durata</option>
+                            <option value="nessuna">Nessuna</option>
+                          </select>
+                          {/* Toggle avanzate */}
+                          <button
+                            onClick={() => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, expandedAdv: !x.expandedAdv } : x
+                            ))}
+                            className="w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all"
+                            style={{
+                              background: p.expandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                              color: p.expandedAdv ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                              border: '1px solid oklch(1 0 0 / 10%)',
+                            }}
+                            title="Opzioni avanzate">▾</button>
+                          {/* Rimuovi */}
+                          <button
+                            onClick={() => setPendingEsercizi(prev => prev.filter(x => x.tempId !== p.tempId))}
+                            className="w-6 h-6 rounded-md flex items-center justify-center text-xs"
+                            style={{ background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.70 0.20 27)' }}>✕</button>
                         </div>
-                      )}
+
+                        {/* Pannello avanzato espandibile */}
+                        {p.expandedAdv && (
+                          <div className="mt-1 mb-1 px-2 py-3 rounded-xl space-y-3"
+                            style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                            <div className="grid grid-cols-4 gap-3">
+                              {/* Alternativa */}
+                              <div className="space-y-1 col-span-2">
+                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Alternativa</label>
+                                <select
+                                  value={p.form.alternativa_id}
+                                  onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                    x.tempId === p.tempId ? { ...x, form: { ...x.form, alternativa_id: e.target.value } } : x
+                                  ))}
+                                  className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.form.alternativa_id ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                  <option value="">Nessuna alternativa</option>
+                                  {esercizi.filter(e => e.id !== p.form.esercizio_id).map(e => (
+                                    <option key={e.id} value={e.id}>{e.nome}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              {/* Prepara secondi */}
+                              <div className="space-y-1">
+                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Prepara (s)</label>
+                                <input type="number"
+                                  value={p.form.prepara_secondi}
+                                  onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                    x.tempId === p.tempId ? { ...x, form: { ...x.form, prepara_secondi: e.target.value } } : x
+                                  ))}
+                                  placeholder="es. 10"
+                                  className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                              </div>
+                              {/* Dropset */}
+                              {p.form.tipo === 'dropset' && (
+                                <>
+                                  <div className="space-y-1">
+                                    <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop count</label>
+                                    <input type="number" min="1" max="5"
+                                      value={p.form.drop_count}
+                                      onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, drop_count: e.target.value } } : x
+                                      ))}
+                                      className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop %</label>
+                                    <input type="number" min="5" max="50"
+                                      value={p.form.drop_pct}
+                                      onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, drop_pct: e.target.value } } : x
+                                      ))}
+                                      className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  </div>
+                                </>
+                              )}
+                              {/* Rest-pause */}
+                              {p.form.tipo === 'rest_pause' && (
+                                <div className="space-y-1">
+                                  <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Pausa (s)</label>
+                                  <input type="number"
+                                    value={p.form.rest_pause_sec}
+                                    onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                      x.tempId === p.tempId ? { ...x, form: { ...x.form, rest_pause_sec: e.target.value } } : x
+                                    ))}
+                                    className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                </div>
+                              )}
+                              {/* Piramidale */}
+                              {p.form.tipo === 'piramidale' && (
+                                <div className="space-y-1 col-span-2">
+                                  <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Direzione</label>
+                                  <select
+                                    value={p.form.piramide_dir}
+                                    onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                      x.tempId === p.tempId ? { ...x, form: { ...x.form, piramide_dir: e.target.value } } : x
+                                    ))}
+                                    className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    <option value="ascendente">Ascendente</option>
+                                    <option value="discendente">Discendente</option>
+                                    <option value="doppia">Doppia</option>
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+                            {/* Note */}
+                            <div className="space-y-1">
+                              <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Note tecniche</label>
+                              <input type="text"
+                                value={p.form.note}
+                                onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                  x.tempId === p.tempId ? { ...x, form: { ...x.form, note: e.target.value } } : x
+                                ))}
+                                placeholder="Indicazioni tecniche, avvertenze..."
+                                className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
+                                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                            </div>
+                            {/* Warmup serie */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Warmup serie</label>
+                                <button
+                                  onClick={() => {
+                                    const current = JSON.parse(p.form.warmup_serie || '[]')
+                                    setPendingEsercizi(prev => prev.map(x =>
+                                      x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify([...current, { peso: '', reps: '10' }]) } } : x
+                                    ))
+                                  }}
+                                  className="text-xs px-2 py-0.5 rounded-md"
+                                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                  + Serie
+                                </button>
+                              </div>
+                              {(() => {
+                                const warmup: { peso: string; reps: string }[] = JSON.parse(p.form.warmup_serie || '[]')
+                                return warmup.map((w, wi) => (
+                                  <div key={wi} className="flex items-center gap-2">
+                                    <input type="number" value={w.peso} placeholder="Peso kg"
+                                      onChange={e => {
+                                        const updated = [...warmup]; updated[wi] = { ...updated[wi], peso: e.target.value }
+                                        setPendingEsercizi(prev => prev.map(x =>
+                                          x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify(updated) } } : x
+                                        ))
+                                      }}
+                                      className="flex-1 text-xs rounded-lg outline-none px-2 py-1"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    <input type="number" value={w.reps} placeholder="Reps"
+                                      onChange={e => {
+                                        const updated = [...warmup]; updated[wi] = { ...updated[wi], reps: e.target.value }
+                                        setPendingEsercizi(prev => prev.map(x =>
+                                          x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify(updated) } } : x
+                                        ))
+                                      }}
+                                      className="flex-1 text-xs rounded-lg outline-none px-2 py-1"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    <button onClick={() => {
+                                      const updated = warmup.filter((_, i) => i !== wi)
+                                      setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify(updated) } } : x
+                                      ))
+                                    }} className="text-xs px-1.5 py-1 rounded-md"
+                                      style={{ background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.70 0.20 27)' }}>✕</button>
+                                  </div>
+                                ))
+                              })()}
+                            </div>
+                            {/* Crea esercizio al volo */}
+                            <div style={{ borderTop: '1px solid oklch(1 0 0 / 8%)', paddingTop: 10 }}>
+                              <p className="text-xs font-semibold mb-2" style={{ color: 'oklch(0.50 0 0)' }}>
+                                Esercizio non in lista? Crealo al volo:
+                              </p>
+                              <div className="flex gap-2">
+                                <input type="text" id={`nuovo-nome-${p.tempId}`} placeholder="Nome esercizio"
+                                  className="flex-1 text-xs rounded-lg outline-none px-2 py-1.5"
+                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                <button
+                                  onClick={async () => {
+                                    const input = document.getElementById(`nuovo-nome-${p.tempId}`) as HTMLInputElement
+                                    const nome = input?.value?.trim()
+                                    if (!nome) return
+                                    const { data: { user } } = await supabase.auth.getUser()
+                                    if (!user) return
+                                    const muscoli = p.filtroMuscolo ? [p.filtroMuscolo] : null
+                                    const { data: newEse } = await supabase.from('esercizi')
+                                      .insert({ nome, muscoli, coach_id: user.id, tipo_input: 'reps' })
+                                      .select('id, nome, muscoli, tipo_input').single()
+                                    if (newEse) {
+                                      setEsercizi(prev => [...prev, newEse].sort((a, b) => a.nome.localeCompare(b.nome)))
+                                      setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, esercizio_id: newEse.id } } : x
+                                      ))
+                                      if (input) input.value = ''
+                                    }
+                                  }}
+                                  className="text-xs px-3 py-1.5 rounded-lg font-semibold"
+                                  style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
+                                  + Crea
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                     </div>
                   ))}
 
@@ -1510,7 +1827,7 @@ export default function SchedaEditorModal({
                       const tempId = crypto.randomUUID()
                       setPendingEsercizi(prev => [
                         ...prev.map(x => ({ ...x, expanded: false })),
-                        { tempId, giornoId: activeGiorno, form: { ...EMPTY }, expanded: false },
+                        { tempId, giornoId: activeGiorno, form: { ...EMPTY }, expanded: false, filtroMuscolo: '', expandedAdv: false },
                       ])
                     }}
                     className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
