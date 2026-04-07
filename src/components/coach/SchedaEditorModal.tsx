@@ -658,8 +658,7 @@ export default function SchedaEditorModal({
   const [esercizi, setEsercizi] = useState<Esercizio[]>([])
   const [loading, setLoading] = useState(true)
   const [activeGiorno, setActiveGiorno] = useState<string | null>(null)
-  const [addingGiorno, setAddingGiorno] = useState(false)
-  const [newGiornoNome, setNewGiornoNome] = useState('')
+
   const [addingEse, setAddingEse] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [pendingEsercizi, setPendingEsercizi] = useState<{
@@ -835,16 +834,19 @@ export default function SchedaEditorModal({
   }
 
   const handleAddGiorno = async () => {
-    if (!newGiornoNome.trim()) return
-    await supabase.from('scheda_giorni').insert({
-      scheda_id: schedaId, nome: newGiornoNome.trim(), ordine: giorni.length,
-    })
-    setNewGiornoNome(''); setAddingGiorno(false)
-    const res = await supabase.from('scheda_giorni')
-      .select('id, nome, ordine').eq('scheda_id', schedaId).order('ordine')
-    const last = (res.data ?? []).at(-1)
-    await fetchAll()
-    if (last) setActiveGiorno(last.id)
+    const nextNumber = giorni.length + 1
+    const nomePlaceholder = `Day ${nextNumber}`
+
+    const { data: nuovoGiorno } = await supabase
+      .from('scheda_giorni')
+      .insert({ scheda_id: schedaId, nome: nomePlaceholder, ordine: giorni.length })
+      .select('id, nome, ordine')
+      .single()
+
+    if (!nuovoGiorno) return
+
+    setGiorni(prev => [...prev, { ...nuovoGiorno, warmup_note: null, scheda_esercizi: [] }])
+    setActiveGiorno(nuovoGiorno.id)
   }
 
   const handleDeleteGiorno = async (giornoId: string) => {
@@ -1239,28 +1241,11 @@ export default function SchedaEditorModal({
                 </button>
               ))}
 
-              {addingGiorno ? (
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <input autoFocus value={newGiornoNome}
-                    onChange={e => setNewGiornoNome(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleAddGiorno(); if (e.key === 'Escape') setAddingGiorno(false) }}
-                    placeholder="Nome..."
-                    className="w-28 px-3 py-2 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 50%)', color: 'oklch(0.97 0 0)' }} />
-                  <button onClick={handleAddGiorno}
-                    className="px-3 py-2 rounded-xl text-sm font-bold"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>✓</button>
-                  <button onClick={() => setAddingGiorno(false)}
-                    className="w-8 h-8 rounded-xl flex items-center justify-center"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>✕</button>
-                </div>
-              ) : (
-                <button onClick={() => setAddingGiorno(true)}
-                  className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
-                  <FontAwesomeIcon icon={faPlus} />
-                </button>
-              )}
+              <button onClick={handleAddGiorno}
+                className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
             </div>
 
             {/* ── Exercise list ── */}
