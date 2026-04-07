@@ -2,13 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faDumbbell, faCalendarDays, faHand, faClipboardList, faPersonRunning } from '@fortawesome/free-solid-svg-icons'
+import { faDumbbell, faCalendarDays, faHand, faPersonRunning } from '@fortawesome/free-solid-svg-icons'
 import SessioniList from '@/components/cliente/SessioniList'
 import ClienteOnboarding from '@/components/shared/ClienteOnboarding'
 import SchedeSelector from '@/components/cliente/SchedeSelector'
 import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
 import AnamnesITrigger from '@/components/cliente/AnamnesITrigger'
-import { getTodayTrainingType, getTodayCarbMessage } from '@/lib/checkin'
+import { getTodayMacros } from '@/lib/getTodayMacros'
+import { getCarbUX } from '@/lib/getCarbUX'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -31,12 +32,9 @@ export default async function ClienteDashboard() {
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
 
-  const oggi = new Date()
-  oggi.setHours(0, 0, 0, 0)
-
   const [
     assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes,
-    checkinOggiRes, ultimoPesoRes, anamnesIRes,
+    ultimoPesoRes, anamnesIRes, todayMacros,
   ] = await Promise.all([
     supabase.from('assegnazioni')
       .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
@@ -47,11 +45,6 @@ export default async function ClienteDashboard() {
     supabase.from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id),
     supabase.from('sessioni').select('id', { count: 'exact' })
       .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString()),
-    supabase.from('checkin')
-      .select('id, energia, sonno, stress, motivazione, will_train, note')
-      .eq('cliente_id', user.id)
-      .gte('data', oggi.toISOString())
-      .maybeSingle(),
     supabase.from('misurazioni')
       .select('peso_kg, data')
       .eq('cliente_id', user.id)
@@ -62,21 +55,21 @@ export default async function ClienteDashboard() {
       .select('id')
       .eq('cliente_id', user.id)
       .maybeSingle(),
+    getTodayMacros(user.id),
   ])
 
   const assegnazioni = assegnazioniRes.data
   const ultimeSessioni = ultimeSessioniRes.data
   const totaleSessioni = totaleRes.count
   const sessioniSettimana = settimanaRes.count
-  const checkinOggi = checkinOggiRes.data
   const ultimoPeso = ultimoPesoRes.data
   const haAnamnesi = !!anamnesIRes.data
 
-  // Day type card
-  const dayType = getTodayTrainingType(checkinOggi as any)
-  const carbMsg = checkinOggi?.will_train !== null && checkinOggi?.will_train !== undefined
-    ? getTodayCarbMessage(dayType)
-    : null
+  // Day card — rispetta se il coach ha abilitato carb cycling per questo cliente
+  const carbUX = getCarbUX(
+    todayMacros?.day_type ?? null,
+    todayMacros?.carb_cycling_enabled ?? false,
+  )
 
   const ora = new Date().getHours()
   const saluto = ora < 12 ? 'Buongiorno' : ora < 18 ? 'Buon pomeriggio' : 'Buonasera'
@@ -84,7 +77,6 @@ export default async function ClienteDashboard() {
   return (
     <div className="space-y-8 max-w-5xl">
       <ClienteOnboarding />
-      {/* Modal anamnesi — si apre solo al primo accesso */}
       <AnamnesITrigger show={!haAnamnesi} />
 
       {/* Header */}
@@ -100,30 +92,49 @@ export default async function ClienteDashboard() {
         </p>
       </div>
 
-      {/* Day type card — mostra solo se check-in con will_train compilato */}
-      {carbMsg && (
-        <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
-          style={{ background: carbMsg.bg, border: `1px solid ${carbMsg.border}` }}>
-          <div className="text-3xl flex-shrink-0">{carbMsg.emoji}</div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-xs font-black uppercase tracking-widest" style={{ color: carbMsg.color }}>
-                {carbMsg.label}
-              </p>
-              <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                style={{ background: carbMsg.bg, color: carbMsg.color, border: `1px solid ${carbMsg.border}` }}>
-                {carbMsg.title}
-              </span>
+      {/* Day card — visibile solo se check-in completato */}
+      {carbUX.show && (
+        <div className="rounded-2xl px-5 py-4"
+          style={{ background: carbUX.bg, border: `1px solid ${carbUX.border}` }}>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl flex-shrink-0">{carbUX.emoji}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                <p className="text-sm font-bold" style={{ color: carbUX.color }}>{carbUX.title}</p>
+                {carbUX.label && (
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full"
+                    style={{ background: carbUX.color, color: 'oklch(0.11 0 0)' }}>
+                    {carbUX.label}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm" style={{ color: 'oklch(0.65 0 0)' }}>{carbUX.message}</p>
             </div>
-            <p className="text-sm mt-0.5" style={{ color: 'oklch(0.70 0 0)' }}>{carbMsg.message}</p>
           </div>
+
+          {/* Macro del giorno — solo se c'è un target impostato */}
+          {todayMacros && (
+            <div className="flex gap-3 mt-3 pt-3" style={{ borderTop: `1px solid ${carbUX.border}` }}>
+              {[
+                { label: 'Carbo', val: todayMacros.carboidrati_g, color: carbUX.color },
+                { label: 'Proteine', val: todayMacros.proteine_g, color: 'oklch(0.60 0.15 200)' },
+                { label: 'Grassi', val: todayMacros.grassi_g, color: 'oklch(0.65 0.18 150)' },
+              ].map(m => (
+                <div key={m.label} className="flex-1 text-center rounded-xl py-2"
+                  style={{ background: 'oklch(0 0 0 / 15%)' }}>
+                  <p className="text-base font-black tabular-nums" style={{ color: m.color }}>{m.val}g</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{m.label}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Card Check-in + Peso */}
       <CheckinPesoCards
-        checkinFatto={!!checkinOggi}
-        willTrain={(checkinOggi as any)?.will_train ?? null}
+        checkinFatto={todayMacros?.checkin_done ?? false}
+        willTrain={todayMacros?.will_train ?? null}
         ultimoPeso={ultimoPeso?.peso_kg ?? null}
         ultimoPesoData={ultimoPeso?.data ?? null}
       />

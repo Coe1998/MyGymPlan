@@ -12,6 +12,9 @@ interface MacroTarget {
   carboidrati_g: number
   grassi_g: number
   pasti_config?: { nome: string; percentuale: number }[]
+  carb_cycling_enabled?: boolean
+  carbs_training?: number | null
+  carbs_rest?: number | null
 }
 
 interface PianoIntegratore {
@@ -88,6 +91,8 @@ export default function DietaPage() {
   const [checkinInt, setCheckinInt] = useState<IntegrazioneCheckin[]>([])
   const [pastiSaltati, setPastiSaltati] = useState<Set<number>>(new Set())
   const [redistribuisciSu, setRedistribuisciSu] = useState<number | null>(null)
+  // Carb cycling — carbo effettivi per oggi
+  const [carbEffettivi, setCarbEffettivi] = useState<number | null>(null)
 
   // Collapsed groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
@@ -101,7 +106,10 @@ export default function DietaPage() {
     data30ago.setDate(data30ago.getDate() - 30)
     const data30agoStr = data30ago.toISOString().split('T')[0]
 
-    const [targetRes, pastiRes, storicoRes, pianoIntRes, checkinIntRes] = await Promise.all([
+    const oggiInizio = new Date()
+    oggiInizio.setHours(0, 0, 0, 0)
+
+    const [targetRes, pastiRes, storicoRes, pianoIntRes, checkinIntRes, checkinOggiRes] = await Promise.all([
       supabase.from('macro_target').select('*').eq('cliente_id', user.id).maybeSingle(),
       supabase.from('pasto_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
       supabase.from('pasto_log')
@@ -119,12 +127,33 @@ export default function DietaPage() {
         .select('id, piano_integratore_id, preso')
         .eq('cliente_id', user.id)
         .eq('data', oggi),
+      supabase.from('checkin')
+        .select('will_train')
+        .eq('cliente_id', user.id)
+        .gte('data', oggiInizio.toISOString())
+        .maybeSingle(),
     ])
 
-    setTarget(targetRes.data)
+    const t = targetRes.data as MacroTarget | null
+    setTarget(t)
     setPasti(pastiRes.data ?? [])
     setPianoInt((pianoIntRes as any)?.data ?? [])
     setCheckinInt((checkinIntRes as any)?.data ?? [])
+
+    // Calcola carbo effettivi con carb cycling
+    if (t) {
+      const checkin = (checkinOggiRes as any).data
+      const willTrain: boolean | null = checkin?.will_train ?? null
+      const cyclingOn = t.carb_cycling_enabled ?? false
+      let effettivi = t.carboidrati_g
+      if (cyclingOn && willTrain !== null) {
+        if (willTrain && t.carbs_training != null) effettivi = t.carbs_training
+        else if (!willTrain && t.carbs_rest != null) effettivi = t.carbs_rest
+      }
+      setCarbEffettivi(effettivi)
+    } else {
+      setCarbEffettivi(null)
+    }
 
     // Aggrega per giorno
     const map = new Map<string, GiornoStorico>()
@@ -258,7 +287,7 @@ export default function DietaPage() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: 'Proteine', val: totali.proteine_g, target: target.proteine_g, color: 'oklch(0.60 0.15 200)' },
-              { label: 'Carboidrati', val: totali.carboidrati_g, target: target.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
+              { label: 'Carboidrati', val: totali.carboidrati_g, target: carbEffettivi ?? target.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
               { label: 'Grassi', val: totali.grassi_g, target: target.grassi_g, color: 'oklch(0.65 0.18 150)' },
             ].map(m => (
               <div key={m.label} className="rounded-xl p-3 space-y-2"
@@ -304,7 +333,7 @@ export default function DietaPage() {
           return {
             kcal: Math.round((target.calorie) * percEffettiva / 100),
             prot: Math.round((target.proteine_g) * percEffettiva / 100),
-            carb: Math.round((target.carboidrati_g) * percEffettiva / 100),
+            carb: Math.round((carbEffettivi ?? target.carboidrati_g) * percEffettiva / 100),
             grassi: Math.round((target.grassi_g) * percEffettiva / 100),
           }
         }
@@ -322,7 +351,7 @@ export default function DietaPage() {
         const rimanente = {
           kcal: Math.max(0, target.calorie - totali.calorie),
           prot: Math.max(0, target.proteine_g - totali.proteine_g),
-          carb: Math.max(0, target.carboidrati_g - totali.carboidrati_g),
+          carb: Math.max(0, (carbEffettivi ?? target.carboidrati_g) - totali.carboidrati_g),
           grassi: Math.max(0, target.grassi_g - totali.grassi_g),
         }
 
