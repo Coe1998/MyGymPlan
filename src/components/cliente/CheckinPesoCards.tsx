@@ -15,9 +15,9 @@ const getEmojiCheckin = (key: string, value: number): IconDefinition | null =>
   key === 'stress' ? EMOJI_VOTO[6 - value] ?? null : EMOJI_VOTO[value] ?? null
 
 const CHECKIN_CAMPI = [
-  { key: 'energia', label: 'Energia' },
-  { key: 'sonno', label: 'Sonno' },
-  { key: 'stress', label: 'Stress', hint: '1 = basso · 5 = alto' },
+  { key: 'energia',     label: 'Energia' },
+  { key: 'sonno',       label: 'Sonno' },
+  { key: 'stress',      label: 'Stress', hint: '1 = basso · 5 = alto' },
   { key: 'motivazione', label: 'Motivazione' },
 ] as const
 
@@ -25,11 +25,17 @@ type CheckinKey = typeof CHECKIN_CAMPI[number]['key']
 
 interface Props {
   checkinFatto: boolean
+  willTrain: boolean | null
   ultimoPeso: number | null
   ultimoPesoData: string | null
 }
 
-export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultimoPeso, ultimoPesoData }: Props) {
+export default function CheckinPesoCards({
+  checkinFatto: checkinFattoInit,
+  willTrain: willTrainInit,
+  ultimoPeso,
+  ultimoPesoData,
+}: Props) {
   const supabase = useMemo(() => createClient(), [])
 
   const [checkinFatto, setCheckinFatto] = useState(checkinFattoInit)
@@ -37,7 +43,10 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
   const [saving, setSaving] = useState(false)
 
   // Check-in form
-  const [checkin, setCheckin] = useState<Record<CheckinKey, number>>({ energia: 0, sonno: 0, stress: 0, motivazione: 0 })
+  const [checkin, setCheckin] = useState<Record<CheckinKey, number>>({
+    energia: 0, sonno: 0, stress: 0, motivazione: 0,
+  })
+  const [willTrain, setWillTrain] = useState<boolean | null>(null)
   const [noteCheckin, setNoteCheckin] = useState('')
 
   // Peso form
@@ -45,7 +54,7 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
   const [pesoSalvato, setPesoSalvato] = useState(ultimoPeso)
   const [pesoSalvatoData, setPesoSalvatoData] = useState(ultimoPesoData)
 
-  const checkinCompleto = Object.values(checkin).every(v => v > 0)
+  const checkinCompleto = Object.values(checkin).every(v => v > 0) && willTrain !== null
 
   const handleSaveCheckin = async () => {
     if (!checkinCompleto) return
@@ -58,6 +67,7 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
       sonno: checkin.sonno,
       stress: checkin.stress,
       motivazione: checkin.motivazione,
+      will_train: willTrain,
       note: noteCheckin.trim() || null,
     })
     setCheckinFatto(true)
@@ -88,6 +98,13 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
     ? new Date(pesoSalvatoData).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })
     : null
 
+  // Etichetta will_train per la card completata
+  const willTrainLabel = willTrainInit === true
+    ? '💪 Alleni oggi'
+    : willTrainInit === false
+      ? '😴 Riposo oggi'
+      : null
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -117,7 +134,9 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
           </div>
           <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Check-in</p>
           <p className="text-xs mt-1" style={{ color: checkinFatto ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
-            {checkinFatto ? '✓ Completato oggi' : 'Come stai oggi?'}
+            {checkinFatto
+              ? (willTrainLabel ?? '✓ Completato oggi')
+              : 'Come stai oggi?'}
           </p>
         </button>
 
@@ -198,6 +217,28 @@ export default function CheckinPesoCards({ checkinFatto: checkinFattoInit, ultim
                 </div>
               </div>
             ))}
+
+            {/* Ti alleni oggi? */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Ti alleni oggi?</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { val: true,  label: '💪 Sì', color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 15%)' },
+                  { val: false, label: '😴 No', color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 12%)' },
+                ] as const).map(opt => (
+                  <button key={String(opt.val)}
+                    onClick={() => setWillTrain(opt.val)}
+                    className="py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+                    style={{
+                      background: willTrain === opt.val ? opt.bg : 'oklch(0.22 0 0)',
+                      border: `2px solid ${willTrain === opt.val ? opt.color : 'transparent'}`,
+                      color: willTrain === opt.val ? opt.color : 'oklch(0.45 0 0)',
+                    }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note (opzionale)</label>

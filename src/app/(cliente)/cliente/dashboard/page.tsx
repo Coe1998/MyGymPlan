@@ -8,6 +8,7 @@ import ClienteOnboarding from '@/components/shared/ClienteOnboarding'
 import SchedeSelector from '@/components/cliente/SchedeSelector'
 import CheckinPesoCards from '@/components/cliente/CheckinPesoCards'
 import AnamnesITrigger from '@/components/cliente/AnamnesITrigger'
+import { getTodayTrainingType, getTodayCarbMessage } from '@/lib/checkin'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -47,7 +48,7 @@ export default async function ClienteDashboard() {
     supabase.from('sessioni').select('id', { count: 'exact' })
       .eq('cliente_id', user.id).gte('data', inizioSettimana.toISOString()),
     supabase.from('checkin')
-      .select('id, energia, sonno, stress, motivazione')
+      .select('id, energia, sonno, stress, motivazione, will_train, note')
       .eq('cliente_id', user.id)
       .gte('data', oggi.toISOString())
       .maybeSingle(),
@@ -57,7 +58,6 @@ export default async function ClienteDashboard() {
       .order('data', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    // Controlla se l'anamnesi è già stata compilata
     supabase.from('anamnesi')
       .select('id')
       .eq('cliente_id', user.id)
@@ -71,6 +71,12 @@ export default async function ClienteDashboard() {
   const checkinOggi = checkinOggiRes.data
   const ultimoPeso = ultimoPesoRes.data
   const haAnamnesi = !!anamnesIRes.data
+
+  // Day type card
+  const dayType = getTodayTrainingType(checkinOggi as any)
+  const carbMsg = checkinOggi?.will_train !== null && checkinOggi?.will_train !== undefined
+    ? getTodayCarbMessage(dayType)
+    : null
 
   const ora = new Date().getHours()
   const saluto = ora < 12 ? 'Buongiorno' : ora < 18 ? 'Buon pomeriggio' : 'Buonasera'
@@ -94,9 +100,30 @@ export default async function ClienteDashboard() {
         </p>
       </div>
 
+      {/* Day type card — mostra solo se check-in con will_train compilato */}
+      {carbMsg && (
+        <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
+          style={{ background: carbMsg.bg, border: `1px solid ${carbMsg.border}` }}>
+          <div className="text-3xl flex-shrink-0">{carbMsg.emoji}</div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-xs font-black uppercase tracking-widest" style={{ color: carbMsg.color }}>
+                {carbMsg.label}
+              </p>
+              <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                style={{ background: carbMsg.bg, color: carbMsg.color, border: `1px solid ${carbMsg.border}` }}>
+                {carbMsg.title}
+              </span>
+            </div>
+            <p className="text-sm mt-0.5" style={{ color: 'oklch(0.70 0 0)' }}>{carbMsg.message}</p>
+          </div>
+        </div>
+      )}
+
       {/* Card Check-in + Peso */}
       <CheckinPesoCards
         checkinFatto={!!checkinOggi}
+        willTrain={(checkinOggi as any)?.will_train ?? null}
         ultimoPeso={ultimoPeso?.peso_kg ?? null}
         ultimoPesoData={ultimoPeso?.data ?? null}
       />

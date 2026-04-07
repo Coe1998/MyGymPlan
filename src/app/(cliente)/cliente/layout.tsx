@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ClienteSidebar from '@/components/cliente/ClienteSidebar'
+import CheckinGate from '@/components/cliente/CheckinGate'
 
 export default async function ClienteLayout({
   children,
@@ -22,9 +23,21 @@ export default async function ClienteLayout({
     .maybeSingle()
   const dietaAbilitata = cc?.dieta_abilitata ?? false
 
+  // Check-in obbligatorio giornaliero
+  const oggi = new Date()
+  oggi.setHours(0, 0, 0, 0)
+  const { data: checkinOggi } = await supabase
+    .from('checkin')
+    .select('id')
+    .eq('cliente_id', user.id)
+    .gte('data', oggi.toISOString())
+    .maybeSingle()
+
   return (
     <div className="min-h-screen bg-background">
       <ClienteSidebar profile={profile} dietaAbilitata={dietaAbilitata} />
+      {/* Gate check-in obbligatorio — se non ancora fatto oggi */}
+      {!checkinOggi && <CheckinGate />}
       {/* Desktop: margin per sidebar. Mobile: padding bottom per bottom nav */}
       <main
         className="lg:ml-64 pb-24 lg:pb-8"
