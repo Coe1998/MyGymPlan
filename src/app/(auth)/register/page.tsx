@@ -19,15 +19,19 @@ function RegisterForm() {
   // Ruolo sempre 'atleta' — diventa 'cliente' solo quando il coach approva
   const [role, setRole] = useState<UserRole>('atleta')
   const [coachNome, setCoachNome] = useState<string | null>(null)
+  const [coachId, setCoachId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!inviteCode) return
     const supabase = createClient()
-    supabase.from('profiles').select('full_name')
+    supabase.from('profiles').select('id, full_name')
       .eq('coach_code', inviteCode.toUpperCase()).eq('role', 'coach').single()
-      .then(({ data }) => setCoachNome(data?.full_name ?? null))
+      .then(({ data }) => {
+        setCoachNome(data?.full_name ?? null)
+        setCoachId(data?.id ?? null)
+      })
   }, [inviteCode])
 
   const handleRegister = async () => {
@@ -49,13 +53,15 @@ function RegisterForm() {
       return
     }
 
-    // Se c'è un codice invito → API route con service role per bypassare RLS
-    if (inviteCode && signUpData.user) {
-      await fetch('/api/coach/registra-invito', {
+    // Se c'è un codice invito → chiama crea-invito (service role, bypassa RLS)
+    if (inviteCode && signUpData.user && coachId) {
+      // Delay per aspettare che il trigger Supabase crei il profilo
+      await new Promise(r => setTimeout(r, 1500))
+      await fetch('/api/coach/crea-invito', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invite_code: inviteCode.toUpperCase(),
+          coach_id: coachId,
           cliente_id: signUpData.user.id,
         }),
       })
