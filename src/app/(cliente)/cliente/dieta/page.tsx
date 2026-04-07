@@ -35,7 +35,7 @@ interface IntegrazioneCheckin {
 interface PastoLog {
   id: string; alimento_nome: string; quantita_g: number
   calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number
-  gruppo_nome: string | null; gruppo_id: string | null; created_at: string
+  gruppo_nome: string | null; gruppo_id: string | null; created_at: string; data: string
 }
 
 interface OFFProduct {
