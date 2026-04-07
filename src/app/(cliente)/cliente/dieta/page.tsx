@@ -93,6 +93,7 @@ export default function DietaPage() {
   const [redistribuisciSu, setRedistribuisciSu] = useState<number | null>(null)
   // Carb cycling — carbo effettivi per oggi
   const [carbEffettivi, setCarbEffettivi] = useState<number | null>(null)
+  const [dayType, setDayType] = useState<'training' | 'rest' | null>(null)
 
   // Collapsed groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
@@ -145,14 +146,17 @@ export default function DietaPage() {
       const checkin = (checkinOggiRes as any).data
       const willTrain: boolean | null = checkin?.will_train ?? null
       const cyclingOn = t.carb_cycling_enabled ?? false
+      const dt: 'training' | 'rest' | null = willTrain === true ? 'training' : willTrain === false ? 'rest' : null
+      setDayType(dt)
       let effettivi = t.carboidrati_g
-      if (cyclingOn && willTrain !== null) {
-        if (willTrain && t.carbs_training != null) effettivi = t.carbs_training
-        else if (!willTrain && t.carbs_rest != null) effettivi = t.carbs_rest
+      if (cyclingOn && dt !== null) {
+        if (dt === 'training' && t.carbs_training != null) effettivi = t.carbs_training
+        else if (dt === 'rest' && t.carbs_rest != null) effettivi = t.carbs_rest
       }
       setCarbEffettivi(effettivi)
     } else {
       setCarbEffettivi(null)
+      setDayType(null)
     }
 
     // Aggrega per giorno
@@ -318,6 +322,40 @@ export default function DietaPage() {
           <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
             Il tuo coach non ha ancora impostato i tuoi macro target
           </p>
+        </div>
+      )}
+
+      {/* Banner carb cycling — visibile solo se cycling ON ma day_type mancante */}
+      {target?.carb_cycling_enabled && dayType === null && (
+        <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
+          style={{ background: 'oklch(0.75 0.18 80 / 8%)', border: '1px solid oklch(0.75 0.18 80 / 25%)' }}>
+          <span className="text-xl flex-shrink-0">⚠️</span>
+          <div>
+            <p className="text-sm font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>Carb cycling attivo</p>
+            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>
+              Completa il check-in di oggi (alleni/riposo) per applicare i carbo corretti
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Badge giorno attivo quando cycling è applicato */}
+      {target?.carb_cycling_enabled && dayType !== null && (
+        <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
+          style={{
+            background: dayType === 'training' ? 'oklch(0.70 0.19 46 / 8%)' : 'oklch(0.60 0.15 200 / 8%)',
+            border: `1px solid ${dayType === 'training' ? 'oklch(0.70 0.19 46 / 25%)' : 'oklch(0.60 0.15 200 / 25%)'}`,
+          }}>
+          <span className="text-xl flex-shrink-0">{dayType === 'training' ? '🔥' : '💧'}</span>
+          <div>
+            <p className="text-sm font-bold"
+              style={{ color: dayType === 'training' ? 'oklch(0.70 0.19 46)' : 'oklch(0.60 0.15 200)' }}>
+              {dayType === 'training' ? 'HIGH CARB — Giorno allenamento' : 'LOW CARB — Giorno recupero'}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+              Target calorie adattato: {calorieEffettive} kcal · {carbEffettivi}g carbo
+            </p>
+          </div>
         </div>
       )}
 
@@ -620,32 +658,90 @@ export default function DietaPage() {
                     )
                   })()}
 
-                  {/* Gruppo pasto */}
+                  {/* Assegna a pasto */}
                   <div className="space-y-2">
                     <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
-                      Pasto (opzionale)
+                      Aggiungi a
                     </label>
-                    {gruppiEsistenti.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {gruppiEsistenti.map(g => (
-                          <button key={g} onClick={() => { setGruppoEsistente(g === gruppoEsistente ? '' : g); setGruppoNome('') }}
-                            className="px-3 py-1.5 rounded-full text-xs font-semibold"
+
+                    {target?.pasti_config && target.pasti_config.length > 0 ? (
+                      <>
+                        {/* Griglia pasti del coach */}
+                        <div className="grid grid-cols-2 gap-2">
+                          {target.pasti_config.map(p => {
+                            const isSelected = gruppoNome === p.nome
+                            return (
+                              <button key={p.nome}
+                                onClick={() => { setGruppoNome(isSelected ? '' : p.nome); setGruppoEsistente('') }}
+                                className="px-3 py-2.5 rounded-xl text-left transition-all"
+                                style={{
+                                  background: isSelected ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
+                                  border: `1px solid ${isSelected ? 'oklch(0.70 0.19 46 / 50%)' : 'oklch(1 0 0 / 6%)'}`,
+                                }}>
+                                <p className="text-sm font-bold" style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.90 0 0)' }}>
+                                  {p.nome}
+                                </p>
+                                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{p.percentuale}% delle kcal</p>
+                              </button>
+                            )
+                          })}
+                          {/* Fuori dai pasti */}
+                          <button
+                            onClick={() => { setGruppoNome(''); setGruppoEsistente('') }}
+                            className="px-3 py-2.5 rounded-xl text-left transition-all"
                             style={{
-                              background: gruppoEsistente === g ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                              color: gruppoEsistente === g ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                              background: gruppoNome === '' && gruppoEsistente === '' ? 'oklch(0.25 0 0)' : 'oklch(0.20 0 0)',
+                              border: '1px solid oklch(1 0 0 / 4%)',
                             }}>
-                            {g}
+                            <p className="text-sm font-bold" style={{ color: 'oklch(0.55 0 0)' }}>Fuori dai pasti</p>
+                            <p className="text-xs" style={{ color: 'oklch(0.38 0 0)' }}>Conta nel totale giornaliero</p>
                           </button>
-                        ))}
-                      </div>
+                        </div>
+                        {/* Eventuali gruppi loggati oggi non nei pasti del coach */}
+                        {gruppiEsistenti.filter(g => !target.pasti_config!.some(p => p.nome === g)).length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {gruppiEsistenti
+                              .filter(g => !target.pasti_config!.some(p => p.nome === g))
+                              .map(g => (
+                                <button key={g}
+                                  onClick={() => { setGruppoNome(gruppoNome === g ? '' : g); setGruppoEsistente('') }}
+                                  className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                                  style={{
+                                    background: gruppoNome === g ? 'oklch(0.60 0.15 200 / 15%)' : 'oklch(0.22 0 0)',
+                                    color: gruppoNome === g ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                                  }}>
+                                  {g}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {/* Nessun piano coach: mostra gruppi esistenti + input libero */}
+                        {gruppiEsistenti.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {gruppiEsistenti.map(g => (
+                              <button key={g} onClick={() => { setGruppoEsistente(g === gruppoEsistente ? '' : g); setGruppoNome('') }}
+                                className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style={{
+                                  background: gruppoEsistente === g ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                                  color: gruppoEsistente === g ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                                }}>
+                                {g}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <input type="text" value={gruppoNome}
+                          onChange={e => { setGruppoNome(e.target.value); setGruppoEsistente('') }}
+                          placeholder="Pasto (es. Pranzo, Post workout...)"
+                          className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                          onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+                          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                      </>
                     )}
-                    <input type="text" value={gruppoNome}
-                      onChange={e => { setGruppoNome(e.target.value); setGruppoEsistente('') }}
-                      placeholder="Nuovo pasto (es. Pranzo, Post workout...)"
-                      className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                      onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                      onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
                   </div>
 
                   <button onClick={handleSaveAlimento} disabled={saving}
