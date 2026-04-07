@@ -23,7 +23,6 @@ interface Giorno {
   nome: string
   ordine: number
   warmup_note: string | null
-  warmup_serie: { peso: string; reps: string }[] | null
   scheda_esercizi: SchedaEsercizio[]
 }
 
@@ -54,7 +53,7 @@ export default async function StampaSchedaPage({ params }: { params: Promise<{ i
   const { data: giorni } = await supabase
     .from('scheda_giorni')
     .select(`
-      id, nome, ordine, warmup_note, warmup_serie,
+      id, nome, ordine, warmup_note,
       scheda_esercizi (
         id, ordine, serie, ripetizioni, recupero_secondi, note, tipo, gruppo_id, progressione_tipo,
         esercizi!scheda_esercizi_esercizio_id_fkey ( nome, muscoli, tipo_input )
@@ -342,19 +341,10 @@ export default async function StampaSchedaPage({ params }: { params: Promise<{ i
               </div>
 
               {/* Warmup */}
-              {(giorno.warmup_note || (giorno.warmup_serie && giorno.warmup_serie.length > 0)) && (
+              {giorno.warmup_note && (
                 <div className="warmup-box">
                   <div className="warmup-title">Warmup generale</div>
-                  {giorno.warmup_note && <div>{giorno.warmup_note}</div>}
-                  {giorno.warmup_serie && giorno.warmup_serie.length > 0 && (
-                    <div className="warmup-serie">
-                      {giorno.warmup_serie.map((s, i) => (
-                        <span key={i} className="warmup-serie-item">
-                          {s.peso}kg × {s.reps} reps
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div>{giorno.warmup_note}</div>
                 </div>
               )}
 
