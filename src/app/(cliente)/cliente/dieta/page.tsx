@@ -171,6 +171,11 @@ export default function DietaPage() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
+  // Calorie effettive: derivate dai macro effettivi (tiene conto del carb cycling)
+  const calorieEffettive = target
+    ? Math.round(target.proteine_g * 4 + (carbEffettivi ?? target.carboidrati_g) * 4 + target.grassi_g * 9)
+    : null
+
   // Totali giornalieri
   const totali = pasti.reduce((acc, p) => ({
     calorie: acc.calorie + (p.calorie || 0),
@@ -275,12 +280,12 @@ export default function DietaPage() {
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Calorie</p>
               <p className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                {Math.round(totali.calorie)} / {target.calorie} kcal
+                {Math.round(totali.calorie)} / {calorieEffettive ?? target.calorie} kcal
               </p>
             </div>
             <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
               <div className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${perc(totali.calorie, target.calorie)}%`, background: 'oklch(0.70 0.19 46)' }} />
+                style={{ width: `${perc(totali.calorie, calorieEffettive ?? target.calorie)}%`, background: 'oklch(0.70 0.19 46)' }} />
             </div>
           </div>
           {/* Macro bars */}
@@ -330,7 +335,7 @@ export default function DietaPage() {
           if (pastiSaltati.has(idx)) return null
           const p = pastiConfig[idx]
           const percEffettiva = percTotaleAttiva > 0 ? (p.percentuale / percTotaleAttiva) * 100 : 0
-          const kcal = (target.calorie) * percEffettiva / 100
+          const kcal = (calorieEffettive ?? target.calorie) * percEffettiva / 100
 
           if (p.macro_custom && (p.prot_pct != null || p.carb_pct != null || p.grassi_pct != null)) {
             const pp = p.prot_pct ?? 0
@@ -362,7 +367,7 @@ export default function DietaPage() {
         }
 
         const rimanente = {
-          kcal: Math.max(0, target.calorie - totali.calorie),
+          kcal: Math.max(0, (calorieEffettive ?? target.calorie) - totali.calorie),
           prot: Math.max(0, target.proteine_g - totali.proteine_g),
           carb: Math.max(0, (carbEffettivi ?? target.carboidrati_g) - totali.carboidrati_g),
           grassi: Math.max(0, target.grassi_g - totali.grassi_g),
