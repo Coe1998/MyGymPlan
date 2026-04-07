@@ -47,6 +47,8 @@ export default function AnamnesIModal({ onComplete }: Props) {
   const [form, setForm] = useState({
     eta: '',
     altezza_cm: '',
+    sesso: '' as 'M' | 'F' | '',
+    prima_pesata: '',
     occupazione: '',
     ore_piedi_giorno: '',
     ore_seduto_giorno: '',
@@ -101,6 +103,7 @@ export default function AnamnesIModal({ onComplete }: Props) {
       cliente_id: user.id,
       eta: form.eta ? parseInt(form.eta) : null,
       altezza_cm: form.altezza_cm ? parseFloat(form.altezza_cm) : null,
+      sesso: form.sesso || null,
       occupazione: form.occupazione || null,
       ore_piedi_giorno: form.ore_piedi_giorno ? parseFloat(form.ore_piedi_giorno) : null,
       ore_seduto_giorno: form.ore_seduto_giorno ? parseFloat(form.ore_seduto_giorno) : null,
@@ -121,6 +124,16 @@ export default function AnamnesIModal({ onComplete }: Props) {
       completata_at: new Date().toISOString(),
     }, { onConflict: 'cliente_id' })
 
+    // Prima pesata opzionale → inserita in misurazioni così il grafico è già aggiornato
+    if (form.prima_pesata) {
+      await supabase.from('misurazioni').insert({
+        cliente_id: user.id,
+        peso_kg: parseFloat(form.prima_pesata),
+        data: new Date().toISOString().split('T')[0],
+        note: 'Pesata iniziale',
+      })
+    }
+
     setSaving(false)
     onComplete()
   }
@@ -138,6 +151,22 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 0: return (
         <div className="space-y-4">
           <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Sesso</label>
+            <div className="grid grid-cols-2 gap-3">
+              {([{ v: 'M', label: '♂ Uomo' }, { v: 'F', label: '♀ Donna' }] as const).map(({ v, label }) => (
+                <button key={v} onClick={() => set('sesso', v)}
+                  className="py-3 rounded-xl text-sm font-bold transition-all"
+                  style={{
+                    background: form.sesso === v ? 'oklch(0.70 0.19 46)' : 'oklch(0.20 0 0)',
+                    color: form.sesso === v ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                    border: `1px solid ${form.sesso === v ? 'oklch(0.70 0.19 46)' : 'oklch(1 0 0 / 8%)'}`,
+                  }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-1.5">
             <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Età</label>
             <input type="number" placeholder="es. 28" value={form.eta} onChange={e => set('eta', e.target.value)}
               className={inputClass} style={inputStyle} min={10} max={99} />
@@ -146,6 +175,16 @@ export default function AnamnesIModal({ onComplete }: Props) {
             <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Altezza (cm)</label>
             <input type="number" placeholder="es. 175" value={form.altezza_cm} onChange={e => set('altezza_cm', e.target.value)}
               className={inputClass} style={inputStyle} min={100} max={250} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>
+              Peso attuale (kg) <span style={{ color: 'oklch(0.45 0 0)' }}>— opzionale</span>
+            </label>
+            <input type="number" placeholder="es. 72.5" value={form.prima_pesata} onChange={e => set('prima_pesata', e.target.value)}
+              className={inputClass} style={inputStyle} min={30} max={300} step={0.1} />
+            <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+              Verrà salvata automaticamente nel tuo storico pesi
+            </p>
           </div>
         </div>
       )

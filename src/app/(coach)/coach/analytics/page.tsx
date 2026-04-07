@@ -16,7 +16,7 @@ import Link from 'next/link'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 import AnamnesIDrawer from '@/components/coach/AnamnesIDrawer'
-import { generateNoteAnamnesi } from '@/lib/anamnesi-notes'
+import { generateNoteAnamnesi, stimaTDEE } from '@/lib/anamnesi-notes'
 
 interface Misurazione {
   data: string
@@ -924,6 +924,46 @@ export default function AnalyticsPage() {
               <div className="flex-1 flex flex-col overflow-y-auto">
                 {dietaAbilitata ? (
                   <>
+                    {/* Stima TDEE da anamnesi + peso */}
+                    {(() => {
+                      const ultimoPeso = clienteSelezionato.misurazioni.at(-1)?.peso_kg ?? null
+                      const tdee = anamnesICliente && ultimoPeso
+                        ? stimaTDEE(anamnesICliente, ultimoPeso)
+                        : null
+                      if (!tdee) return null
+                      return (
+                        <div className="mx-5 mt-4 rounded-2xl p-4 space-y-3"
+                          style={{ background: 'oklch(0.60 0.15 200 / 8%)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.60 0.15 200)' }}>
+                                📊 Stima TDEE da anamnesi
+                              </p>
+                              <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+                                Basata su età, altezza, peso ({ultimoPeso} kg) e stile di vita dichiarato
+                              </p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { label: 'Deficit', kcal: tdee - 300, desc: '−300 kcal', color: 'oklch(0.65 0.18 150)' },
+                              { label: 'Mantenimento', kcal: tdee, desc: 'TDEE stimato', color: 'oklch(0.60 0.15 200)' },
+                              { label: 'Surplus', kcal: tdee + 300, desc: '+300 kcal', color: 'oklch(0.70 0.19 46)' },
+                            ].map(s => (
+                              <div key={s.label} className="rounded-xl p-2.5 text-center"
+                                style={{ background: 'oklch(0.18 0 0)' }}>
+                                <p className="text-base font-black tabular-nums" style={{ color: s.color }}>{s.kcal}</p>
+                                <p className="text-xs font-semibold mt-0.5" style={{ color: 'oklch(0.70 0 0)' }}>{s.label}</p>
+                                <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{s.desc}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-xs" style={{ color: 'oklch(0.38 0 0)' }}>
+                            ⚠️ Stima indicativa (formula Mifflin-St Jeor{anamnesICliente?.sesso ? `, ${anamnesICliente.sesso === 'M' ? 'uomo' : 'donna'}` : ', sesso non specificato'}). Usa come punto di partenza, aggiusta in base ai check-in.
+                          </p>
+                        </div>
+                      )
+                    })()}
                     <MacroTargetForm clienteId={clienteSelezionato!.id} />
                     {storicoNutrizioneCliente.length > 0 && (
                       <div className="px-5 pb-5 space-y-3">

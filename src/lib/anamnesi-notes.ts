@@ -1,6 +1,7 @@
 export interface AnamnesIData {
   eta?: number | null
   altezza_cm?: number | null
+  sesso?: 'M' | 'F' | null
   occupazione?: string | null
   ore_piedi_giorno?: number | null
   ore_seduto_giorno?: number | null
@@ -104,14 +105,21 @@ export function generateNoteAnamnesi(a: AnamnesIData): NotaAnamnesi[] {
   return note
 }
 
-// Calcolo BMR (formula Mifflin-St Jeor) — richiede anche sesso (non presente in anamnesi)
-// Restituisce stima TDEE basata su dati disponibili
+// Calcolo TDEE (formula Mifflin-St Jeor)
 export function stimaTDEE(a: AnamnesIData, pesoKg: number): number | null {
   if (!a.eta || !a.altezza_cm || !pesoKg) return null
-  // Senza sesso usiamo formula generica (media M/F)
-  const bmrM = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta + 5
-  const bmrF = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta - 161
-  const bmr = (bmrM + bmrF) / 2
+
+  let bmr: number
+  if (a.sesso === 'M') {
+    bmr = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta + 5
+  } else if (a.sesso === 'F') {
+    bmr = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta - 161
+  } else {
+    // Senza sesso: media M/F
+    const bmrM = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta + 5
+    const bmrF = 10 * pesoKg + 6.25 * a.altezza_cm - 5 * a.eta - 161
+    bmr = (bmrM + bmrF) / 2
+  }
 
   // Fattore attività basato su allenamenti/settimana
   const freq = a.allenamenti_settimana ?? 0

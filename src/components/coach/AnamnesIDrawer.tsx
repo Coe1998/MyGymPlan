@@ -121,6 +121,7 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
                 Dati personali
               </p>
               <div className="px-4">
+                <Row label="Sesso" value={anamnesi.sesso === 'M' ? '♂ Uomo' : anamnesi.sesso === 'F' ? '♀ Donna' : null} />
                 <Row label="Età" value={anamnesi.eta ? `${anamnesi.eta} anni` : null} />
                 <Row label="Altezza" value={anamnesi.altezza_cm ? `${anamnesi.altezza_cm} cm` : null} />
               </div>
