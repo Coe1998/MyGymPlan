@@ -282,7 +282,7 @@ export default function LandingPage() {
       <section className="py-12 px-6" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: '8+', label: 'moduli integrati in un'unica app' },
+            { value: '8+', label: "moduli integrati in un'unica app" },
             { value: '0€', label: 'per iniziare, nessun vincolo' },
             { value: '2 min', label: 'per creare e assegnare una scheda' },
             { value: '100%', label: 'mobile first, PWA installabile' },
