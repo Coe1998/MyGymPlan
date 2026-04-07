@@ -25,6 +25,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
   const [downloading, setDownloading] = useState(false)
   const [selezionati, setSelezionati] = useState<EsercizioHighlight[]>([])
   const [showCoach, setShowCoach] = useState(false)
+  const [coachInput, setCoachInput] = useState(coachNome ?? '')
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const isDark = tema === 'dark'
@@ -76,7 +77,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     const totalRows = stats.length
       + (hasHighlights ? 1 : 0)  // riga HIGHLIGHTS
       + selezionati.length
-      + (showCoach && coachNome ? 1 : 0)  // riga coach
+      + (showCoach && coachInput.trim() ? 1 : 0)  // riga coach
     const totalH = padV + titleH + (totalRows * rowH) + ((totalRows - 1) * 1) + padV + logoH + padV
 
     canvas.width = W * scale
@@ -114,7 +115,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         isAccent: true,
         isHeader: false,
       })),
-      ...(showCoach && coachNome ? [{ label: 'Coach', value: coachNome, isAccent: false, isHeader: false }] : []),
+      ...(showCoach && coachInput.trim() ? [{ label: 'Coach', value: coachInput.trim(), isAccent: false, isHeader: false }] : []),
     ]
 
     allRows.forEach((row, i) => {
@@ -232,20 +233,28 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
       </div>
 
       {/* Flag nome coach */}
-      {coachNome && (
-        <div className="flex items-center justify-center">
-          <button onClick={() => setShowCoach(p => !p)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all"
-            style={{
-              background: showCoach ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-              color: showCoach ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-              border: `1px solid ${showCoach ? 'oklch(0.60 0.15 200 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
-            }}>
-            <span style={{ fontSize: 10 }}>{showCoach ? '✓' : '○'}</span>
-            Mostra coach: {coachNome}
-          </button>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setShowCoach(p => !p)}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0"
+          style={{
+            background: showCoach ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+            color: showCoach ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+            border: `1px solid ${showCoach ? 'oklch(0.60 0.15 200 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+          }}>
+          <span style={{ fontSize: 10 }}>{showCoach ? '✓' : '○'}</span>
+          Coach / PT
+        </button>
+        {showCoach && (
+          <input
+            type="text"
+            value={coachInput}
+            onChange={e => setCoachInput(e.target.value)}
+            placeholder="Nome coach o PT..."
+            className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
+            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }}
+          />
+        )}
+      </div>
 
       {/* Selezione esercizi highlight */}
       {esercizi.length > 0 && (
