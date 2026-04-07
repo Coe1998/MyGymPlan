@@ -1,12 +1,27 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPaperPlane } from '@fortawesome/free-solid-svg-icons'
+import { faPaperPlane, faPaperclip } from '@fortawesome/free-solid-svg-icons'
+import ChatAllegatoCard from '@/components/shared/ChatAllegatoCard'
 
 interface Messaggio {
-  id: string; testo: string; da_coach: boolean; letto: boolean; created_at: string
+  id: string
+  testo: string | null
+  da_coach: boolean
+  letto: boolean
+  created_at: string
+  metadata?: {
+    tipo: 'scheda' | 'sessione'
+    id: string
+    nome?: string
+    giorni?: number
+    data?: string
+    giorno_nome?: string
+    completata?: boolean
+    durata_secondi?: number | null
+  } | null
 }
 
 export default function ClienteChatPage() {
@@ -17,6 +32,8 @@ export default function ClienteChatPage() {
   const [coachId, setCoachId] = useState<string | null>(null)
   const [coachNome, setCoachNome] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAllegati, setShowAllegati] = useState(false)
+  const [sessioniRecenti, setSessioniRecenti] = useState<any[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -25,7 +42,6 @@ export default function ClienteChatPage() {
       if (!user) return
       setClienteId(user.id)
 
-      // Trova coach
       const { data: cc } = await supabase.from('coach_clienti')
         .select('coach_id, profiles!coach_clienti_coach_id_fkey(full_name)')
         .eq('cliente_id', user.id)
@@ -34,7 +50,6 @@ export default function ClienteChatPage() {
       setCoachId(cc.coach_id)
       setCoachNome((cc as any).profiles?.full_name ?? 'Coach')
 
-      // Fetch messaggi
       const { data } = await supabase.from('messaggi')
         .select('*')
         .eq('coach_id', cc.coach_id)
@@ -42,7 +57,6 @@ export default function ClienteChatPage() {
         .order('created_at')
       setMessaggi((data as any) ?? [])
 
-      // Marca letti
       await supabase.from('messaggi')
         .update({ letto: true })
         .eq('coach_id', cc.coach_id)
@@ -51,8 +65,6 @@ export default function ClienteChatPage() {
         .eq('letto', false)
 
       setLoading(false)
-
-      // Registra push subscription
       registerPush(user.id)
     }
     init()
@@ -79,7 +91,6 @@ export default function ClienteChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messaggi])
 
-  // Realtime
   useEffect(() => {
     if (!coachId || !clienteId) return
     const channel = supabase.channel(`chat-cliente-${clienteId}`)
@@ -88,7 +99,6 @@ export default function ClienteChatPage() {
         filter: `cliente_id=eq.${clienteId}`,
       }, (payload) => {
         const nuovo = payload.new as Messaggio
-        // Ignora i messaggi mandati da me (già aggiunti ottimisticamente)
         if (!nuovo.da_coach) return
         setMessaggi(prev => [...prev, nuovo])
         supabase.from('messaggi').update({ letto: true }).eq('id', nuovo.id)
@@ -97,29 +107,48 @@ export default function ClienteChatPage() {
     return () => { supabase.removeChannel(channel) }
   }, [coachId, clienteId])
 
+  const fetchSessioniRecenti = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data } = await supabase
+      .from('sessioni')
+      .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
+      .eq('cliente_id', user.id)
+      .order('data', { ascending: false })
+      .limit(8)
+    setSessioniRecenti((data as any) ?? [])
+  }
+
+  const inviaAllegato = async (metadata: object) => {
+    if (!coachId || !clienteId) return
+    setShowAllegati(false)
+    const tempId = crypto.randomUUID()
+    setMessaggi(prev => [...prev, {
+      id: tempId, testo: null, da_coach: false, letto: false,
+      created_at: new Date().toISOString(), metadata: metadata as any,
+    }])
+    await supabase.from('messaggi').insert({
+      coach_id: coachId,
+      cliente_id: clienteId,
+      testo: null,
+      da_coach: false,
+      metadata,
+    })
+  }
+
   const inviaMessaggio = async () => {
     if (!testo.trim() || !coachId || !clienteId) return
     const t = testo.trim()
     setTesto('')
-
     const tempId = crypto.randomUUID()
     setMessaggi(prev => [...prev, {
       id: tempId, testo: t, da_coach: false, letto: false,
       created_at: new Date().toISOString(),
     }])
-
     const { error } = await supabase.from('messaggi').insert({
-      coach_id: coachId,
-      cliente_id: clienteId,
-      testo: t,
-      da_coach: false,
+      coach_id: coachId, cliente_id: clienteId, testo: t, da_coach: false,
     })
-
-    if (error) {
-      setMessaggi(prev => prev.filter(m => m.id !== tempId))
-      return
-    }
-
+    if (error) { setMessaggi(prev => prev.filter(m => m.id !== tempId)); return }
     fetch('/api/push/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -134,26 +163,26 @@ export default function ClienteChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
-const URL_REGEX = /(https?:\/\/[^\s]+)/g
-
-const renderTesto = (testo: string, daCoach: boolean) => {
-  const parti = testo.split(URL_REGEX)
-  return parti.map((parte, i) => {
-    if (!URL_REGEX.test(parte)) return <span key={i}>{parte}</span>
-    const isImg = /\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(parte)
-    if (isImg) return (
-      <img key={i} src={parte} alt="Report" className="rounded-xl mt-1 max-w-full"
-        style={{ display: 'block', maxWidth: 280 }} />
-    )
-    return (
-      <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
-        className="underline break-all"
-        style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
-        {parte}
-      </a>
-    )
-  })
-}
+  const renderTesto = (t: string, daCoach: boolean) => {
+    const parti = t.split(/(https?:\/\/[^\s]+)/g)
+    return parti.map((parte, i) => {
+      if (!/(https?:\/\/[^\s]+)/.test(parte)) return <span key={i}>{parte}</span>
+      const isImg = /\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(parte)
+      if (isImg) return (
+        <a key={i} href={parte} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 4 }}>
+          <img src={parte} alt="Report" className="rounded-xl max-w-full"
+            style={{ display: 'block', maxWidth: 280, cursor: 'pointer', opacity: 0.95 }} />
+        </a>
+      )
+      return (
+        <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
+          className="underline break-all"
+          style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
+          {parte}
+        </a>
+      )
+    })
+  }
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -169,7 +198,6 @@ const renderTesto = (testo: string, daCoach: boolean) => {
 
   return (
     <div className="flex flex-col max-w-2xl" style={{ height: 'calc(100vh - 10rem)' }}>
-      {/* Header */}
       <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Chat</h1>
       </div>
@@ -204,9 +232,17 @@ const renderTesto = (testo: string, daCoach: boolean) => {
                   borderBottomLeftRadius: m.da_coach ? 4 : 16,
                   borderBottomRightRadius: m.da_coach ? 16 : 4,
                 }}>
-                <p className="text-sm break-words" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
-                  {renderTesto(m.testo, m.da_coach)}
-                </p>
+                {m.metadata ? (
+                  <ChatAllegatoCard
+                    metadata={m.metadata}
+                    daCoach={m.da_coach}
+                    ruolo="cliente"
+                  />
+                ) : (
+                  <p className="text-sm break-words" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
+                    {renderTesto(m.testo ?? '', m.da_coach)}
+                  </p>
+                )}
                 <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.45 0 0)' : 'oklch(0.30 0 0)' }}>
                   {formatOra(m.created_at)}
                 </p>
@@ -216,9 +252,50 @@ const renderTesto = (testo: string, daCoach: boolean) => {
           <div ref={bottomRef} />
         </div>
 
+        {/* Pannello allegati */}
+        {showAllegati && (
+          <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            {sessioniRecenti.length === 0 ? (
+              <p className="text-xs py-3 text-center" style={{ color: 'oklch(0.45 0 0)' }}>
+                Nessuna sessione disponibile
+              </p>
+            ) : (
+              <div className="py-2">
+                <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>
+                  Sessioni recenti
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {sessioniRecenti.map((s: any) => (
+                    <button key={s.id}
+                      onClick={() => inviaAllegato({
+                        tipo: 'sessione', id: s.id,
+                        giorno_nome: s.scheda_giorni?.nome ?? 'Allenamento',
+                        data: s.data, completata: s.completata, durata_secondi: s.durata_secondi,
+                      })}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                      style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}>
+                      🏋️ {new Date(s.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {s.scheda_giorni?.nome ?? 'Allenamento'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Input */}
         <div className="px-4 py-3 flex gap-3 flex-shrink-0"
           style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
+          <button
+            onClick={() => { setShowAllegati(p => !p); if (!showAllegati) fetchSessioniRecenti() }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
+            style={{
+              background: showAllegati ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+              color: showAllegati ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+              border: '1px solid oklch(1 0 0 / 8%)',
+            }}>
+            <FontAwesomeIcon icon={faPaperclip} className="text-sm" />
+          </button>
           <input
             type="text" value={testo} onChange={e => setTesto(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}

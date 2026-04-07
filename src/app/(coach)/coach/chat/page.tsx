@@ -3,11 +3,26 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPaperPlane, faArrowLeft } from '@fortawesome/free-solid-svg-icons'
+import { faPaperPlane, faArrowLeft, faPaperclip } from '@fortawesome/free-solid-svg-icons'
+import ChatAllegatoCard from '@/components/shared/ChatAllegatoCard'
 
 interface Cliente { id: string; full_name: string | null }
 interface Messaggio {
-  id: string; testo: string; da_coach: boolean; letto: boolean; created_at: string
+  id: string
+  testo: string | null
+  da_coach: boolean
+  letto: boolean
+  created_at: string
+  metadata?: {
+    tipo: 'scheda' | 'sessione'
+    id: string
+    nome?: string
+    giorni?: number
+    data?: string
+    giorno_nome?: string
+    completata?: boolean
+    durata_secondi?: number | null
+  } | null
 }
 
 export default function CoachChatPage() {
@@ -18,9 +33,12 @@ export default function CoachChatPage() {
   const [testo, setTesto] = useState('')
   const [coachId, setCoachId] = useState<string | null>(null)
   const [unread, setUnread] = useState<Record<string, number>>({})
+  const [showAllegati, setShowAllegati] = useState(false)
+  const [schedeCoach, setSchedeCoach] = useState<{ id: string; nome: string; giorni_count: number }[]>([])
+  const [sessioniCliente, setSessioniCliente] = useState<any[]>([])
+  const [loadingAllegati, setLoadingAllegati] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Fetch clienti e coach id
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -31,22 +49,18 @@ export default function CoachChatPage() {
         .eq('coach_id', user.id)
       const list = (data ?? []).map((r: any) => r.profiles).filter(Boolean)
       setClienti(list)
-      // Conta unread per cliente
       const { data: unreadData } = await supabase.from('messaggi')
         .select('cliente_id')
         .eq('coach_id', user.id)
         .eq('da_coach', false)
         .eq('letto', false)
       const counts: Record<string, number> = {}
-      for (const m of unreadData ?? []) {
-        counts[m.cliente_id] = (counts[m.cliente_id] || 0) + 1
-      }
+      for (const m of unreadData ?? []) counts[m.cliente_id] = (counts[m.cliente_id] || 0) + 1
       setUnread(counts)
     }
     init()
   }, [])
 
-  // Fetch messaggi quando cambia cliente
   const fetchMessaggi = useCallback(async () => {
     if (!clienteAttivo || !coachId) return
     const { data } = await supabase.from('messaggi')
@@ -55,7 +69,6 @@ export default function CoachChatPage() {
       .eq('cliente_id', clienteAttivo.id)
       .order('created_at')
     setMessaggi((data as any) ?? [])
-    // Marca come letti
     await supabase.from('messaggi')
       .update({ letto: true })
       .eq('coach_id', coachId)
@@ -67,12 +80,10 @@ export default function CoachChatPage() {
 
   useEffect(() => { fetchMessaggi() }, [fetchMessaggi])
 
-  // Scroll bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messaggi])
 
-  // Realtime
   useEffect(() => {
     if (!clienteAttivo || !coachId) return
     const channel = supabase.channel(`chat-coach-${clienteAttivo.id}`)
@@ -81,7 +92,6 @@ export default function CoachChatPage() {
         filter: `cliente_id=eq.${clienteAttivo.id}`,
       }, (payload) => {
         setMessaggi(prev => [...prev, payload.new as Messaggio])
-        // Marca letto subito se è del cliente
         if (!(payload.new as Messaggio).da_coach) {
           supabase.from('messaggi').update({ letto: true }).eq('id', payload.new.id)
         }
@@ -90,17 +100,52 @@ export default function CoachChatPage() {
     return () => { supabase.removeChannel(channel) }
   }, [clienteAttivo, coachId])
 
+  const fetchAllegati = async () => {
+    if (!clienteAttivo) return
+    setLoadingAllegati(true)
+    const [schedeRes, sessioniRes] = await Promise.all([
+      supabase.from('assegnazioni')
+        .select('schede(id, nome, scheda_giorni(id))')
+        .eq('cliente_id', clienteAttivo.id)
+        .eq('attiva', true),
+      supabase.from('sessioni')
+        .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
+        .eq('cliente_id', clienteAttivo.id)
+        .order('data', { ascending: false })
+        .limit(10),
+    ])
+    const schede = (schedeRes.data ?? [])
+      .map((a: any) => a.schede).filter(Boolean)
+      .map((s: any) => ({ id: s.id, nome: s.nome, giorni_count: s.scheda_giorni?.length ?? 0 }))
+    setSchedeCoach(schede)
+    setSessioniCliente((sessioniRes.data as any) ?? [])
+    setLoadingAllegati(false)
+  }
+
+  const inviaAllegato = async (metadata: object) => {
+    if (!clienteAttivo || !coachId) return
+    setShowAllegati(false)
+    const tempId = crypto.randomUUID()
+    setMessaggi(prev => [...prev, {
+      id: tempId, testo: null, da_coach: true, letto: false,
+      created_at: new Date().toISOString(), metadata: metadata as any,
+    }])
+    await supabase.from('messaggi').insert({
+      coach_id: coachId,
+      cliente_id: clienteAttivo.id,
+      testo: null,
+      da_coach: true,
+      metadata,
+    })
+  }
+
   const inviaMessaggio = async () => {
     if (!testo.trim() || !clienteAttivo || !coachId) return
     const t = testo.trim()
     setTesto('')
     await supabase.from('messaggi').insert({
-      coach_id: coachId,
-      cliente_id: clienteAttivo.id,
-      testo: t,
-      da_coach: true,
+      coach_id: coachId, cliente_id: clienteAttivo.id, testo: t, da_coach: true,
     })
-    // Manda push al cliente
     fetch('/api/push/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -115,50 +160,153 @@ export default function CoachChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
-const URL_REGEX = /(https?:\/\/[^\s]+)/g
+  const URL_REGEX = /(https?:\/\/[^\s]+)/g
+  const renderTesto = (t: string, daCoach: boolean) => {
+    const parti = t.split(URL_REGEX)
+    return parti.map((parte, i) => {
+      if (!/(https?:\/\/[^\s]+)/.test(parte)) return <span key={i}>{parte}</span>
+      const isImg = /\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(parte)
+      if (isImg) return (
+        <a key={i} href={parte} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 4 }}>
+          <img src={parte} alt="Report" className="rounded-xl max-w-full"
+            style={{ display: 'block', maxWidth: 280, cursor: 'pointer', opacity: 0.95 }} />
+        </a>
+      )
+      return (
+        <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
+          className="underline break-all"
+          style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
+          {parte}
+        </a>
+      )
+    })
+  }
 
-const renderTesto = (testo: string, daCoach: boolean) => {
-  const parti = testo.split(URL_REGEX)
-  return parti.map((parte, i) => {
-    if (!URL_REGEX.test(parte)) return <span key={i}>{parte}</span>
-    const isImg = /\.(png|jpg|jpeg|webp|gif)(\?.*)?$/i.test(parte)
-    if (isImg) return (
-      <img key={i} src={parte} alt="Report" className="rounded-xl mt-1 max-w-full"
-        style={{ display: 'block', maxWidth: 280 }} />
-    )
-    return (
-      <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
-        className="underline break-all"
-        style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
-        {parte}
-      </a>
-    )
-  })
-}
+  const renderMessaggio = (m: Messaggio) => (
+    <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
+      <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+        style={{
+          background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+          borderBottomRightRadius: m.da_coach ? 4 : 16,
+          borderBottomLeftRadius: m.da_coach ? 16 : 4,
+        }}>
+        {m.metadata ? (
+          <ChatAllegatoCard
+            metadata={m.metadata}
+            daCoach={m.da_coach}
+            ruolo="coach"
+            clienteId={clienteAttivo?.id}
+          />
+        ) : (
+          <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>
+            {renderTesto(m.testo ?? '', m.da_coach)}
+          </p>
+        )}
+        <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>
+          {formatOra(m.created_at)}
+        </p>
+      </div>
+    </div>
+  )
+
+  const pannelloAllegati = (
+    <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+      {loadingAllegati ? (
+        <p className="text-xs py-3 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+      ) : (
+        <div className="space-y-3 py-2">
+          {schedeCoach.length > 0 && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>
+                Schede assegnate
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {schedeCoach.map(s => (
+                  <button key={s.id}
+                    onClick={() => inviaAllegato({ tipo: 'scheda', id: s.id, nome: s.nome, giorni: s.giorni_count })}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                    style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+                    📋 {s.nome}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {sessioniCliente.length > 0 && (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>
+                Sessioni recenti
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {sessioniCliente.slice(0, 5).map((s: any) => (
+                  <button key={s.id}
+                    onClick={() => inviaAllegato({
+                      tipo: 'sessione', id: s.id,
+                      giorno_nome: s.scheda_giorni?.nome ?? 'Allenamento',
+                      data: s.data, completata: s.completata, durata_secondi: s.durata_secondi,
+                    })}
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                    style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}>
+                    🏋️ {new Date(s.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {s.scheda_giorni?.nome ?? 'Allenamento'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {schedeCoach.length === 0 && sessioniCliente.length === 0 && (
+            <p className="text-xs py-2 text-center" style={{ color: 'oklch(0.45 0 0)' }}>
+              Nessuna scheda o sessione disponibile
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+
+  const inputArea = (mobile = false) => (
+    <div className="flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+      {showAllegati && pannelloAllegati}
+      <div className="px-4 py-3 flex gap-3"
+        style={mobile ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' } : {}}>
+        <button
+          onClick={() => { setShowAllegati(p => !p); if (!showAllegati) fetchAllegati() }}
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
+          style={{
+            background: showAllegati ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+            color: showAllegati ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+            border: '1px solid oklch(1 0 0 / 8%)',
+          }}>
+          <FontAwesomeIcon icon={faPaperclip} className="text-sm" />
+        </button>
+        <input type="text" value={testo} onChange={e => setTesto(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
+          placeholder="Scrivi un messaggio..."
+          className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
+          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+        <button onClick={inviaMessaggio} disabled={!testo.trim()}
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
+          <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
+        </button>
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-5xl">
-      {/* MOBILE: se nessun cliente selezionato → lista; altrimenti → chat */}
-
-      {/* Lista clienti — visibile sempre su desktop, su mobile solo senza cliente attivo */}
+      {/* Lista clienti mobile */}
       <div className={`${clienteAttivo ? 'hidden lg:flex' : 'flex'} lg:flex flex-col`}
         style={{ height: clienteAttivo ? undefined : 'calc(100vh - 8rem)' }}>
-
-        {/* Header mobile */}
         <div className="lg:hidden mb-3">
           <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Chat</h1>
         </div>
-
         <div className="lg:hidden rounded-2xl overflow-hidden flex flex-col flex-1"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <div className="px-4 py-4 hidden" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Seleziona cliente</p>
-          </div>
           <div className="flex-1 overflow-y-auto">
             {clienti.length === 0 ? (
               <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
             ) : clienti.map(c => (
-              <button key={c.id} onClick={() => setClienteAttivo(c)}
+              <button key={c.id} onClick={() => { setClienteAttivo(c); setShowAllegati(false) }}
                 className="w-full flex items-center gap-3 px-4 py-4 transition-all hover:opacity-80"
                 style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
@@ -183,7 +331,6 @@ const renderTesto = (testo: string, daCoach: boolean) => {
 
       {/* DESKTOP: layout a due colonne */}
       <div className="hidden lg:flex gap-4" style={{ height: 'calc(100vh - 6rem)' }}>
-        {/* Lista clienti desktop */}
         <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
           <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -193,7 +340,7 @@ const renderTesto = (testo: string, daCoach: boolean) => {
             {clienti.length === 0 ? (
               <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
             ) : clienti.map(c => (
-              <button key={c.id} onClick={() => setClienteAttivo(c)}
+              <button key={c.id} onClick={() => { setClienteAttivo(c); setShowAllegati(false) }}
                 className="w-full flex items-center gap-3 px-4 py-3 transition-all hover:opacity-80"
                 style={{
                   background: clienteAttivo?.id === c.id ? 'oklch(0.70 0.19 46 / 12%)' : 'transparent',
@@ -218,7 +365,6 @@ const renderTesto = (testo: string, daCoach: boolean) => {
           </div>
         </div>
 
-        {/* Area chat desktop */}
         {clienteAttivo ? (
           <div className="flex-1 flex flex-col rounded-2xl overflow-hidden"
             style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -234,33 +380,10 @@ const renderTesto = (testo: string, daCoach: boolean) => {
               {messaggi.length === 0 && (
                 <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
               )}
-              {messaggi.map(m => (
-                <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
-                  <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
-                    style={{
-                      background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                      borderBottomRightRadius: m.da_coach ? 4 : 16,
-                      borderBottomLeftRadius: m.da_coach ? 16 : 4,
-                    }}>
-                    <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{renderTesto(m.testo, m.da_coach)}</p>
-                    <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
-                  </div>
-                </div>
-              ))}
+              {messaggi.map(renderMessaggio)}
               <div ref={bottomRef} />
             </div>
-            <div className="px-4 py-3 flex gap-3 flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-              <input type="text" value={testo} onChange={e => setTesto(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
-                placeholder="Scrivi un messaggio..."
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
-              <button onClick={inviaMessaggio} disabled={!testo.trim()}
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
-                <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
-              </button>
-            </div>
+            {inputArea(false)}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center rounded-2xl"
@@ -273,13 +396,13 @@ const renderTesto = (testo: string, daCoach: boolean) => {
         )}
       </div>
 
-      {/* MOBILE: area chat (quando cliente selezionato) */}
+      {/* MOBILE: area chat */}
       {clienteAttivo && (
         <div className="lg:hidden flex flex-col rounded-2xl overflow-hidden"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)', height: 'calc(100vh - 8rem)' }}>
           <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0"
             style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <button onClick={() => setClienteAttivo(null)}
+            <button onClick={() => { setClienteAttivo(null); setShowAllegati(false) }}
               className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
               <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
@@ -294,34 +417,10 @@ const renderTesto = (testo: string, daCoach: boolean) => {
             {messaggi.length === 0 && (
               <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
             )}
-            {messaggi.map(m => (
-              <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
-                <div className="max-w-xs px-4 py-2.5 rounded-2xl"
-                  style={{
-                    background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    borderBottomRightRadius: m.da_coach ? 4 : 16,
-                    borderBottomLeftRadius: m.da_coach ? 16 : 4,
-                  }}>
-                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>{renderTesto(m.testo, m.da_coach)}</p>
-                  <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>{formatOra(m.created_at)}</p>
-                </div>
-              </div>
-            ))}
+            {messaggi.map(renderMessaggio)}
             <div ref={bottomRef} />
           </div>
-          <div className="px-4 py-3 flex gap-3 flex-shrink-0"
-            style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
-            <input type="text" value={testo} onChange={e => setTesto(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
-              placeholder="Scrivi un messaggio..."
-              className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
-            <button onClick={inviaMessaggio} disabled={!testo.trim()}
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
-              <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
-            </button>
-          </div>
+          {inputArea(true)}
         </div>
       )}
     </div>
