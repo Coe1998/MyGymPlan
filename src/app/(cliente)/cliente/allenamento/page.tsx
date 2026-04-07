@@ -88,6 +88,43 @@ export default function AllenamentoPage() {
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
+  // ── Notifica fine recupero ────────────────────────────────────────
+  function playBeep() {
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.value = 880
+      gain.gain.setValueAtTime(0.4, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.6)
+    } catch {}
+  }
+
+  async function notificaFineRecupero() {
+    playBeep()
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200])
+    }
+    if (typeof Notification === 'undefined') return
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission()
+    }
+    if (Notification.permission === 'granted') {
+      new Notification('Recupero terminato! 💪', {
+        body: 'Pronti per la prossima serie.',
+        icon: '/logo/Bynari_WO1.png',
+        tag: 'recupero',
+        renotify: true,
+        silent: true,
+      })
+    }
+  }
+
   const TIPO_COLORS: Record<string, { color: string; bg: string; label: string }> = {
     superset:   { color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 15%)', label: 'Superset' },
     giant_set:  { color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 15%)', label: 'Giant Set' },
@@ -334,6 +371,7 @@ export default function AllenamentoPage() {
         setTimerAttivo(false)
         timerEndRef.current = null
         localStorage.removeItem('bynari_timer_end')
+        notificaFineRecupero()
       } else {
         setTimerSecondi(remaining)
       }
@@ -534,6 +572,9 @@ export default function AllenamentoPage() {
       localStorage.setItem('bynari_timer_end', endTs.toString())
       setTimerSecondi(ese.recupero_secondi)
       setTimerAttivo(true)
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
       if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
     }
 
