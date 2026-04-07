@@ -33,7 +33,7 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
 
   let href = '#'
   if (isScheda) {
-    href = ruolo === 'coach' ? `/coach/schede/${metadata.id}` : `/cliente/dashboard`
+    href = ruolo === 'coach' ? `/coach/schede/${metadata.id}` : `/cliente/schede/${metadata.id}`
   } else {
     href = ruolo === 'coach' && clienteId
       ? `/coach/clienti/${clienteId}/analytics`

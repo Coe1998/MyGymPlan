@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye } from '@fortawesome/free-solid-svg-icons'
 
 interface Giorno { id: string; nome: string; ordine: number }
 interface Scheda { id: string; nome: string; descrizione: string | null; scheda_giorni: Giorno[] }
@@ -43,9 +45,19 @@ export default function SchedeSelector({ assegnazioni }: { assegnazioni: Assegna
       <div className="px-6 pb-6 space-y-4">
         {/* Info scheda */}
         <div>
-          <h3 className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
-            {schedaAttiva.schede?.nome}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+              {schedaAttiva.schede?.nome}
+            </h3>
+            {schedaAttiva.schede?.id && (
+              <Link href={`/cliente/schede/${schedaAttiva.schede.id}`}
+                className="flex items-center justify-center w-7 h-7 rounded-lg transition-all hover:opacity-70"
+                style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}
+                title="Visualizza scheda">
+                <FontAwesomeIcon icon={faEye} style={{ fontSize: 12 }} />
+              </Link>
+            )}
+          </div>
           {schedaAttiva.schede?.descrizione && (
             <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
               {schedaAttiva.schede.descrizione}
