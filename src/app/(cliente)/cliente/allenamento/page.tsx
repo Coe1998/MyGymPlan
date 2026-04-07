@@ -114,7 +114,6 @@ export default function AllenamentoPage() {
       setCompletata(sessione.completata)
       setSessioneData(sessione.data)
       setGiornoNome((sessione as any).scheda_giorni?.nome ?? '')
-      setWarmupNote((giorno as any)?.warmup_note ?? null)
 
       // Calcola durata approssimativa (non disponibile, usiamo 0)
       setDurataSecondi(0)
@@ -131,6 +130,7 @@ export default function AllenamentoPage() {
         .single()
 
       if (!giorno) { setLoading(false); return }
+      setWarmupNote((giorno as any).warmup_note ?? null)
       const eserciziOrdinati = ((giorno as any).scheda_esercizi ?? []).sort((a: any, b: any) => a.ordine - b.ordine)
       setEsercizi(eserciziOrdinati)
 
