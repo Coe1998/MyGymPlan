@@ -16,19 +16,21 @@ function useInView(threshold = 0.15) {
 
 const COACH_BENEFITS = [
   { num: "01", title: "7 alert intelligenti per cliente", body: "Inattività, check-in mancanti, calo volume −30%, sessioni incomplete, stress elevato, variazione peso anomala, esercizi saltati. Tocca l'alert e vedi i dati specifici." },
-  { num: "02", title: "Analytics avanzate per ogni cliente", body: "e1RM stimato per esercizio, volume per gruppo muscolare, pattern benessere settimanale, andamento peso. Tutto aggregato in una pagina." },
-  { num: "03", title: "Report condivisibile in un click", body: "Genera un'immagine con i progressi del cliente — punti forti, muscoli da migliorare, KPI del periodo. Inviala in chat o salvala sul dispositivo." },
-  { num: "04", title: "Schede avanzate in 3 minuti", body: "Superset, dropset, piramidale, RPE/RIR, timer, unilaterale. Assegna la scheda e il cliente la vede subito sull'app." },
-  { num: "05", title: "Progressione automatica dei carichi", body: "Triple Progression inter-sessione: l'algoritmo suggerisce peso, serie o reps ottimali per ogni cliente. Zero calcoli manuali." },
-  { num: "06", title: "Tutto in un posto solo", body: "Scheda, chat, report, progressi, piano alimentare. Smetti di usare 4 app diverse per ogni cliente." },
+  { num: "02", title: "Analytics avanzate per ogni cliente", body: "e1RM stimato per esercizio, serie per gruppo muscolare, pattern benessere settimanale, andamento peso. Tutto aggregato in una pagina con export PDF." },
+  { num: "03", title: "Anamnesi corporea completa", body: "Al primo accesso il cliente compila età, altezza, sesso, stile di vita, sonno, patologie, intolleranze e foto anatomiche. Tu hai subito il profilo completo per programmare correttamente." },
+  { num: "04", title: "Piano nutrizionale personalizzato", body: "Imposta macro target, ripartiscili su N pasti con percentuali configurabili. Il cliente vede i macro per ogni pasto e può saltarne uno — i macro si ridistribuiscono automaticamente." },
+  { num: "05", title: "Piano integratori prescritto da te", body: "Prescrivi nome, dose, unità e momento di assunzione per ogni integratore. Il cliente vede una checklist giornaliera e ti spunta cosa ha preso." },
+  { num: "06", title: "Appuntamenti e check-in in app", body: "Fissa videocall, chiamate o sessioni in presenza direttamente dall'app. Il cliente riceve notifica push 24h e 15 minuti prima. Nessun tool esterno." },
+  { num: "07", title: "Schede avanzate in 3 minuti", body: "Superset, dropset, piramidale, RPE/RIR, timer, unilaterale, warmup generale e specifico per esercizio. Editor ottimizzato sia mobile che desktop." },
+  { num: "08", title: "Triple Progression automatica", body: "L'algoritmo suggerisce peso, serie o reps ottimali per ogni cliente sessione dopo sessione. Zero calcoli manuali, zero fogli Excel." },
 ]
 
 const ATLETA_FEATURES = [
   { num: "01", title: "Triple Progression automatica", body: "Finisci una sessione e l'app calcola quanto caricare nella prossima. Peso, serie o reps — scegli tu la direzione, l'algoritmo fa i conti." },
   { num: "02", title: "Forza stimata (e1RM) e grafici muscoli", body: "Traccia la forza stimata per ogni esercizio settimana dopo settimana. Vedi quali muscoli stai sviluppando e dove sei indietro." },
-  { num: "03", title: "Share card con i tuoi highlight", body: "Finito l'allenamento, genera una card con i tuoi record — Planche 36s, Panca +5kg. Condividila sui social con un tap." },
-  { num: "04", title: "Schede avanzate come un pro", body: "Crea le tue schede con superset, dropset, timer, unilaterale, RPE. Lo stesso editor dei coach professionisti." },
-  { num: "05", title: "Check-in e benessere", body: "Logga energia, sonno, stress e motivazione ogni giorno. Capisci quando spingere e quando recuperare." },
+  { num: "03", title: "Check-in e benessere giornaliero", body: "Logga energia, sonno, stress e motivazione ogni giorno. Capisci quando spingere e quando recuperare. I dati rimangono nel tuo storico." },
+  { num: "04", title: "Nutrizione e tracciamento pasti", body: "Cerca alimenti dal database Open Food Facts, logga i pasti e monitora macro e calorie giornalieri rispetto al tuo target." },
+  { num: "05", title: "Schede avanzate come un pro", body: "Crea le tue schede con superset, dropset, timer, unilaterale, RPE, warmup. Lo stesso editor dei coach professionisti, anche su desktop." },
 ]
 
 const STEPS = [
@@ -239,13 +241,13 @@ export default function LandingPage() {
               fontFamily: 'Syne, sans-serif',
               letterSpacing: '-0.04em',
             }}>
-              I tuoi clienti stanno<br />per mollare.{' '}
-              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Tu lo sai prima.</span>
+              Gestisci ogni cliente.<br />
+              <span style={{ color: 'oklch(0.70 0.19 46)' }}>Su tutto. In un posto solo.</span>
             </h1>
             <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
               style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-              Gestisci allenamenti, monitora i progressi e individua chi sta perdendo motivazione —
-              prima che abbandoni e tu perda il rinnovo.
+              Schede, nutrizione, anamnesi, analytics, chat, appuntamenti check-in e alert intelligenti.
+              Tutto quello che un coach professionista usa ogni giorno, in un'unica app PWA.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
               <Link href="/register"
@@ -280,7 +282,7 @@ export default function LandingPage() {
       <section className="py-12 px-6" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: '~30%', label: 'dei clienti abbandona entro 3 mesi' },
+            { value: '8+', label: 'moduli integrati in un'unica app' },
             { value: '0€', label: 'per iniziare, nessun vincolo' },
             { value: '2 min', label: 'per creare e assegnare una scheda' },
             { value: '100%', label: 'mobile first, PWA installabile' },
@@ -336,14 +338,13 @@ export default function LandingPage() {
               <span style={{ color: 'oklch(0.70 0.19 46)' }}>guadagnare di più perdendo meno.</span>
             </h2>
             <p className="text-base leading-relaxed mb-4" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              Bynari non è una semplice app per schede. È lo strumento che ti dà visibilità su ogni cliente,
-              ti avvisa quando qualcuno rischia di abbandonare e ti fa lavorare meno sulla gestione
-              per concentrarti su chi conta davvero.
+              Bynari non è una semplice app per schede. È la piattaforma completa per coach professionisti:
+              anamnesi del cliente, schede avanzate, piano alimentare con suddivisione sui pasti,
+              piano integratori, analytics con e1RM e volume muscolare, alert intelligenti, appuntamenti check-in e chat.
             </p>
             <p className="text-base leading-relaxed" style={{ color: 'oklch(0.52 0 0)', fontFamily: 'Inter, sans-serif' }}>
-              In più, i nostri potenti algoritmi analizzano le performance in tempo reale,
-              suggerendo automaticamente l\'aumento progressivo del carico sessione per sessione e serie per serie,
-              eliminando ogni dubbio su quanto caricare.
+              Smetti di usare WhatsApp per le schede, Excel per i progressi, un'app per la dieta e un'altra per gli appuntamenti.
+              Con Bynari hai tutto in un posto solo — e i tuoi clienti hanno un'esperienza professionale dall'onboarding alla sessione.
             </p>
           </FadeIn>
         </div>
@@ -388,8 +389,8 @@ export default function LandingPage() {
                 <span style={{ color: 'oklch(0.70 0.19 46)' }}>Più rinnovi.</span>
               </h2>
               <p className="text-base max-w-xl leading-relaxed" style={{ color: 'oklch(0.50 0 0)', fontFamily: 'Inter, sans-serif' }}>
-                Un cliente che abbandona ti costa in media 3 mesi di rinnovo mancato.
-                Bynari ti dà la visibilità per intervenire prima, non dopo.
+                Dall'anamnesi iniziale alla progressione automatica dei carichi, dal piano pasti agli appuntamenti check-in.
+                Bynari batte CoachPlus e qualsiasi competitor su ogni singola feature — ed è pensato mobile-first come i tuoi clienti.
               </p>
             </div>
           </FadeIn>
@@ -523,13 +524,13 @@ export default function LandingPage() {
               {
                 name: 'Pro', price: '???', period: 'coming soon',
                 color: 'oklch(0.70 0.19 46)',
-                features: ['Schede illimitate', 'Triple Progression automatica', 'e1RM & grafici forza', 'Muscoli & benessere analytics', 'Check-in & misurazioni', 'Share card highlight'],
+                features: ['Schede illimitate', 'Triple Progression automatica', 'e1RM & grafici forza', 'Muscoli & benessere analytics', 'Check-in & misurazioni', 'Nutrizione & tracciamento pasti', 'Share card highlight'],
                 cta: 'Avvisami al lancio', href: '#waitlist', highlight: true,
               },
               {
                 name: 'Coach', price: '???', period: 'coming soon',
                 color: 'oklch(0.65 0.18 150)',
-                features: ['Clienti illimitati', '7 alert intelligenti', 'Analytics avanzate (e1RM, muscoli)', 'Report condivisibile in chat', 'Chat integrata + piano alimentare'],
+                features: ['Clienti illimitati', '7 alert intelligenti', 'Analytics avanzate + export PDF', 'Anamnesi corporea clienti', 'Piano nutrizionale + pasti + integratori', 'Appuntamenti check-in con reminder push', 'Chat integrata con allegati scheda/sessione', 'Triple Progression automatica'],
                 cta: 'Avvisami al lancio', href: '#waitlist', highlight: false,
               },
             ].map((plan, i) => (
@@ -655,7 +656,7 @@ export default function LandingPage() {
             <span className="text-xs" style={{ color: 'oklch(0.30 0 0)', fontFamily: 'Inter, sans-serif' }}>© 2026</span>
           </div>
           <div className="flex items-center gap-6">
-            {[['Accedi', '/login'], ['Registrati', '/register']].map(([label, href]) => (
+            {[['Accedi', '/login'], ['Registrati', '/register'], ['Privacy Policy', '/privacy'], ['Termini di servizio', '/terms']].map(([label, href]) => (
               <Link key={label} href={href}
                 className="text-xs font-medium hover:opacity-100"
                 style={{ color: 'oklch(0.40 0 0)', fontFamily: 'Inter, sans-serif' }}>
