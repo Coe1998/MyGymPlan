@@ -11,7 +11,7 @@ interface MacroTarget {
   proteine_g: number
   carboidrati_g: number
   grassi_g: number
-  pasti_config?: { nome: string; percentuale: number }[]
+  pasti_config?: { nome: string; percentuale: number; macro_custom?: boolean; prot_pct?: number; carb_pct?: number; grassi_pct?: number }[]
   carb_cycling_enabled?: boolean
   carbs_training?: number | null
   carbs_rest?: number | null
@@ -330,8 +330,21 @@ export default function DietaPage() {
           if (pastiSaltati.has(idx)) return null
           const p = pastiConfig[idx]
           const percEffettiva = percTotaleAttiva > 0 ? (p.percentuale / percTotaleAttiva) * 100 : 0
+          const kcal = (target.calorie) * percEffettiva / 100
+
+          if (p.macro_custom && (p.prot_pct != null || p.carb_pct != null || p.grassi_pct != null)) {
+            const pp = p.prot_pct ?? 0
+            const cp = p.carb_pct ?? 0
+            const gp = p.grassi_pct ?? 0
+            return {
+              kcal: Math.round(kcal),
+              prot: Math.round((kcal * pp / 100) / 4),
+              carb: Math.round((kcal * cp / 100) / 4),
+              grassi: Math.round((kcal * gp / 100) / 9),
+            }
+          }
           return {
-            kcal: Math.round((target.calorie) * percEffettiva / 100),
+            kcal: Math.round(kcal),
             prot: Math.round((target.proteine_g) * percEffettiva / 100),
             carb: Math.round((carbEffettivi ?? target.carboidrati_g) * percEffettiva / 100),
             grassi: Math.round((target.grassi_g) * percEffettiva / 100),
