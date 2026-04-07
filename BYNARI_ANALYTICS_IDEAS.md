@@ -204,13 +204,10 @@ Redesign editor schede su desktop (layout orizzontale su una riga)
 🟡 MEDIA PRIORITÀ
 
 Calendario check-in: vista settimanale coach con check-in clienti
-Esportazione scheda in PDF lato coach
-Dieta replicabile: suggerisci pasti da giornate precedenti
+Highlights check-in imminente nella lista clienti
 Share card fine allenamento: highlights timer (es. "Planche 36s") + nome coach
 Chat allegati: scheda o sessione come card interattiva
 Progressione coach-driven: sceglie direzione post-sessione cliente
-Highlights check-in imminente nella lista clienti
-
 
 🔵 SPRINT 6 — TIPI SCHEDA AVANZATI
 
@@ -221,7 +218,7 @@ Logger modulare per tipo scheda (calisthenics, powerlifting, functional)
 🗄️ BACKLOG
 
 Tips allenamento/dieta per atleta PRO (AI)
-Suggerimenti scheda AI da storico cliente (fixare problemi su grafico volume in quanto ad oggi non e' proporzionato)
+Suggerimenti scheda AI da storico cliente (fixare problemi su grafico volume in quanto ad oggi non e' proporzionato magari usare le reps come counter quindi se sul totale ho piu reps su petto che su bicipiti il grafico mostrera che ho allenato di piu petto... o qualcosa del genere o usare repsxseries)
 White-label per palestre (piano Enterprise)
 Video upload esercizi
 Notifiche email via Resend

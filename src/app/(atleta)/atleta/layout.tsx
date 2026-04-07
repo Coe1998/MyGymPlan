@@ -22,12 +22,12 @@ export default async function AtletaLayout({ children }: { children: React.React
         className="lg:ml-64 pb-24 lg:pb-8"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
-          paddingLeft: '1rem',
-          paddingRight: '1rem',
           paddingBottom: '',
         }}
       >
-        {children}
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          {children}
+        </div>
       </main>
     </div>
   )
