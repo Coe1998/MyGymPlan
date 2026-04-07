@@ -85,6 +85,7 @@ export default function AllenamentoPage() {
   const durataSecondiRef = useRef(0)
   const sessioneStartRef = useRef<number | null>(null)
   const timerEndRef = useRef<number | null>(null)
+  const userIdRef = useRef<string | null>(null)
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
@@ -105,23 +106,22 @@ export default function AllenamentoPage() {
     } catch {}
   }
 
-  async function notificaFineRecupero() {
+  function notificaFineRecupero() {
     playBeep()
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate([200, 100, 200])
     }
-    if (typeof Notification === 'undefined') return
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission()
-    }
-    if (Notification.permission === 'granted') {
-      new Notification('Recupero terminato! 💪', {
+    if (!userIdRef.current) return
+    fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: userIdRef.current,
+        title: 'Recupero terminato! 💪',
         body: 'Pronti per la prossima serie.',
-        icon: '/logo/Bynari_WO1.png',
-        tag: 'recupero',
-        silent: true,
-      })
-    }
+        url: '/cliente/allenamento',
+      }),
+    }).catch(() => {})
   }
 
   const TIPO_COLORS: Record<string, { color: string; bg: string; label: string }> = {
@@ -136,6 +136,7 @@ export default function AllenamentoPage() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    userIdRef.current = user.id
 
     // Modalità visualizzazione sessione passata
     if (sessioneIdParam) {
@@ -378,6 +379,25 @@ export default function AllenamentoPage() {
     return () => clearInterval(interval)
   }, [timerAttivo])
 
+  // Backup: se JS era in pausa (schermo spento) e il timer è scaduto nel frattempo
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      const saved = localStorage.getItem('bynari_timer_end')
+      if (!saved) return
+      const remaining = Math.ceil((parseInt(saved) - Date.now()) / 1000)
+      if (remaining <= 0) {
+        setTimerSecondi(0)
+        setTimerAttivo(false)
+        timerEndRef.current = null
+        localStorage.removeItem('bynari_timer_end')
+        notificaFineRecupero()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+
   useEffect(() => {
     if (completata || loading || isViewMode) return
     durataRef.current = setInterval(() => {
@@ -571,9 +591,6 @@ export default function AllenamentoPage() {
       localStorage.setItem('bynari_timer_end', endTs.toString())
       setTimerSecondi(ese.recupero_secondi)
       setTimerAttivo(true)
-      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-        Notification.requestPermission()
-      }
       if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
     }
 

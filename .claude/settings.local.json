@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"^/c/Users/a/Documents/GitHub/MyGymPlan/src/app/layout.tsx$\")",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}
