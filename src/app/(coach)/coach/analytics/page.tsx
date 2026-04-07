@@ -132,7 +132,15 @@ export default function AnalyticsPage() {
   const [loadingSessioni, setLoadingSessioni] = useState(false)
   const [sessioneAperta, setSessioneAperta] = useState<string | null>(null)
   const [assegnazioniCliente, setAssegnazioniCliente] = useState<any[]>([])
-  const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
+  const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione' | 'integratori'>('overview')
+  const [pianoIntegratori, setPianoIntegratori] = useState<any[]>([])
+  const [showFormInt, setShowFormInt] = useState(false)
+  const [intNome, setIntNome] = useState('')
+  const [intQuantita, setIntQuantita] = useState('')
+  const [intUnita, setIntUnita] = useState('g')
+  const [intMomento, setIntMomento] = useState('')
+  const [intNote, setIntNote] = useState('')
+  const [savingInt, setSavingInt] = useState(false)
   const [dietaAbilitata, setDietaAbilitata] = useState(false)
   const [togglingDieta, setTogglingDieta] = useState(false)
   const [storicoNutrizioneCliente, setStoricoNutrizioneCliente] = useState<{ data: string; calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number }[]>([])
@@ -421,7 +429,7 @@ export default function AnalyticsPage() {
     data7ago.setDate(data7ago.getDate() - 7)
     const data7agoStr = data7ago.toISOString().split('T')[0]
     const oggi = new Date().toISOString().split('T')[0]
-    const [sessData, assData, dietaRes, pastiRes, targetRes] = await Promise.all([
+    const [sessData, assData, dietaRes, pastiRes, targetRes, pianoIntRes] = await Promise.all([
       supabase.from('sessioni').select(`
         id, data, completata, durata_secondi,
         scheda_giorni ( nome ),
@@ -437,11 +445,17 @@ export default function AnalyticsPage() {
         .eq('cliente_id', cliente.id).gte('data', data7agoStr).lte('data', oggi).order('data', { ascending: false }),
       supabase.from('macro_target').select('calorie, proteine_g, carboidrati_g, grassi_g')
         .eq('cliente_id', cliente.id).maybeSingle(),
+      supabase.from('piano_integratori')
+        .select('*')
+        .eq('cliente_id', cliente.id)
+        .eq('attivo', true)
+        .order('created_at'),
     ])
     setSessioniDettaglio((sessData.data as any) ?? [])
     setAssegnazioniCliente((assData.data as any) ?? [])
     setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
     setMacroTargetCliente((targetRes.data as any) ?? null)
+    setPianoIntegratori((pianoIntRes as any)?.data ?? [])
     // Aggrega pasti per giorno
     const map = new Map<string, any>()
     for (const r of (pastiRes.data ?? []) as any[]) {
@@ -569,6 +583,8 @@ export default function AnalyticsPage() {
     setSessioniDettaglio([])
     setSessioneAperta(null)
     setAssegnazioniCliente([])
+    setPianoIntegratori([])
+    setShowFormInt(false)
   }
 
   const formatDurata = (sec: number | null) => {
@@ -965,6 +981,7 @@ export default function AnalyticsPage() {
               {[
                 { id: 'overview', label: '📊 Overview' },
                 { id: 'nutrizione', label: '🥗 Nutrizione' },
+                { id: 'integratori', label: '💊 Integratori' },
               ].map(t => (
                 <button key={t.id} onClick={() => setDrawerTab(t.id as any)}
                   className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
@@ -1000,7 +1017,116 @@ export default function AnalyticsPage() {
               </button>
             </div>
 
-            {drawerTab === 'nutrizione' ? (
+            {drawerTab === 'integratori' ? (
+              <div className="flex-1 p-5 space-y-4 overflow-y-auto">
+                {showFormInt ? (
+                  <div className="rounded-2xl p-4 space-y-3"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.15 300 / 30%)' }}>
+                    <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Prescrivi integratore</p>
+                    <input type="text" value={intNome} onChange={e => setIntNome(e.target.value)}
+                      placeholder="es. Creatina, Vitamina D, Omega 3..."
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input type="number" value={intQuantita} onChange={e => setIntQuantita(e.target.value)}
+                        placeholder="Dose (es. 5)"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                      <select value={intUnita} onChange={e => setIntUnita(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }}>
+                        {['g', 'mg', 'ml', 'capsule', 'compresse', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
+                      </select>
+                    </div>
+                    <select value={intMomento} onChange={e => setIntMomento(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: intMomento ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                      <option value="">Momento assunzione...</option>
+                      {['Mattina', 'Pre-workout', 'Post-workout', 'Con i pasti', 'Prima di dormire', 'A digiuno', 'Sera'].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <input type="text" value={intNote} onChange={e => setIntNote(e.target.value)}
+                      placeholder="Note opzionali (es. con acqua abbondante)"
+                      className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                    <div className="flex gap-2">
+                      <button onClick={async () => {
+                        if (!intNome.trim() || !clienteSelezionato) return
+                        setSavingInt(true)
+                        const { data: { user } } = await supabase.auth.getUser()
+                        if (!user) { setSavingInt(false); return }
+                        const { data: newInt } = await supabase.from('piano_integratori').upsert({
+                          coach_id: user.id,
+                          cliente_id: clienteSelezionato.id,
+                          nome: intNome.trim(),
+                          quantita: parseFloat(intQuantita) || null,
+                          unita: intUnita,
+                          momento: intMomento || null,
+                          note: intNote.trim() || null,
+                          attivo: true,
+                        }, { onConflict: 'cliente_id,nome' }).select().single()
+                        if (newInt) setPianoIntegratori(prev => [...prev.filter(p => p.nome !== newInt.nome), newInt])
+                        setIntNome(''); setIntQuantita(''); setIntMomento(''); setIntNote('')
+                        setShowFormInt(false); setSavingInt(false)
+                      }} disabled={savingInt || !intNome.trim()}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+                        style={{ background: 'oklch(0.65 0.15 300)', color: 'oklch(0.97 0 0)', opacity: savingInt ? 0.6 : 1 }}>
+                        {savingInt ? 'Salvataggio...' : '+ Prescrivi'}
+                      </button>
+                      <button onClick={() => setShowFormInt(false)}
+                        className="px-4 py-2.5 rounded-xl text-sm font-medium"
+                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                        Annulla
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowFormInt(true)}
+                    className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
+                    style={{ background: 'transparent', color: 'oklch(0.65 0.15 300)', border: '2px dashed oklch(0.65 0.15 300 / 30%)' }}>
+                    + Prescrivi integratore
+                  </button>
+                )}
+
+                {pianoIntegratori.length === 0 && !showFormInt ? (
+                  <div className="rounded-2xl py-10 text-center"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    <p className="text-2xl mb-2">💊</p>
+                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>Nessun integratore prescritto</p>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    {pianoIntegratori.map((int: any, i: number) => (
+                      <div key={int.id} className="flex items-center gap-3 px-4 py-3"
+                        style={{ borderBottom: i < pianoIntegratori.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
+                          style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
+                          💊
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{int.nome}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                            {int.quantita && `${int.quantita} ${int.unita}`}
+                            {int.momento && ` · ${int.momento}`}
+                            {int.note && ` · ${int.note}`}
+                          </p>
+                        </div>
+                        <button onClick={async () => {
+                          await supabase.from('piano_integratori').update({ attivo: false }).eq('id', int.id)
+                          setPianoIntegratori(prev => prev.filter(p => p.id !== int.id))
+                        }}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.70 0.20 27)' }}>
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : drawerTab === 'nutrizione' ? (
               <div className="flex-1 flex flex-col overflow-y-auto">
                 {dietaAbilitata ? (
                   <>

@@ -6,16 +6,33 @@ import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash } from '@fortawesome/free-solid-svg-icons'
 
-interface MacroTarget { calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number }
+interface MacroTarget {
+  calorie: number
+  proteine_g: number
+  carboidrati_g: number
+  grassi_g: number
+  pasti_config?: { nome: string; percentuale: number }[]
+}
+
+interface PianoIntegratore {
+  id: string
+  nome: string
+  quantita: number | null
+  unita: string
+  momento: string | null
+  note: string | null
+}
+
+interface IntegrazioneCheckin {
+  id: string
+  piano_integratore_id: string
+  preso: boolean
+}
 
 interface PastoLog {
   id: string; alimento_nome: string; quantita_g: number
   calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number
   gruppo_nome: string | null; gruppo_id: string | null; created_at: string
-}
-
-interface IntegrazioneLog {
-  id: string; nome: string; quantita: number | null; unita: string; ora: string | null; note: string | null
 }
 
 interface OFFProduct {
@@ -29,14 +46,11 @@ interface GiornoStorico {
   calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number
 }
 
-const UNITA = ['g', 'mg', 'ml', 'capsule', 'compresse', 'IU']
-
 export default function DietaPage() {
   const supabase = createClient()
   const router = useRouter()
   const [target, setTarget] = useState<MacroTarget | null>(null)
   const [pasti, setPasti] = useState<PastoLog[]>([])
-  const [integratori, setIntegratori] = useState<IntegrazioneLog[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'dieta' | 'integratori'>('dieta')
   const [oggi] = useState(new Date().toISOString().split('T')[0])
@@ -69,13 +83,11 @@ export default function DietaPage() {
   const [gruppoEsistente, setGruppoEsistente] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // Integratore form
-  const [showIntForm, setShowIntForm] = useState(false)
-  const [intNome, setIntNome] = useState('')
-  const [intQuantita, setIntQuantita] = useState('')
-  const [intUnita, setIntUnita] = useState('g')
-  const [intOra, setIntOra] = useState('')
-  const [intNote, setIntNote] = useState('')
+  // Piano integratori coach-driven
+  const [pianoInt, setPianoInt] = useState<PianoIntegratore[]>([])
+  const [checkinInt, setCheckinInt] = useState<IntegrazioneCheckin[]>([])
+  const [pastiSaltati, setPastiSaltati] = useState<Set<number>>(new Set())
+  const [redistribuisciSu, setRedistribuisciSu] = useState<number | null>(null)
 
   // Collapsed groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
@@ -89,21 +101,30 @@ export default function DietaPage() {
     data30ago.setDate(data30ago.getDate() - 30)
     const data30agoStr = data30ago.toISOString().split('T')[0]
 
-    const [targetRes, pastiRes, intRes, storicoRes] = await Promise.all([
+    const [targetRes, pastiRes, storicoRes, pianoIntRes, checkinIntRes] = await Promise.all([
       supabase.from('macro_target').select('*').eq('cliente_id', user.id).maybeSingle(),
       supabase.from('pasto_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
-      supabase.from('integrazione_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
       supabase.from('pasto_log')
         .select('data, calorie, proteine_g, carboidrati_g, grassi_g')
         .eq('cliente_id', user.id)
         .gte('data', data30agoStr)
         .lt('data', oggi)
         .order('data', { ascending: false }),
+      supabase.from('piano_integratori')
+        .select('id, nome, quantita, unita, momento, note')
+        .eq('cliente_id', user.id)
+        .eq('attivo', true)
+        .order('created_at'),
+      supabase.from('integratori_checkin')
+        .select('id, piano_integratore_id, preso')
+        .eq('cliente_id', user.id)
+        .eq('data', oggi),
     ])
 
     setTarget(targetRes.data)
     setPasti(pastiRes.data ?? [])
-    setIntegratori(intRes.data ?? [])
+    setPianoInt((pianoIntRes as any)?.data ?? [])
+    setCheckinInt((checkinIntRes as any)?.data ?? [])
 
     // Aggrega per giorno
     const map = new Map<string, GiornoStorico>()
@@ -190,24 +211,6 @@ export default function DietaPage() {
     fetchAll()
   }
 
-  const handleSaveIntegratore = async () => {
-    if (!intNome.trim()) return
-    setSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase.from('integrazione_log').insert({
-      cliente_id: user.id, data: oggi,
-      nome: intNome.trim(),
-      quantita: parseFloat(intQuantita) || null,
-      unita: intUnita,
-      ora: intOra || null,
-      note: intNote.trim() || null,
-    })
-    setIntNome(''); setIntQuantita(''); setIntOra(''); setIntNote('')
-    setShowIntForm(false); setSaving(false)
-    fetchAll()
-  }
-
   const perc = (val: number, target: number) => Math.min(100, target > 0 ? Math.round((val / target) * 100) : 0)
 
   // Group pasti by gruppo_id
@@ -283,6 +286,169 @@ export default function DietaPage() {
           </p>
         </div>
       )}
+
+      {/* Piano pasti */}
+      {target?.pasti_config && target.pasti_config.length > 0 && (() => {
+        const pastiConfig = target.pasti_config!
+
+        const pastiAttivi = pastiConfig
+          .map((p, i) => ({ ...p, idx: i }))
+          .filter(p => !pastiSaltati.has(p.idx))
+
+        const percTotaleAttiva = pastiAttivi.reduce((a, p) => a + p.percentuale, 0)
+
+        const getPastoMacro = (idx: number) => {
+          if (pastiSaltati.has(idx)) return null
+          const p = pastiConfig[idx]
+          const percEffettiva = percTotaleAttiva > 0 ? (p.percentuale / percTotaleAttiva) * 100 : 0
+          return {
+            kcal: Math.round((target.calorie) * percEffettiva / 100),
+            prot: Math.round((target.proteine_g) * percEffettiva / 100),
+            carb: Math.round((target.carboidrati_g) * percEffettiva / 100),
+            grassi: Math.round((target.grassi_g) * percEffettiva / 100),
+          }
+        }
+
+        const getLoggatoPerPasto = (nomePasto: string) => {
+          const itemsPasto = pasti.filter(p => p.gruppo_nome === nomePasto)
+          return itemsPasto.reduce((a, p) => ({
+            kcal: a.kcal + (p.calorie || 0),
+            prot: a.prot + (p.proteine_g || 0),
+            carb: a.carb + (p.carboidrati_g || 0),
+            grassi: a.grassi + (p.grassi_g || 0),
+          }), { kcal: 0, prot: 0, carb: 0, grassi: 0 })
+        }
+
+        const rimanente = {
+          kcal: Math.max(0, target.calorie - totali.calorie),
+          prot: Math.max(0, target.proteine_g - totali.proteine_g),
+          carb: Math.max(0, target.carboidrati_g - totali.carboidrati_g),
+          grassi: Math.max(0, target.grassi_g - totali.grassi_g),
+        }
+
+        return (
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📋 Piano pasti di oggi</p>
+              <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                {pastiSaltati.size > 0 ? `${pastiSaltati.size} pasto/i saltato/i — macro redistribuiti` : 'Tocca "Salta" su un pasto per redistribuire i macro'}
+              </p>
+            </div>
+
+            {pastiConfig.map((pasto, i) => {
+              const saltato = pastiSaltati.has(i)
+              const macro = getPastoMacro(i)
+              const loggato = getLoggatoPerPasto(pasto.nome)
+              const completato = !saltato && macro && loggato.kcal >= macro.kcal * 0.8
+
+              return (
+                <div key={i} className="px-4 py-3 space-y-2"
+                  style={{
+                    borderBottom: i < pastiConfig.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+                    opacity: saltato ? 0.45 : 1,
+                  }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold" style={{ color: saltato ? 'oklch(0.45 0 0)' : 'oklch(0.97 0 0)' }}>
+                        {pasto.nome}
+                      </span>
+                      {completato && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
+                          ✓ OK
+                        </span>
+                      )}
+                      {saltato && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.30 0 0)', color: 'oklch(0.50 0 0)' }}>
+                          Saltato
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setPastiSaltati(prev => {
+                        const n = new Set(prev)
+                        n.has(i) ? n.delete(i) : n.add(i)
+                        return n
+                      })}
+                      className="text-xs px-2.5 py-1 rounded-lg font-medium transition-all"
+                      style={{
+                        background: saltato ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.22 27 / 12%)',
+                        color: saltato ? 'oklch(0.70 0.19 46)' : 'oklch(0.65 0.22 27)',
+                      }}>
+                      {saltato ? 'Ripristina' : 'Salta'}
+                    </button>
+                  </div>
+
+                  {!saltato && macro && (
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[
+                        { label: 'Kcal', target: macro.kcal, fatto: Math.round(loggato.kcal), color: 'oklch(0.70 0.19 46)' },
+                        { label: 'Prot', target: macro.prot, fatto: Math.round(loggato.prot), color: 'oklch(0.60 0.15 200)' },
+                        { label: 'Carb', target: macro.carb, fatto: Math.round(loggato.carb), color: 'oklch(0.70 0.19 46)' },
+                        { label: 'Grassi', target: macro.grassi, fatto: Math.round(loggato.grassi), color: 'oklch(0.65 0.18 150)' },
+                      ].map(m => (
+                        <div key={m.label} className="rounded-xl p-2 text-center"
+                          style={{ background: 'oklch(0.22 0 0)' }}>
+                          <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>
+                            {m.fatto > 0 ? `${m.fatto}/` : ''}{m.target}
+                          </p>
+                          <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {rimanente.kcal > 50 && pastiAttivi.length > 0 && (
+              <div className="px-4 py-3 space-y-3"
+                style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.16 0 0)' }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>
+                      Rimanente: {Math.round(rimanente.kcal)} kcal
+                    </p>
+                    <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                      In quanti pasti vuoi distribuirle?
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    {[1, 2, 3].filter(n => n <= pastiAttivi.length).map(n => (
+                      <button key={n} onClick={() => setRedistribuisciSu(redistribuisciSu === n ? null : n)}
+                        className="w-8 h-8 rounded-xl text-sm font-bold transition-all"
+                        style={{
+                          background: redistribuisciSu === n ? 'oklch(0.75 0.18 80)' : 'oklch(0.25 0 0)',
+                          color: redistribuisciSu === n ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                        }}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {redistribuisciSu !== null && (
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { label: 'Kcal', val: Math.round(rimanente.kcal / redistribuisciSu), color: 'oklch(0.70 0.19 46)' },
+                      { label: 'Prot', val: Math.round(rimanente.prot / redistribuisciSu), color: 'oklch(0.60 0.15 200)' },
+                      { label: 'Carb', val: Math.round(rimanente.carb / redistribuisciSu), color: 'oklch(0.70 0.19 46)' },
+                      { label: 'Grassi', val: Math.round(rimanente.grassi / redistribuisciSu), color: 'oklch(0.65 0.18 150)' },
+                    ].map(m => (
+                      <div key={m.label} className="rounded-xl p-2 text-center"
+                        style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(0.75 0.18 80 / 20%)' }}>
+                        <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{m.val}</p>
+                        <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Tabs */}
       <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
@@ -607,99 +773,71 @@ export default function DietaPage() {
       {/* TAB: INTEGRATORI */}
       {tab === 'integratori' && (
         <div className="space-y-3">
-          {showIntForm ? (
-            <div className="rounded-2xl p-5 space-y-4"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.15 300 / 30%)' }}>
-              <div className="flex items-center justify-between">
-                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Aggiungi integratore</p>
-                <button onClick={() => setShowIntForm(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
-                  <FontAwesomeIcon icon={faXmark} className="text-xs" />
-                </button>
-              </div>
-              <input type="text" value={intNome} onChange={e => setIntNome(e.target.value)}
-                placeholder="Nome integratore (es. Creatina, Vitamina D...)"
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                onFocus={e => e.target.style.borderColor = 'oklch(0.65 0.15 300)'}
-                onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Quantità</label>
-                  <input type="number" value={intQuantita} onChange={e => setIntQuantita(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Unità</label>
-                  <select value={intUnita} onChange={e => setIntUnita(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }}>
-                    {UNITA.map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Orario</label>
-                  <input type="time" value={intOra} onChange={e => setIntOra(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }} />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Note</label>
-                  <input type="text" value={intNote} onChange={e => setIntNote(e.target.value)}
-                    placeholder="es. a stomaco pieno"
-                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
-                </div>
-              </div>
-              <button onClick={handleSaveIntegratore} disabled={saving || !intNome.trim()}
-                className="w-full py-3 rounded-xl text-sm font-bold"
-                style={{ background: 'oklch(0.65 0.15 300)', color: 'oklch(0.97 0 0)' }}>
-                {saving ? 'Salvataggio...' : '+ Aggiungi'}
-              </button>
-            </div>
-          ) : (
-            <button onClick={() => setShowIntForm(true)}
-              className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
-              style={{ background: 'transparent', color: 'oklch(0.65 0.15 300)', border: '2px dashed oklch(0.65 0.15 300 / 30%)' }}>
-              <FontAwesomeIcon icon={faPlus} /> Aggiungi integratore
-            </button>
-          )}
-
-          {integratori.length === 0 ? (
+          {pianoInt.length === 0 ? (
             <div className="rounded-2xl py-12 text-center"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
               <p className="text-3xl mb-2">💊</p>
-              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Nessun integratore oggi</p>
+              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                Nessun integratore prescritto
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+                Il tuo coach non ha ancora prescritto integratori
+              </p>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              {integratori.map((int, i) => (
-                <div key={int.id} className="flex items-center gap-3 px-4 py-3"
-                  style={{ borderBottom: i < integratori.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
-                    💊
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Piano integratori</p>
+                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                  {checkinInt.filter(c => c.preso).length} / {pianoInt.length} presi oggi
+                </p>
+              </div>
+              {pianoInt.map((int, i) => {
+                const checkin = checkinInt.find(c => c.piano_integratore_id === int.id)
+                const preso = checkin?.preso ?? false
+
+                const togglePreso = async () => {
+                  const { data: { user } } = await supabase.auth.getUser()
+                  if (!user) return
+                  if (checkin) {
+                    await supabase.from('integratori_checkin')
+                      .update({ preso: !preso })
+                      .eq('id', checkin.id)
+                    setCheckinInt(prev => prev.map(c => c.id === checkin.id ? { ...c, preso: !preso } : c))
+                  } else {
+                    const { data: newCheckin } = await supabase.from('integratori_checkin')
+                      .insert({ cliente_id: user.id, piano_integratore_id: int.id, data: oggi, preso: true })
+                      .select().single()
+                    if (newCheckin) setCheckinInt(prev => [...prev, newCheckin])
+                  }
+                }
+
+                return (
+                  <div key={int.id} className="flex items-center gap-3 px-4 py-3"
+                    style={{ borderBottom: i < pianoInt.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    <button onClick={togglePreso}
+                      className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                      style={{
+                        background: preso ? 'oklch(0.65 0.18 150)' : 'transparent',
+                        border: `2px solid ${preso ? 'oklch(0.65 0.18 150)' : 'oklch(0.35 0 0)'}`,
+                      }}>
+                      {preso && <span className="text-xs font-black" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>}
+                    </button>
+                    <div className="flex-1 min-w-0" style={{ opacity: preso ? 0.5 : 1 }}>
+                      <p className="text-sm font-semibold"
+                        style={{ color: 'oklch(0.97 0 0)', textDecoration: preso ? 'line-through' : 'none' }}>
+                        {int.nome}
+                      </p>
+                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                        {int.quantita && `${int.quantita} ${int.unita}`}
+                        {int.momento && ` · ${int.momento}`}
+                        {int.note && ` · ${int.note}`}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{int.nome}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
-                      {int.quantita && `${int.quantita}${int.unita}`}
-                      {int.ora && ` · ${int.ora.slice(0, 5)}`}
-                      {int.note && ` · ${int.note}`}
-                    </p>
-                  </div>
-                  <button onClick={async () => { await supabase.from('integrazione_log').delete().eq('id', int.id); fetchAll() }}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.70 0.20 27)' }}>
-                    <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
