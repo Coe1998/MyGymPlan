@@ -1213,6 +1213,60 @@ export default function AnalyticsPage() {
                               </div>
                             ))}
                           </div>
+                          {/* Fattori anamnesi che influenzano la stima */}
+                          {(() => {
+                            const fattori: { label: string; tipo: 'warning' | 'info' | 'boost' }[] = []
+                            const a = anamnesICliente
+                            if (!a) return null
+
+                            // Fattori che abbassano l'affidabilità o richiedono attenzione
+                            if (a.ore_sonno && a.ore_sonno <= 5)
+                              fattori.push({ label: `Sonno ridotto (${a.ore_sonno}h) — fame percepita più alta, il deficit sarà più difficile da mantenere`, tipo: 'warning' })
+
+                            if (a.patologie && /tiroid/.test(a.patologie.toLowerCase()))
+                              fattori.push({ label: 'Problemi tiroidei — il TDEE reale potrebbe essere inferiore alla stima', tipo: 'warning' })
+
+                            if (a.patologie && /diabete/.test(a.patologie.toLowerCase()))
+                              fattori.push({ label: 'Diabete — timing dei pasti più importante del semplice conteggio calorico', tipo: 'warning' })
+
+                            if (a.farmaci_dettaglio && /cortisonico|cortisone|prednison/.test(a.farmaci_dettaglio.toLowerCase()))
+                              fattori.push({ label: 'Corticosteroidi — tendenza alla ritenzione idrica e aumento appetito', tipo: 'warning' })
+
+                            const car = (a.descrizione_caratteriale ?? '').toLowerCase()
+                            if (/stress|ansios/.test(car))
+                              fattori.push({ label: 'Profilo stressato — cortisolo cronico può ridurre efficacia del deficit, evitare tagli calorici aggressivi', tipo: 'warning' })
+
+                            // Fattori positivi o neutrali
+                            if (a.ore_piedi_giorno && a.ore_piedi_giorno >= 6)
+                              fattori.push({ label: `Lavoro attivo (${a.ore_piedi_giorno}h in piedi) — TDEE aggiustato al rialzo`, tipo: 'boost' })
+
+                            if (a.ore_seduto_giorno && a.ore_seduto_giorno >= 8)
+                              fattori.push({ label: `Lavoro sedentario (${a.ore_seduto_giorno}h seduto) — TDEE aggiustato al ribasso`, tipo: 'info' })
+
+                            if (a.intolleranze && !/^nessun/i.test(a.intolleranze))
+                              fattori.push({ label: `Intolleranze: ${a.intolleranze} — da considerare nelle fonti di macro`, tipo: 'info' })
+
+                            if (fattori.length === 0) return null
+
+                            return (
+                              <div className="space-y-1.5 pt-1">
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+                                  Fattori dall&apos;anamnesi
+                                </p>
+                                {fattori.map((f, i) => (
+                                  <div key={i} className="flex items-start gap-2 px-2.5 py-2 rounded-lg text-xs"
+                                    style={{
+                                      background: f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 10%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
+                                      border: `1px solid ${f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 25%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 25%)' : 'oklch(1 0 0 / 6%)'}`,
+                                      color: f.tipo === 'warning' ? 'oklch(0.80 0.12 46)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150)' : 'oklch(0.60 0 0)',
+                                    }}>
+                                    <span className="flex-shrink-0">{f.tipo === 'warning' ? '⚠️' : f.tipo === 'boost' ? '↑' : 'ℹ️'}</span>
+                                    {f.label}
+                                  </div>
+                                ))}
+                              </div>
+                            )
+                          })()}
                           <p className="text-xs" style={{ color: 'oklch(0.38 0 0)' }}>
                             ⚠️ Stima indicativa (formula Mifflin-St Jeor{anamnesICliente?.sesso ? `, ${anamnesICliente.sesso === 'M' ? 'uomo' : 'donna'}` : ', sesso non specificato'}). Usa come punto di partenza, aggiusta in base ai check-in.
                           </p>
