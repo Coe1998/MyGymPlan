@@ -47,18 +47,18 @@ export default function ClienteAnalyticsPage({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
-      // Recupero ruolo coach e dati profilo cliente
-      // NOTA: Ho cambiato 'frequenza_settimanale' in 'allenamenti_settimana' 
-      // verifica che questi nomi esistano nella tabella 'profiles'
+      // 1. Recupero Ruolo Coach
+      // 2. Recupero info cliente + dati tabella anamnesi in un'unica chiamata
       const [profileRes, relazioneRes] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', user.id).single(),
         supabase.from('coach_clienti')
           .select(`
             coach_id, 
             profiles!coach_clienti_cliente_id_fkey(
-              full_name, 
-              obiettivo, 
-              allenamenti_settimana
+              full_name,
+              anamnesi(
+                allenamenti_settimana
+              )
             )
           `)
           .eq('cliente_id', clienteId),
@@ -70,7 +70,9 @@ export default function ClienteAnalyticsPage({
       if (!relazione) { setStato('forbidden'); return }
 
       const clienteProfile = (relazione as any).profiles
-      const nomeCliente = clienteProfile?.full_name ?? 'Cliente'
+      const anamnesiData = Array.isArray(clienteProfile?.anamnesi) 
+        ? clienteProfile.anamnesi[0] 
+        : clienteProfile?.anamnesi
 
       const [assegRes, sessCountRes, pesoRes, primaSessioneRes] = await Promise.all([
         supabase.from('assegnazioni')
@@ -97,13 +99,13 @@ export default function ClienteAnalyticsPage({
       ])
 
       setData({
-        nomeCliente,
+        nomeCliente: clienteProfile?.full_name ?? 'Cliente',
         assegnazioni: (assegRes.data ?? []) as unknown as Assegnazione[],
         totSessioni: sessCountRes.count ?? 0,
         ultimoPeso: pesoRes.data?.peso_kg ?? null,
         clienteDal: primaSessioneRes.data?.data ?? null,
-        obiettivo: clienteProfile?.obiettivo ?? null,
-        frequenzaDichiarata: clienteProfile?.allenamenti_settimana ?? null,
+        obiettivo: null, // Campo non presente nello schema anamnesi fornito
+        frequenzaDichiarata: anamnesiData?.allenamenti_settimana ?? null,
       })
       setStato('ok')
     }
@@ -140,7 +142,6 @@ export default function ClienteAnalyticsPage({
         clienteDal={data!.clienteDal}
       />
 
-      {/* Insights Section */}
       <div className="mx-5 mt-4">
         <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'oklch(0.70 0.19 46)' }}>
           🧠 Insights automatici
@@ -158,11 +159,8 @@ export default function ClienteAnalyticsPage({
       />
 
       <MassimoMuscoli clienteId={clienteId} />
-
       <PatternBenessere clienteId={clienteId} />
-
       <AndamentoPeso clienteId={clienteId} />
-
       <StoricoSessioni clienteId={clienteId} />
     </div>
   )
