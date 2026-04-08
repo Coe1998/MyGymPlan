@@ -152,6 +152,7 @@ export default function SchedePage() {
           <div>
             {schede.map((s, i) => {
               const assegnazioniAttive = s.assegnazioni?.filter((a: any) => a.attiva) ?? []
+              const assegnazioniInattive = s.assegnazioni?.filter((a: any) => !a.attiva) ?? []
               const isAssegnata = assegnazioniAttive.length > 0
 
               return (
@@ -186,6 +187,13 @@ export default function SchedePage() {
                             : <><FontAwesomeIcon icon={faUsers} /> {assegnazioniAttive.length} clienti</>}
                         </span>
                       )}
+                      {assegnazioniInattive.map((a: any) => (
+                        <span key={a.id} className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.70 0.19 46)' }}
+                          title="Assegnazione inattiva">
+                          <FontAwesomeIcon icon={faUser} /> {a.profiles?.full_name?.split(' ')[0]}
+                        </span>
+                      ))}
                       <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
                         {new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
