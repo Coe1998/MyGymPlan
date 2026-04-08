@@ -47,6 +47,9 @@ export default function ClienteAnalyticsPage({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
+      // Recupero ruolo coach e dati profilo cliente
+      // NOTA: Ho cambiato 'frequenza_settimanale' in 'allenamenti_settimana' 
+      // verifica che questi nomi esistano nella tabella 'profiles'
       const [profileRes, relazioneRes] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', user.id).single(),
         supabase.from('coach_clienti')
@@ -55,7 +58,7 @@ export default function ClienteAnalyticsPage({
             profiles!coach_clienti_cliente_id_fkey(
               full_name, 
               obiettivo, 
-              frequenza_settimanale
+              allenamenti_settimana
             )
           `)
           .eq('cliente_id', clienteId),
@@ -100,7 +103,7 @@ export default function ClienteAnalyticsPage({
         ultimoPeso: pesoRes.data?.peso_kg ?? null,
         clienteDal: primaSessioneRes.data?.data ?? null,
         obiettivo: clienteProfile?.obiettivo ?? null,
-        frequenzaDichiarata: clienteProfile?.frequenza_settimanale ?? null,
+        frequenzaDichiarata: clienteProfile?.allenamenti_settimana ?? null,
       })
       setStato('ok')
     }
@@ -137,7 +140,7 @@ export default function ClienteAnalyticsPage({
         clienteDal={data!.clienteDal}
       />
 
-      {/* Sezione Insights Automatici */}
+      {/* Insights Section */}
       <div className="mx-5 mt-4">
         <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'oklch(0.70 0.19 46)' }}>
           🧠 Insights automatici
