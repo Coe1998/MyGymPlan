@@ -11,6 +11,7 @@ import MassimoMuscoli from '@/components/coach/analytics/MassimoMuscoli'
 import PatternBenessere from '@/components/coach/analytics/PatternBenessere'
 import AndamentoPeso from '@/components/coach/analytics/AndamentoPeso'
 import StoricoSessioni from '@/components/coach/analytics/StoricoSessioni'
+import ClienteInsights from '@/components/coach/analytics/ClienteInsights'
 
 interface Assegnazione {
   id: string
@@ -26,6 +27,8 @@ interface PageData {
   totSessioni: number
   ultimoPeso: number | null
   clienteDal: string | null
+  obiettivo: string | null
+  frequenzaDichiarata: number | null
 }
 
 export default function ClienteAnalyticsPage({
@@ -47,7 +50,14 @@ export default function ClienteAnalyticsPage({
       const [profileRes, relazioneRes] = await Promise.all([
         supabase.from('profiles').select('role').eq('id', user.id).single(),
         supabase.from('coach_clienti')
-          .select('coach_id, profiles!coach_clienti_cliente_id_fkey(full_name)')
+          .select(`
+            coach_id, 
+            profiles!coach_clienti_cliente_id_fkey(
+              full_name, 
+              obiettivo, 
+              frequenza_settimanale
+            )
+          `)
           .eq('cliente_id', clienteId),
       ])
 
@@ -56,7 +66,7 @@ export default function ClienteAnalyticsPage({
       const relazione = (relazioneRes.data ?? []).find((r: any) => r.coach_id === user.id)
       if (!relazione) { setStato('forbidden'); return }
 
-      const clienteProfile = (relazione as any).profiles as { full_name: string | null } | null
+      const clienteProfile = (relazione as any).profiles
       const nomeCliente = clienteProfile?.full_name ?? 'Cliente'
 
       const [assegRes, sessCountRes, pesoRes, primaSessioneRes] = await Promise.all([
@@ -89,11 +99,13 @@ export default function ClienteAnalyticsPage({
         totSessioni: sessCountRes.count ?? 0,
         ultimoPeso: pesoRes.data?.peso_kg ?? null,
         clienteDal: primaSessioneRes.data?.data ?? null,
+        obiettivo: clienteProfile?.obiettivo ?? null,
+        frequenzaDichiarata: clienteProfile?.frequenza_settimanale ?? null,
       })
       setStato('ok')
     }
     fetchData()
-  }, [clienteId])
+  }, [clienteId, router, supabase])
 
   if (stato === 'loading') return <BynariLoader file="blue" size={80} />
 
@@ -124,6 +136,18 @@ export default function ClienteAnalyticsPage({
         ultimoPeso={data!.ultimoPeso}
         clienteDal={data!.clienteDal}
       />
+
+      {/* Sezione Insights Automatici */}
+      <div className="mx-5 mt-4">
+        <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'oklch(0.70 0.19 46)' }}>
+          🧠 Insights automatici
+        </p>
+        <ClienteInsights
+          clienteId={clienteId}
+          frequenzaDichiarata={data?.frequenzaDichiarata}
+          obiettivo={data?.obiettivo}
+        />
+      </div>
 
       <ProgressioneEsercizi
         clienteId={clienteId}
