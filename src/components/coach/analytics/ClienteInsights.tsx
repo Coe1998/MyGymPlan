@@ -36,6 +36,8 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
       const now = new Date()
       const da90 = new Date(now.getTime() - 90 * 86400000).toISOString()
       const da30 = new Date(now.getTime() - 30 * 86400000).toISOString()
+      // Formato YYYY-MM-DD per la query sulla colonna 'data'
+      const da30Date = new Date(now.getTime() - 30 * 86400000).toISOString().split('T')[0]
 
       // ── Fetch dati ───────────────────────────────────────────────────────────
 
@@ -69,11 +71,11 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
           .eq('cliente_id', clienteId)
           .gte('data', da90)
           .order('data'),
-        supabase.from('log_pasto')
-          .select('kcal_totali, created_at')
+        supabase.from('pasto_log') // CORRETTO: Nome tabella
+          .select('calorie, data')   // CORRETTO: Campi tabella
           .eq('cliente_id', clienteId)
-          .gte('created_at', da30)
-          .order('created_at'),
+          .gte('data', da30Date)      // CORRETTO: Filtro su colonna data
+          .order('data'),
         supabase.from('anamnesi')
           .select('allenamenti_settimana, ore_sonno, descrizione_caratteriale')
           .eq('cliente_id', clienteId)
@@ -91,7 +93,7 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
 
       // ── 1. ADERENZA FREQUENZA ────────────────────────────────────────────────
       const freqDichiarata = frequenzaDichiarata ?? anamnesi?.allenamenti_settimana ?? null
-      const freqReale = sessioni.length / 12.86 // 90gg / 7 = 12.86 settimane
+      const freqReale = sessioni.length / 12.86 
 
       if (freqDichiarata !== null && freqDichiarata > 0) {
         const scarto = freqReale / freqDichiarata
@@ -158,7 +160,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
           volMuscolo[m] = (volMuscolo[m] ?? 0) + 1
         }
       }
-      // Normalizza per settimana
       const seriePerSett: Record<string, number> = {}
       for (const [m, s] of Object.entries(volMuscolo)) {
         seriePerSett[m] = Math.round((s / 12.86) * 10) / 10
@@ -191,7 +192,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
       }
 
       // ── 5. PROGRESSIONE FORZA ───────────────────────────────────────────────
-      // Raggruppa e1RM per esercizio: confronta prima vs seconda metà dei 90gg
       const e1rmEse: Record<string, { prima: number[]; seconda: number[] }> = {}
       const meta = new Date(now.getTime() - 45 * 86400000).toISOString()
 
@@ -250,7 +250,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
         const stressMedia = checkin.reduce((a, c) => a + (c.stress ?? 3), 0) / checkin.length
         const motivMedia = checkin.reduce((a, c) => a + (c.motivazione ?? 3), 0) / checkin.length
 
-        // Inversione stress: in Bynari stress alto = valore alto = negativo
         if (energiaMedia < 2 && stressMedia > 3.5) {
           result.push({
             tipo: 'warning', categoria: 'benessere',
@@ -265,7 +264,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
           })
         }
 
-        // Alta motivazione + bassa energia = overtraining tipico
         if (motivMedia > 3.5 && energiaMedia < 2) {
           result.push({
             tipo: 'warning', categoria: 'benessere',
@@ -274,7 +272,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
           })
         }
 
-        // Trend ultimi vs primi giorni
         const half = Math.floor(checkin.length / 2)
         const energiaPrima = checkin.slice(0, half).reduce((a, c) => a + (c.energia ?? 3), 0) / half
         const energiaSeconda = checkin.slice(half).reduce((a, c) => a + (c.energia ?? 3), 0) / (checkin.length - half)
@@ -321,9 +318,10 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
         }
       }
 
-      // ── 8. NUTRIZIONE ───────────────────────────────────────────────────────
+      // ── 8. NUTRIZIONE (VERSIONE CORRETTA) ───────────────────────────────────
       if (logPasto.length > 0) {
-        const giorniLoggati = new Set(logPasto.map(l => l.created_at.split('T')[0])).size
+        // CORRETTO: Conta i giorni distinti usando il campo 'data'
+        const giorniLoggati = new Set(logPasto.map(l => l.data)).size
         const pctLog = pct(giorniLoggati, 30)
 
         if (pctLog < 20) {
@@ -333,7 +331,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
             testo: `Loggato solo ${pctLog}% dei giorni del mese. Senza dati è impossibile ottimizzare la nutrizione — incoraggiare almeno 4-5 giorni/settimana`,
           })
         } else {
-          // Confronta kcal medie vs target
           const macroTargetRes = await supabase.from('macro_target')
             .select('calorie')
             .eq('cliente_id', clienteId)
@@ -341,7 +338,9 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
           const target = macroTargetRes.data?.calorie ?? null
 
           if (target) {
-            const kcalMedia = logPasto.reduce((a, l) => a + (l.kcal_totali ?? 0), 0) / logPasto.length
+            // CORRETTO: Somma il campo 'calorie' e divide per i giorni loggati
+            const kcalTotaliPeriodo = logPasto.reduce((a, l) => a + (Number(l.calorie) ?? 0), 0)
+            const kcalMedia = kcalTotaliPeriodo / giorniLoggati
 
             if (kcalMedia < target * 0.8) {
               result.push({
@@ -371,7 +370,7 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
     }
 
     compute()
-  }, [clienteId])
+  }, [clienteId, obiettivo, frequenzaDichiarata, supabase])
 
   const categoriaLabel: Record<string, string> = {
     aderenza: 'Aderenza',
@@ -400,7 +399,6 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
     </div>
   )
 
-  // Raggruppa per categoria
   const perCategoria = insights.reduce((acc, ins) => {
     if (!acc[ins.categoria]) acc[ins.categoria] = []
     acc[ins.categoria].push(ins)
