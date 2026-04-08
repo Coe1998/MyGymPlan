@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useEffect, useMemo, useState } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -94,13 +95,7 @@ export default function ClienteAnalyticsPage({
     fetchData()
   }, [clienteId])
 
-  if (stato === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-      </div>
-    )
-  }
+  if (stato === 'loading') return <BynariLoader file="blue" size={80} />
 
   if (stato === 'forbidden') {
     return (

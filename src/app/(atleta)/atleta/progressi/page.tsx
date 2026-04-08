@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -61,13 +62,7 @@ export default function AtletaProgressiPage() {
     fetch()
   }, [supabase])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-      </div>
-    )
-  }
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   if (!isPro) {
     return (

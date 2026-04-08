@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
@@ -1182,7 +1183,7 @@ export default function SchedaEditorModal({
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center py-16">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+            <BynariLoader file="blue" size={80} />
           </div>
         ) : (
           <>

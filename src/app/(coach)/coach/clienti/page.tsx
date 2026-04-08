@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -258,9 +259,7 @@ export default function ClientiPage() {
           </span>
         </div>
         {loading ? (
-          <div className="py-16 text-center">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-          </div>
+          <BynariLoader file="blue" size={80} />
         ) : clienti.length === 0 ? (
           <div className="py-16 text-center space-y-3">
             <div className="text-5xl"><FontAwesomeIcon icon={faUsers} /></div>

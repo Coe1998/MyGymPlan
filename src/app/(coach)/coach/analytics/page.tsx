@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -84,7 +85,7 @@ function SchedaPreviewContent({ schedaId }: { schedaId: string }) {
     fetch()
   }, [schedaId])
 
-  if (loading) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p></div>
+  if (loading) return <BynariLoader file="blue" size={80} />
   if (giorni.length === 0) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno nella scheda</p></div>
 
   return (
@@ -1288,9 +1289,7 @@ export default function AnalyticsPage() {
             ) : (
             <div className="flex-1 p-5 space-y-4">
               {loadingSessioni ? (
-                <div className="py-16 text-center">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-                </div>
+                <BynariLoader file="blue" size={80} />
               ) : (
                 <>
                 {/* Stats rapide */}

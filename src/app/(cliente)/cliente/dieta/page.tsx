@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -604,7 +605,7 @@ export default function DietaPage() {
                         Copia {pasto.nome} da...
                       </p>
                       {loadingStoricoPerPasto ? (
-                        <p className="text-xs text-center py-4" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                        <BynariLoader file="blue" size={60} />
                       ) : (() => {
                         const perGiorno = new Map<string, PastoLog[]>()
                         for (const item of storicoPerPasto) {
@@ -729,7 +730,7 @@ export default function DietaPage() {
                 </button>
               </div>
               {loadingGiornate ? (
-                <p className="text-sm text-center py-6" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                <BynariLoader file="blue" size={80} />
               ) : storicoGiornate.length === 0 ? (
                 <p className="text-sm text-center py-6" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno precedente trovato</p>
               ) : (
@@ -965,7 +966,7 @@ export default function DietaPage() {
 
           {/* Lista pasti */}
           {loading ? (
-            <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+            <BynariLoader file="blue" size={80} />
           ) : pastiRaggruppati.length === 0 ? (
             <div className="rounded-2xl py-12 text-center"
               style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faArrowLeft, faPaperclip } from '@fortawesome/free-solid-svg-icons'
@@ -208,7 +209,7 @@ export default function CoachChatPage() {
   const pannelloAllegati = (
     <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
       {loadingAllegati ? (
-        <p className="text-xs py-3 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+        <BynariLoader file="blue" size={60} />
       ) : (
         <div className="space-y-3 py-2">
           {schedeCoach.length > 0 && (

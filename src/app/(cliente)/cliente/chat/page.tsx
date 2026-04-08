@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPaperPlane, faPaperclip } from '@fortawesome/free-solid-svg-icons'
@@ -184,11 +185,7 @@ export default function ClienteChatPage() {
     })
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-    </div>
-  )
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   if (!coachId) return (
     <div className="flex items-center justify-center h-64">

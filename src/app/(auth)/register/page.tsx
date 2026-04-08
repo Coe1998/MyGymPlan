@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -182,7 +183,7 @@ export default function RegisterPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'oklch(0.13 0 0)' }}>
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+        <BynariLoader file="blue" size={80} />
       </div>
     }>
       <RegisterForm />

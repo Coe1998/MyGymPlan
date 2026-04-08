@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCalendarDays, faVideo, faPhone, faPerson, faCheck, faXmark, faArrowLeft, faChevronLeft, faChevronRight, faPlus } from '@fortawesome/free-solid-svg-icons'
@@ -347,10 +348,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
         </div>
 
         {loading ? (
-          <div className="rounded-2xl py-16 text-center"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-          </div>
+          <BynariLoader file="blue" size={80} />
         ) : (
           <WeekCalendar
             allApps={allApps}

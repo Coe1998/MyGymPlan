@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props { clienteId: string }
@@ -115,9 +116,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
       </div>
 
       {loading && pagina === 0 ? (
-        <div className="py-8 text-center">
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-        </div>
+        <BynariLoader file="blue" size={80} />
       ) : sessioni.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione nel periodo</p>
@@ -162,7 +161,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
                   {isAperta && (
                     <div style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
                       {loadingLog === s.id ? (
-                        <p className="px-5 py-4 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                        <BynariLoader file="blue" size={60} />
                       ) : logs.length === 0 ? (
                         <p className="px-5 py-4 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun dato registrato</p>
                       ) : (

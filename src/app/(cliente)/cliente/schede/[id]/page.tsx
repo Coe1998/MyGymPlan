@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -83,11 +84,7 @@ export default function ClienteSchedaPage({ params }: { params: Promise<{ id: st
     fetch()
   }, [schedaId])
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-    </div>
-  )
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   if (!scheda) return null
 

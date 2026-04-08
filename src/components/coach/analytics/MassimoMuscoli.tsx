@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 
 interface Props { clienteId: string }
@@ -117,9 +118,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
 
       <div className="p-5">
         {loading ? (
-          <div className="py-8 text-center">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-          </div>
+          <BynariLoader file="blue" size={80} />
         ) : dati.length === 0 ? (
           <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>
             Nessun dato disponibile

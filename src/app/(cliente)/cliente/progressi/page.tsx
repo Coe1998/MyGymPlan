@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -412,13 +413,7 @@ export default function ProgressiPage() {
     { id: 'checkin', label: 'Check-in', icon: faCircleCheck },
   ]
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-      </div>
-    )
-  }
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -678,7 +673,7 @@ export default function ProgressiPage() {
               </div>
               {loadingGrafico ? (
                 <div className="h-40 flex items-center justify-center">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                  <BynariLoader file="blue" size={80} />
                 </div>
               ) : graficoDati.length < 2 ? (
                 <div className="h-40 flex items-center justify-center text-center">

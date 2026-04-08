@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDumbbell, faPlus, faTrash, faPen, faXmark, faCheck } from '@fortawesome/free-solid-svg-icons'
@@ -233,7 +234,7 @@ export default function AtletaEserciziPage() {
 
       {/* Lista */}
       {loading ? (
-        <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+        <BynariLoader file="blue" size={80} />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>

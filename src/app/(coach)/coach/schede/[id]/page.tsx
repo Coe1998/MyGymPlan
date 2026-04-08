@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -327,11 +328,7 @@ export default function SchedaDetailPage() {
     document.addEventListener('pointerup', onUp)
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-64">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-    </div>
-  )
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   const assegnazioniAttive = assegnazioni.filter(a => a.attiva)
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faTriangleExclamation, faLightbulb, faCircleInfo } from '@fortawesome/free-solid-svg-icons'
@@ -85,7 +86,7 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+            <BynariLoader file="blue" size={80} />
           </div>
         ) : !anamnesi ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">

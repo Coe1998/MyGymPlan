@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -95,11 +96,7 @@ export default function ImpostazioniPage() {
     ? '/cliente/dashboard'
     : '/atleta/dashboard'
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-64">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
-    </div>
-  )
+  if (loading) return <BynariLoader file="blue" size={80} />
 
   return (
     <div className="space-y-8 max-w-2xl">

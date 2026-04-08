@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -150,7 +151,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
             <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <p style={{ color: 'oklch(0.45 0 0)' }}>Caricamento...</p>
+                  <BynariLoader file="blue" size={80} />
                 </div>
               ) : drawerTab === 'nutrizione' ? (
                 <div className="p-5">
