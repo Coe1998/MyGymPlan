@@ -39,7 +39,7 @@ export default async function ClienteDashboard() {
   ] = await Promise.all([
     supabase.from('assegnazioni')
       .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
-      .eq('cliente_id', user.id).eq('attiva', true).order('created_at', { ascending: false }),
+      .eq('cliente_id', user.id).order('created_at', { ascending: false }),
     supabase.from('sessioni')
       .select(`id, data, completata, scheda_giorni ( nome )`)
       .eq('cliente_id', user.id).order('data', { ascending: false }).limit(5),
@@ -166,7 +166,7 @@ export default async function ClienteDashboard() {
         <div className="px-6 py-4"
           style={{ borderBottom: assegnazioni && assegnazioni.length > 0 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
           <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
-            {assegnazioni && assegnazioni.length > 1 ? 'Le tue schede' : 'La tua scheda attiva'}
+            Le tue schede
           </h2>
         </div>
         <SchedeSelector assegnazioni={(assegnazioni as any) ?? []} />
