@@ -665,7 +665,7 @@ export default function SchedaEditorModal({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [pendingEsercizi, setPendingEsercizi] = useState<{
     tempId: string; giornoId: string; form: EsForm; expanded: boolean
-    filtroMuscolo: string; expandedAdv: boolean
+    filtroMuscolo: string; filtroTipoInput: string; expandedAdv: boolean
   }[]>([])
   const [savingPending, setSavingPending] = useState(false)
   const [form, setForm] = useState<EsForm>(EMPTY)
@@ -1489,7 +1489,7 @@ export default function SchedaEditorModal({
                                 {/* Riga base */}
                                 <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                                   style={{
-                                    gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px',
+                                    gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px',
                                     background: 'oklch(0.19 0 0)',
                                     border: '1px solid oklch(0.60 0.15 200 / 40%)',
                                   }}>
@@ -1688,8 +1688,8 @@ export default function SchedaEditorModal({
                   {/* Header colonne desktop */}
                   {pendingEsercizi.filter(p => p.giornoId === activeGiorno).length > 0 && (
                     <div className="hidden lg:grid gap-2 px-2 pb-1"
-                      style={{ gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px' }}>
-                      {['#', 'Muscolo', 'Esercizio', 'Tipo', 'Ser.', 'Reps', 'Rec.', 'Progr.', '', ''].map((h, i) => (
+                      style={{ gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px' }}>
+                      {['#', 'Muscolo', 'Tipo input', 'Esercizio', 'Tipo', 'Ser.', 'Reps', 'Rec.', 'Progr.', '', ''].map((h, i) => (
                         <span key={i} className="text-xs font-semibold uppercase tracking-wider"
                           style={{ color: 'oklch(0.40 0 0)' }}>{h}</span>
                       ))}
@@ -1755,7 +1755,7 @@ export default function SchedaEditorModal({
                         {/* Riga base */}
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
-                            gridTemplateColumns: '24px 110px 1fr 100px 70px 80px 80px 130px 32px 32px',
+                            gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px',
                             background: p.form.esercizio_id ? 'oklch(0.19 0 0)' : 'oklch(0.17 0 0)',
                             border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.70 0.19 46 / 25%)'}`,
                           }}>
@@ -1777,6 +1777,19 @@ export default function SchedaEditorModal({
                               <option key={m} value={m}>{m}</option>
                             ))}
                           </select>
+                          {/* Filtro tipo input */}
+                          <select
+                            value={p.filtroTipoInput}
+                            onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                              x.tempId === p.tempId ? { ...x, filtroTipoInput: e.target.value, form: { ...x.form, esercizio_id: '' } } : x
+                            ))}
+                            className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
+                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.filtroTipoInput ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            <option value="">Tutti</option>
+                            <option value="reps">Reps</option>
+                            <option value="reps_unilaterale">Unilaterale</option>
+                            <option value="timer">Timer</option>
+                          </select>
                           {/* Esercizio */}
                           <select
                             value={p.form.esercizio_id}
@@ -1787,7 +1800,7 @@ export default function SchedaEditorModal({
                             style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.form.esercizio_id ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
                             <option value="">Cerca esercizio...</option>
                             {esercizi
-                              .filter(e => !p.filtroMuscolo || e.muscoli?.includes(p.filtroMuscolo))
+                              .filter(e => (!p.filtroMuscolo || e.muscoli?.includes(p.filtroMuscolo)) && (!p.filtroTipoInput || e.tipo_input === p.filtroTipoInput))
                               .map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
                           </select>
                           {/* Tipo */}
