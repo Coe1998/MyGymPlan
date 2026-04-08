@@ -57,6 +57,10 @@ export default function SchedaDetailPage() {
   const [assegnando, setAssegnando] = useState(false)
   const [assegnaError, setAssegnaError] = useState<string | null>(null)
   const [uploadingPdf, setUploadingPdf] = useState<string | null>(null) // assegnazione id in corso
+  const [editingAssId, setEditingAssId] = useState<string | null>(null)
+  const [editDataFine, setEditDataFine] = useState('')
+  const [editAttiva, setEditAttiva] = useState(true)
+  const [savingEdit, setSavingEdit] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [noteAnamnesi, setNoteAnamnesi] = useState<NotaAnamnesi[]>([])
   const pdfInputRef = useRef<HTMLInputElement>(null)
@@ -164,6 +168,24 @@ export default function SchedaDetailPage() {
     })
     if (error) { setAssegnaError("Errore durante l'assegnazione."); setAssegnando(false); return }
     setSelectedCliente(''); setDataFine(''); setShowFormAssegna(false); setAssegnando(false); fetchAll()
+  }
+
+  const handleEditAssegnazione = (a: Assegnazione) => {
+    setEditingAssId(a.id)
+    setEditDataFine(a.data_fine ? a.data_fine.split('T')[0] : '')
+    setEditAttiva(a.attiva)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingAssId) return
+    setSavingEdit(true)
+    await supabase.from('assegnazioni').update({
+      data_fine: editDataFine || null,
+      attiva: editAttiva,
+    }).eq('id', editingAssId)
+    setSavingEdit(false)
+    setEditingAssId(null)
+    fetchAll()
   }
 
   const handleRimuoviAssegnazione = async (id: string) => {
@@ -542,6 +564,11 @@ export default function SchedaDetailPage() {
                       }}>
                       {a.attiva ? 'Attiva' : 'Inattiva'}
                     </span>
+                    <button onClick={() => handleEditAssegnazione(a)}
+                      className="text-xs px-3 py-1.5 rounded-lg transition-all"
+                      style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
+                      Modifica
+                    </button>
                     <button onClick={() => handleRimuoviAssegnazione(a.id)}
                       className="text-xs px-3 py-1.5 rounded-lg transition-all"
                       style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
@@ -549,6 +576,45 @@ export default function SchedaDetailPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* Form modifica assegnazione inline */}
+                {editingAssId === a.id && (
+                  <div className="mt-3 ml-14 p-3 rounded-xl space-y-3"
+                    style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>
+                          Data fine <span style={{ color: 'oklch(0.40 0 0)' }}>(opzionale)</span>
+                        </label>
+                        <input type="date" value={editDataFine} onChange={e => setEditDataFine(e.target.value)}
+                          className="px-3 py-2 rounded-lg text-xs outline-none"
+                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Attiva</label>
+                        <button onClick={() => setEditAttiva(p => !p)} className="relative">
+                          <div className="w-10 h-6 rounded-full transition-colors duration-200"
+                            style={{ background: editAttiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                            <div className="absolute top-0.5 w-5 h-5 rounded-full shadow transition-transform duration-200"
+                              style={{ background: 'oklch(0.97 0 0)', transform: editAttiva ? 'translateX(1.1rem)' : 'translateX(0.1rem)' }} />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleSaveEdit} disabled={savingEdit}
+                        className="px-4 py-2 rounded-lg text-xs font-bold"
+                        style={{ background: 'oklch(0.60 0.15 200)', color: 'white', opacity: savingEdit ? 0.6 : 1 }}>
+                        {savingEdit ? 'Salvataggio...' : 'Salva'}
+                      </button>
+                      <button onClick={() => setEditingAssId(null)}
+                        className="px-4 py-2 rounded-lg text-xs font-medium"
+                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                        Annulla
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Riga PDF alimentare */}
                 <div className="mt-3 ml-14 flex items-center gap-2 flex-wrap">
