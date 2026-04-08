@@ -658,6 +658,8 @@ export default function SchedaEditorModal({
   const [esercizi, setEsercizi] = useState<Esercizio[]>([])
   const [loading, setLoading] = useState(true)
   const [activeGiorno, setActiveGiorno] = useState<string | null>(null)
+  const [editingGiornoId, setEditingGiornoId] = useState<string | null>(null)
+  const [editingGiornoNome, setEditingGiornoNome] = useState('')
 
   const [addingEse, setAddingEse] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -884,6 +886,14 @@ export default function SchedaEditorModal({
       progressione_tipo: f.progressione_tipo || 'peso',
       warmup_serie: f.warmup_serie ? JSON.parse(f.warmup_serie) : [],
     }
+  }
+
+  const handleSaveGiornoNome = async (giornoId: string, nome: string) => {
+    const trimmed = nome.trim()
+    if (!trimmed) { setEditingGiornoId(null); return }
+    setGiorni(prev => prev.map(g => g.id === giornoId ? { ...g, nome: trimmed } : g))
+    await supabase.from('scheda_giorni').update({ nome: trimmed }).eq('id', giornoId)
+    setEditingGiornoId(null)
   }
 
   const handleSavePending = async () => {
@@ -1233,15 +1243,38 @@ export default function SchedaEditorModal({
             <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto flex-shrink-0 scrollbar-none"
               style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
               {giorni.map(g => (
-                <button key={g.id}
-                  onClick={() => { setActiveGiorno(g.id); setAddingEse(false); setEditingId(null) }}
-                  className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
-                  style={{
-                    background: activeGiorno === g.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    color: activeGiorno === g.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
-                  }}>
-                  {g.nome}
-                </button>
+                editingGiornoId === g.id ? (
+                  <input
+                    key={g.id}
+                    autoFocus
+                    value={editingGiornoNome}
+                    onChange={e => setEditingGiornoNome(e.target.value)}
+                    onBlur={() => handleSaveGiornoNome(g.id, editingGiornoNome)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleSaveGiornoNome(g.id, editingGiornoNome)
+                      if (e.key === 'Escape') setEditingGiornoId(null)
+                    }}
+                    className="flex-shrink-0 px-3 py-2 rounded-xl text-sm font-bold outline-none"
+                    style={{
+                      background: 'oklch(0.70 0.19 46)',
+                      color: 'oklch(0.11 0 0)',
+                      minWidth: 80,
+                      maxWidth: 160,
+                    }}
+                  />
+                ) : (
+                  <button key={g.id}
+                    onClick={() => { setActiveGiorno(g.id); setAddingEse(false); setEditingId(null) }}
+                    onDoubleClick={() => { setEditingGiornoId(g.id); setEditingGiornoNome(g.nome) }}
+                    className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
+                    style={{
+                      background: activeGiorno === g.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                      color: activeGiorno === g.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                    }}
+                    title="Doppio click per rinominare">
+                    {g.nome}
+                  </button>
+                )
               ))}
 
               <button onClick={handleAddGiorno}
