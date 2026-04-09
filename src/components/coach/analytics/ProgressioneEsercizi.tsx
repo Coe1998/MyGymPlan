@@ -72,6 +72,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
 
       if (!logs) { setLoading(false); return }
 
+      // Chiave = nome normalizzato (lowercase + trim) → esercizi con stesso nome vengono uniti
       const map = new Map<string, EsercizioData>()
       const sessioneEseMap = new Map<string, Map<string, { e1rmMax: number; volume: number; pesoMax: number }>>()
 
@@ -79,6 +80,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
         const ese = log.scheda_esercizi?.esercizi
         if (!ese) continue
         const { id: eseId, nome, tipo_input: tipoInput, muscoli } = ese
+        const nomeNorm = (nome as string).trim().toLowerCase()
         const data = sessDateMap[log.sessione_id]?.split('T')[0] ?? ''
         const peso = parseFloat(log.peso_kg) || 0
         const reps = parseInt(log.ripetizioni) || 0
@@ -99,16 +101,17 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
           vol = peso * reps
         }
 
-        if (!map.has(eseId)) map.set(eseId, { eseId, nome, tipoInput, muscoli: Array.isArray(muscoli) ? muscoli : [], punti: [] })
+        // Usa nomeNorm come chiave — unisce duplicati con stesso nome
+        if (!map.has(nomeNorm)) map.set(nomeNorm, { eseId, nome, tipoInput, muscoli: Array.isArray(muscoli) ? muscoli : [], punti: [] })
         if (!sessioneEseMap.has(log.sessione_id)) sessioneEseMap.set(log.sessione_id, new Map())
         const sessEse = sessioneEseMap.get(log.sessione_id)!
-        const existing = sessEse.get(eseId) ?? { e1rmMax: 0, volume: 0, pesoMax: 0 }
-        sessEse.set(eseId, {
+        const existing = sessEse.get(nomeNorm) ?? { e1rmMax: 0, volume: 0, pesoMax: 0 }
+        sessEse.set(nomeNorm, {
           e1rmMax: Math.max(existing.e1rmMax, e1rm),
           volume: existing.volume + vol,
           pesoMax: Math.max(existing.pesoMax, peso),
         })
-        const ese2 = map.get(eseId)!
+        const ese2 = map.get(nomeNorm)!
         if (!ese2.punti.some(p => p.data === data)) {
           ese2.punti.push({ data, e1rm: 0, volume: 0, pesoMax: 0 })
         }
@@ -116,8 +119,8 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
 
       for (const [sessId, eseMap] of sessioneEseMap) {
         const data = sessDateMap[sessId]?.split('T')[0] ?? ''
-        for (const [eseId, vals] of eseMap) {
-          const ese = map.get(eseId)
+        for (const [nomeNorm, vals] of eseMap) {
+          const ese = map.get(nomeNorm)
           if (!ese) continue
           const punto = ese.punti.find(p => p.data === data)
           if (punto) {
