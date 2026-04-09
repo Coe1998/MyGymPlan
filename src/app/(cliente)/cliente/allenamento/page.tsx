@@ -162,7 +162,7 @@ export default function AllenamentoPage() {
     if (sessioneIdParam) {
       const { data: sessione } = await supabase
         .from('sessioni')
-        .select(`id, data, completata, giorno_id, assegnazione_id, scheda_giorni ( nome )`)
+        .select(`id, data, completata, durata_secondi, giorno_id, assegnazione_id, scheda_giorni ( nome )`)
         .eq('id', sessioneIdParam)
         .single()
 
@@ -172,7 +172,8 @@ export default function AllenamentoPage() {
       setSessioneData(sessione.data)
       setGiornoNome((sessione as any).scheda_giorni?.nome ?? '')
 
-      // Calcola durata approssimativa (non disponibile, usiamo 0)
+      // Usa durata salvata nel DB, non ricalcolare
+      if ((sessione as any).durata_secondi) setDurataSessioneDB((sessione as any).durata_secondi)
       setDurataSecondi(0)
 
       const { data: giorno } = await supabase
