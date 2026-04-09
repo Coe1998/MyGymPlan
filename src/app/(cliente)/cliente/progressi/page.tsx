@@ -158,7 +158,10 @@ export default function ProgressiPage() {
     for (const log of (logData ?? []) as any[]) {
       const id = log.scheda_esercizi?.esercizi?.id
       const nome = log.scheda_esercizi?.esercizi?.nome
-      if (id && !eserciziMap.has(id)) eserciziMap.set(id, { id, nome })
+      if (!id || !nome) continue
+      const nomeNorm = (nome as string).trim().toLowerCase()
+      // Usa nomeNorm come chiave: unisce duplicati con stesso nome
+      if (!eserciziMap.has(nomeNorm)) eserciziMap.set(nomeNorm, { id: nomeNorm, nome })
     }
     const eserciziList = Array.from(eserciziMap.values()).sort((a, b) => a.nome.localeCompare(b.nome))
     setEsercizi(eserciziList)
@@ -280,9 +283,10 @@ export default function ProgressiPage() {
       .eq('sessioni.completata', true)
 
     const byData = new Map<string, { pesi: number[]; volume: number; ts: number }>()
+    // eseId è ora un nomeNorm (lowercase) — confronta con nome normalizzato
     const filteredLogs = ((logs ?? []) as any[])
       .filter((l: any) =>
-        l.scheda_esercizi?.esercizi?.id === eseId &&
+        (l.scheda_esercizi?.esercizi?.nome as string | undefined)?.trim().toLowerCase() === eseId &&
         l.sessioni?.cliente_id === user.id &&
         l.sessioni?.completata === true
       )
