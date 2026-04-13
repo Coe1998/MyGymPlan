@@ -14,7 +14,12 @@ interface Assegnazione {
 
 export default function SchedeSelector({ assegnazioni }: { assegnazioni: Assegnazione[] }) {
   // Ordina: attive prima, poi future, poi inattive/scadute
-  const assegnazioniOrdinate = [...assegnazioni].sort((a, b) => {
+  const assegnazioniOrdinate = [...assegnazioni]
+  .filter(a => {
+    const oggi = new Date(); oggi.setHours(0, 0, 0, 0)
+    return new Date(a.data_inizio) <= oggi   // 👈 escludi schede future
+  })
+  .sort((a, b) => {
     const oggi = new Date(); oggi.setHours(0,0,0,0)
     const aFutura = new Date(a.data_inizio) > oggi
     const bFutura = new Date(b.data_inizio) > oggi
