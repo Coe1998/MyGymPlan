@@ -11,7 +11,6 @@ import AppuntamentiWidget from '@/components/cliente/AppuntamentiWidget'
 import AnamnesITrigger from '@/components/cliente/AnamnesITrigger'
 import { getTodayMacros } from '@/lib/getTodayMacros'
 import { getCarbUX } from '@/lib/getCarbUX'
-import ProgressCheckBanner from '@/components/cliente/ProgressCheckBanner'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -22,7 +21,6 @@ export default async function ClienteDashboard() {
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'cliente') redirect('/coach/dashboard')
 
-  // Cleanup sessioni incomplete > 24h
   const ventiquattroOreFA = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   await supabase.from('sessioni')
     .delete()
@@ -33,6 +31,8 @@ export default async function ClienteDashboard() {
   const inizioSettimana = new Date()
   inizioSettimana.setDate(inizioSettimana.getDate() - inizioSettimana.getDay())
   inizioSettimana.setHours(0, 0, 0, 0)
+
+  const oggi = new Date().toISOString().split('T')[0]
 
   const [
     assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes,
@@ -61,7 +61,7 @@ export default async function ClienteDashboard() {
     supabase.from('progress_check_schedulazioni')
       .select('id, data, set_id, richiedi_foto, progress_check_set(titolo), progress_check_risposte(id)')
       .eq('cliente_id', user.id)
-      .gte('data', new Date().toISOString().split('T')[0])
+      .gte('data', oggi)
       .order('data', { ascending: true })
       .limit(3),
   ])
@@ -74,7 +74,6 @@ export default async function ClienteDashboard() {
   const haAnamnesi = !!anamnesIRes.data
   const progressCheckList = progressCheckRes.data ?? []
 
-  // Day card — rispetta se il coach ha abilitato carb cycling per questo cliente
   const carbUX = getCarbUX(
     todayMacros?.day_type ?? null,
     todayMacros?.carb_cycling_enabled ?? false,
@@ -101,7 +100,7 @@ export default async function ClienteDashboard() {
         </p>
       </div>
 
-      {/* Day card — visibile solo se check-in completato */}
+      {/* Day card */}
       {carbUX.show && (
         <div className="rounded-2xl px-5 py-4"
           style={{ background: carbUX.bg, border: `1px solid ${carbUX.border}` }}>
@@ -120,8 +119,6 @@ export default async function ClienteDashboard() {
               <p className="text-sm" style={{ color: 'oklch(0.65 0 0)' }}>{carbUX.message}</p>
             </div>
           </div>
-
-          {/* Macro del giorno — solo se c'è un target impostato */}
           {todayMacros && (
             <div className="flex gap-3 mt-3 pt-3" style={{ borderTop: `1px solid ${carbUX.border}` }}>
               {[
@@ -152,7 +149,7 @@ export default async function ClienteDashboard() {
       <AppuntamentiWidget />
 
       {/* Progress Check */}
-      {Array.isArray(progressCheckList) && progressCheckList.length > 0 && (
+      {progressCheckList.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
           <div className="px-5 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -160,21 +157,24 @@ export default async function ClienteDashboard() {
           </div>
           {(progressCheckList as any[]).map((pc: any) => {
             const completato = pc.progress_check_risposte?.length > 0
-            const oggi2 = new Date().toISOString().split('T')[0]
-            const isOggi = pc.data === oggi2
-            const isFuturo = pc.data > oggi2
-            const label = isOggi ? 'Oggi' : new Date(pc.data + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
             if (completato) return null
-            if (isFuturo) return (
-              <div key={pc.id} className="flex items-center gap-3 px-5 py-3"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)', opacity: 0.5 }}>
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.45 0 0)' }} />
-                <p className="flex-1 text-sm font-semibold" style={{ color: 'oklch(0.85 0 0)' }}>
-                  {pc.progress_check_set?.titolo ?? 'Check-in'}
-                </p>
-                <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>{label} 🔒</p>
-              </div>
-            )
+            const isOggi = pc.data === oggi
+            const isFuturo = pc.data > oggi
+            const label = isOggi
+              ? 'Oggi'
+              : new Date(pc.data + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+            if (isFuturo) {
+              return (
+                <div key={pc.id} className="flex items-center gap-3 px-5 py-3"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)', opacity: 0.45, cursor: 'not-allowed' }}>
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.45 0 0)' }} />
+                  <p className="flex-1 text-sm font-semibold" style={{ color: 'oklch(0.85 0 0)' }}>
+                    {pc.progress_check_set?.titolo ?? 'Check-in'}
+                  </p>
+                  <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>{label} 🔒</p>
+                </div>
+              )
+            }
             return (
               <Link key={pc.id} href={`/cliente/checkin/${pc.id}`}
                 className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
@@ -212,9 +212,7 @@ export default async function ClienteDashboard() {
         style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
         <div className="px-6 py-4"
           style={{ borderBottom: assegnazioni && assegnazioni.length > 0 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
-            Le tue schede
-          </h2>
+          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Le tue schede</h2>
         </div>
         <SchedeSelector assegnazioni={(assegnazioni as any) ?? []} />
       </div>
