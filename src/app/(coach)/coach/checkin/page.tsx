@@ -125,9 +125,6 @@ export default function CoachCheckinPage() {
         .eq('coach_id', user.id),
     ])
 
-    console.log('schedRes data:', schedRes.data)
-    console.log('schedRes error:', schedRes.error)
-
     setSets((setsRes.data as any) ?? [])
     setSchedulazioni((schedRes.data as any) ?? [])
     setClienti((clientiRes.data as any)?.map((r: any) => r.profiles) ?? [])

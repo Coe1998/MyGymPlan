@@ -11,6 +11,7 @@ import AppuntamentiWidget from '@/components/cliente/AppuntamentiWidget'
 import AnamnesITrigger from '@/components/cliente/AnamnesITrigger'
 import { getTodayMacros } from '@/lib/getTodayMacros'
 import { getCarbUX } from '@/lib/getCarbUX'
+import ProgressCheckBanner from '@/components/cliente/ProgressCheckBanner'
 
 export default async function ClienteDashboard() {
   const supabase = await createClient()
@@ -35,7 +36,7 @@ export default async function ClienteDashboard() {
 
   const [
     assegnazioniRes, ultimeSessioniRes, totaleRes, settimanaRes,
-    ultimoPesoRes, anamnesIRes, todayMacros,
+    ultimoPesoRes, anamnesIRes, todayMacros, progressCheckRes,
   ] = await Promise.all([
     supabase.from('assegnazioni')
       .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
@@ -57,6 +58,11 @@ export default async function ClienteDashboard() {
       .eq('cliente_id', user.id)
       .maybeSingle(),
     getTodayMacros(user.id),
+    supabase.from('progress_check_schedulazioni')
+      .select('id, set_id, richiedi_foto, progress_check_set(titolo), progress_check_risposte(id)')
+      .eq('cliente_id', user.id)
+      .eq('data', new Date().toISOString().split('T')[0])
+      .maybeSingle(),
   ])
 
   const assegnazioni = assegnazioniRes.data
@@ -65,6 +71,7 @@ export default async function ClienteDashboard() {
   const sessioniSettimana = settimanaRes.count
   const ultimoPeso = ultimoPesoRes.data
   const haAnamnesi = !!anamnesIRes.data
+  const progressCheckOggi = progressCheckRes.data
 
   // Day card — rispetta se il coach ha abilitato carb cycling per questo cliente
   const carbUX = getCarbUX(
@@ -142,6 +149,14 @@ export default async function ClienteDashboard() {
 
       {/* Appuntamenti */}
       <AppuntamentiWidget />
+
+      {/* Progress Check banner */}
+      {progressCheckOggi && !(progressCheckOggi as any).progress_check_risposte?.length && (
+        <ProgressCheckBanner
+          schedulazioneId={progressCheckOggi.id}
+          titolo={(progressCheckOggi as any).progress_check_set?.titolo ?? 'Check-in'}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
