@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays } from '@fortawesome/free-solid-svg-icons'
 import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav mobile — 5 tasti fissi
