@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays } from '@fortawesome/free-solid-svg-icons'
+import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav mobile — 5 tasti fissi
 const navItemsMobile = [
@@ -23,6 +24,7 @@ const navItemsAll = [
   { href: '/coach/analytics', label: 'Dashboard', icon: faChartBar },
   { href: '/coach/clienti', label: 'Gestione clienti', icon: faUsers },
   { href: '/coach/appuntamenti', label: 'Appuntamenti', icon: faCalendarDays },
+  { href: '/coach/checkin', label: 'Check-in', icon: faCircleCheck },
   { href: '/coach/schede', label: 'Schede', icon: faClipboardList },
   { href: '/coach/esercizi', label: 'Esercizi', icon: faDumbbell },
   { href: '/coach/chat', label: 'Chat', icon: faComments },
@@ -131,11 +133,11 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
         <div className="relative flex-1 flex justify-center">
           <button onClick={() => { setClientiOpen(p => !p); setAllenamentoOpen(false); setMenuOpen(false) }}
             className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
-            style={{ background: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+           style={{ background: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || pathname.startsWith('/coach/checkin') || clientiOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
             <FontAwesomeIcon icon={faUsers} className="text-xl"
-              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || pathname.startsWith('/coach/checkin') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
             <span className="text-xs font-medium"
-              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+              style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || pathname.startsWith('/coach/checkin') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
               Clienti
             </span>
           </button>
@@ -152,9 +154,15 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
                 </Link>
                 <Link href="/coach/appuntamenti" onClick={() => setClientiOpen(false)}
                   className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'oklch(0.80 0 0)' }}>
+                  style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
                   <FontAwesomeIcon icon={faCalendarDays} className="w-4" />
                   Appuntamenti
+                </Link>
+                <Link href="/coach/checkin" onClick={() => setClientiOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  style={{ color: 'oklch(0.80 0 0)' }}>
+                  <FontAwesomeIcon icon={faCircleCheck} className="w-4" />
+                  Check-in
                 </Link>
               </div>
             </>
