@@ -160,10 +160,11 @@ export default async function ClienteDashboard() {
           </div>
           {(progressCheckList as any[]).map((pc: any) => {
             const completato = pc.progress_check_risposte?.length > 0
-            const dataObj = new Date(pc.data)
+            const [anno, mese, giorno] = pc.data.split('-').map(Number)
+            const dataObj = new Date(anno, mese - 1, giorno)
             const oggi2 = new Date(); oggi2.setHours(0,0,0,0)
             const isOggi = dataObj.toDateString() === oggi2.toDateString()
-            const isFuturo = dataObj.toDateString() !== oggi2.toDateString() && dataObj > oggi2
+            const isFuturo = dataObj > oggi2
             const label = isOggi ? 'Oggi' : dataObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
             if (completato) return null
             if (isFuturo) return (
