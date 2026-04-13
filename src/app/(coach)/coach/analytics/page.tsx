@@ -724,15 +724,14 @@ export default function AnalyticsPage() {
           </div>
         ))}
       </div>
-
-      {/* Prossimi check-in */}
+      {/* Prossimi appuntamenti */}
       {prossimiCheckin.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
           <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
             <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
               <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.60 0.15 200)' }} />
-              Prossimi check-in
+              Prossimi appuntamenti
             </p>
             <Link href="/coach/appuntamenti" className="text-xs font-medium" style={{ color: 'oklch(0.60 0.15 200)' }}>
               Tutti →
@@ -748,7 +747,7 @@ export default function AnalyticsPage() {
               ? `Domani ${dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`
               : dataOra.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
             return (
-              <Link key={a.id} href={`/coach/clienti/${a.cliente_id}/checkin`}
+              <Link key={a.id} href={`/coach/appuntamenti`}
                 className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
                 style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.60 0.15 200)' }} />
@@ -762,6 +761,28 @@ export default function AnalyticsPage() {
         </div>
       )}
 
+      {/* Prossimi check-in mensili */}
+      <div className="rounded-2xl overflow-hidden"
+        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+            <FontAwesomeIcon icon={faClipboardList} className="mr-2" style={{ color: 'oklch(0.70 0.19 46)' }} />
+            Prossimi check-in
+          </p>
+          <Link href="/coach/checkin" className="text-xs font-medium" style={{ color: 'oklch(0.70 0.19 46)' }}>
+            Tutti →
+          </Link>
+        </div>
+        <div className="px-5 py-4 text-center">
+          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun check-in programmato</p>
+          <Link href="/coach/checkin"
+            className="inline-block mt-2 text-xs font-semibold"
+            style={{ color: 'oklch(0.70 0.19 46)' }}>
+            + Programma il primo →
+          </Link>
+        </div>
+      </div>
+      
       {/* Tabs */}
       <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
         {[
