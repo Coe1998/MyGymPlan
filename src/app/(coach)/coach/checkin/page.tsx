@@ -115,7 +115,7 @@ export default function CoachCheckinPage() {
         .eq('coach_id', user.id)
         .order('created_at', { ascending: false }),
       supabase.from('progress_check_schedulazioni')
-        .select(`*, profiles(full_name), progress_check_set(titolo), progress_check_risposte(id, inviato_at, visto_coach)`)
+        .select(`*, profiles!progress_check_schedulazioni_cliente_id_fkey(full_name), progress_check_set(titolo), progress_check_risposte(id, inviato_at, visto_coach)`)
         .eq('coach_id', user.id)
         .gte('data', new Date().toISOString().split('T')[0])
         .order('data', { ascending: true })
