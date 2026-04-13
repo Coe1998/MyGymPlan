@@ -163,7 +163,7 @@ export default async function ClienteDashboard() {
             const oggi2 = new Date().toISOString().split('T')[0]
             const isOggi = pc.data === oggi2
             const isFuturo = pc.data > oggi2
-            const label = isOggi ? 'Oggi' : dataObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+            const label = isOggi ? 'Oggi' : new Date(pc.data + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
             if (completato) return null
             if (isFuturo) return (
               <div key={pc.id} className="flex items-center gap-3 px-5 py-3"
