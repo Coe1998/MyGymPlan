@@ -59,10 +59,11 @@ export default async function ClienteDashboard() {
       .maybeSingle(),
     getTodayMacros(user.id),
     supabase.from('progress_check_schedulazioni')
-      .select('id, set_id, richiedi_foto, progress_check_set(titolo), progress_check_risposte(id)')
+      .select('id, data, set_id, richiedi_foto, progress_check_set(titolo), progress_check_risposte(id)')
       .eq('cliente_id', user.id)
-      .eq('data', new Date().toISOString().split('T')[0])
-      .maybeSingle(),
+      .gte('data', new Date().toISOString().split('T')[0])
+      .order('data', { ascending: true })
+      .limit(3),
   ])
 
   const assegnazioni = assegnazioniRes.data
@@ -71,7 +72,7 @@ export default async function ClienteDashboard() {
   const sessioniSettimana = settimanaRes.count
   const ultimoPeso = ultimoPesoRes.data
   const haAnamnesi = !!anamnesIRes.data
-  const progressCheckOggi = progressCheckRes.data
+  const progressCheckList = progressCheckRes.data ?? []
 
   // Day card — rispetta se il coach ha abilitato carb cycling per questo cliente
   const carbUX = getCarbUX(
@@ -151,11 +152,36 @@ export default async function ClienteDashboard() {
       <AppuntamentiWidget />
 
       {/* Progress Check banner */}
-      {progressCheckOggi && !(progressCheckOggi as any).progress_check_risposte?.length && (
-        <ProgressCheckBanner
-          schedulazioneId={progressCheckOggi.id}
-          titolo={(progressCheckOggi as any).progress_check_set?.titolo ?? 'Check-in'}
-        />
+      {progressCheckList.length > 0 && (
+        <div className="rounded-2xl overflow-hidden"
+          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+          <div className="px-5 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+              Prossimi check-in
+            </p>
+          </div>
+          {(progressCheckList as any[]).map((pc: any) => {
+            const completato = pc.progress_check_risposte?.length > 0
+            const dataObj = new Date(pc.data)
+            const oggi2 = new Date(); oggi2.setHours(0,0,0,0)
+            const isOggi = dataObj.toDateString() === oggi2.toDateString()
+            const label = isOggi ? 'Oggi' : dataObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+            return completato ? null : (
+              <a key={pc.id} href={`/cliente/checkin/${pc.id}`}
+                className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
+                style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                <div className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: isOggi ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+                <p className="flex-1 text-sm font-semibold" style={{ color: 'oklch(0.85 0 0)' }}>
+                  {pc.progress_check_set?.titolo ?? 'Check-in'}
+                </p>
+                <p className="text-xs flex-shrink-0" style={{ color: isOggi ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
+                  {label} {isOggi && '→'}
+                </p>
+              </a>
+            )
+          })}
+        </div>
       )}
 
       {/* Stats */}
