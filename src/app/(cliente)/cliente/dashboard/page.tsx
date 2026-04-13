@@ -163,7 +163,7 @@ export default async function ClienteDashboard() {
             const dataObj = new Date(pc.data)
             const oggi2 = new Date(); oggi2.setHours(0,0,0,0)
             const isOggi = dataObj.toDateString() === oggi2.toDateString()
-            const isFuturo = dataObj > oggi2
+            const isFuturo = dataObj.toDateString() !== oggi2.toDateString() && dataObj > oggi2
             const label = isOggi ? 'Oggi' : dataObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
             if (completato) return null
             if (isFuturo) return (
