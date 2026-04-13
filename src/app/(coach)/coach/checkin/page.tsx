@@ -120,16 +120,14 @@ export default function CoachCheckinPage() {
         .gte('data', new Date().toISOString().split('T')[0])
         .order('data', { ascending: true })
         .limit(200),
-      supabase.from('profiles')
-        .select('id, full_name')
-        .eq('coach_id', user.id)
-        .eq('role', 'cliente')
-        .order('full_name'),
+      supabase.from('coach_clienti')
+        .select('cliente_id, profiles!coach_clienti_cliente_id_fkey(id, full_name)')
+        .eq('coach_id', user.id),
     ])
 
     setSets((setsRes.data as any) ?? [])
     setSchedulazioni((schedRes.data as any) ?? [])
-    setClienti((clientiRes.data as any) ?? [])
+    setClienti((clientiRes.data as any)?.map((r: any) => r.profiles) ?? [])
     setLoading(false)
   }
 
