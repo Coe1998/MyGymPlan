@@ -679,6 +679,7 @@ export default function SchedaEditorModal({
   const [richiede_rpe, setRichiede_rpe] = useState(false)
   const [richiede_rir, setRichiede_rir] = useState(false)
   const [savingToggle, setSavingToggle] = useState(false)
+  const [useDesktopEditor, setUseDesktopEditor] = useState(false)
 
   const handleToggleRPE = async (val: boolean) => {
     setRichiede_rpe(val); setSavingToggle(true)
@@ -1160,6 +1161,19 @@ export default function SchedaEditorModal({
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
               Editor Scheda
             </p>
+			{/* Toggle editor — solo desktop */}
+			<div className="hidden lg:flex items-center gap-2 mt-1 mb-2">
+			  <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Editor</span>
+			  <button onClick={() => setUseDesktopEditor(p => !p)}
+				className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+				style={{
+				  background: useDesktopEditor ? 'oklch(0.60 0.15 200 / 15%)' : 'oklch(0.22 0 0)',
+				  color: useDesktopEditor ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+				  border: `1px solid ${useDesktopEditor ? 'oklch(0.60 0.15 200 / 30%)' : 'oklch(1 0 0 / 10%)'}`,
+				}}>
+				{useDesktopEditor ? '⊞ Desktop' : '☰ Mobile'}
+			  </button>
+			</div>
             <input
               value={schedaNomeEdit}
               onChange={e => setSchedaNomeEdit(e.target.value)}
@@ -1701,7 +1715,7 @@ export default function SchedaEditorModal({
                     <div key={p.tempId}>
 
                       {/* MOBILE: card espandibile — invariato */}
-                      <div className="lg:hidden rounded-2xl overflow-hidden"
+                      <div className={`${useDesktopEditor ? 'hidden' : 'lg:hidden'} rounded-2xl overflow-hidden`}
                         style={{ background: 'oklch(0.19 0 0)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
                         <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
                           onClick={() => setPendingEsercizi(prev => prev.map(x =>
@@ -1752,7 +1766,7 @@ export default function SchedaEditorModal({
                       </div>
 
                       {/* DESKTOP: riga inline */}
-                      <div className="hidden lg:block">
+                      <div className={useDesktopEditor ? 'block' : 'hidden lg:block'}>
                         {/* Riga base */}
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
