@@ -81,9 +81,10 @@ export default function CoachChatPage() {
 
   useEffect(() => { fetchMessaggi() }, [fetchMessaggi])
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messaggi])
+	useEffect(() => {
+	  if (messaggi.length === 0) return
+	  bottomRef.current?.scrollIntoView({ behavior: messaggi.length === 1 ? 'instant' : 'smooth' })
+	}, [messaggi])
 
   useEffect(() => {
     if (!clienteAttivo || !coachId) return
@@ -156,6 +157,16 @@ export default function CoachChatPage() {
   }
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+
+	const formatDataSeparatore = (ts: string) => {
+	  const d = new Date(ts)
+	  const oggi = new Date(); oggi.setHours(0,0,0,0)
+	  const ieri = new Date(oggi); ieri.setDate(ieri.getDate() - 1)
+	  d.setHours(0,0,0,0)
+	  if (d.getTime() === oggi.getTime()) return 'Oggi'
+	  if (d.getTime() === ieri.getTime()) return 'Ieri'
+	  return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+	}
 
   const URL_REGEX = /(https?:\/\/[^\s]+)/g
   const renderTesto = (t: string, daCoach: boolean) => {
@@ -384,7 +395,25 @@ export default function CoachChatPage() {
               {messaggi.length === 0 && (
                 <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
               )}
-              {messaggi.map(renderMessaggio)}
+              {messaggi.map((m, i) => {
+				  const prevM = messaggi[i - 1]
+				  const showDate = !prevM || new Date(m.created_at).toDateString() !== new Date(prevM.created_at).toDateString()
+				  return (
+					<div key={m.id}>
+					  {showDate && (
+						<div className="flex items-center gap-3 my-3">
+						  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+						  <span className="text-xs font-semibold px-2"
+							style={{ color: 'oklch(0.45 0 0)' }}>
+							{formatDataSeparatore(m.created_at)}
+						  </span>
+						  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+						</div>
+					  )}
+					  {renderMessaggio(m)}
+					</div>
+				  )
+				})}
               <div ref={bottomRef} />
             </div>
             {inputArea(false)}

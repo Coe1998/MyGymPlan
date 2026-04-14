@@ -88,9 +88,10 @@ export default function ClienteChatPage() {
     } catch { }
   }
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messaggi])
+	useEffect(() => {
+	  if (messaggi.length === 0) return
+	  bottomRef.current?.scrollIntoView({ behavior: messaggi.length === 1 ? 'instant' : 'smooth' })
+	}, [messaggi])
 
   useEffect(() => {
     if (!coachId || !clienteId) return
@@ -164,6 +165,15 @@ export default function ClienteChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
+	const formatDataSeparatore = (ts: string) => {
+	  const d = new Date(ts); d.setHours(0,0,0,0)
+	  const oggi = new Date(); oggi.setHours(0,0,0,0)
+	  const ieri = new Date(oggi); ieri.setDate(ieri.getDate() - 1)
+	  if (d.getTime() === oggi.getTime()) return 'Oggi'
+	  if (d.getTime() === ieri.getTime()) return 'Ieri'
+	  return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+	}
+
   const renderTesto = (t: string, daCoach: boolean) => {
     const parti = t.split(/(https?:\/\/[^\s]+)/g)
     return parti.map((parte, i) => {
@@ -221,31 +231,42 @@ export default function ClienteChatPage() {
               Nessun messaggio ancora. Scrivi al tuo coach!
             </p>
           )}
-          {messaggi.map(m => (
-            <div key={m.id} className={`flex ${m.da_coach ? 'justify-start' : 'justify-end'}`}>
-              <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
-                style={{
-                  background: m.da_coach ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)',
-                  borderBottomLeftRadius: m.da_coach ? 4 : 16,
-                  borderBottomRightRadius: m.da_coach ? 16 : 4,
-                }}>
-                {m.metadata ? (
-                  <ChatAllegatoCard
-                    metadata={m.metadata}
-                    daCoach={m.da_coach}
-                    ruolo="cliente"
-                  />
-                ) : (
-                  <p className="text-sm break-words" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
-                    {renderTesto(m.testo ?? '', m.da_coach)}
-                  </p>
-                )}
-                <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.45 0 0)' : 'oklch(0.30 0 0)' }}>
-                  {formatOra(m.created_at)}
-                </p>
-              </div>
-            </div>
-          ))}
+          {messaggi.map((m, i) => {
+		  const prevM = messaggi[i - 1]
+		  const showDate = !prevM || new Date(m.created_at).toDateString() !== new Date(prevM.created_at).toDateString()
+		  return (
+			<div key={m.id}>
+			  {showDate && (
+				<div className="flex items-center gap-3 my-3">
+				  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+				  <span className="text-xs font-semibold px-2" style={{ color: 'oklch(0.45 0 0)' }}>
+					{formatDataSeparatore(m.created_at)}
+				  </span>
+				  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+				</div>
+			  )}
+			  <div className={`flex ${m.da_coach ? 'justify-start' : 'justify-end'}`}>
+				<div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+				  style={{
+					background: m.da_coach ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)',
+					borderBottomLeftRadius: m.da_coach ? 4 : 16,
+					borderBottomRightRadius: m.da_coach ? 16 : 4,
+				  }}>
+				  {m.metadata ? (
+					<ChatAllegatoCard metadata={m.metadata} daCoach={m.da_coach} ruolo="cliente" />
+				  ) : (
+					<p className="text-sm break-words" style={{ color: m.da_coach ? 'oklch(0.90 0 0)' : 'oklch(0.11 0 0)' }}>
+					  {renderTesto(m.testo ?? '', m.da_coach)}
+					</p>
+				  )}
+				  <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.45 0 0)' : 'oklch(0.30 0 0)' }}>
+					{formatOra(m.created_at)}
+				  </p>
+				</div>
+			  </div>
+			</div>
+		  )
+		})}
           <div ref={bottomRef} />
         </div>
 
