@@ -38,7 +38,8 @@ export default function CoachChatPage() {
   const [schedeCoach, setSchedeCoach] = useState<{ id: string; nome: string; giorni_count: number }[]>([])
   const [sessioniCliente, setSessioniCliente] = useState<any[]>([])
   const [loadingAllegati, setLoadingAllegati] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollRefMobile = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -81,10 +82,13 @@ export default function CoachChatPage() {
 
   useEffect(() => { fetchMessaggi() }, [fetchMessaggi])
 
-	useEffect(() => {
-  if (messaggi.length === 0) return
-  bottomRef.current?.scrollIntoView()
-}, [messaggi])
+  useEffect(() => {
+    if (messaggi.length === 0) return
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+    const elM = scrollRefMobile.current
+    if (elM) elM.scrollTop = elM.scrollHeight
+  }, [messaggi])
 
   useEffect(() => {
     if (!clienteAttivo || !coachId) return
@@ -127,7 +131,6 @@ export default function CoachChatPage() {
   const inviaAllegato = async (metadata: object) => {
     if (!clienteAttivo || !coachId) return
     setShowAllegati(false)
-    // Niente ottimistico: lascia fare al realtime (stesso comportamento di inviaMessaggio)
     await supabase.from('messaggi').insert({
       coach_id: coachId,
       cliente_id: clienteAttivo.id,
@@ -158,15 +161,14 @@ export default function CoachChatPage() {
 
   const formatOra = (ts: string) => new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 
-	const formatDataSeparatore = (ts: string) => {
-	  const d = new Date(ts)
-	  const oggi = new Date(); oggi.setHours(0,0,0,0)
-	  const ieri = new Date(oggi); ieri.setDate(ieri.getDate() - 1)
-	  d.setHours(0,0,0,0)
-	  if (d.getTime() === oggi.getTime()) return 'Oggi'
-	  if (d.getTime() === ieri.getTime()) return 'Ieri'
-	  return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
-	}
+  const formatDataSeparatore = (ts: string) => {
+    const d = new Date(ts); d.setHours(0,0,0,0)
+    const oggi = new Date(); oggi.setHours(0,0,0,0)
+    const ieri = new Date(oggi); ieri.setDate(ieri.getDate() - 1)
+    if (d.getTime() === oggi.getTime()) return 'Oggi'
+    if (d.getTime() === ieri.getTime()) return 'Ieri'
+    return d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
+  }
 
   const URL_REGEX = /(https?:\/\/[^\s]+)/g
   const renderTesto = (t: string, daCoach: boolean) => {
@@ -190,30 +192,47 @@ export default function CoachChatPage() {
     })
   }
 
-  const renderMessaggio = (m: Messaggio) => (
-    <div key={m.id} className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
-      <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
-        style={{
-          background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-          borderBottomRightRadius: m.da_coach ? 4 : 16,
-          borderBottomLeftRadius: m.da_coach ? 16 : 4,
-        }}>
-        {m.metadata ? (
-          <ChatAllegatoCard
-            metadata={m.metadata}
-            daCoach={m.da_coach}
-            ruolo="coach"
-            clienteId={clienteAttivo?.id}
-          />
-        ) : (
-          <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>
-            {renderTesto(m.testo ?? '', m.da_coach)}
-          </p>
-        )}
-        <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>
-          {formatOra(m.created_at)}
-        </p>
-      </div>
+  const renderMessaggi = (ref: React.RefObject<HTMLDivElement>) => (
+    <div ref={ref} className="flex-1 overflow-y-auto p-4 space-y-2">
+      {messaggi.length === 0 && (
+        <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
+      )}
+      {messaggi.map((m, i) => {
+        const prevM = messaggi[i - 1]
+        const showDate = !prevM || new Date(m.created_at).toDateString() !== new Date(prevM.created_at).toDateString()
+        return (
+          <div key={m.id}>
+            {showDate && (
+              <div className="flex items-center gap-3 my-3">
+                <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+                <span className="text-xs font-semibold px-2" style={{ color: 'oklch(0.45 0 0)' }}>
+                  {formatDataSeparatore(m.created_at)}
+                </span>
+                <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+              </div>
+            )}
+            <div className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
+              <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+                style={{
+                  background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                  borderBottomRightRadius: m.da_coach ? 4 : 16,
+                  borderBottomLeftRadius: m.da_coach ? 16 : 4,
+                }}>
+                {m.metadata ? (
+                  <ChatAllegatoCard metadata={m.metadata} daCoach={m.da_coach} ruolo="coach" clienteId={clienteAttivo?.id} />
+                ) : (
+                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>
+                    {renderTesto(m.testo ?? '', m.da_coach)}
+                  </p>
+                )}
+                <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>
+                  {formatOra(m.created_at)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 
@@ -225,9 +244,7 @@ export default function CoachChatPage() {
         <div className="space-y-3 py-2">
           {schedeCoach.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>
-                Schede assegnate
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Schede assegnate</p>
               <div className="flex flex-wrap gap-2">
                 {schedeCoach.map(s => (
                   <button key={s.id}
@@ -242,9 +259,7 @@ export default function CoachChatPage() {
           )}
           {sessioniCliente.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>
-                Sessioni recenti
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Sessioni recenti</p>
               <div className="flex flex-wrap gap-2">
                 {sessioniCliente.slice(0, 5).map((s: any) => (
                   <button key={s.id}
@@ -262,9 +277,7 @@ export default function CoachChatPage() {
             </div>
           )}
           {schedeCoach.length === 0 && sessioniCliente.length === 0 && (
-            <p className="text-xs py-2 text-center" style={{ color: 'oklch(0.45 0 0)' }}>
-              Nessuna scheda o sessione disponibile
-            </p>
+            <p className="text-xs py-2 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda o sessione disponibile</p>
           )}
         </div>
       )}
@@ -339,13 +352,13 @@ export default function CoachChatPage() {
 
       {/* DESKTOP: layout a due colonne */}
       <div className="hidden lg:flex gap-4"
-	  style={{
-		position: 'fixed',
-		top: 'calc(env(safe-area-inset-top) + 1rem)',
-		left: '16rem',
-		right: '2rem',
-		bottom: '1rem',
-	  }}>
+        style={{
+          position: 'fixed',
+          top: 'calc(env(safe-area-inset-top) + 1rem)',
+          left: '16rem',
+          right: '2rem',
+          bottom: '1rem',
+        }}>
         <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
           <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
@@ -391,31 +404,7 @@ export default function CoachChatPage() {
               </div>
               <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {messaggi.length === 0 && (
-                <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
-              )}
-              {messaggi.map((m, i) => {
-				  const prevM = messaggi[i - 1]
-				  const showDate = !prevM || new Date(m.created_at).toDateString() !== new Date(prevM.created_at).toDateString()
-				  return (
-					<div key={m.id}>
-					  {showDate && (
-						<div className="flex items-center gap-3 my-3">
-						  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
-						  <span className="text-xs font-semibold px-2"
-							style={{ color: 'oklch(0.45 0 0)' }}>
-							{formatDataSeparatore(m.created_at)}
-						  </span>
-						  <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
-						</div>
-					  )}
-					  {renderMessaggio(m)}
-					</div>
-				  )
-				})}
-              <div ref={bottomRef} />
-            </div>
+            {renderMessaggi(scrollRef)}
             {inputArea(false)}
           </div>
         ) : (
@@ -446,13 +435,7 @@ export default function CoachChatPage() {
             </div>
             <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {messaggi.length === 0 && (
-              <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
-            )}
-            {messaggi.map(renderMessaggio)}
-            <div ref={bottomRef} />
-          </div>
+          {renderMessaggi(scrollRefMobile)}
           {inputArea(true)}
         </div>
       )}
