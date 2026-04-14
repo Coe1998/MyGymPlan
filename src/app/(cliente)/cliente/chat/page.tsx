@@ -89,9 +89,9 @@ export default function ClienteChatPage() {
   }
 
 	useEffect(() => {
-	  if (messaggi.length === 0) return
-	  bottomRef.current?.scrollIntoView({ behavior: messaggi.length === 1 ? 'instant' : 'smooth' })
-	}, [messaggi])
+  if (messaggi.length === 0) return
+  bottomRef.current?.scrollIntoView()
+}, [messaggi])
 
   useEffect(() => {
     if (!coachId || !clienteId) return

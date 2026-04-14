@@ -82,9 +82,9 @@ export default function CoachChatPage() {
   useEffect(() => { fetchMessaggi() }, [fetchMessaggi])
 
 	useEffect(() => {
-	  if (messaggi.length === 0) return
-	  bottomRef.current?.scrollIntoView({ behavior: messaggi.length === 1 ? 'instant' : 'smooth' })
-	}, [messaggi])
+  if (messaggi.length === 0) return
+  bottomRef.current?.scrollIntoView()
+}, [messaggi])
 
   useEffect(() => {
     if (!clienteAttivo || !coachId) return
