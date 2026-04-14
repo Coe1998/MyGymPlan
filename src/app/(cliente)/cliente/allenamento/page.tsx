@@ -90,6 +90,7 @@ export default function AllenamentoPage() {
   const timerEndRef = useRef<number | null>(null)
   const userIdRef = useRef<string | null>(null)
   const scheduledPushIdRef = useRef<string | null>(null)
+  const localNotifRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const isViewMode = !!sessioneIdParam
 
@@ -138,6 +139,29 @@ export default function AllenamentoPage() {
   function cancelTimerPush() {
     scheduledPushIdRef.current = null
     fetch('/api/push/schedule', { method: 'DELETE' }).catch(() => {})
+  }
+
+  function scheduleLocalNotification(secondi: number) {
+    if (localNotifRef.current) clearTimeout(localNotifRef.current)
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+    localNotifRef.current = setTimeout(() => {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        new Notification('Recupero terminato! 💪', {
+          body: 'Pronti per la prossima serie.',
+          icon: '/logo/Bynari_WO1.png',
+          tag: 'timer-recupero',
+        })
+      }
+    }, secondi * 1000)
+  }
+
+  function cancelLocalNotification() {
+    if (localNotifRef.current) {
+      clearTimeout(localNotifRef.current)
+      localNotifRef.current = null
+    }
   }
 
   const TIPO_COLORS: Record<string, { color: string; bg: string; label: string }> = {
@@ -393,6 +417,7 @@ export default function AllenamentoPage() {
         timerEndRef.current = null
         localStorage.removeItem('bynari_timer_end')
         cancelTimerPush()  // il server non deve mandare il doppio
+        cancelLocalNotification()
         feedbackLocale()   // beep + vibrazione immediati
       } else {
         setTimerSecondi(remaining)
@@ -592,6 +617,19 @@ export default function AllenamentoPage() {
       ...prev,
       [ese.id]: { ...prev[ese.id], serie: prev[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, completata: nuovoStato } : s) }
     }))
+
+    // ── Timer parte SUBITO, prima di qualsiasi chiamata di rete ──
+    if (nuovoStato) {
+      const endTs = Date.now() + ese.recupero_secondi * 1000
+      timerEndRef.current = endTs
+      localStorage.setItem('bynari_timer_end', endTs.toString())
+      setTimerSecondi(ese.recupero_secondi)
+      setTimerAttivo(true)
+      scheduleLocalNotification(ese.recupero_secondi)
+      scheduleTimerPush(endTs) // fallback per quando il browser è chiuso
+      if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
+    }
+
     const { data: existing } = await supabase.from('log_serie').select('id')
       .eq('sessione_id', sessioneId).eq('scheda_esercizio_id', ese.id).eq('numero_serie', serieIndex + 1).single()
     const tipoInput = ese.esercizi.tipo_input ?? 'reps'
@@ -608,15 +646,6 @@ export default function AllenamentoPage() {
     }
     if (existing) { await supabase.from('log_serie').update(payload).eq('id', existing.id) }
     else { await supabase.from('log_serie').insert(payload) }
-    if (nuovoStato) {
-      const endTs = Date.now() + ese.recupero_secondi * 1000
-      timerEndRef.current = endTs
-      localStorage.setItem('bynari_timer_end', endTs.toString())
-      setTimerSecondi(ese.recupero_secondi)
-      setTimerAttivo(true)
-      scheduleTimerPush(endTs)
-      if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
-    }
 
     // Suggerimento progressive overload per l'esercizio successivo
     if (nuovoStato) {
@@ -851,7 +880,7 @@ export default function AllenamentoPage() {
               <div className="text-2xl font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
                 {Math.floor(timerSecondi / 60).toString().padStart(2, '0')}:{(timerSecondi % 60).toString().padStart(2, '0')}
               </div>
-              <button onClick={() => { setTimerAttivo(false); cancelTimerPush() }}
+              <button onClick={() => { setTimerAttivo(false); cancelTimerPush(); cancelLocalNotification() }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium"
                 style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
                 Salta
