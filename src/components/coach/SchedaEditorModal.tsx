@@ -1715,7 +1715,7 @@ export default function SchedaEditorModal({
                     <div key={p.tempId}>
 
                       {/* MOBILE: card espandibile — invariato */}
-                      <div className={`${useDesktopEditor ? 'hidden' : 'lg:hidden'} rounded-2xl overflow-hidden`}
+                      <div className={`${useDesktopEditor ? 'hidden' : 'block'} rounded-2xl overflow-hidden`}
                         style={{ background: 'oklch(0.19 0 0)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
                         <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
                           onClick={() => setPendingEsercizi(prev => prev.map(x =>
@@ -1766,7 +1766,7 @@ export default function SchedaEditorModal({
                       </div>
 
                       {/* DESKTOP: riga inline */}
-                      <div className={`${useDesktopEditor ? 'hidden' : 'block'} rounded-2xl overflow-hidden`}>
+                      <div className={useDesktopEditor ? 'block' : 'hidden'}>
                         {/* Riga base */}
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
