@@ -38,8 +38,8 @@ export default function CoachChatPage() {
   const [schedeCoach, setSchedeCoach] = useState<{ id: string; nome: string; giorni_count: number }[]>([])
   const [sessioniCliente, setSessioniCliente] = useState<any[]>([])
   const [loadingAllegati, setLoadingAllegati] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const scrollRefMobile = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const scrollRefMobile = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -192,7 +192,7 @@ export default function CoachChatPage() {
     })
   }
 
-  const renderMessaggi = (ref: React.RefObject<HTMLDivElement>) => (
+  const renderMessaggi = (ref: React.RefObject<HTMLDivElement | null>) => (
     <div ref={ref} className="flex-1 overflow-y-auto p-4 space-y-2">
       {messaggi.length === 0 && (
         <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
