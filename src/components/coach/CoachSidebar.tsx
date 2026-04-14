@@ -40,8 +40,10 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
 	const [unreadClienti, setUnreadClienti] = useState(0)
 
 	useEffect(() => {
+	  const supabase = createClient()
+	  let channel: any
+
 	  const fetchUnread = async () => {
-		const supabase = createClient()
 		const { data: { user } } = await supabase.auth.getUser()
 		if (!user) return
 		const { data } = await supabase.from('messaggi')
@@ -51,8 +53,17 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
 		  .eq('letto', false)
 		const clientiUnici = new Set((data ?? []).map((m: any) => m.cliente_id))
 		setUnreadClienti(clientiUnici.size)
+
+		channel = supabase.channel('unread-coach')
+		  .on('postgres_changes', {
+			event: '*', schema: 'public', table: 'messaggi',
+			filter: `coach_id=eq.${user.id}`,
+		  }, () => fetchUnread())
+		  .subscribe()
 	  }
+
 	  fetchUnread()
+	  return () => { if (channel) supabase.removeChannel(channel) }
 	}, [])
 
   const handleLogout = async () => {
