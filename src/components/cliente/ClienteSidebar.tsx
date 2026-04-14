@@ -30,7 +30,23 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [allenamentoUrl, setAllenamentoUrl] = useState('/cliente/allenamento')
+	const [unreadCoach, setUnreadCoach] = useState(0)
 
+	useEffect(() => {
+	  const fetchUnread = async () => {
+		const supabase = createClient()
+		const { data: { user } } = await supabase.auth.getUser()
+		if (!user) return
+		const { data } = await supabase.from('messaggi')
+		  .select('id')
+		  .eq('cliente_id', user.id)
+		  .eq('da_coach', true)
+		  .eq('letto', false)
+		setUnreadCoach(data?.length ?? 0)
+	  }
+	  fetchUnread()
+	}, [])
+	
   useEffect(() => {
     const saved = localStorage.getItem('bynari_allenamento_url')
     if (saved) setAllenamentoUrl(saved)
@@ -79,7 +95,13 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
                   borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
                 }}>
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                {item.label}
+				{item.label}
+				{item.href === '/cliente/chat' && unreadCoach > 0 && (
+				  <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
+					style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.97 0 0)' }}>
+					{unreadCoach}
+				  </span>
+				)}
               </Link>
             )
           })}
@@ -122,14 +144,23 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             : pathname === item.href
           return (
             <Link key={item.href} href={href}
-              className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
-              style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
-              <FontAwesomeIcon icon={item.icon} className="text-2xl" />
-              <span className="text-xs font-medium"
-                style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
-                {item.label}
-              </span>
-            </Link>
+			  className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
+			  style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
+			  <div className="relative">
+				<FontAwesomeIcon icon={item.icon} className="text-2xl"
+				  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+				{item.href === '/cliente/chat' && unreadCoach > 0 && (
+				  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center font-black"
+					style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.97 0 0)', fontSize: 9 }}>
+					{unreadCoach}
+				  </span>
+				)}
+			  </div>
+			  <span className="text-xs font-medium"
+				style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+				{item.label}
+			  </span>
+			</Link>
           )
         })}
 
