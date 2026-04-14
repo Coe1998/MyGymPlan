@@ -33,8 +33,10 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
 	const [unreadCoach, setUnreadCoach] = useState(0)
 
 	useEffect(() => {
+	  const supabase = createClient()
+	  let channel: any
+
 	  const fetchUnread = async () => {
-		const supabase = createClient()
 		const { data: { user } } = await supabase.auth.getUser()
 		if (!user) return
 		const { data } = await supabase.from('messaggi')
@@ -43,8 +45,17 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
 		  .eq('da_coach', true)
 		  .eq('letto', false)
 		setUnreadCoach(data?.length ?? 0)
+
+		channel = supabase.channel('unread-cliente')
+		  .on('postgres_changes', {
+			event: '*', schema: 'public', table: 'messaggi',
+			filter: `cliente_id=eq.${user.id}`,
+		  }, () => fetchUnread())
+		  .subscribe()
 	  }
+
 	  fetchUnread()
+	  return () => { if (channel) supabase.removeChannel(channel) }
 	}, [])
 	
   useEffect(() => {
