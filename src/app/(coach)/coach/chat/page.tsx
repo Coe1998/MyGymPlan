@@ -327,7 +327,14 @@ export default function CoachChatPage() {
       </div>
 
       {/* DESKTOP: layout a due colonne */}
-      <div className="hidden lg:flex gap-4" style={{ height: 'calc(100dvh - 2rem)' }}>
+      <div className="hidden lg:flex gap-4"
+	  style={{
+		position: 'fixed',
+		top: 'calc(env(safe-area-inset-top) + 1rem)',
+		left: '16rem',
+		right: '2rem',
+		bottom: '1rem',
+	  }}>
         <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
           style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
           <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
