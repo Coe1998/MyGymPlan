@@ -1766,7 +1766,7 @@ export default function SchedaEditorModal({
                       </div>
 
                       {/* DESKTOP: riga inline */}
-                      <div className={useDesktopEditor ? 'block' : 'hidden lg:block'}>
+                      <div className={`${useDesktopEditor ? 'hidden' : 'block'} rounded-2xl overflow-hidden`}>
                         {/* Riga base */}
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
