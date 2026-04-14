@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChartBar, faUsers, faDumbbell, faRightFromBracket, faGear, faEllipsisVertical, faComments, faLayerGroup, faClipboardList, faCalendarDays, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import { useState, useEffect } from 'react'
 
 // Voci nav mobile — 5 tasti fissi
 const navItemsMobile = [
@@ -36,6 +37,24 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [allenamentoOpen, setAllenamentoOpen] = useState(false)
   const [clientiOpen, setClientiOpen] = useState(false)
+
+	const [unreadClienti, setUnreadClienti] = useState(0)
+
+	useEffect(() => {
+	  const fetchUnread = async () => {
+		const supabase = createClient()
+		const { data: { user } } = await supabase.auth.getUser()
+		if (!user) return
+		const { data } = await supabase.from('messaggi')
+		  .select('cliente_id')
+		  .eq('coach_id', user.id)
+		  .eq('da_coach', false)
+		  .eq('letto', false)
+		const clientiUnici = new Set((data ?? []).map((m: any) => m.cliente_id))
+		setUnreadClienti(clientiUnici.size)
+	  }
+	  fetchUnread()
+	}, [])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -74,7 +93,13 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
                   borderLeft: isActive ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
                 }}>
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-                {item.label}
+				{item.label}
+				{item.href === '/coach/chat' && unreadClienti > 0 && (
+				  <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
+					style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+					{unreadClienti}
+				  </span>
+				)}
               </Link>
             )
           })}
@@ -204,20 +229,28 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
 
         {/* Chat */}
         {navItemsMobile.slice(2).map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link key={item.href} href={item.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
-              style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
-              <FontAwesomeIcon icon={item.icon} className="text-xl"
-                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
-              <span className="text-xs font-medium"
-                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
-                {item.label}
-              </span>
-            </Link>
-          )
-        })}
+		  const isActive = pathname === item.href
+		  return (
+			<Link key={item.href} href={item.href}
+			  className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1 relative"
+			  style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+			  <div className="relative">
+				<FontAwesomeIcon icon={item.icon} className="text-xl"
+				  style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+				{item.href === '/coach/chat' && unreadClienti > 0 && (
+				  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-xs font-black"
+					style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', fontSize: 9 }}>
+					{unreadClienti}
+				  </span>
+				)}
+			  </div>
+			  <span className="text-xs font-medium"
+				style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+				{item.label}
+			  </span>
+			</Link>
+		  )
+		})}
 
         {/* Altro popup */}
         <div className="relative flex-1 flex justify-center">
