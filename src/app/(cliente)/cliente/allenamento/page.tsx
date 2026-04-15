@@ -613,6 +613,15 @@ export default function AllenamentoPage() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
   }
 
+  const addMaxRepsSerie = (eseId: string) => {
+    setLogs(prev => {
+      const current = prev[eseId]
+      if (!current) return prev
+      const newSerie: LogSerie = { numero_serie: current.serie.length + 1, peso_kg: '', ripetizioni: '', reps_sx: '', reps_dx: '', durata_secondi: '', rpe: '', rir: '', completata: false }
+      return { ...prev, [eseId]: { ...current, serie: [...current.serie, newSerie] } }
+    })
+  }
+
   const updateLog = (eseId: string, serieIndex: number, field: keyof LogSerie, value: string) => {
     if (isViewMode) return
     setLogs(prev => ({
@@ -1048,6 +1057,11 @@ export default function AllenamentoPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
+                    {ese.note && (
+                      <p className="text-xs mt-0.5 leading-snug" style={{ color: 'oklch(0.70 0.19 46)', whiteSpace: 'pre-line' }}>
+                        📝 {ese.note}
+                      </p>
+                    )}
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ' reps'} · {ese.recupero_secondi}s rec.</span>
                       {ese.peso_consigliato_kg != null && (
@@ -1464,18 +1478,13 @@ export default function AllenamentoPage() {
                           const prevReps = (eseLog?.serie ?? []).slice(0, serieIndex).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
                           const rimanenti = Math.max(0, target - prevReps)
                           const isMaxSerie = serieIndex === 0
-                          const autoComplete = !isMaxSerie && rimanenti <= 0
-
-                          if (autoComplete && !serie.completata && !isViewMode) {
-                            // auto-complete remaining series at 0 reps
-                          }
 
                           return (
                             <div className="flex items-center gap-3">
                               <div className="flex-1">
                                 <label className="text-xs mb-1 block font-bold"
                                   style={{ color: isMaxSerie ? 'oklch(0.75 0.15 60)' : 'oklch(0.50 0 0)' }}>
-                                  {isMaxSerie ? 'MAX reps' : `Rimanenti: ${rimanenti}`}
+                                  {isMaxSerie ? 'MAX reps' : `Rimanenti: ${rimanenti} reps`}
                                 </label>
                                 <input type="number" inputMode="numeric" value={serie.ripetizioni}
                                   onChange={e => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
@@ -1519,6 +1528,41 @@ export default function AllenamentoPage() {
                     </div>
                   )
                 })}
+
+                {/* Max+Total: CTA aggiungi serie / obiettivo raggiunto */}
+                {ese.tipo === 'max_reps' && !isViewMode && (() => {
+                  const target = ese.max_reps_target ?? 30
+                  const totalReps = (eseLog?.serie ?? []).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
+                  const allCompleted = (eseLog?.serie ?? []).every(s => s.completata)
+                  const maxSerieCompletata = eseLog?.serie[0]?.completata ?? false
+                  if (!maxSerieCompletata) return null
+                  if (totalReps >= target) {
+                    return (
+                      <div className="px-4 py-3 flex items-center gap-2"
+                        style={{ background: 'oklch(0.65 0.18 150 / 8%)', borderTop: '1px solid oklch(0.65 0.18 150 / 20%)' }}>
+                        <span className="text-base">🎉</span>
+                        <p className="text-sm font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>
+                          Obiettivo raggiunto! {totalReps}/{target} reps
+                        </p>
+                      </div>
+                    )
+                  }
+                  const rimanenti = target - totalReps
+                  if (!allCompleted) return null
+                  return (
+                    <div className="px-4 py-3 space-y-2"
+                      style={{ background: 'oklch(0.75 0.15 60 / 6%)', borderTop: '1px solid oklch(0.75 0.15 60 / 20%)' }}>
+                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.75 0.15 60)' }}>
+                        Ancora {rimanenti} reps al tuo obiettivo ({totalReps}/{target})
+                      </p>
+                      <button onClick={() => addMaxRepsSerie(ese.id)}
+                        className="w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                        style={{ background: 'oklch(0.75 0.15 60 / 20%)', border: '1px solid oklch(0.75 0.15 60 / 40%)', color: 'oklch(0.75 0.15 60)' }}>
+                        + Serie
+                      </button>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
             </div>
