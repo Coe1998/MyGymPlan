@@ -26,6 +26,13 @@ interface SchedaEsercizio {
   progressione_tipo: string
   warmup_serie: { peso: string; reps: string }[]
   esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' }
+  peso_consigliato_kg: number | null
+  tut: string | null
+  amrap_minuti: number | null
+  emom_reps_per_minuto: number | null
+  emom_durata_minuti: number | null
+  emom_rounds: number | null
+  max_reps_target: number | null
 }
 
 interface LogSerie {
@@ -170,6 +177,9 @@ export default function AllenamentoPage() {
     dropset:    { color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 15%)',  label: 'Dropset' },
     rest_pause: { color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 15%)', label: 'Rest-Pause' },
     piramidale: { color: 'oklch(0.85 0.12 80)',  bg: 'oklch(0.85 0.12 80 / 15%)',  label: 'Piramidale' },
+    amrap:      { color: 'oklch(0.70 0.18 330)', bg: 'oklch(0.70 0.18 330 / 15%)', label: 'AMRAP' },
+    emom:       { color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 15%)', label: 'EMOM' },
+    max_reps:   { color: 'oklch(0.75 0.15 60)',  bg: 'oklch(0.75 0.15 60 / 15%)',  label: 'Max+Total' },
   }
 
   const fetchGiorno = useCallback(async () => {
@@ -206,6 +216,7 @@ export default function AllenamentoPage() {
           id, serie, ripetizioni, recupero_secondi, note, ordine,
           tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
           prepara_secondi, progressione_tipo, warmup_serie,
+          peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
           esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
         )`)
         .eq('id', sessione.giorno_id)
@@ -998,6 +1009,18 @@ export default function AllenamentoPage() {
                     <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ' reps'} · {ese.recupero_secondi}s rec.</span>
+                      {ese.peso_consigliato_kg != null && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
+                          ~{ese.peso_consigliato_kg}kg suggeriti
+                        </span>
+                      )}
+                      {ese.tut && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
+                          TUT {ese.tut}
+                        </span>
+                      )}
                       {ese.tipo === 'dropset' && ese.drop_count && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
                           style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
@@ -1238,6 +1261,190 @@ export default function AllenamentoPage() {
                                   placeholder="0" readOnly={isViewMode}
                                   className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                                   style={inputStyle} />
+                              </div>
+                              {checkBtn}
+                            </div>
+                          )
+                        }
+
+                        // AMRAP logger
+                        if (ese.tipo === 'amrap') {
+                          const amrapSec = (ese.amrap_minuti ?? 10) * 60
+                          const isActive = eseTimerState?.eseId === ese.id && eseTimerState?.serieIndex === serieIndex
+                          const handleAmrapStart = () => {
+                            if (serie.completata || isViewMode) return
+                            if (eseTimerRef.current) clearInterval(eseTimerRef.current)
+                            setEseTimerState({ eseId: ese.id, serieIndex, fase: 'run', secondi: amrapSec })
+                            eseTimerRef.current = setInterval(() => {
+                              setEseTimerState(prev => {
+                                if (!prev) return prev
+                                if (prev.secondi <= 1) {
+                                  clearInterval(eseTimerRef.current!)
+                                  eseTimerRef.current = null
+                                  feedbackLocale()
+                                  // auto-start recupero
+                                  const endTs = Date.now() + ese.recupero_secondi * 1000
+                                  timerEndRef.current = endTs
+                                  localStorage.setItem('bynari_timer_end', endTs.toString())
+                                  setTimerSecondi(ese.recupero_secondi)
+                                  setTimerAttivo(true)
+                                  scheduleLocalNotification(ese.recupero_secondi)
+                                  scheduleTimerPush(endTs)
+                                  return null
+                                }
+                                return { ...prev, secondi: prev.secondi - 1 }
+                              })
+                            }, 1000)
+                          }
+                          const handleAmrapDone = () => {
+                            if (eseTimerRef.current) { clearInterval(eseTimerRef.current); eseTimerRef.current = null }
+                            const repsVal = logs[ese.id]?.serie[serieIndex]?.ripetizioni ?? ''
+                            setEseTimerState(null)
+                            toggleSerie(ese, serieIndex, { ripetizioni: repsVal })
+                          }
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 text-center">
+                                  {isActive ? (
+                                    <div className="px-4 py-3 rounded-xl text-2xl font-black tabular-nums"
+                                      style={{ background: 'oklch(0.70 0.18 330 / 15%)', border: '1px solid oklch(0.70 0.18 330 / 40%)', color: 'oklch(0.70 0.18 330)' }}>
+                                      {Math.floor((eseTimerState?.secondi ?? 0) / 60).toString().padStart(2, '0')}:{((eseTimerState?.secondi ?? 0) % 60).toString().padStart(2, '0')}
+                                    </div>
+                                  ) : serie.completata ? (
+                                    <div className="px-4 py-3 rounded-xl text-sm font-bold"
+                                      style={inputStyle}>Completata</div>
+                                  ) : (
+                                    <button onClick={handleAmrapStart}
+                                      className="w-full px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                      style={{ background: 'oklch(0.70 0.18 330 / 15%)', border: '1px solid oklch(0.70 0.18 330 / 40%)', color: 'oklch(0.70 0.18 330)' }}>
+                                      ▶ Start {ese.amrap_minuti}min
+                                    </button>
+                                  )}
+                                </div>
+                                <div style={{ width: '30%' }}>
+                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps fatte</label>
+                                  <input type="number" inputMode="numeric" value={serie.ripetizioni}
+                                    onChange={e => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
+                                    placeholder="0" readOnly={isViewMode || !!serie.completata}
+                                    className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                    style={inputStyle} />
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                  <label className="text-xs mb-1 block opacity-0">✓</label>
+                                  <button onClick={handleAmrapDone} disabled={!!serie.completata || isViewMode}
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                                    style={{
+                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
+                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      cursor: isViewMode || serie.completata ? 'default' : 'pointer',
+                                    }}>
+                                    {serie.completata
+                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        // EMOM logger
+                        if (ese.tipo === 'emom') {
+                          const emomReps = ese.emom_reps_per_minuto ?? 6
+                          const emomDurata = ese.emom_durata_minuti ?? 6
+                          const emomRounds = ese.emom_rounds ?? 4
+                          const isActive = eseTimerState?.eseId === ese.id && eseTimerState?.serieIndex === serieIndex
+                          const handleEmomStart = () => {
+                            if (serie.completata || isViewMode) return
+                            if (eseTimerRef.current) clearInterval(eseTimerRef.current)
+                            setEseTimerState({ eseId: ese.id, serieIndex, fase: 'run', secondi: 60 })
+                            eseTimerRef.current = setInterval(() => {
+                              setEseTimerState(prev => {
+                                if (!prev) return prev
+                                if (prev.secondi <= 1) {
+                                  feedbackLocale()
+                                  return { ...prev, secondi: 60 }
+                                }
+                                return { ...prev, secondi: prev.secondi - 1 }
+                              })
+                            }, 1000)
+                          }
+                          const handleEmomDone = () => {
+                            if (eseTimerRef.current) { clearInterval(eseTimerRef.current); eseTimerRef.current = null }
+                            setEseTimerState(null)
+                            toggleSerie(ese, serieIndex)
+                          }
+                          return (
+                            <div className="space-y-2">
+                              <div className="rounded-xl px-3 py-2 text-xs"
+                                style={{ background: 'oklch(0.65 0.18 180 / 8%)', border: '1px solid oklch(0.65 0.18 180 / 20%)' }}>
+                                <span style={{ color: 'oklch(0.65 0.18 180)' }}>{emomReps} reps/min · {emomDurata} min · {emomRounds} round</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 text-center">
+                                  {isActive ? (
+                                    <div className="px-4 py-3 rounded-xl text-2xl font-black tabular-nums"
+                                      style={{ background: 'oklch(0.65 0.18 180 / 15%)', border: '1px solid oklch(0.65 0.18 180 / 40%)', color: 'oklch(0.65 0.18 180)' }}>
+                                      {Math.floor((eseTimerState?.secondi ?? 0) / 60).toString().padStart(2, '0')}:{((eseTimerState?.secondi ?? 0) % 60).toString().padStart(2, '0')}
+                                    </div>
+                                  ) : serie.completata ? (
+                                    <div className="px-4 py-3 rounded-xl text-sm font-bold" style={inputStyle}>Completato</div>
+                                  ) : (
+                                    <button onClick={handleEmomStart}
+                                      className="w-full px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                      style={{ background: 'oklch(0.65 0.18 180 / 15%)', border: '1px solid oklch(0.65 0.18 180 / 40%)', color: 'oklch(0.65 0.18 180)' }}>
+                                      ▶ Start EMOM
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                  <label className="text-xs mb-1 block opacity-0">✓</label>
+                                  <button onClick={handleEmomDone} disabled={!!serie.completata || isViewMode}
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                                    style={{
+                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
+                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      cursor: isViewMode || serie.completata ? 'default' : 'pointer',
+                                    }}>
+                                    {serie.completata
+                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        // Max+Total logger
+                        if (ese.tipo === 'max_reps') {
+                          const target = ese.max_reps_target ?? 30
+                          const prevReps = (eseLog?.serie ?? []).slice(0, serieIndex).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
+                          const rimanenti = Math.max(0, target - prevReps)
+                          const isMaxSerie = serieIndex === 0
+                          const autoComplete = !isMaxSerie && rimanenti <= 0
+
+                          if (autoComplete && !serie.completata && !isViewMode) {
+                            // auto-complete remaining series at 0 reps
+                          }
+
+                          return (
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <label className="text-xs mb-1 block font-bold"
+                                  style={{ color: isMaxSerie ? 'oklch(0.75 0.15 60)' : 'oklch(0.50 0 0)' }}>
+                                  {isMaxSerie ? 'MAX reps' : `Rimanenti: ${rimanenti}`}
+                                </label>
+                                <input type="number" inputMode="numeric" value={serie.ripetizioni}
+                                  onChange={e => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
+                                  placeholder={isMaxSerie ? 'MAX' : String(rimanenti)}
+                                  readOnly={isViewMode || !!serie.completata}
+                                  className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                  style={{
+                                    ...inputStyle,
+                                    ...(isMaxSerie ? { border: '1px solid oklch(0.75 0.15 60 / 50%)', background: 'oklch(0.75 0.15 60 / 10%)' } : {}),
+                                  }} />
                               </div>
                               {checkBtn}
                             </div>

@@ -20,6 +20,13 @@ interface SchedaEsercizio {
   warmup_serie: { peso: string; reps: string }[]
   esercizi: Esercizio
   alternativa_esercizi?: Esercizio | null
+  peso_consigliato_kg: number | null
+  tut: string | null
+  amrap_minuti: number | null
+  emom_reps_per_minuto: number | null
+  emom_durata_minuti: number | null
+  emom_rounds: number | null
+  max_reps_target: number | null
 }
 
 interface Giorno { id: string; nome: string; ordine: number; warmup_note: string | null; scheda_esercizi: SchedaEsercizio[] }
@@ -32,6 +39,13 @@ interface EsForm {
   rest_pause_sec: string; piramide_dir: string
   prepara_secondi: string; progressione_tipo: string
   warmup_serie: string // JSON string of {peso,reps}[]
+  peso_consigliato_kg: string
+  tut: string
+  amrap_minuti: string
+  emom_reps_per_minuto: string
+  emom_durata_minuti: string
+  emom_rounds: string
+  max_reps_target: string
 }
 
 const EMPTY: EsForm = {
@@ -42,6 +56,10 @@ const EMPTY: EsForm = {
   rest_pause_sec: '15', piramide_dir: 'ascendente',
   prepara_secondi: '', progressione_tipo: 'peso',
   warmup_serie: '[]',
+  peso_consigliato_kg: '', tut: '',
+  amrap_minuti: '10', emom_reps_per_minuto: '6',
+  emom_durata_minuti: '6', emom_rounds: '4',
+  max_reps_target: '30',
 }
 
 const TIPI = [
@@ -51,6 +69,9 @@ const TIPI = [
   { id: 'dropset', label: 'Dropset', color: 'oklch(0.70 0.19 46)', bg: 'oklch(0.70 0.19 46 / 18%)' },
   { id: 'rest_pause', label: 'Rest-Pause', color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 18%)' },
   { id: 'piramidale', label: 'Piramidale', color: 'oklch(0.85 0.12 80)', bg: 'oklch(0.85 0.12 80 / 18%)' },
+  { id: 'amrap', label: 'AMRAP', color: 'oklch(0.70 0.18 330)', bg: 'oklch(0.70 0.18 330 / 18%)' },
+  { id: 'emom', label: 'EMOM', color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 18%)' },
+  { id: 'max_reps', label: 'Max+Total', color: 'oklch(0.75 0.15 60)', bg: 'oklch(0.75 0.15 60 / 18%)' },
 ]
 
 const getTipoInfo = (tipo: string) => TIPI.find(t => t.id === tipo) ?? TIPI[0]
@@ -374,6 +395,65 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         </div>
       )}
 
+      {/* ── AMRAP specifics ── */}
+      {form.tipo === 'amrap' && (
+        <div className="p-3 rounded-xl space-y-2" style={{ background: 'oklch(0.70 0.18 330 / 6%)', border: '1px solid oklch(0.70 0.18 330 / 20%)' }}>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.18 330)' }}>Minuti per round</label>
+            <input type="number" min="1" max="60" value={form.amrap_minuti} onChange={e => set('amrap_minuti', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+          </div>
+          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+            Timer a countdown — scaduto parte il recupero automaticamente
+          </p>
+        </div>
+      )}
+
+      {/* ── EMOM specifics ── */}
+      {form.tipo === 'emom' && (
+        <div className="p-3 rounded-xl space-y-2" style={{ background: 'oklch(0.65 0.18 180 / 6%)', border: '1px solid oklch(0.65 0.18 180 / 20%)' }}>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Reps/min</label>
+              <input type="number" min="1" value={form.emom_reps_per_minuto} onChange={e => set('emom_reps_per_minuto', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Durata (min)</label>
+              <input type="number" min="1" value={form.emom_durata_minuti} onChange={e => set('emom_durata_minuti', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Round</label>
+              <input type="number" min="1" value={form.emom_rounds} onChange={e => set('emom_rounds', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+          </div>
+          <p className="text-xs font-medium" style={{ color: 'oklch(0.65 0.18 180)' }}>
+            {form.emom_reps_per_minuto} reps/min × {form.emom_durata_minuti} min × {form.emom_rounds} round — recupero {form.recupero}s tra round
+          </p>
+        </div>
+      )}
+
+      {/* ── Max+Total specifics ── */}
+      {form.tipo === 'max_reps' && (
+        <div className="p-3 rounded-xl space-y-2" style={{ background: 'oklch(0.75 0.15 60 / 6%)', border: '1px solid oklch(0.75 0.15 60 / 20%)' }}>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold" style={{ color: 'oklch(0.75 0.15 60)' }}>Target reps totali</label>
+            <input type="number" min="1" value={form.max_reps_target} onChange={e => set('max_reps_target', e.target.value)}
+              className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+          </div>
+          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+            Serie 1 = MAX reps · Serie successive = il cliente distribuisce le {form.max_reps_target} reps rimanenti
+          </p>
+        </div>
+      )}
+
       {/* ── Serie / Reps|Durata / Recupero ── */}
       {(() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
@@ -420,6 +500,28 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           </div>
         )
       })()}
+
+      {/* ── Peso consigliato & TUT ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Peso consigliato (kg)</label>
+          <input type="number" inputMode="decimal" value={form.peso_consigliato_kg} onChange={e => set('peso_consigliato_kg', e.target.value)}
+            placeholder="es. 60"
+            className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>TUT</label>
+          <input type="text" value={form.tut} onChange={e => set('tut', e.target.value)}
+            placeholder="es. 3-1-2-0"
+            className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+        </div>
+      </div>
 
       {/* ── Note ── */}
       <div className="space-y-1.5">
@@ -713,6 +815,8 @@ export default function SchedaEditorModal({
             tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi,
             piramidale_direzione, alternativa_esercizio_id,
             prepara_secondi, progressione_tipo, warmup_serie,
+            peso_consigliato_kg, tut,
+            amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
             esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, tipo_input ),
             alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
           )
@@ -887,6 +991,13 @@ export default function SchedaEditorModal({
       prepara_secondi: f.prepara_secondi ? (parseInt(f.prepara_secondi) || null) : null,
       progressione_tipo: f.progressione_tipo || 'peso',
       warmup_serie: f.warmup_serie ? JSON.parse(f.warmup_serie) : [],
+      peso_consigliato_kg: f.peso_consigliato_kg ? (parseFloat(f.peso_consigliato_kg) || null) : null,
+      tut: f.tut.trim() || null,
+      amrap_minuti: f.tipo === 'amrap' ? (parseInt(f.amrap_minuti) || null) : null,
+      emom_reps_per_minuto: f.tipo === 'emom' ? (parseInt(f.emom_reps_per_minuto) || null) : null,
+      emom_durata_minuti: f.tipo === 'emom' ? (parseInt(f.emom_durata_minuti) || null) : null,
+      emom_rounds: f.tipo === 'emom' ? (parseInt(f.emom_rounds) || null) : null,
+      max_reps_target: f.tipo === 'max_reps' ? (parseInt(f.max_reps_target) || null) : null,
     }
   }
 
@@ -1435,6 +1546,31 @@ export default function SchedaEditorModal({
                                       {ese.piramidale_direzione === 'ascendente' ? '↑' : '↓'} {ese.piramidale_direzione}
                                     </span>
                                   )}
+                                  {ese.tipo === 'amrap' && ese.amrap_minuti && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.70 0.18 330 / 10%)', color: 'oklch(0.70 0.18 330)' }}>
+                                      {ese.amrap_minuti}min
+                                    </span>
+                                  )}
+                                  {ese.tipo === 'emom' && ese.emom_reps_per_minuto && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.18 180 / 10%)', color: 'oklch(0.65 0.18 180)' }}>
+                                      {ese.emom_reps_per_minuto}r/min × {ese.emom_durata_minuti}min × {ese.emom_rounds}rd
+                                    </span>
+                                  )}
+                                  {ese.tipo === 'max_reps' && ese.max_reps_target && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.75 0.15 60 / 10%)', color: 'oklch(0.75 0.15 60)' }}>
+                                      target {ese.max_reps_target} reps
+                                    </span>
+                                  )}
+                                  {ese.peso_consigliato_kg != null && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.60 0.15 200 / 10%)', color: 'oklch(0.60 0.15 200)' }}>
+                                      ~{ese.peso_consigliato_kg}kg
+                                    </span>
+                                  )}
+                                  {ese.tut && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.15 300 / 10%)', color: 'oklch(0.65 0.15 300)' }}>
+                                      TUT {ese.tut}
+                                    </span>
+                                  )}
                                   {ese.alternativa_esercizi && (
                                     <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.65 0.15 300 / 10%)', color: 'oklch(0.65 0.15 300)' }}>
                                       Alt: {(ese.alternativa_esercizi as any)?.nome}
@@ -1470,6 +1606,13 @@ export default function SchedaEditorModal({
                                       prepara_secondi: ese.prepara_secondi ? String(ese.prepara_secondi) : '',
                                       progressione_tipo: ese.progressione_tipo ?? 'peso',
                                       warmup_serie: JSON.stringify(ese.warmup_serie ?? []),
+                                      peso_consigliato_kg: ese.peso_consigliato_kg != null ? String(ese.peso_consigliato_kg) : '',
+                                      tut: ese.tut ?? '',
+                                      amrap_minuti: ese.amrap_minuti != null ? String(ese.amrap_minuti) : '10',
+                                      emom_reps_per_minuto: ese.emom_reps_per_minuto != null ? String(ese.emom_reps_per_minuto) : '6',
+                                      emom_durata_minuti: ese.emom_durata_minuti != null ? String(ese.emom_durata_minuti) : '6',
+                                      emom_rounds: ese.emom_rounds != null ? String(ese.emom_rounds) : '4',
+                                      max_reps_target: ese.max_reps_target != null ? String(ese.max_reps_target) : '30',
                                     })
                                   }}
                                   className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -1544,6 +1687,9 @@ export default function SchedaEditorModal({
                                     <option value="dropset">Dropset</option>
                                     <option value="rest_pause">Rest-Pause</option>
                                     <option value="piramidale">Piramidale</option>
+                                    <option value="amrap">AMRAP</option>
+                                    <option value="emom">EMOM</option>
+                                    <option value="max_reps">Max+Total</option>
                                   </select>
                                   {/* Serie */}
                                   <input type="number" min="1" max="20"
@@ -1673,6 +1819,26 @@ export default function SchedaEditorModal({
                                         placeholder="Indicazioni tecniche, avvertenze..."
                                         className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
                                         style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div className="space-y-1">
+                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Peso consigliato (kg)</label>
+                                        <input type="number" inputMode="decimal"
+                                          value={editForm.peso_consigliato_kg}
+                                          onChange={e => setEditForm(f => ({ ...f, peso_consigliato_kg: e.target.value }))}
+                                          placeholder="es. 60"
+                                          className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>TUT</label>
+                                        <input type="text"
+                                          value={editForm.tut}
+                                          onChange={e => setEditForm(f => ({ ...f, tut: e.target.value }))}
+                                          placeholder="es. 3-1-2-0"
+                                          className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      </div>
                                     </div>
                                   </div>
                                 )}
@@ -1832,6 +1998,9 @@ export default function SchedaEditorModal({
                             <option value="dropset">Dropset</option>
                             <option value="rest_pause">Rest-Pause</option>
                             <option value="piramidale">Piramidale</option>
+                            <option value="amrap">AMRAP</option>
+                            <option value="emom">EMOM</option>
+                            <option value="max_reps">Max+Total</option>
                           </select>
                           {/* Serie */}
                           <input type="number" min="1" max="20"
@@ -1991,6 +2160,31 @@ export default function SchedaEditorModal({
                                 placeholder="Indicazioni tecniche, avvertenze..."
                                 className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
                                 style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                            </div>
+                            {/* Peso consigliato & TUT */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Peso consigliato (kg)</label>
+                                <input type="number" inputMode="decimal"
+                                  value={p.form.peso_consigliato_kg}
+                                  onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                    x.tempId === p.tempId ? { ...x, form: { ...x.form, peso_consigliato_kg: e.target.value } } : x
+                                  ))}
+                                  placeholder="es. 60"
+                                  className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>TUT</label>
+                                <input type="text"
+                                  value={p.form.tut}
+                                  onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                    x.tempId === p.tempId ? { ...x, form: { ...x.form, tut: e.target.value } } : x
+                                  ))}
+                                  placeholder="es. 3-1-2-0"
+                                  className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                              </div>
                             </div>
                             {/* Warmup serie */}
                             <div className="space-y-1">
