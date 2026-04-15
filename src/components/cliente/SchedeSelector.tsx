@@ -17,7 +17,8 @@ export default function SchedeSelector({ assegnazioni }: { assegnazioni: Assegna
   const assegnazioniOrdinate = [...assegnazioni]
   .filter(a => {
     const oggi = new Date(); oggi.setHours(0, 0, 0, 0)
-    return new Date(a.data_inizio) <= oggi   // 👈 escludi schede future
+    const dataInizio = new Date(a.data_inizio); dataInizio.setHours(0, 0, 0, 0)
+    return dataInizio <= oggi   // 👈 escludi schede future (confronto locale, no timezone drift)
   })
   .sort((a, b) => {
     const oggi = new Date(); oggi.setHours(0,0,0,0)
