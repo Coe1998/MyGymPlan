@@ -296,7 +296,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Tipo</label>
         <div className="flex flex-wrap gap-2">
           {TIPI.map(t => (
-            <button key={t.id} onClick={() => setMany({ tipo: t.id, gruppo_id: ['superset','giant_set'].includes(t.id) ? form.gruppo_id : '' })}
+            <button key={t.id} onClick={() => setMany({ tipo: t.id, gruppo_id: ['superset','giant_set'].includes(t.id) ? form.gruppo_id : '', ripetizioni: t.id === 'amrap' ? 'MAX' : form.ripetizioni === 'MAX' ? '8-12' : form.ripetizioni })}
               className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
               style={{
                 background: form.tipo === t.id ? t.bg : 'oklch(0.23 0 0)',
@@ -1594,7 +1594,7 @@ export default function SchedaEditorModal({
                                       esercizio_id: ese.esercizio_id,
                                       alternativa_id: ese.alternativa_esercizio_id ?? '',
                                       serie: String(ese.serie),
-                                      ripetizioni: ese.ripetizioni,
+                                      ripetizioni: ese.tipo === 'amrap' ? 'MAX' : ese.ripetizioni,
                                       recupero: String(ese.recupero_secondi),
                                       note: ese.note ?? '',
                                       tipo: ese.tipo,
@@ -1678,7 +1678,7 @@ export default function SchedaEditorModal({
                                   {/* Tipo */}
                                   <select
                                     value={editForm.tipo}
-                                    onChange={e => setEditForm(f => ({ ...f, tipo: e.target.value }))}
+                                    onChange={e => setEditForm(f => ({ ...f, tipo: e.target.value, ripetizioni: e.target.value === 'amrap' ? 'MAX' : f.ripetizioni === 'MAX' ? '8-12' : f.ripetizioni }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
                                     style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
                                     <option value="normale">Normale</option>
@@ -1988,7 +1988,7 @@ export default function SchedaEditorModal({
                           <select
                             value={p.form.tipo}
                             onChange={e => setPendingEsercizi(prev => prev.map(x =>
-                              x.tempId === p.tempId ? { ...x, form: { ...x.form, tipo: e.target.value } } : x
+                              x.tempId === p.tempId ? { ...x, form: { ...x.form, tipo: e.target.value, ripetizioni: e.target.value === 'amrap' ? 'MAX' : x.form.ripetizioni === 'MAX' ? '8-12' : x.form.ripetizioni } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
                             style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
