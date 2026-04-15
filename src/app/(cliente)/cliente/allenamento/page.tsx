@@ -99,6 +99,7 @@ export default function AllenamentoPage() {
   const scheduledPushIdRef = useRef<string | null>(null)
   const localNotifRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
+  const [supersetNext, setSupersetNext] = useState<string | null>(null) // nome prossimo esercizio nel gruppo
   const isViewMode = !!sessioneIdParam
 
   // ── Notifica fine recupero ────────────────────────────────────────
@@ -180,6 +181,7 @@ export default function AllenamentoPage() {
     amrap:      { color: 'oklch(0.70 0.18 330)', bg: 'oklch(0.70 0.18 330 / 15%)', label: 'AMRAP' },
     emom:       { color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 15%)', label: 'EMOM' },
     max_reps:   { color: 'oklch(0.75 0.15 60)',  bg: 'oklch(0.75 0.15 60 / 15%)',  label: 'Max+Total' },
+    jump_set:   { color: 'oklch(0.65 0.20 280)', bg: 'oklch(0.65 0.20 280 / 15%)', label: 'Jump Set' },
   }
 
   const fetchGiorno = useCallback(async () => {
@@ -631,13 +633,36 @@ export default function AllenamentoPage() {
 
     // ── Timer parte SUBITO, prima di qualsiasi chiamata di rete ──
     if (nuovoStato) {
-      const endTs = Date.now() + ese.recupero_secondi * 1000
-      timerEndRef.current = endTs
-      localStorage.setItem('bynari_timer_end', endTs.toString())
-      setTimerSecondi(ese.recupero_secondi)
-      setTimerAttivo(true)
-      scheduleLocalNotification(ese.recupero_secondi)
-      scheduleTimerPush(endTs) // fallback per quando il browser è chiuso
+      // Superset / Giant Set: no timer after intermediate exercises in a round
+      const isSuperset = !!ese.gruppo_id && ['superset', 'giant_set'].includes(ese.tipo)
+      let skipTimer = false
+      if (isSuperset) {
+        const gruppoEsercizi = esercizi
+          .filter(e => e.gruppo_id === ese.gruppo_id)
+          .sort((a, b) => a.ordine - b.ordine)
+        const eseIdx = gruppoEsercizi.findIndex(e => e.id === ese.id)
+        const nextInGroup = gruppoEsercizi.slice(eseIdx + 1)
+        // Build tentative logs with current serie marked complete
+        const tentativeLogs = {
+          ...logs,
+          [ese.id]: { ...logs[ese.id], serie: logs[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, completata: true } : s) }
+        }
+        const hasNextToDo = nextInGroup.some(e => !tentativeLogs[e.id]?.serie[serieIndex]?.completata)
+        if (hasNextToDo) {
+          skipTimer = true
+          setSupersetNext(nextInGroup.find(e => !tentativeLogs[e.id]?.serie[serieIndex]?.completata)?.esercizi?.nome ?? null)
+          setTimeout(() => setSupersetNext(null), 3000)
+        }
+      }
+      if (!skipTimer) {
+        const endTs = Date.now() + ese.recupero_secondi * 1000
+        timerEndRef.current = endTs
+        localStorage.setItem('bynari_timer_end', endTs.toString())
+        setTimerSecondi(ese.recupero_secondi)
+        setTimerAttivo(true)
+        scheduleLocalNotification(ese.recupero_secondi)
+        scheduleTimerPush(endTs)
+      }
       if (richiede_rpe || richiede_rir) setRpeRirPicker({ eseId: ese.id, serieIndex })
     }
 
@@ -863,6 +888,22 @@ export default function AllenamentoPage() {
               style={{ background: 'oklch(0.30 0 0)', color: 'oklch(0.60 0 0)' }}>
               <FontAwesomeIcon icon={faXmark} className="text-xs" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Superset → prossimo esercizio indicator */}
+      {supersetNext && !isViewMode && (
+        <div className="fixed left-0 right-0 z-40 px-4"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}>
+          <div className="max-w-2xl mx-auto rounded-2xl px-5 py-3 flex items-center gap-3"
+            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 50%)', boxShadow: '0 8px 32px oklch(0 0 0 / 60%)' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base font-bold"
+              style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>→</div>
+            <div>
+              <p className="text-xs font-semibold" style={{ color: 'oklch(0.60 0.15 200)' }}>Prossimo nel gruppo</p>
+              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{supersetNext}</p>
+            </div>
           </div>
         </div>
       )}

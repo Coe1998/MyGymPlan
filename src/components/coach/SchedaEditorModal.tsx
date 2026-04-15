@@ -72,6 +72,7 @@ const TIPI = [
   { id: 'amrap', label: 'AMRAP', color: 'oklch(0.70 0.18 330)', bg: 'oklch(0.70 0.18 330 / 18%)' },
   { id: 'emom', label: 'EMOM', color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 18%)' },
   { id: 'max_reps', label: 'Max+Total', color: 'oklch(0.75 0.15 60)', bg: 'oklch(0.75 0.15 60 / 18%)' },
+  { id: 'jump_set', label: 'Jump Set', color: 'oklch(0.65 0.20 280)', bg: 'oklch(0.65 0.20 280 / 18%)' },
 ]
 
 const getTipoInfo = (tipo: string) => TIPI.find(t => t.id === tipo) ?? TIPI[0]
@@ -124,7 +125,6 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
   }
   const setMany = (updates: Partial<EsForm>) => onChange({ ...form, ...updates })
   const tipo = getTipoInfo(form.tipo)
-  const isGrouped = ['superset', 'giant_set'].includes(form.tipo)
 
   const primarioNome = esercizi.find(e => e.id === form.esercizio_id)?.nome ?? ''
   const altNome = esercizi.find(e => e.id === form.alternativa_id)?.nome ?? ''
@@ -296,7 +296,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Tipo</label>
         <div className="flex flex-wrap gap-2">
           {TIPI.map(t => (
-            <button key={t.id} onClick={() => setMany({ tipo: t.id, gruppo_id: ['superset','giant_set'].includes(t.id) ? form.gruppo_id : '', ripetizioni: ['amrap','max_reps'].includes(t.id) ? 'MAX' : form.ripetizioni === 'MAX' ? '8-12' : form.ripetizioni })}
+            <button key={t.id} onClick={() => setMany({ tipo: t.id, ripetizioni: ['amrap','max_reps'].includes(t.id) ? 'MAX' : form.ripetizioni === 'MAX' ? '8-12' : form.ripetizioni })}
               className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
               style={{
                 background: form.tipo === t.id ? t.bg : 'oklch(0.23 0 0)',
@@ -309,44 +309,51 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         </div>
       </div>
 
-      {/* ── Gruppo (superset / giant set) ── */}
-      {isGrouped && (
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
-            Gruppo
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {/* Show as selected when gruppo_id is a new UUID not in existing gruppi */}
-            {(() => {
-              const isNuovo = !!form.gruppo_id && !gruppi.some(g => g.id === form.gruppo_id)
-              return (
-                <button onClick={() => {
-                  const newId = crypto.randomUUID()
-                  set('gruppo_id', newId)
-                }}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold"
-                  style={{
-                    background: isNuovo ? tipo.bg : 'oklch(0.23 0 0)',
-                    color: isNuovo ? tipo.color : 'oklch(0.48 0 0)',
-                    border: isNuovo ? `1px solid ${tipo.color}40` : '1px solid transparent',
-                  }}>
-                  {isNuovo ? `✓ Nuovo gruppo` : '+ Nuovo gruppo'}
-                </button>
-              )
-            })()}
-            {gruppi.map(g => (
-              <button key={g.id} onClick={() => set('gruppo_id', g.id)}
+      {/* ── Gruppo ── */}
+      <div className="space-y-2">
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+          Gruppo
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {/* Nessun gruppo */}
+          <button onClick={() => set('gruppo_id', '')}
+            className="px-3 py-1.5 rounded-full text-xs font-bold"
+            style={{
+              background: !form.gruppo_id ? 'oklch(0.30 0 0)' : 'oklch(0.23 0 0)',
+              color: !form.gruppo_id ? 'oklch(0.80 0 0)' : 'oklch(0.48 0 0)',
+              border: !form.gruppo_id ? '1px solid oklch(1 0 0 / 20%)' : '1px solid transparent',
+            }}>
+            Nessun gruppo
+          </button>
+          {/* Nuovo gruppo */}
+          {(() => {
+            const isNuovo = !!form.gruppo_id && !gruppi.some(g => g.id === form.gruppo_id)
+            return (
+              <button onClick={() => set('gruppo_id', crypto.randomUUID())}
                 className="px-3 py-1.5 rounded-full text-xs font-bold"
                 style={{
-                  background: form.gruppo_id === g.id ? tipo.bg : 'oklch(0.23 0 0)',
-                  color: form.gruppo_id === g.id ? tipo.color : 'oklch(0.48 0 0)',
+                  background: isNuovo ? tipo.bg : 'oklch(0.23 0 0)',
+                  color: isNuovo ? tipo.color : 'oklch(0.48 0 0)',
+                  border: isNuovo ? `1px solid ${tipo.color}40` : '1px solid transparent',
                 }}>
-                Gruppo {g.label}
+                {isNuovo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}
               </button>
-            ))}
-          </div>
+            )
+          })()}
+          {/* Gruppi esistenti */}
+          {gruppi.map(g => (
+            <button key={g.id} onClick={() => set('gruppo_id', g.id)}
+              className="px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{
+                background: form.gruppo_id === g.id ? tipo.bg : 'oklch(0.23 0 0)',
+                color: form.gruppo_id === g.id ? tipo.color : 'oklch(0.48 0 0)',
+                border: form.gruppo_id === g.id ? `1px solid ${tipo.color}40` : '1px solid transparent',
+              }}>
+              Gruppo {g.label}
+            </button>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* ── Dropset specifics ── */}
       {form.tipo === 'dropset' && (
@@ -973,10 +980,6 @@ export default function SchedaEditorModal({
   }
 
   const buildPayload = (f: EsForm, giornoId: string, ordine: number) => {
-    let gruppoId: string | null = null
-    if (['superset', 'giant_set'].includes(f.tipo)) {
-      gruppoId = f.gruppo_id && f.gruppo_id !== '' ? f.gruppo_id : crypto.randomUUID()
-    }
     return {
       giorno_id: giornoId,
       esercizio_id: f.esercizio_id,
@@ -987,7 +990,7 @@ export default function SchedaEditorModal({
       note: f.note.trim() || null,
       ordine,
       tipo: f.tipo,
-      gruppo_id: gruppoId || null,
+      gruppo_id: f.gruppo_id || null,
       drop_count: f.tipo === 'dropset' ? (parseInt(f.drop_count) || 2) : null,
       drop_percentage: f.tipo === 'dropset' ? (parseInt(f.drop_pct) || 20) : null,
       rest_pause_secondi: f.tipo === 'rest_pause' ? (parseInt(f.rest_pause_sec) || 15) : null,
@@ -1694,6 +1697,7 @@ export default function SchedaEditorModal({
                                     <option value="amrap">AMRAP</option>
                                     <option value="emom">EMOM</option>
                                     <option value="max_reps">Max+Total</option>
+                                    <option value="jump_set">Jump Set</option>
                                   </select>
                                   {/* Serie */}
                                   <input type="number" min="1" max="20"
