@@ -467,8 +467,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         const isTimer = tipoInput === 'timer'
         const isUnilaterale = tipoInput === 'reps_unilaterale'
         const isMaxReps = form.tipo === 'max_reps'
-        // Max+Total: only show recupero
-        const campi = isMaxReps
+        const isEmom = form.tipo === 'emom'
+        // Max+Total / EMOM: only show recupero
+        const campi = (isMaxReps || isEmom)
           ? [{ key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90', hint: null }]
           : [
               { key: 'serie' as keyof EsForm, label: 'Serie', ph: '3', hint: null },
@@ -481,7 +482,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               { key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90', hint: null },
             ]
         return (
-          <div className={`grid gap-3 ${isMaxReps ? 'grid-cols-1' : 'grid-cols-3'}`}>
+          <div className={`grid gap-3 ${(isMaxReps || isEmom) ? 'grid-cols-1' : 'grid-cols-3'}`}>
             {campi.map(f => (
               <div key={f.key} className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-widest"
