@@ -573,33 +573,34 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <div className="space-y-1.5">
                 {warmup.map((w, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <span className="text-xs w-14 flex-shrink-0 text-center font-bold"
+                    <span className="text-xs w-8 flex-shrink-0 text-center font-bold"
                       style={{ color: 'oklch(0.65 0.18 150)' }}>
                       W{i + 1}
                     </span>
-                    <input
-                      type="text" value={w.peso}
-                      onChange={e => {
-                        const updated = [...warmup]
-                        updated[i] = { ...updated[i], peso: e.target.value }
-                        set('warmup_serie', JSON.stringify(updated))
-                      }}
-                      placeholder="Peso (kg)"
-                      className="flex-1 px-2.5 py-2 rounded-xl text-sm outline-none text-center"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                    />
-                    <span style={{ color: 'oklch(0.35 0 0)' }}>×</span>
-                    <input
-                      type="text" value={w.reps}
-                      onChange={e => {
-                        const updated = [...warmup]
-                        updated[i] = { ...updated[i], reps: e.target.value }
-                        set('warmup_serie', JSON.stringify(updated))
-                      }}
-                      placeholder="Reps"
-                      className="flex-1 px-2.5 py-2 rounded-xl text-sm outline-none text-center"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
-                    />
+                    <div className="grid grid-cols-2 gap-1.5 flex-1">
+                      <input
+                        type="text" value={w.peso}
+                        onChange={e => {
+                          const updated = [...warmup]
+                          updated[i] = { ...updated[i], peso: e.target.value }
+                          set('warmup_serie', JSON.stringify(updated))
+                        }}
+                        placeholder="Peso (kg)"
+                        className="px-2 py-2 rounded-xl text-sm outline-none text-center"
+                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      />
+                      <input
+                        type="text" value={w.reps}
+                        onChange={e => {
+                          const updated = [...warmup]
+                          updated[i] = { ...updated[i], reps: e.target.value }
+                          set('warmup_serie', JSON.stringify(updated))
+                        }}
+                        placeholder="Reps"
+                        className="px-2 py-2 rounded-xl text-sm outline-none text-center"
+                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      />
+                    </div>
                     <button
                       onClick={() => {
                         const updated = warmup.filter((_, idx) => idx !== i)
@@ -2219,7 +2220,10 @@ export default function SchedaEditorModal({
                               {(() => {
                                 const warmup: { peso: string; reps: string }[] = JSON.parse(p.form.warmup_serie || '[]')
                                 return warmup.map((w, wi) => (
-                                  <div key={wi} className="flex items-center gap-2">
+                                  <div key={wi} className="flex items-center gap-1.5">
+                                    <span className="text-xs w-7 flex-shrink-0 text-center font-bold"
+                                      style={{ color: 'oklch(0.65 0.18 150)' }}>W{wi + 1}</span>
+                                    <div className="grid grid-cols-2 gap-1 flex-1">
                                     <input type="number" value={w.peso} placeholder="Peso kg"
                                       onChange={e => {
                                         const updated = [...warmup]; updated[wi] = { ...updated[wi], peso: e.target.value }
@@ -2227,7 +2231,7 @@ export default function SchedaEditorModal({
                                           x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify(updated) } } : x
                                         ))
                                       }}
-                                      className="flex-1 text-xs rounded-lg outline-none px-2 py-1"
+                                      className="text-xs rounded-lg outline-none px-2 py-1 text-center"
                                       style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
                                     <input type="number" value={w.reps} placeholder="Reps"
                                       onChange={e => {
@@ -2236,8 +2240,9 @@ export default function SchedaEditorModal({
                                           x.tempId === p.tempId ? { ...x, form: { ...x.form, warmup_serie: JSON.stringify(updated) } } : x
                                         ))
                                       }}
-                                      className="flex-1 text-xs rounded-lg outline-none px-2 py-1"
+                                      className="text-xs rounded-lg outline-none px-2 py-1 text-center"
                                       style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    </div>
                                     <button onClick={() => {
                                       const updated = warmup.filter((_, i) => i !== wi)
                                       setPendingEsercizi(prev => prev.map(x =>
