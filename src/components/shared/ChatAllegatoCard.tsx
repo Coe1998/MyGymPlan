@@ -43,7 +43,9 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
   if (isScheda) {
     href = ruolo === 'coach' ? `/coach/schede/${metadata.id}` : `/cliente/schede/${metadata.id}`
   } else if (isNota) {
-    href = `/cliente/allenamento?sessione=${metadata.sessione_id}`
+    href = ruolo === 'coach' && clienteId
+      ? `/coach/clienti/${clienteId}/analytics`
+      : `/cliente/allenamento?sessione=${metadata.sessione_id}`
   } else {
     href = ruolo === 'coach' && clienteId
       ? `/coach/clienti/${clienteId}/analytics`
