@@ -253,6 +253,7 @@ export default function AllenamentoPage() {
         id, serie, ripetizioni, recupero_secondi, note, ordine,
         tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
         prepara_secondi, progressione_tipo, warmup_serie,
+        peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
         esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
       )`)
       .eq('id', giornoId).single()
