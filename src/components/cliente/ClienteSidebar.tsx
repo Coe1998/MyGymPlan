@@ -30,6 +30,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
   const [allenamentoUrl, setAllenamentoUrl] = useState('/cliente/allenamento')
+  const [haSessioneInCorso, setHaSessioneInCorso] = useState(false)
 	const [unreadCoach, setUnreadCoach] = useState(0)
 
 	useEffect(() => {
@@ -57,10 +58,27 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
 	  fetchUnread()
 	  return () => { if (channel) supabase.removeChannel(channel) }
 	}, [])
-	
+
   useEffect(() => {
     const saved = localStorage.getItem('bynari_allenamento_url')
     if (saved) setAllenamentoUrl(saved)
+
+    // Check if there's a real in-progress session
+    const checkSessioneInCorso = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const ventiquattroOreFA = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const { data } = await supabase
+        .from('sessioni')
+        .select('id')
+        .eq('cliente_id', user.id)
+        .eq('completata', false)
+        .gte('data', ventiquattroOreFA)
+        .limit(1)
+      setHaSessioneInCorso((data?.length ?? 0) > 0)
+    }
+    checkSessioneInCorso()
   }, [pathname])
 
   const navItems = buildNavItems(dietaAbilitata)
@@ -71,6 +89,28 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
+  }
+
+  const handleAllenamento = async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/cliente/allenamento'); return }
+    const ventiquattroOreFA = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data } = await supabase
+      .from('sessioni')
+      .select('id')
+      .eq('cliente_id', user.id)
+      .eq('completata', false)
+      .gte('data', ventiquattroOreFA)
+      .limit(1)
+    if (data && data.length > 0) {
+      router.push(allenamentoUrl)
+    } else {
+      localStorage.removeItem('bynari_allenamento_url')
+      setAllenamentoUrl('/cliente/allenamento')
+      setHaSessioneInCorso(false)
+      router.push('/cliente/allenamento')
+    }
   }
 
   return (
@@ -93,10 +133,32 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             Navigazione
           </p>
           {navItemsAll.map((item) => {
-            const href = item.href === '/cliente/allenamento' ? allenamentoUrl : item.href
+            const isAllena = item.href === '/cliente/allenamento'
+            const href = isAllena ? allenamentoUrl : item.href
             const isActive = pathname.startsWith('/cliente/allenamento')
-              ? item.href === '/cliente/allenamento'
+              ? isAllena
               : pathname === item.href
+            if (isAllena) {
+              return (
+                <button key={item.href}
+                  onClick={handleAllenamento}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
+                    color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.55 0 0)',
+                    borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
+                  }}>
+                  <div className="relative w-4 h-4">
+                    <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                    {haSessioneInCorso && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                        style={{ background: 'oklch(0.70 0.19 46)' }} />
+                    )}
+                  </div>
+                  {item.label}
+                </button>
+              )
+            }
             return (
               <Link key={item.href} href={href}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
@@ -149,10 +211,32 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
         {navItems.map((item) => {
-          const href = item.href === '/cliente/allenamento' ? allenamentoUrl : item.href
+          const isAllena = item.href === '/cliente/allenamento'
+          const href = isAllena ? allenamentoUrl : item.href
           const isActive = pathname.startsWith('/cliente/allenamento')
-            ? item.href === '/cliente/allenamento'
+            ? isAllena
             : pathname === item.href
+          if (isAllena) {
+            return (
+              <button key={item.href}
+                onClick={handleAllenamento}
+                className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
+                style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
+                <div className="relative">
+                  <FontAwesomeIcon icon={item.icon} className="text-2xl"
+                    style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+                  {haSessioneInCorso && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full"
+                      style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid oklch(0.16 0 0)' }} />
+                  )}
+                </div>
+                <span className="text-xs font-medium"
+                  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+                  {item.label}
+                </span>
+              </button>
+            )
+          }
           return (
             <Link key={item.href} href={href}
 			  className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
