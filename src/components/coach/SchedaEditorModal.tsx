@@ -992,8 +992,8 @@ export default function SchedaEditorModal({
       giorno_id: giornoId,
       esercizio_id: f.esercizio_id,
       alternativa_esercizio_id: f.alternativa_id || null,
-      serie: f.tipo === 'max_reps' ? 1 : (parseInt(f.serie) || 3),
-      ripetizioni: f.tipo === 'max_reps' ? 'MAX' : (f.ripetizioni.trim() || (f.progressione_tipo === 'durata' ? '30' : '8-12')),
+      serie: f.tipo === 'max_reps' ? 1 : f.tipo === 'emom' ? (parseInt(f.emom_rounds) || 1) : (parseInt(f.serie) || 3),
+      ripetizioni: f.tipo === 'max_reps' ? 'MAX' : f.tipo === 'emom' ? `${parseInt(f.emom_reps_per_minuto) || 6}r/min` : (f.ripetizioni.trim() || (f.progressione_tipo === 'durata' ? '30' : '8-12')),
       recupero_secondi: parseInt(f.recupero) || 90,
       note: f.note.trim() || null,
       ordine,
@@ -1708,18 +1708,22 @@ export default function SchedaEditorModal({
                                     <option value="jump_set">Jump Set</option>
                                   </select>
                                   {/* Serie */}
+                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && (
                                   <input type="number" min="1" max="20"
                                     value={editForm.serie}
                                     onChange={e => setEditForm(f => ({ ...f, serie: e.target.value }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
                                     style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  )}
                                   {/* Reps */}
+                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && (
                                   <input type="text"
                                     value={editForm.ripetizioni}
                                     onChange={e => setEditForm(f => ({ ...f, ripetizioni: e.target.value }))}
                                     placeholder="8-12"
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
                                     style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  )}
                                   {/* Recupero */}
                                   <input type="number"
                                     value={editForm.recupero}
@@ -1917,7 +1921,9 @@ export default function SchedaEditorModal({
                                   {esercizi.find(e => e.id === p.form.esercizio_id)?.nome ?? 'Esercizio'}
                                 </p>
                                 <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
-                                  {p.form.serie}×{p.form.ripetizioni} · {p.form.recupero}s rec.
+                                  {p.form.tipo === 'emom'
+                                    ? `${p.form.emom_reps_per_minuto}r/min × ${p.form.emom_durata_minuti}min × ${p.form.emom_rounds}rd · ${p.form.recupero}s rec.`
+                                    : `${p.form.serie}×${p.form.ripetizioni} · ${p.form.recupero}s rec.`}
                                 </p>
                               </>
                             ) : (
@@ -2019,6 +2025,7 @@ export default function SchedaEditorModal({
                             <option value="max_reps">Max+Total</option>
                           </select>
                           {/* Serie */}
+                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && (
                           <input type="number" min="1" max="20"
                             value={p.form.serie}
                             onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2026,7 +2033,9 @@ export default function SchedaEditorModal({
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
                             style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                          )}
                           {/* Reps */}
+                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && (
                           <input type="text"
                             value={p.form.ripetizioni}
                             onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2035,6 +2044,7 @@ export default function SchedaEditorModal({
                             placeholder="8-12"
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
                             style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                          )}
                           {/* Recupero */}
                           <input type="number"
                             value={p.form.recupero}
