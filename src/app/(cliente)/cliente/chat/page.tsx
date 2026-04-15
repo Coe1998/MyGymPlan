@@ -14,14 +14,20 @@ interface Messaggio {
   letto: boolean
   created_at: string
   metadata?: {
-    tipo: 'scheda' | 'sessione'
-    id: string
+    tipo: 'scheda' | 'sessione' | 'nota_esercizio'
+    id?: string
     nome?: string
     giorni?: number
     data?: string
     giorno_nome?: string
     completata?: boolean
     durata_secondi?: number | null
+    nota_id?: string
+    testo_nota?: string
+    esercizio_nome?: string
+    sessione_id?: string
+    scheda_esercizio_id?: string
+    assegnazione_id?: string
   } | null
 }
 
@@ -35,6 +41,7 @@ export default function ClienteChatPage() {
   const [loading, setLoading] = useState(true)
   const [showAllegati, setShowAllegati] = useState(false)
   const [sessioniRecenti, setSessioniRecenti] = useState<any[]>([])
+  const [noteRecenti, setNoteRecenti] = useState<any[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -110,16 +117,26 @@ export default function ClienteChatPage() {
     return () => { supabase.removeChannel(channel) }
   }, [coachId, clienteId])
 
-  const fetchSessioniRecenti = async () => {
+  const fetchAllegati = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { data } = await supabase
-      .from('sessioni')
-      .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
-      .eq('cliente_id', user.id)
-      .order('data', { ascending: false })
-      .limit(8)
-    setSessioniRecenti((data as any) ?? [])
+    const [sessRes, noteRes] = await Promise.all([
+      supabase
+        .from('sessioni')
+        .select('id, data, completata, durata_secondi, scheda_giorni(nome)')
+        .eq('cliente_id', user.id)
+        .order('data', { ascending: false })
+        .limit(8),
+      supabase
+        .from('note_esercizio')
+        .select(`id, testo, created_at, sessione_id,
+          scheda_esercizi!note_esercizio_scheda_esercizio_id_fkey ( id, esercizi!scheda_esercizi_esercizio_id_fkey ( nome ) )`)
+        .eq('cliente_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ])
+    setSessioniRecenti((sessRes.data as any) ?? [])
+    setNoteRecenti((noteRes.data as any) ?? [])
   }
 
   const inviaAllegato = async (metadata: object) => {
@@ -269,27 +286,64 @@ export default function ClienteChatPage() {
         </div>
 
         {showAllegati && (
-          <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            {sessioniRecenti.length === 0 ? (
-              <p className="text-xs py-3 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione disponibile</p>
+          <div className="px-4 pb-3 flex-shrink-0 space-y-3 max-h-56 overflow-y-auto"
+            style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            {sessioniRecenti.length === 0 && noteRecenti.length === 0 ? (
+              <p className="text-xs py-3 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun allegato disponibile</p>
             ) : (
-              <div className="py-2">
-                <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Sessioni recenti</p>
-                <div className="flex flex-wrap gap-2">
-                  {sessioniRecenti.map((s: any) => (
-                    <button key={s.id}
-                      onClick={() => inviaAllegato({
-                        tipo: 'sessione', id: s.id,
-                        giorno_nome: s.scheda_giorni?.nome ?? 'Allenamento',
-                        data: s.data, completata: s.completata, durata_secondi: s.durata_secondi,
+              <>
+                {sessioniRecenti.length > 0 && (
+                  <div className="pt-2">
+                    <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Sessioni recenti</p>
+                    <div className="flex flex-wrap gap-2">
+                      {sessioniRecenti.map((s: any) => (
+                        <button key={s.id}
+                          onClick={() => inviaAllegato({
+                            tipo: 'sessione', id: s.id,
+                            giorno_nome: s.scheda_giorni?.nome ?? 'Allenamento',
+                            data: s.data, completata: s.completata, durata_secondi: s.durata_secondi,
+                          })}
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
+                          style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}>
+                          🏋️ {new Date(s.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {s.scheda_giorni?.nome ?? 'Allenamento'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {noteRecenti.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Note esercizi</p>
+                    <div className="flex flex-col gap-1.5">
+                      {noteRecenti.map((n: any) => {
+                        const nomeEse = (n.scheda_esercizi as any)?.esercizi?.nome ?? 'Esercizio'
+                        const schedaEseId = (n.scheda_esercizi as any)?.id ?? n.scheda_esercizio_id
+                        return (
+                          <button key={n.id}
+                            onClick={() => inviaAllegato({
+                              tipo: 'nota_esercizio',
+                              nota_id: n.id,
+                              testo_nota: n.testo,
+                              esercizio_nome: nomeEse,
+                              sessione_id: n.sessione_id,
+                              scheda_esercizio_id: schedaEseId,
+                            })}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all hover:opacity-80"
+                            style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+                            <span style={{ fontSize: 13, flexShrink: 0 }}>📝</span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold truncate" style={{ color: 'oklch(0.82 0 0)' }}>{nomeEse}</p>
+                              <p className="text-xs truncate" style={{ color: 'oklch(0.55 0 0)' }}>
+                                {n.testo.length > 45 ? n.testo.slice(0, 45) + '…' : n.testo}
+                              </p>
+                            </div>
+                          </button>
+                        )
                       })}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:opacity-80"
-                      style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(0.60 0.15 200 / 25%)' }}>
-                      🏋️ {new Date(s.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} — {s.scheda_giorni?.nome ?? 'Allenamento'}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -297,7 +351,7 @@ export default function ClienteChatPage() {
         <div className="px-4 py-3 flex gap-3 flex-shrink-0"
           style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
           <button
-            onClick={() => { setShowAllegati(p => !p); if (!showAllegati) fetchSessioniRecenti() }}
+            onClick={() => { setShowAllegati(p => !p); if (!showAllegati) fetchAllegati() }}
             className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
             style={{
               background: showAllegati ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
