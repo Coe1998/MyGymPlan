@@ -42,7 +42,7 @@ export default async function ClienteDashboard() {
       .select(`id, data_inizio, data_fine, attiva, pdf_alimentare_url, schede ( id, nome, descrizione, scheda_giorni ( id, nome, ordine ) )`)
       .eq('cliente_id', user.id).order('created_at', { ascending: false }),
     supabase.from('sessioni')
-      .select(`id, data, completata, scheda_giorni ( nome )`)
+      .select(`id, data, completata, giorno_id, assegnazione_id, scheda_giorni ( nome )`)
       .eq('cliente_id', user.id).order('data', { ascending: false }).limit(5),
     supabase.from('sessioni').select('id', { count: 'exact' }).eq('cliente_id', user.id),
     supabase.from('sessioni').select('id', { count: 'exact' })
@@ -242,6 +242,8 @@ export default async function ClienteDashboard() {
             id: s.id,
             data: s.data,
             completata: s.completata,
+            giorno_id: s.giorno_id ?? null,
+            assegnazione_id: s.assegnazione_id ?? null,
             scheda_giorni: s.scheda_giorni ?? null,
           }))} />
         )}

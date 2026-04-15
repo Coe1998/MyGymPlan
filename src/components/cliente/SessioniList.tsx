@@ -10,6 +10,8 @@ interface Sessione {
   id: string
   data: string
   completata: boolean
+  giorno_id: string | null
+  assegnazione_id: string | null
   scheda_giorni: { nome: string } | null
 }
 
@@ -47,6 +49,11 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
       {lista.map((s, i) => {
         const isInCorso = !s.completata
         const isConfirming = conferma === s.id
+        // In-progress: resume via giorno+assegnazione (edit mode), NOT ?sessione= (view mode)
+        const resumeUrl = s.giorno_id && s.assegnazione_id
+          ? `/cliente/allenamento?giorno=${s.giorno_id}&assegnazione=${s.assegnazione_id}`
+          : null
+        const handleResume = () => { if (isInCorso && !isConfirming && resumeUrl) router.push(resumeUrl) }
 
         return (
           <div key={s.id} className="flex items-center gap-4 px-6 py-4"
@@ -56,9 +63,13 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
               background: isInCorso ? 'oklch(0.70 0.19 46 / 4%)' : 'transparent',
             }}>
 
-            {/* Icona stato */}
+            {/* Icona stato — cliccabile se in corso */}
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-              style={{ background: isInCorso ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.18 150 / 15%)' }}>
+              style={{
+                background: isInCorso ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.18 150 / 15%)',
+                cursor: isInCorso && resumeUrl ? 'pointer' : 'default',
+              }}
+              onClick={handleResume}>
               {isInCorso
                 ? <FontAwesomeIcon icon={faPlay} style={{ color: 'oklch(0.70 0.19 46)', fontSize: 14 }} />
                 : <FontAwesomeIcon icon={faCircleCheck} style={{ color: 'oklch(0.65 0.18 150)' }} />}
@@ -66,8 +77,8 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
 
             {/* Nome + data — cliccabile se in corso */}
             <div className="flex-1 min-w-0"
-              style={{ cursor: isInCorso ? 'pointer' : 'default' }}
-              onClick={() => isInCorso && !isConfirming && router.push(`/cliente/allenamento?sessione=${s.id}`)}>
+              style={{ cursor: isInCorso && resumeUrl ? 'pointer' : 'default' }}
+              onClick={handleResume}>
               <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
                 {s.scheda_giorni?.nome ?? 'Allenamento'}
               </p>
@@ -83,9 +94,9 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
                 style={{
                   background: isInCorso ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.18 150 / 15%)',
                   color: isInCorso ? 'oklch(0.70 0.19 46)' : 'oklch(0.65 0.18 150)',
-                  cursor: isInCorso ? 'pointer' : 'default',
+                  cursor: isInCorso && resumeUrl ? 'pointer' : 'default',
                 }}
-                onClick={() => isInCorso && !isConfirming && router.push(`/cliente/allenamento?sessione=${s.id}`)}>
+                onClick={handleResume}>
                 {isInCorso ? 'In corso →' : 'Completato'}
               </span>
             )}
