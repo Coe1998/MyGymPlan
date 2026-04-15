@@ -1,17 +1,24 @@
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboardList, faDumbbell } from '@fortawesome/free-solid-svg-icons'
+import { faClipboardList, faDumbbell, faNoteSticky } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
   metadata: {
-    tipo: 'scheda' | 'sessione'
-    id: string
+    tipo: 'scheda' | 'sessione' | 'nota_esercizio'
+    id?: string
     nome?: string
     giorni?: number
     data?: string
     giorno_nome?: string
     completata?: boolean
     durata_secondi?: number | null
+    // nota_esercizio fields
+    nota_id?: string
+    testo_nota?: string
+    esercizio_nome?: string
+    sessione_id?: string
+    scheda_esercizio_id?: string
+    assegnazione_id?: string
   }
   daCoach: boolean
   ruolo: 'coach' | 'cliente'
@@ -28,16 +35,56 @@ function formatDurata(sec: number | null | undefined) {
 
 export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }: Props) {
   const isScheda = metadata.tipo === 'scheda'
+  const isNota = metadata.tipo === 'nota_esercizio'
   const accent = daCoach ? 'oklch(0.70 0.19 46)' : 'oklch(0.60 0.15 200)'
   const accentBg = daCoach ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.60 0.15 200 / 15%)'
 
   let href = '#'
   if (isScheda) {
     href = ruolo === 'coach' ? `/coach/schede/${metadata.id}` : `/cliente/schede/${metadata.id}`
+  } else if (isNota) {
+    href = `/cliente/allenamento?sessione=${metadata.sessione_id}`
   } else {
     href = ruolo === 'coach' && clienteId
       ? `/coach/clienti/${clienteId}/analytics`
       : `/cliente/allenamento?sessione=${metadata.id}`
+  }
+
+  if (isNota) {
+    return (
+      <Link href={href}
+        className="flex flex-col gap-1.5 rounded-xl px-3 py-2.5 mt-1 transition-all hover:opacity-80"
+        style={{
+          background: 'oklch(0.16 0 0)',
+          border: '1px solid oklch(0.70 0.19 46 / 30%)',
+          textDecoration: 'none',
+          minWidth: 200,
+          maxWidth: 300,
+        }}>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+            <FontAwesomeIcon icon={faNoteSticky} style={{ fontSize: 12 }} />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.70 0.19 46)' }}>
+            📝 Nota esercizio
+          </p>
+        </div>
+        {metadata.esercizio_nome && (
+          <p className="text-sm font-bold" style={{ color: 'oklch(0.90 0 0)' }}>
+            {metadata.esercizio_nome}
+          </p>
+        )}
+        {metadata.testo_nota && (
+          <p className="text-xs leading-snug" style={{ color: 'oklch(0.62 0 0)' }}>
+            {metadata.testo_nota.length > 100 ? metadata.testo_nota.slice(0, 100) + '…' : metadata.testo_nota}
+          </p>
+        )}
+        <p className="text-xs font-semibold mt-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
+          Vedi sessione →
+        </p>
+      </Link>
+    )
   }
 
   return (

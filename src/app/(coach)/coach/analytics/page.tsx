@@ -128,6 +128,7 @@ export default function AnalyticsPage() {
   const [totaleAssegnazioni, setTotaleAssegnazioni] = useState(0)
   const [totaleSessioni, setTotaleSessioni] = useState(0)
   const [clienteSelezionato, setClienteSelezionato] = useState<ClienteStats | null>(null)
+  const [noteEsercizioCliente, setNoteEsercizioCliente] = useState<any[]>([])
   const [alertAperto, setAlertAperto] = useState<{ clienteId: string; idx: number } | null>(null)
   const [sessioniDettaglio, setSessioniDettaglio] = useState<SessioneDettaglio[]>([])
   const [loadingSessioni, setLoadingSessioni] = useState(false)
@@ -468,6 +469,16 @@ export default function AnalyticsPage() {
     setDietaAbilitata(dietaRes.data?.dieta_abilitata ?? false)
     setMacroTargetCliente((targetRes.data as any) ?? null)
     setPianoIntegratori((pianoIntRes as any)?.data ?? [])
+    // Carica note esercizi del cliente
+    const { data: noteData } = await supabase
+      .from('note_esercizio')
+      .select(`id, testo, created_at, sessione_id,
+        scheda_esercizi!note_esercizio_scheda_esercizio_id_fkey ( esercizi!scheda_esercizi_esercizio_id_fkey ( nome ) ),
+        sessioni!note_esercizio_sessione_id_fkey ( id, data )`)
+      .eq('cliente_id', cliente.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+    setNoteEsercizioCliente((noteData as any) ?? [])
     // Aggrega pasti per giorno
     const map = new Map<string, any>()
     for (const r of (pastiRes.data ?? []) as any[]) {
@@ -596,6 +607,7 @@ export default function AnalyticsPage() {
     setSessioneAperta(null)
     setAssegnazioniCliente([])
     setPianoIntegratori([])
+    setNoteEsercizioCliente([])
     setShowFormInt(false)
   }
 
@@ -1523,6 +1535,43 @@ export default function AnalyticsPage() {
                     )
                   })}
                 </div>
+
+                {/* Note esercizi */}
+                {noteEsercizioCliente.length > 0 && (
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+                    <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📝 Note esercizi</p>
+                    </div>
+                    {noteEsercizioCliente.map((n: any, i: number) => {
+                      const nomeEse = (n.scheda_esercizi as any)?.esercizi?.nome ?? '—'
+                      const dataSessione = (n.sessioni as any)?.data
+                      return (
+                        <Link key={n.id}
+                          href={`/cliente/allenamento?sessione=${n.sessioni?.id ?? ''}`}
+                          className="flex items-start gap-3 px-4 py-3 transition-all hover:bg-white/3"
+                          style={{ borderBottom: i < noteEsercizioCliente.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none', textDecoration: 'none' }}>
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.70 0.19 46)', fontSize: 11 }}>
+                            📝
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.90 0 0)' }}>{nomeEse}</p>
+                            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'oklch(0.62 0 0)', whiteSpace: 'pre-line' }}>
+                              {n.testo.length > 80 ? n.testo.slice(0, 80) + '…' : n.testo}
+                            </p>
+                            {dataSessione && (
+                              <p className="text-xs mt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+                                {new Date(dataSessione).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </p>
+                            )}
+                          </div>
+                          <span style={{ color: 'oklch(0.70 0.19 46)', fontSize: 11, flexShrink: 0, marginTop: 4 }}>→</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
 
                 {/* Pulsante analytics avanzate */}
                 <Link

@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ShareOverlay from '@/components/shared/ShareOverlay'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faDumbbell, faCircleCheck, faPause, faStopwatch, faNoteSticky, faTrophy, faCircleInfo, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faDumbbell, faCircleCheck, faPause, faStopwatch, faNoteSticky, faTrophy, faCircleInfo, faXmark, faPencil } from '@fortawesome/free-solid-svg-icons'
 
 interface SchedaEsercizio {
   id: string
@@ -101,6 +101,12 @@ export default function AllenamentoPage() {
   const [suggerimento, setSuggerimento] = useState<{ messaggio: string; eseNome: string } | null>(null)
   const [supersetNext, setSupersetNext] = useState<string | null>(null) // nome prossimo esercizio nel gruppo
   const isViewMode = !!sessioneIdParam
+  const [coachId, setCoachId] = useState<string | null>(null)
+  const [noteCliente, setNoteCliente] = useState<Record<string, { id: string; testo: string }>>({})
+  const [noteApertaEse, setNoteApertaEse] = useState<string | null>(null)
+  const [noteBozza, setNoteBozza] = useState<Record<string, string>>({})
+  const [noteSalvando, setNoteSalvando] = useState<string | null>(null)
+  const [noteInviata, setNoteInviata] = useState<string | null>(null)
 
   // ── Notifica fine recupero ────────────────────────────────────────
   function playBeep() {
@@ -187,9 +193,12 @@ export default function AllenamentoPage() {
   const fetchGiorno = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    // Fetch nome coach se esiste
-    if (user) supabase.from('coach_clienti').select('profiles!coach_clienti_coach_id_fkey(full_name)').eq('cliente_id', user.id).maybeSingle().then(({ data: cc }) => {
-      if (cc) setCoachNome((cc as any).profiles?.full_name ?? null)
+    // Fetch nome e id coach se esiste
+    if (user) supabase.from('coach_clienti').select('coach_id, profiles!coach_clienti_coach_id_fkey(full_name)').eq('cliente_id', user.id).maybeSingle().then(({ data: cc }) => {
+      if (cc) {
+        setCoachNome((cc as any).profiles?.full_name ?? null)
+        setCoachId((cc as any).coach_id ?? null)
+      }
     })
     if (!user) return
     userIdRef.current = user.id
@@ -241,6 +250,18 @@ export default function AllenamentoPage() {
         logsInit[ese.id] = { scheda_esercizio_id: ese.id, serie: serieLog }
       }
       setLogs(logsInit)
+      // Carica note cliente in view mode
+      const { data: noteDataView } = await supabase
+        .from('note_esercizio')
+        .select('id, scheda_esercizio_id, testo')
+        .eq('sessione_id', sessioneIdParam)
+      if (noteDataView && noteDataView.length > 0) {
+        const noteMap: Record<string, { id: string; testo: string }> = {}
+        for (const n of noteDataView) {
+          noteMap[n.scheda_esercizio_id] = { id: n.id, testo: n.testo }
+        }
+        setNoteCliente(noteMap)
+      }
       setLoading(false)
       return
     }
@@ -302,6 +323,23 @@ export default function AllenamentoPage() {
       }
     }
     setSessioneId(sessId)
+
+    // Carica note cliente esistenti per questa sessione
+    const { data: noteData } = await supabase
+      .from('note_esercizio')
+      .select('id, scheda_esercizio_id, testo')
+      .eq('sessione_id', sessId)
+      .eq('cliente_id', user.id)
+    if (noteData && noteData.length > 0) {
+      const noteMap: Record<string, { id: string; testo: string }> = {}
+      const bozza: Record<string, string> = {}
+      for (const n of noteData) {
+        noteMap[n.scheda_esercizio_id] = { id: n.id, testo: n.testo }
+        bozza[n.scheda_esercizio_id] = n.testo
+      }
+      setNoteCliente(noteMap)
+      setNoteBozza(bozza)
+    }
 
     const { data: logEsistenti } = await supabase.from('log_serie').select('*').eq('sessione_id', sessId)
 
@@ -621,6 +659,56 @@ export default function AllenamentoPage() {
       const newSerie: LogSerie = { numero_serie: current.serie.length + 1, peso_kg: '', ripetizioni: '', reps_sx: '', reps_dx: '', durata_secondi: '', rpe: '', rir: '', completata: false }
       return { ...prev, [eseId]: { ...current, serie: [...current.serie, newSerie] } }
     })
+  }
+
+  const salvaNota = async (ese: SchedaEsercizio) => {
+    if (!sessioneId || isViewMode) return
+    const testo = noteBozza[ese.id]?.trim()
+    if (!testo) return
+    setNoteSalvando(ese.id)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setNoteSalvando(null); return }
+    const esistente = noteCliente[ese.id]
+    let noteId: string
+    if (esistente) {
+      await supabase.from('note_esercizio').update({ testo }).eq('id', esistente.id)
+      noteId = esistente.id
+    } else {
+      const { data } = await supabase.from('note_esercizio').insert({
+        cliente_id: user.id,
+        sessione_id: sessioneId,
+        scheda_esercizio_id: ese.id,
+        testo,
+      }).select('id').single()
+      noteId = data!.id
+    }
+    setNoteCliente(prev => ({ ...prev, [ese.id]: { id: noteId, testo } }))
+    setNoteSalvando(null)
+  }
+
+  const inviaNoteAlCoach = async (ese: SchedaEsercizio) => {
+    if (!coachId || !sessioneId) return
+    const nota = noteCliente[ese.id]
+    if (!nota) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from('messaggi').insert({
+      coach_id: coachId,
+      cliente_id: user.id,
+      testo: null,
+      da_coach: false,
+      metadata: {
+        tipo: 'nota_esercizio',
+        nota_id: nota.id,
+        testo_nota: nota.testo,
+        esercizio_nome: ese.esercizi.nome,
+        sessione_id: sessioneId,
+        scheda_esercizio_id: ese.id,
+        assegnazione_id: assegnazioneId,
+      },
+    })
+    setNoteInviata(ese.id)
+    setTimeout(() => setNoteInviata(prev => prev === ese.id ? null : prev), 2000)
   }
 
   const updateLog = (eseId: string, serieIndex: number, field: keyof LogSerie, value: string) => {
@@ -1113,6 +1201,24 @@ export default function AllenamentoPage() {
                       <FontAwesomeIcon icon={faCircleInfo} className="text-sm" />
                     </button>
                   )}
+                  {!isViewMode && (
+                    <button
+                      onClick={() => setNoteApertaEse(noteApertaEse === ese.id ? null : ese.id)}
+                      className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
+                      style={{
+                        background: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
+                        color: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
+                        border: `1px solid ${noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+                      }}
+                      title="La tua nota"
+                    >
+                      <FontAwesomeIcon icon={faPencil} style={{ fontSize: 11 }} />
+                      {noteCliente[ese.id] && (
+                        <span className="absolute top-0 right-0 w-2 h-2 rounded-full"
+                          style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid oklch(0.18 0 0)' }} />
+                      )}
+                    </button>
+                  )}
                   {ese.esercizi.video_url && (
                     <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
                       className="text-xs px-2 py-1 rounded-lg"
@@ -1120,6 +1226,71 @@ export default function AllenamentoPage() {
                   )}
                 </div>
               </div>
+
+              {/* Nota cliente — anteprima collassata */}
+              {noteCliente[ese.id] && noteApertaEse !== ese.id && (
+                <div className="px-4 py-2 flex items-center gap-2"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
+                  <span style={{ fontSize: 10, color: 'oklch(0.70 0.19 46)' }}>📝</span>
+                  <p className="text-xs truncate flex-1" style={{ color: 'oklch(0.65 0 0)' }}>
+                    {noteCliente[ese.id].testo.length > 50
+                      ? noteCliente[ese.id].testo.slice(0, 50) + '…'
+                      : noteCliente[ese.id].testo}
+                  </p>
+                </div>
+              )}
+
+              {/* Nota cliente — textarea inline */}
+              {noteApertaEse === ese.id && !isViewMode && (
+                <div className="px-4 py-3 space-y-2.5"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.70 0.19 46 / 4%)' }}>
+                  <textarea
+                    value={noteBozza[ese.id] ?? ''}
+                    onChange={e => setNoteBozza(prev => ({ ...prev, [ese.id]: e.target.value }))}
+                    placeholder="Scrivi una nota su questo esercizio..."
+                    rows={3}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
+                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => salvaNota(ese)}
+                      disabled={!noteBozza[ese.id]?.trim() || noteSalvando === ese.id}
+                      className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                      style={{
+                        background: 'oklch(0.70 0.19 46 / 15%)',
+                        border: '1px solid oklch(0.70 0.19 46 / 35%)',
+                        color: 'oklch(0.70 0.19 46)',
+                        opacity: !noteBozza[ese.id]?.trim() ? 0.4 : 1,
+                      }}>
+                      {noteSalvando === ese.id ? '...' : 'Salva nota'}
+                    </button>
+                    {noteCliente[ese.id] && coachId && (
+                      <button
+                        onClick={() => inviaNoteAlCoach(ese)}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                        style={{
+                          background: noteInviata === ese.id ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.60 0.15 200 / 15%)',
+                          border: `1px solid ${noteInviata === ese.id ? 'oklch(0.65 0.18 150 / 35%)' : 'oklch(0.60 0.15 200 / 30%)'}`,
+                          color: noteInviata === ese.id ? 'oklch(0.65 0.18 150)' : 'oklch(0.60 0.15 200)',
+                        }}>
+                        {noteInviata === ese.id ? 'Inviata al coach ✓' : 'Invia al coach'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Nota cliente — visibile in view mode */}
+              {isViewMode && noteCliente[ese.id] && (
+                <div className="px-4 py-2.5 flex items-start gap-2"
+                  style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
+                  <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>📝</span>
+                  <p className="text-xs leading-snug" style={{ color: 'oklch(0.72 0 0)', whiteSpace: 'pre-line' }}>
+                    {noteCliente[ese.id].testo}
+                  </p>
+                </div>
+              )}
 
               <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
                 {/* Warmup specifico serie */}
