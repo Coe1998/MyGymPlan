@@ -939,12 +939,18 @@ export default function SchedaEditorModal({
   }
 
   const giorno = giorni.find(g => g.id === activeGiorno)
-    if (!giorno) return []
     const seen = new Map<string, string>()
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    for (const ese of [...giorno.scheda_esercizi].sort((a, b) => a.ordine - b.ordine)) {
+    // Saved exercises
+    for (const ese of [...(giorno?.scheda_esercizi ?? [])].sort((a, b) => a.ordine - b.ordine)) {
       if (ese.gruppo_id && !seen.has(ese.gruppo_id)) {
         seen.set(ese.gruppo_id, letters[seen.size % 26])
+      }
+    }
+    // Pending (unsaved) exercises in the same day
+    for (const p of pendingEsercizi.filter(p => p.giornoId === activeGiorno)) {
+      if (p.form.gruppo_id && !seen.has(p.form.gruppo_id)) {
+        seen.set(p.form.gruppo_id, letters[seen.size % 26])
       }
     }
     return Array.from(seen.entries()).map(([id, label]) => ({ id, label }))
