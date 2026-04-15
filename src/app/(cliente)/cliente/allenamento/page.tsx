@@ -1066,8 +1066,8 @@ export default function AllenamentoPage() {
                       <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ' reps'} · {ese.recupero_secondi}s rec.</span>
                       {ese.peso_consigliato_kg != null && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                          style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
-                          ~{ese.peso_consigliato_kg}kg suggeriti
+                          style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}>
+                          ~{ese.peso_consigliato_kg}kg
                         </span>
                       )}
                       {ese.tut && (
@@ -1475,15 +1475,16 @@ export default function AllenamentoPage() {
                         // Max+Total logger
                         if (ese.tipo === 'max_reps') {
                           const target = ese.max_reps_target ?? 30
-                          const prevReps = (eseLog?.serie ?? []).slice(0, serieIndex).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
-                          const rimanenti = Math.max(0, target - prevReps)
                           const isMaxSerie = serieIndex === 0
+                          // Only distribution sets (2+) count toward target
+                          const prevDistReps = isMaxSerie ? 0 : (eseLog?.serie ?? []).slice(1, serieIndex).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
+                          const rimanenti = Math.max(0, target - prevDistReps)
 
                           return (
                             <div className="flex items-center gap-3">
                               <div className="flex-1">
                                 <label className="text-xs mb-1 block font-bold"
-                                  style={{ color: isMaxSerie ? 'oklch(0.75 0.15 60)' : 'oklch(0.50 0 0)' }}>
+                                  style={{ color: isMaxSerie ? 'oklch(0.75 0.15 60)' : 'oklch(0.70 0.19 46)' }}>
                                   {isMaxSerie ? 'MAX reps' : `Rimanenti: ${rimanenti} reps`}
                                 </label>
                                 <input type="number" inputMode="numeric" value={serie.ripetizioni}
@@ -1493,7 +1494,9 @@ export default function AllenamentoPage() {
                                   className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                                   style={{
                                     ...inputStyle,
-                                    ...(isMaxSerie ? { border: '1px solid oklch(0.75 0.15 60 / 50%)', background: 'oklch(0.75 0.15 60 / 10%)' } : {}),
+                                    ...(isMaxSerie
+                                      ? { border: '1px solid oklch(0.75 0.15 60 / 50%)', background: 'oklch(0.75 0.15 60 / 10%)' }
+                                      : { border: '1px solid oklch(0.70 0.19 46 / 35%)', background: 'oklch(0.70 0.19 46 / 8%)' }),
                                   }} />
                               </div>
                               {checkBtn}
@@ -1532,32 +1535,38 @@ export default function AllenamentoPage() {
                 {/* Max+Total: CTA aggiungi serie / obiettivo raggiunto */}
                 {ese.tipo === 'max_reps' && !isViewMode && (() => {
                   const target = ese.max_reps_target ?? 30
-                  const totalReps = (eseLog?.serie ?? []).reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
-                  const allCompleted = (eseLog?.serie ?? []).every(s => s.completata)
                   const maxSerieCompletata = eseLog?.serie[0]?.completata ?? false
                   if (!maxSerieCompletata) return null
-                  if (totalReps >= target) {
+
+                  // Only sets 2+ (distribution sets) count toward the target
+                  const distSeries = (eseLog?.serie ?? []).slice(1)
+                  const distReps = distSeries.reduce((acc, s) => acc + (parseInt(s.ripetizioni) || 0), 0)
+
+                  if (distReps >= target) {
                     return (
                       <div className="px-4 py-3 flex items-center gap-2"
-                        style={{ background: 'oklch(0.65 0.18 150 / 8%)', borderTop: '1px solid oklch(0.65 0.18 150 / 20%)' }}>
-                        <span className="text-base">🎉</span>
+                        style={{ background: 'oklch(0.65 0.18 150 / 8%)', border: '1px solid oklch(0.65 0.18 150 / 25%)', margin: '0 16px 12px', borderRadius: 12 }}>
+                        <span className="text-base">✓</span>
                         <p className="text-sm font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>
-                          Obiettivo raggiunto! {totalReps}/{target} reps
+                          Obiettivo raggiunto! {distReps}/{target} reps
                         </p>
                       </div>
                     )
                   }
-                  const rimanenti = target - totalReps
-                  if (!allCompleted) return null
+
+                  const rimanenti = target - distReps
+                  // Show "+ Serie" when no dist series exist OR the last dist serie is completed
+                  const lastDistDone = distSeries.length === 0 || distSeries[distSeries.length - 1].completata
+                  if (!lastDistDone) return null
+
                   return (
-                    <div className="px-4 py-3 space-y-2"
-                      style={{ background: 'oklch(0.75 0.15 60 / 6%)', borderTop: '1px solid oklch(0.75 0.15 60 / 20%)' }}>
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.75 0.15 60)' }}>
-                        Ancora {rimanenti} reps al tuo obiettivo ({totalReps}/{target})
+                    <div className="px-4 pb-3 space-y-2">
+                      <p className="text-sm font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                        {distSeries.length === 0 ? `Devi fare ancora: ${rimanenti} reps` : `Rimanenti: ${rimanenti} reps (${distReps}/${target})`}
                       </p>
                       <button onClick={() => addMaxRepsSerie(ese.id)}
                         className="w-full py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
-                        style={{ background: 'oklch(0.75 0.15 60 / 20%)', border: '1px solid oklch(0.75 0.15 60 / 40%)', color: 'oklch(0.75 0.15 60)' }}>
+                        style={{ background: 'transparent', border: '1.5px dashed oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.70 0.19 46)' }}>
                         + Serie
                       </button>
                     </div>
