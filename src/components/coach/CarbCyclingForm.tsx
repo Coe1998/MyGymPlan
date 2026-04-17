@@ -38,6 +38,8 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
   const [savedProfili, setSavedProfili] = useState(false)
   const [savingCiclo, setSavingCiclo] = useState(false)
   const [savedCiclo, setSavedCiclo] = useState(false)
+  const [erroreProfili, setErroreProfili] = useState<string | null>(null)
+  const [erroreCiclo, setErroreCiclo] = useState<string | null>(null)
 
   // Override
   const [overrideData, setOverrideData] = useState(new Date().toISOString().split('T')[0])
@@ -130,10 +132,12 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
   const handleSaveProfili = async () => {
     if (!pianoId) return
     setSavingProfili(true)
+    setErroreProfili(null)
     try {
       // Elimina i profili rimossi
       if (deletedIds.length > 0) {
-        await supabase.from('carb_cycling_profili').delete().in('id', deletedIds)
+        const { error } = await supabase.from('carb_cycling_profili').delete().in('id', deletedIds)
+        if (error) { setErroreProfili(error.message); return }
         setDeletedIds([])
       }
 
@@ -150,9 +154,11 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
           grassi_g: parseInt(p.grassi_g) || 0,
         }
         if (p.id) {
-          await supabase.from('carb_cycling_profili').update(payload).eq('id', p.id)
+          const { error } = await supabase.from('carb_cycling_profili').update(payload).eq('id', p.id)
+          if (error) { setErroreProfili(error.message); return }
         } else {
-          const { data: ins } = await supabase.from('carb_cycling_profili').insert(payload).select('id').single()
+          const { data: ins, error } = await supabase.from('carb_cycling_profili').insert(payload).select('id').single()
+          if (error) { setErroreProfili(error.message); return }
           if (ins) newIdMap[i] = ins.id
         }
       }
@@ -171,12 +177,20 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
   const handleSaveCiclo = async () => {
     if (!pianoId) return
     setSavingCiclo(true)
+    setErroreCiclo(null)
     try {
-      await supabase.from('carb_cycling_giorni').delete().eq('piano_id', pianoId)
       const rows = Object.entries(assegnazioni)
         .filter(([, pid]) => pid !== null)
-        .map(([g, pid]) => ({ piano_id: pianoId, giorno_ciclo: parseInt(g), profilo_id: pid! }))
-      if (rows.length > 0) await supabase.from('carb_cycling_giorni').insert(rows)
+        .map(([g, pid]) => ({ piano_id: pianoId, giorno_ciclo: parseInt(g), profilo_id: pid as string }))
+
+      const { error: delErr } = await supabase.from('carb_cycling_giorni').delete().eq('piano_id', pianoId)
+      if (delErr) { setErroreCiclo(delErr.message); return }
+
+      if (rows.length > 0) {
+        const { error: insErr } = await supabase.from('carb_cycling_giorni').insert(rows)
+        if (insErr) { setErroreCiclo(insErr.message); return }
+      }
+
       setSavedCiclo(true)
       setTimeout(() => setSavedCiclo(false), 2000)
     } finally {
@@ -407,6 +421,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
               >
                 {savingProfili ? 'Salvando…' : savedProfili ? '✓ Profili salvati' : 'Salva profili'}
               </button>
+              {erroreProfili && (
+                <p className="text-xs px-1" style={{ color: 'oklch(0.75 0.15 27)' }}>⚠ {erroreProfili}</p>
+              )}
             )}
           </div>
 
@@ -484,6 +501,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
               >
                 {savingCiclo ? 'Salvando…' : savedCiclo ? '✓ Ciclo salvato' : 'Salva ciclo'}
               </button>
+              {erroreCiclo && (
+                <p className="text-xs px-1" style={{ color: 'oklch(0.75 0.15 27)' }}>⚠ {erroreCiclo}</p>
+              )}
             </div>
           )}
 
