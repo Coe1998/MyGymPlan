@@ -77,6 +77,8 @@ export default async function ClienteDashboard() {
   const carbUX = getCarbUX(
     todayMacros?.day_type ?? null,
     todayMacros?.carb_cycling_enabled ?? false,
+    todayMacros?.carb_cycling_profile_name,
+    todayMacros?.carb_cycling_override_active,
   )
 
   const ora = new Date().getHours()
@@ -113,6 +115,12 @@ export default async function ClienteDashboard() {
                   <span className="text-xs font-black px-2 py-0.5 rounded-full"
                     style={{ background: carbUX.color, color: 'oklch(0.11 0 0)' }}>
                     {carbUX.label}
+                  </span>
+                )}
+                {todayMacros?.carb_cycling_override_active && (
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                    style={{ background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.80 0.12 46)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
+                    override
                   </span>
                 )}
               </div>

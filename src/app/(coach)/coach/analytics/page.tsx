@@ -15,6 +15,7 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Link from 'next/link'
 import MacroTargetForm from '@/components/coach/MacroTargetForm'
+import CarbCyclingForm from '@/components/coach/CarbCyclingForm'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 import AnamnesIDrawer from '@/components/coach/AnamnesIDrawer'
 import { generateNoteAnamnesi, stimaTDEE } from '@/lib/anamnesi-notes'
@@ -1307,6 +1308,7 @@ export default function AnalyticsPage() {
                       )
                     })()}
                     <MacroTargetForm clienteId={clienteSelezionato!.id} />
+                    <CarbCyclingForm clienteId={clienteSelezionato!.id} />
                     {storicoNutrizioneCliente.length > 0 && (
                       <div className="px-5 pb-5 space-y-3">
                         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>

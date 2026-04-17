@@ -3,7 +3,7 @@ export type DayType = 'training' | 'rest' | null
 export interface CarbUX {
   show: boolean
   emoji: string
-  label: string | null      // 'HIGH CARB' | 'LOW CARB' | null (se cycling OFF)
+  label: string | null
   title: string
   message: string
   color: string
@@ -11,15 +11,46 @@ export interface CarbUX {
   border: string
 }
 
+const PROFILE_PALETTE: Record<string, { color: string; bg: string; border: string; emoji: string }> = {
+  A: { color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 10%)', border: 'oklch(0.65 0.18 150 / 30%)', emoji: '🟢' },
+  B: { color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 10%)',  border: 'oklch(0.70 0.19 46 / 30%)',  emoji: '🟠' },
+  C: { color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 10%)', border: 'oklch(0.60 0.15 200 / 30%)', emoji: '🔵' },
+  D: { color: 'oklch(0.65 0.15 300)', bg: 'oklch(0.65 0.15 300 / 10%)', border: 'oklch(0.65 0.15 300 / 30%)', emoji: '🟣' },
+}
+
 /**
  * Restituisce UX card per il giorno corrente.
  *
- * - carbCyclingEnabled = false  → card neutra (training/riposo), NO badge HIGH/LOW
- * - carbCyclingEnabled = true   → card con badge HIGH CARB / LOW CARB
- * - dayType = null              → nessun check-in: show = false
+ * - profileName != null         → nuovo carb cycling multi-profilo (A/B/C…)
+ * - carbCyclingEnabled = true   → vecchio sistema HIGH/LOW CARB (training/rest)
+ * - carbCyclingEnabled = false  → card neutra (niente badge)
+ * - dayType = null              → nessun check-in: show = false (solo se no profilo attivo)
  */
-export function getCarbUX(dayType: DayType, carbCyclingEnabled: boolean): CarbUX {
-  // Nessun check-in ancora
+export function getCarbUX(
+  dayType: DayType,
+  carbCyclingEnabled: boolean,
+  profileName?: string | null,
+  isOverride?: boolean,
+): CarbUX {
+  // ── Nuovo carb cycling multi-profilo ──────────────────────────────────
+  if (profileName) {
+    const key = profileName.toUpperCase()
+    const palette = PROFILE_PALETTE[key] ?? PROFILE_PALETTE.A
+    return {
+      show: true,
+      emoji: palette.emoji,
+      label: `PROFILO ${profileName.toUpperCase()}`,
+      title: isOverride ? `Giorno ${profileName} (override)` : `Giorno ${profileName}`,
+      message: isOverride
+        ? 'Profilo impostato manualmente dal coach per oggi.'
+        : 'Segui i macro del tuo profilo assegnato oggi.',
+      color: palette.color,
+      bg: palette.bg,
+      border: palette.border,
+    }
+  }
+
+  // ── Nessun check-in ancora (solo se il profilo non è già determinato) ──
   if (dayType === null) {
     return {
       show: false,
@@ -35,7 +66,7 @@ export function getCarbUX(dayType: DayType, carbCyclingEnabled: boolean): CarbUX
 
   const isTraining = dayType === 'training'
 
-  // Carb cycling DISABILITATO — card neutra, niente badge HIGH/LOW
+  // ── Vecchio carb cycling DISABILITATO — card neutra ───────────────────
   if (!carbCyclingEnabled) {
     return {
       show: true,
@@ -51,14 +82,14 @@ export function getCarbUX(dayType: DayType, carbCyclingEnabled: boolean): CarbUX
     }
   }
 
-  // Carb cycling ABILITATO
+  // ── Vecchio carb cycling ABILITATO (HIGH/LOW) ─────────────────────────
   if (isTraining) {
     return {
       show: true,
       emoji: '🔥',
       label: 'HIGH CARB',
       title: 'Giorno allenamento',
-      message: 'Oggi hai più carbo: sfrutta l\'energia e spingi in allenamento',
+      message: "Oggi hai più carbo: sfrutta l'energia e spingi in allenamento",
       color: 'oklch(0.70 0.19 46)',
       bg: 'oklch(0.70 0.19 46 / 10%)',
       border: 'oklch(0.70 0.19 46 / 30%)',
