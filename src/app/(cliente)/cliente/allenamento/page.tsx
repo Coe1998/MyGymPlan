@@ -1370,7 +1370,9 @@ export default function AllenamentoPage() {
                         </div>
                         {confronto && !isViewMode && (
                           <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
-                            Ultima: {confronto.peso_kg ?? '—'}kg × {confronto.ripetizioni ?? '—'}
+                            {ese.esercizi.tipo_input === 'reps_unilaterale'
+                              ? `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.reps_sx ?? '—'}sx / ${confronto.reps_dx ?? '—'}dx`
+                              : `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.ripetizioni ?? '—'}`}
                           </span>
                         )}
                       </div>
