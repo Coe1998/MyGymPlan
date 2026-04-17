@@ -409,21 +409,23 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
             })}
 
             {profili.length > 0 && (
-              <button
-                onClick={handleSaveProfili}
-                disabled={savingProfili}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-                style={{
-                  background: savedProfili ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.65 0.18 180 / 20%)',
-                  color: savedProfili ? 'oklch(0.65 0.18 150)' : 'oklch(0.65 0.18 180)',
-                  border: `1px solid ${savedProfili ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.65 0.18 180 / 30%)'}`,
-                }}
-              >
-                {savingProfili ? 'Salvando…' : savedProfili ? '✓ Profili salvati' : 'Salva profili'}
-              </button>
-              {erroreProfili && (
-                <p className="text-xs px-1" style={{ color: 'oklch(0.75 0.15 27)' }}>⚠ {erroreProfili}</p>
-              )}
+              <>
+                <button
+                  onClick={handleSaveProfili}
+                  disabled={savingProfili}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+                  style={{
+                    background: savedProfili ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.65 0.18 180 / 20%)',
+                    color: savedProfili ? 'oklch(0.65 0.18 150)' : 'oklch(0.65 0.18 180)',
+                    border: `1px solid ${savedProfili ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.65 0.18 180 / 30%)'}`,
+                  }}
+                >
+                  {savingProfili ? 'Salvando…' : savedProfili ? '✓ Profili salvati' : 'Salva profili'}
+                </button>
+                {erroreProfili && (
+                  <p className="text-xs px-1" style={{ color: 'oklch(0.75 0.15 27)' }}>⚠ {erroreProfili}</p>
+                )}
+              </>
             )}
           </div>
 
