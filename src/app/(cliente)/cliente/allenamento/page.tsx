@@ -89,6 +89,13 @@ export default function AllenamentoPage() {
   const [richiede_rir, setRichiede_rir] = useState(false)
   const [rpeRirPicker, setRpeRirPicker] = useState<{ eseId: string; serieIndex: number } | null>(null)
   const [eseTimerState, setEseTimerState] = useState<{ eseId: string; serieIndex: number; fase: 'pre' | 'run'; secondi: number } | null>(null)
+  const [emomState, setEmomState] = useState<{
+    eseId: string; serieIndex: number
+    fase: 'running' | 'rest_between_rounds' | 'completed'
+    secondi: number; currentRound: number; currentMinute: number
+    emomDurata: number; emomRounds: number; recuperoSecondi: number
+  } | null>(null)
+  const emomAutoCompleteRef = useRef<{ eseId: string; serieIndex: number } | null>(null)
   const eseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
@@ -497,6 +504,18 @@ export default function AllenamentoPage() {
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
+
+  // Auto-complete EMOM quando tutti i round sono finiti
+  useEffect(() => {
+    if (emomState?.fase !== 'completed') return
+    const info = emomAutoCompleteRef.current
+    emomAutoCompleteRef.current = null
+    if (!info) return
+    const ese = esercizi.find(e => e.id === info.eseId)
+    if (!ese) return
+    setEmomState(null)
+    toggleSerie(ese, info.serieIndex)
+  }, [emomState?.fase])
 
   useEffect(() => {
     if (completata || loading || isViewMode) return
@@ -1581,17 +1600,40 @@ export default function AllenamentoPage() {
                           const emomReps = ese.emom_reps_per_minuto ?? 6
                           const emomDurata = ese.emom_durata_minuti ?? 6
                           const emomRounds = ese.emom_rounds ?? 4
-                          const isActive = eseTimerState?.eseId === ese.id && eseTimerState?.serieIndex === serieIndex
+                          const isActive = emomState?.eseId === ese.id && emomState?.serieIndex === serieIndex
                           const handleEmomStart = () => {
                             if (serie.completata || isViewMode) return
                             if (eseTimerRef.current) clearInterval(eseTimerRef.current)
-                            setEseTimerState({ eseId: ese.id, serieIndex, fase: 'run', secondi: 60 })
+                            setEmomState({
+                              eseId: ese.id, serieIndex, fase: 'running',
+                              secondi: 60, currentRound: 1, currentMinute: 1,
+                              emomDurata, emomRounds, recuperoSecondi: ese.recupero_secondi,
+                            })
                             eseTimerRef.current = setInterval(() => {
-                              setEseTimerState(prev => {
-                                if (!prev) return prev
+                              setEmomState(prev => {
+                                if (!prev || prev.fase === 'completed') return prev
+                                if (prev.fase === 'rest_between_rounds') {
+                                  if (prev.secondi <= 1) {
+                                    feedbackLocale()
+                                    return { ...prev, fase: 'running', secondi: 60, currentRound: prev.currentRound + 1, currentMinute: 1 }
+                                  }
+                                  return { ...prev, secondi: prev.secondi - 1 }
+                                }
+                                // fase === 'running'
                                 if (prev.secondi <= 1) {
-                                  feedbackLocale()
-                                  return { ...prev, secondi: 60 }
+                                  if (prev.currentMinute < prev.emomDurata) {
+                                    feedbackLocale()
+                                    return { ...prev, secondi: 60, currentMinute: prev.currentMinute + 1 }
+                                  } else if (prev.currentRound < prev.emomRounds) {
+                                    feedbackLocale()
+                                    return { ...prev, fase: 'rest_between_rounds', secondi: prev.recuperoSecondi }
+                                  } else {
+                                    clearInterval(eseTimerRef.current!)
+                                    eseTimerRef.current = null
+                                    feedbackLocale()
+                                    emomAutoCompleteRef.current = { eseId: prev.eseId, serieIndex: prev.serieIndex }
+                                    return { ...prev, fase: 'completed', secondi: 0 }
+                                  }
                                 }
                                 return { ...prev, secondi: prev.secondi - 1 }
                               })
@@ -1599,7 +1641,7 @@ export default function AllenamentoPage() {
                           }
                           const handleEmomDone = () => {
                             if (eseTimerRef.current) { clearInterval(eseTimerRef.current); eseTimerRef.current = null }
-                            setEseTimerState(null)
+                            setEmomState(null)
                             toggleSerie(ese, serieIndex)
                           }
                           return (
@@ -1611,9 +1653,33 @@ export default function AllenamentoPage() {
                               <div className="flex items-center gap-3">
                                 <div className="flex-1 text-center">
                                   {isActive ? (
-                                    <div className="px-4 py-3 rounded-xl text-2xl font-black tabular-nums"
-                                      style={{ background: 'oklch(0.65 0.18 180 / 15%)', border: '1px solid oklch(0.65 0.18 180 / 40%)', color: 'oklch(0.65 0.18 180)' }}>
-                                      {Math.floor((eseTimerState?.secondi ?? 0) / 60).toString().padStart(2, '0')}:{((eseTimerState?.secondi ?? 0) % 60).toString().padStart(2, '0')}
+                                    <div className="space-y-1">
+                                      {emomState?.fase === 'completed' ? (
+                                        <div className="px-4 py-3 rounded-xl text-sm font-bold"
+                                          style={{ background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 40%)', color: 'oklch(0.65 0.18 150)' }}>
+                                          ✓ EMOM completato!
+                                        </div>
+                                      ) : emomState?.fase === 'rest_between_rounds' ? (
+                                        <>
+                                          <div className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>
+                                            Recupero tra round
+                                          </div>
+                                          <div className="px-4 py-3 rounded-xl text-2xl font-black tabular-nums"
+                                            style={{ background: 'oklch(0.70 0.19 46 / 15%)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.70 0.19 46)' }}>
+                                            {(emomState.secondi ?? 0).toString().padStart(2, '0')}s
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <div className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>
+                                            Round {emomState?.currentRound}/{emomRounds} — Minuto {emomState?.currentMinute}/{emomDurata}
+                                          </div>
+                                          <div className="px-4 py-3 rounded-xl text-2xl font-black tabular-nums"
+                                            style={{ background: 'oklch(0.65 0.18 180 / 15%)', border: '1px solid oklch(0.65 0.18 180 / 40%)', color: 'oklch(0.65 0.18 180)' }}>
+                                            {(emomState?.secondi ?? 0).toString().padStart(2, '0')}s
+                                          </div>
+                                        </>
+                                      )}
                                     </div>
                                   ) : serie.completata ? (
                                     <div className="px-4 py-3 rounded-xl text-sm font-bold" style={inputStyle}>Completato</div>
