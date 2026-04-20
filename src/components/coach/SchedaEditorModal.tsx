@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
 
-interface Esercizio { id: string; nome: string; muscoli: string[] | null; tipo_input?: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
+interface Esercizio { id: string; nome: string; muscoli: string[] | null; gif_url?: string | null; tipo_input?: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
 
 interface SchedaEsercizio {
   id: string; esercizio_id: string; serie: number; ripetizioni: string
@@ -288,10 +288,19 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                     </div>
                   : filtP.map((e, i) => (
                     <button key={e.id} onClick={() => { selectEsercizio(e.id) }}
-                      className="w-full text-left px-4 py-2.5 transition-all active:opacity-60"
+                      className="w-full text-left px-3 py-2 flex items-center gap-3 transition-all active:opacity-60"
                       style={{ borderBottom: i < filtP.length - 1 ? '1px solid var(--c-w5)' : 'none' }}>
-                      <p className="text-sm font-medium" style={{ color: 'var(--c-90)' }}>{e.nome}</p>
-                      {e.muscoli && <p className="text-xs mt-0.5" style={{ color: 'var(--c-48)' }}>{e.muscoli.slice(0, 3).join(' · ')}</p>}
+                      {e.gif_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={e.gif_url} alt={e.nome} className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg flex-shrink-0" style={{ background: 'var(--c-25)' }} />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate" style={{ color: 'var(--c-90)' }}>{e.nome}</p>
+                        {e.muscoli && <p className="text-xs mt-0.5" style={{ color: 'var(--c-48)' }}>{e.muscoli.slice(0, 3).join(' · ')}</p>}
+                      </div>
                     </button>
                   ))}
               </div>
@@ -900,7 +909,7 @@ export default function SchedaEditorModal({
         .eq('scheda_id', schedaId)
         .order('ordine'),
       supabase.from('esercizi')
-        .select('id, nome, muscoli, tipo_input')
+        .select('id, nome, muscoli, tipo_input, gif_url')
         .or('is_global.eq.true,coach_id.eq.' + user.id)
         .order('nome'),
       supabase.from('schede')

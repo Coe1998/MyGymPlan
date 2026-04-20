@@ -25,7 +25,7 @@ interface SchedaEsercizio {
   prepara_secondi: number | null
   progressione_tipo: string
   warmup_serie: { peso: string; reps: string }[]
-  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
+  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; gif_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
   peso_consigliato_kg: number | null
   tut: string | null
   amrap_minuti: number | null
@@ -246,7 +246,7 @@ export default function AllenamentoPage() {
           prepara_secondi, progressione_tipo, warmup_serie,
           peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
           tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
-          esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
+          esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, gif_url, descrizione, tipo_input )
         )`)
         .eq('id', sessione.giorno_id)
         .single()
@@ -294,7 +294,7 @@ export default function AllenamentoPage() {
         prepara_secondi, progressione_tipo, warmup_serie,
         peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
         tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
-        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
+        esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, gif_url, descrizione, tipo_input )
       )`)
       .eq('id', giornoId).single()
 
@@ -1295,6 +1295,16 @@ export default function AllenamentoPage() {
                       )}
                     </button>
                   )}
+                  {ese.esercizi.gif_url && (
+                    <button
+                      onClick={() => {
+                        const key = `gif-${ese.id}`
+                        const el = document.getElementById(key)
+                        if (el) el.classList.toggle('hidden')
+                      }}
+                      className="text-xs px-2 py-1 rounded-lg"
+                      style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>🎞</button>
+                  )}
                   {ese.esercizi.video_url && (
                     <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
                       className="text-xs px-2 py-1 rounded-lg"
@@ -1302,6 +1312,17 @@ export default function AllenamentoPage() {
                   )}
                 </div>
               </div>
+
+              {/* GIF panel — hidden by default, toggled by 🎞 button */}
+              {ese.esercizi.gif_url && (
+                <div id={`gif-${ese.id}`} className="hidden px-4 py-3"
+                  style={{ borderBottom: '1px solid var(--c-w5)', background: 'var(--c-w3)' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={ese.esercizi.gif_url} alt={ese.esercizi.nome}
+                    className="h-40 rounded-xl mx-auto object-contain"
+                    onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }} />
+                </div>
+              )}
 
               {/* Nota cliente — anteprima collassata */}
               {noteCliente[ese.id] && noteApertaEse !== ese.id && (
