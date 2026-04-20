@@ -102,6 +102,7 @@ export default function AllenamentoPage() {
   const [tabataState, setTabataState] = useState<Record<string, { fase: 'idle' | 'work' | 'rest' | 'completed'; currentRound: number; secondi: number; partnerEseId: string | null; isPartnerTurn: boolean }>>({})
   const tabataRef = useRef<NodeJS.Timeout | null>(null)
   const tabataActiveRef = useRef<string | null>(null)
+  const tabataInitiatorRef = useRef<string | null>(null)
   const eseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
@@ -290,6 +291,7 @@ export default function AllenamentoPage() {
         tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
         prepara_secondi, progressione_tipo, warmup_serie,
         peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
+        tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
         esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
       )`)
       .eq('id', giornoId).single()
@@ -1756,6 +1758,7 @@ export default function AllenamentoPage() {
                             if (serie.completata || isViewMode) return
                             if (tabataRef.current) { clearInterval(tabataRef.current); tabataRef.current = null }
                             tabataActiveRef.current = ese.id
+                            tabataInitiatorRef.current = ese.id
                             feedbackLocale()
                             const initState: typeof tabataState = {
                               ...tabataState,
@@ -1787,9 +1790,10 @@ export default function AllenamentoPage() {
                                 if (cur.fase === 'rest') {
                                   if (partnerId && prev[partnerId]) {
                                     const partner = prev[partnerId]
-                                    const partnerWasWaiting = partner.isPartnerTurn
-                                    if (partnerWasWaiting) {
-                                      // A just rested → B's turn to work
+                                    const initiatorId = tabataInitiatorRef.current
+                                    const isInitiatorPhase = activeId === initiatorId
+                                    if (isInitiatorPhase) {
+                                      // Initiator just rested → partner works next
                                       feedbackLocale()
                                       tabataActiveRef.current = partnerId
                                       return {
@@ -1798,7 +1802,7 @@ export default function AllenamentoPage() {
                                         [partnerId]: { ...partner, fase: 'work' as const, isPartnerTurn: false, secondi: workSec },
                                       }
                                     } else {
-                                      // B just rested → round complete, back to A
+                                      // Partner just rested → round complete, back to initiator
                                       feedbackLocale()
                                       const nextRound = cur.currentRound + 1
                                       if (nextRound > totalRounds) {
@@ -1811,7 +1815,7 @@ export default function AllenamentoPage() {
                                           [partnerId]: { ...partner, fase: 'completed' as const, secondi: 0 },
                                         }
                                       }
-                                      tabataActiveRef.current = partnerId
+                                      tabataActiveRef.current = initiatorId!
                                       return {
                                         ...prev,
                                         [activeId]: { ...cur, fase: 'work' as const, isPartnerTurn: true, secondi: workSec, currentRound: nextRound },
