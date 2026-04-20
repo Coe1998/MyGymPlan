@@ -28,11 +28,8 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 })
 
 // ─── Dati ExerciseDB ─────────────────────────────────────────────────────────
-const EDB_PATH = resolve(__dir, '../../Downloads/exercisedbpro/exercises2.json')
-const EDB = JSON.parse(readFileSync(
-  EDB_PATH.includes('scripts') ? EDB_PATH : 'C:/Users/cozmin.bejinari/Downloads/exercisedbpro/exercises2.json',
-  'utf8'
-))
+const EDB_PATH = resolve(__dir, '../data/exercisedb/exercises2.json')
+const EDB = JSON.parse(readFileSync(EDB_PATH, 'utf8'))
 
 // ─── Mapping muscoli ExerciseDB → italiano ───────────────────────────────────
 const MUSCLE_MAP = {
