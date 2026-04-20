@@ -124,6 +124,33 @@
 }
 
 /* =============================================
+   BYNARI SEMANTIC TOKENS
+   Orange accent, gold PR, semantic colors
+   ============================================= */
+
+:root {
+  /* Accent (orange energy) — overrides shadcn neutral */
+  --accent: oklch(0.70 0.19 46);
+  --accent-foreground: oklch(0.13 0 0);
+  --accent-glow: oklch(0.70 0.19 46 / 50%);
+  --accent-soft: oklch(0.70 0.19 46 / 12%);
+  --accent-orange: oklch(0.70 0.19 46);
+  /* Gold — Personal Records */
+  --gold: oklch(0.82 0.17 85);
+  --gold-glow: oklch(0.82 0.17 85 / 50%);
+  /* Semantic */
+  --success: oklch(0.65 0.18 150);
+  --success-glow: oklch(0.65 0.18 150 / 40%);
+  --danger: oklch(0.65 0.22 27);
+  --danger-text: oklch(0.75 0.15 27);
+  --info: oklch(0.60 0.15 200);
+  /* Macro colors */
+  --protein: oklch(0.70 0.19 46);
+  --carbs: oklch(0.78 0.16 85);
+  --fat: oklch(0.62 0.14 200);
+}
+
+/* =============================================
    NEUTRAL COLOR TOKENS
    Dark mode (default) + Light mode overrides
    ============================================= */
@@ -259,6 +286,65 @@
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+/* ── Bynari client dopaminic feedback keyframes ── */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.70 0.19 46 / 0%); }
+  50% { box-shadow: 0 0 0 12px oklch(0.70 0.19 46 / 18%); }
+}
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 oklch(0.70 0.19 46 / 40%); }
+  70% { box-shadow: 0 0 0 10px oklch(0.70 0.19 46 / 0%); }
+  100% { box-shadow: 0 0 0 0 oklch(0.70 0.19 46 / 0%); }
+}
+
+@keyframes flameFlicker {
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  25% { transform: rotate(3deg) scale(1.05); }
+  50% { transform: rotate(-2deg) scale(0.98); }
+  75% { transform: rotate(2deg) scale(1.03); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.08); opacity: 1; }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes ringFill {
+  from { stroke-dashoffset: var(--ring-circ, 188); }
+  to { stroke-dashoffset: var(--ring-offset, 0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 @layer base {

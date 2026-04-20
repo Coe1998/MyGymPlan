@@ -985,55 +985,80 @@ export default function AllenamentoPage() {
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.push(backUrl)}
-            className="text-sm hover:opacity-70" style={{ color: 'var(--c-50)' }}>←</button>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
-                {giornoNome}
-              </h1>
-              {isViewMode && (
-                <span className="text-xs px-2 py-1 rounded-lg"
-                  style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
-                  Archivio
-                </span>
-              )}
+      {/* ── Workout header — reference WorkoutHeader design ── */}
+      <div style={{
+        padding: '10px 0 14px',
+        borderBottom: '1px solid var(--c-w6)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <button onClick={() => router.push(backUrl)} style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'var(--c-18)', border: '1px solid var(--c-w6)',
+            color: 'var(--c-80)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, cursor: 'pointer',
+          }}>←</button>
+
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+              {isViewMode ? 'Archivio' : 'In corso'}
             </div>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
-              {sessioneData
-                ? new Date(sessioneData).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
-                : new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
+            <div style={{
+              fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 18,
+              color: 'var(--c-97)', lineHeight: 1.1, letterSpacing: '0.01em',
+            }}>
+              {giornoNome.toUpperCase()}
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col items-end gap-1">
+
           {completata ? (
-            <span className="px-3 py-1.5 rounded-xl text-xs font-semibold"
-              style={{ background: 'oklch(0.65 0.18 150 / 20%)', color: 'oklch(0.65 0.18 150)' }}>
-              <FontAwesomeIcon icon={faCircleCheck} /> Fatto
-            </span>
+            <div style={{
+              height: 36, padding: '0 12px', borderRadius: 10,
+              background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)',
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 700,
+            }}>
+              <FontAwesomeIcon icon={faCircleCheck} style={{ fontSize: 11 }} />
+              Fatto
+            </div>
           ) : (
-            <span className="px-3 py-1.5 rounded-xl text-sm font-black tabular-nums"
-              style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-              <FontAwesomeIcon icon={faStopwatch} className="mr-1.5" />{formatDurata(durataSecondi)}
-            </span>
+            <div style={{
+              height: 36, padding: '0 12px', borderRadius: 10,
+              background: 'oklch(0.70 0.19 46 / 12%)', color: 'var(--accent)',
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontFamily: 'var(--font-syne)', fontSize: 13, fontWeight: 700,
+              fontVariantNumeric: 'tabular-nums',
+              border: '1px solid oklch(0.70 0.19 46 / 25%)',
+            }}>
+              <FontAwesomeIcon icon={faStopwatch} style={{ fontSize: 11 }} />
+              {formatDurata(durataSecondi)}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Progress bar */}
-      <div className="rounded-2xl p-4 space-y-2"
-        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium" style={{ color: 'var(--c-60)' }}>Progresso</p>
-          <p className="text-xs font-bold" style={{ color: 'var(--c-97)' }}>{serieCompletate}/{serieTotali} · {progressoPerc}%</p>
-        </div>
-        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
-          <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${progressoPerc}%`, background: 'oklch(0.60 0.15 200)' }} />
+        {/* Progress bar */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ fontSize: 11.5, color: 'var(--c-60)', fontWeight: 600 }}>
+              Progresso · {serieCompletate}/{serieTotali} serie
+            </span>
+            <span style={{
+              fontSize: 11.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+              color: progressoPerc === 100 ? 'oklch(0.65 0.18 150)' : 'var(--c-70)',
+            }}>
+              {progressoPerc}%
+            </span>
+          </div>
+          <div style={{ height: 6, borderRadius: 3, background: 'var(--c-20)', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', width: `${progressoPerc}%`,
+              background: progressoPerc === 100
+                ? 'linear-gradient(90deg, oklch(0.65 0.18 150), oklch(0.75 0.18 150))'
+                : 'linear-gradient(90deg, var(--accent), oklch(0.78 0.16 46))',
+              borderRadius: 3,
+              transition: 'width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+              boxShadow: progressoPerc > 0 ? '0 0 12px oklch(0.70 0.19 46 / 60%)' : 'none',
+            }} />
+          </div>
         </div>
       </div>
 
@@ -1209,8 +1234,8 @@ export default function AllenamentoPage() {
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                     style={{
-                      background: tutteCompletate ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.60 0.15 200 / 15%)',
-                      color: tutteCompletate ? 'oklch(0.65 0.18 150)' : 'oklch(0.60 0.15 200)',
+                      background: tutteCompletate ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.70 0.19 46 / 18%)',
+                      color: tutteCompletate ? 'oklch(0.65 0.18 150)' : 'var(--accent)',
                     }}>
                     {tutteCompletate ? '✓' : eseIndex + 1}
                   </div>
@@ -1418,10 +1443,18 @@ export default function AllenamentoPage() {
                 {eseLog?.serie.map((serie, serieIndex) => {
                   const confronto = !isViewMode ? getConfronto(ese.id, serieIndex) : null
                   const miglioramento = !isViewMode ? getMiglioramento(ese.id, serieIndex) : null
+                  // "Active" = first uncompleted serie in this exercise
+                  const isActiveSet = !serie.completata && !isViewMode && eseLog.serie.slice(0, serieIndex).every(s => s.completata)
 
                   return (
                     <div key={serieIndex} className="px-4 py-3"
-                      style={{ background: serie.completata ? 'oklch(0.65 0.18 150 / 5%)' : 'transparent' }}>
+                      style={{
+                        background: serie.completata
+                          ? 'oklch(0.65 0.18 150 / 5%)'
+                          : isActiveSet ? 'oklch(0.70 0.19 46 / 4%)' : 'transparent',
+                        borderLeft: isActiveSet ? '2px solid var(--accent)' : serie.completata ? '2px solid oklch(0.65 0.18 150 / 40%)' : '2px solid transparent',
+                        animation: isActiveSet ? 'pulseRing 2.5s ease-out infinite' : undefined,
+                      }}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold" style={{ color: 'var(--c-50)' }}>Serie {serieIndex + 1}</span>
@@ -2318,13 +2351,22 @@ export default function AllenamentoPage() {
       {!completata && !isViewMode && (
         <div className="pb-4">
           <button onClick={handleCompleta} disabled={saving || progressoPerc < 100}
-            className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
             style={{
-              background: progressoPerc === 100 ? 'oklch(0.65 0.18 150)' : 'var(--c-22)',
-              color: progressoPerc === 100 ? 'var(--c-13)' : 'var(--c-40)',
+              width: '100%', height: 54, borderRadius: 16,
+              background: progressoPerc === 100
+                ? 'linear-gradient(180deg, var(--accent) 0%, oklch(0.62 0.19 40) 100%)'
+                : 'var(--c-20)',
+              color: progressoPerc === 100 ? 'var(--c-11)' : 'var(--c-40)',
+              fontFamily: 'var(--font-syne)', fontSize: 14, fontWeight: 800, letterSpacing: '0.06em',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              boxShadow: progressoPerc === 100 ? '0 8px 24px -6px oklch(0.70 0.19 46 / 60%)' : 'none',
               cursor: progressoPerc < 100 ? 'not-allowed' : 'pointer',
+              border: 'none',
+              transition: 'transform 0.1s',
             }}>
-            {saving ? 'Salvataggio...' : progressoPerc === 100 ? <><FontAwesomeIcon icon={faTrophy} /> Completa allenamento</> : `${progressoPerc}% — continua!`}
+            {saving ? 'Salvataggio...' : progressoPerc === 100
+              ? <><FontAwesomeIcon icon={faTrophy} /> COMPLETA ALLENAMENTO</>
+              : `${progressoPerc}% — continua!`}
           </button>
         </div>
       )}
@@ -2333,13 +2375,52 @@ export default function AllenamentoPage() {
       {completata && (
         <div className="pb-4 space-y-5">
           {!isViewMode && (
-            <div className="rounded-2xl p-6 text-center"
-              style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
-              <p className="text-4xl mb-2"><FontAwesomeIcon icon={faTrophy} /></p>
-              <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
-              <p className="text-sm mt-1" style={{ color: 'var(--c-55)' }}>
-                {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie
-              </p>
+            <div style={{
+              borderRadius: 22, padding: '32px 20px 24px', textAlign: 'center',
+              background: 'radial-gradient(ellipse at top, oklch(0.70 0.19 46 / 20%) 0%, var(--c-16) 60%)',
+              border: '1px solid oklch(0.70 0.19 46 / 25%)',
+              animation: 'fadeIn 0.4s',
+            }}>
+              <div style={{
+                width: 72, height: 72, margin: '0 auto 16px',
+                borderRadius: '50%', background: 'oklch(0.82 0.17 85)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 32, color: 'var(--c-11)',
+                boxShadow: '0 0 40px oklch(0.82 0.17 85 / 60%), 0 0 0 12px oklch(0.82 0.17 85 / 12%)',
+                animation: 'bounceIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)',
+              }}>
+                <FontAwesomeIcon icon={faTrophy} />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'oklch(0.82 0.17 85)', letterSpacing: '0.2em', marginBottom: 8 }}>
+                WORKOUT COMPLETATO
+              </div>
+              <h2 style={{
+                fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 28,
+                color: 'var(--c-97)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 16,
+              }}>
+                Grande.<br />
+                <span style={{ color: 'oklch(0.82 0.17 85)' }}>Sei stato un bestione.</span>
+              </h2>
+              {/* Stats grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 0 }}>
+                {[
+                  { label: 'Volume', value: `${Math.round(volumeTotale).toLocaleString('it-IT')}`, unit: 'kg', color: 'var(--accent)' },
+                  { label: 'Durata', value: formatDurata(durataSecondi), unit: '', color: 'oklch(0.62 0.14 200)' },
+                  { label: 'Serie', value: String(serieCompletate), unit: '', color: 'var(--c-97)' },
+                  { label: 'PR', value: calcolaNuovoPR() ? '1' : '0', unit: 'nuovo', color: 'oklch(0.82 0.17 85)' },
+                ].map(s => (
+                  <div key={s.label} style={{
+                    background: 'var(--c-18)', border: '1px solid var(--c-w6)',
+                    borderRadius: 14, padding: '12px 10px', textAlign: 'left',
+                  }}>
+                    <p style={{ fontSize: 11, color: 'var(--c-55)', fontWeight: 600, marginBottom: 4 }}>{s.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                      <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 22, color: s.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>{s.value}</span>
+                      {s.unit && <span style={{ fontSize: 10, color: 'var(--c-55)', fontWeight: 600 }}>{s.unit}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

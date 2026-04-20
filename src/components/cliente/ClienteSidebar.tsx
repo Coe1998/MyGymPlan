@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faEllipsisVertical, faComments } from '@fortawesome/free-solid-svg-icons'
+import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faComments } from '@fortawesome/free-solid-svg-icons'
 
 // Voci nav principali (mobile) — Dieta filtrata se non abilitata
 const buildNavItems = (dietaAbilitata: boolean) => [
@@ -28,7 +28,6 @@ const buildNavItemsAll = (dietaAbilitata: boolean) => [
 export default function ClienteSidebar({ profile, dietaAbilitata = false }: { profile: Profile; dietaAbilitata?: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [menuOpen, setMenuOpen] = useState(false)
   const [allenamentoUrl, setAllenamentoUrl] = useState('/cliente/allenamento')
   const [haSessioneInCorso, setHaSessioneInCorso] = useState(false)
 	const [unreadCoach, setUnreadCoach] = useState(0)
@@ -204,11 +203,15 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
       </aside>
 
       {/* BOTTOM NAV — solo mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50"
         style={{
-          background: 'var(--c-16)',
-          borderTop: '1px solid var(--c-w8)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          height: 'calc(64px + env(safe-area-inset-bottom))',
+          background: 'oklch(0.13 0 0 / 92%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid var(--c-w6)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-around',
+          padding: '8px 8px 0',
         }}>
         {navItems.map((item) => {
           const isAllena = item.href === '/cliente/allenamento'
@@ -220,83 +223,45 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             return (
               <button key={item.href}
                 onClick={handleAllenamento}
-                className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
-                style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  color: isActive ? 'var(--accent)' : 'var(--c-50)',
+                  padding: '4px 4px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                }}>
                 <div className="relative">
-                  <FontAwesomeIcon icon={item.icon} className="text-2xl"
-                    style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
+                  <FontAwesomeIcon icon={item.icon} style={{ fontSize: 17 }} />
                   {haSessioneInCorso && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full"
-                      style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid var(--c-16)' }} />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full"
+                      style={{ background: 'var(--accent)', border: '1.5px solid oklch(0.13 0 0)' }} />
                   )}
                 </div>
-                <span className="text-xs font-medium"
-                  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
-                  {item.label}
-                </span>
+                <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em' }}>{item.label}</span>
+                {isActive && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', marginTop: -2 }} />}
               </button>
             )
           }
           return (
             <Link key={item.href} href={href}
-			  className="flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all flex-1"
-			  style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
-			  <div className="relative">
-				<FontAwesomeIcon icon={item.icon} className="text-2xl"
-				  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
-				{item.href === '/cliente/chat' && unreadCoach > 0 && (
-				  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center font-black"
-					style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-97)', fontSize: 9 }}>
-					{unreadCoach}
-				  </span>
-				)}
-			  </div>
-			  <span className="text-xs font-medium"
-				style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
-				{item.label}
-			  </span>
-			</Link>
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                color: isActive ? 'var(--accent)' : 'var(--c-50)',
+                padding: '4px 4px', textDecoration: 'none',
+              }}>
+              <div className="relative">
+                <FontAwesomeIcon icon={item.icon} style={{ fontSize: 17 }} />
+                {item.href === '/cliente/chat' && unreadCoach > 0 && (
+                  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center font-black"
+                    style={{ background: 'var(--accent)', color: 'var(--c-11)', fontSize: 8 }}>
+                    {unreadCoach}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.04em' }}>{item.label}</span>
+              {isActive && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', marginTop: -2 }} />}
+            </Link>
           )
         })}
-
-        {/* Bottone "..." — apre mini menu con Impostazioni + Esci */}
-        <div className="relative flex-1 flex justify-center">
-          <button
-            onClick={() => setMenuOpen(p => !p)}
-            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
-            style={{ background: menuOpen ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
-            <FontAwesomeIcon icon={faEllipsisVertical} className="text-xl"
-              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
-            <span className="text-xs font-medium"
-              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
-              Altro
-            </span>
-          </button>
-
-          {/* Mini menu popup */}
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="absolute bottom-14 right-0 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
-                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w12)' }}>
-                <Link href="/cliente/impostazioni"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
-                  <FontAwesomeIcon icon={faGear} className="w-4" />
-                  Impostazioni
-                </Link>
-                <button
-                  onClick={() => { setMenuOpen(false); handleLogout() }}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'oklch(0.65 0.18 27)' }}>
-                  <FontAwesomeIcon icon={faRightFromBracket} className="w-4" />
-                  Esci
-                </button>
-              </div>
-            </>
-          )}
-        </div>
       </nav>
     </>
   )
