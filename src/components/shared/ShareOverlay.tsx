@@ -66,6 +66,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
   const [coachInput, setCoachInput] = useState(coachNome ?? '')
   const [shortId] = useState(makeShortId)
   const exportRef = useRef<HTMLDivElement>(null)
+  const previewInnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     localStorage.setItem('bynari_share_variant', variante)
@@ -124,13 +125,17 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     setDownloading(true)
     try {
       await document.fonts.ready
-      const dataUrl = await toPng(el, {
+      const target = previewInnerRef.current ?? el
+      const dataUrl = await toPng(target, {
         pixelRatio: 3,
         width: 360,
         height: 640,
-        skipAutoScale: true,
+        skipFonts: true,
         cacheBust: true,
-        style: { visibility: 'visible' },
+        onclone: (_doc, cloned) => {
+          cloned.style.transform = 'none'
+          cloned.style.transformOrigin = 'initial'
+        },
       })
       const blob = await (await fetch(dataUrl)).blob()
       const file = new File([blob], `bynari-${heroTitle.toLowerCase()}.png`, { type: 'image/png' })
@@ -242,20 +247,18 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         </div>
       )}
 
-      {/* Preview */}
+      {/* Preview — inner div is also the export target */}
       <div className="flex flex-col items-center gap-2">
         <div style={{ width: 240, height: 427, overflow: 'hidden', borderRadius: 16, background: checkerBg, position: 'relative', flexShrink: 0 }}>
-          <div style={{ transform: 'scale(0.667)', transformOrigin: 'top left', width: 360, height: 640 }}>
+          <div ref={previewInnerRef} style={{ transform: 'scale(0.667)', transformOrigin: 'top left', width: 360, height: 640 }}>
             <SelectedCard {...cardProps} />
           </div>
         </div>
         <p className="text-xs text-center" style={{ color: 'var(--c-40)' }}>La scacchiera indica la trasparenza del PNG finale</p>
       </div>
 
-      {/* Hidden full-size export target */}
-      <div ref={exportRef} style={{ position: 'fixed', top: -9999, left: -9999, width: 360, height: 640, overflow: 'hidden', pointerEvents: 'none' }}>
-        <SelectedCard {...cardProps} />
-      </div>
+      {/* Export fallback ref (not used directly, kept for safety) */}
+      <div ref={exportRef} style={{ position: 'absolute', left: -9999, top: 0, width: 1, height: 1, overflow: 'hidden', pointerEvents: 'none', opacity: 0 }} />
 
       {/* Download */}
       <div className="flex justify-center">
