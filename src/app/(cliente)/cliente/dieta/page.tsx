@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash, faClockRotateLeft, faCopy } from '@fortawesome/free-solid-svg-icons'
+import DietaIntelligente from '@/components/cliente/DietaIntelligente'
 
 interface MacroTarget {
   calorie: number
@@ -95,6 +96,7 @@ export default function DietaPage() {
   // Carb cycling — carbo effettivi per oggi
   const [carbEffettivi, setCarbEffettivi] = useState<number | null>(null)
   const [dayType, setDayType] = useState<'training' | 'rest' | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Collapsed groups
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
@@ -112,6 +114,7 @@ export default function DietaPage() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    setUserId(user.id)
 
     const data30ago = new Date()
     data30ago.setDate(data30ago.getDate() - 30)
@@ -711,6 +714,11 @@ export default function DietaPage() {
       {/* TAB: DIETA */}
       {tab === 'dieta' && (
         <div className="space-y-3">
+
+          {/* Dieta intelligente */}
+          {target && userId && (
+            <DietaIntelligente clienteId={userId} dayType={dayType} />
+          )}
 
           {/* Copia giornata intera */}
           {!copiaGiornataAperta ? (
