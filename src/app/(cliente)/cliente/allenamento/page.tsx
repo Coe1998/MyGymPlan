@@ -1533,13 +1533,37 @@ export default function AllenamentoPage() {
                   // "Active" = first uncompleted serie in this exercise
                   const isActiveSet = !serie.completata && !isViewMode && eseLog.serie.slice(0, serieIndex).every(s => s.completata)
 
-                  // ── NEW DESIGN: reps type in live mode ────────────────────
+                  // ── NEW DESIGN: reps / reps_unilaterale / timer / timer_unilaterale in live mode ──
                   const tipoInputNew = ese.esercizi.tipo_input ?? 'reps'
-                  const isStandardReps = tipoInputNew === 'reps' && !isViewMode && !['amrap', 'emom', 'tabata', 'max_reps'].includes(ese.tipo)
-                  if (isStandardReps) {
-                    // DONE — compressed green row
+                  const isNewDesign = !isViewMode && !['amrap', 'emom', 'tabata', 'max_reps'].includes(ese.tipo) &&
+                    ['reps', 'reps_unilaterale', 'timer', 'timer_unilaterale'].includes(tipoInputNew)
+                  if (isNewDesign) {
+                    const btnStyle: React.CSSProperties = {
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: 'var(--c-22)', color: 'var(--c-80)',
+                      fontSize: 20, fontWeight: 700,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: 'none', cursor: 'pointer',
+                    }
+                    const ctaBaseStyle: React.CSSProperties = {
+                      width: '100%', height: 52, borderRadius: 14, border: 'none', cursor: 'pointer',
+                      color: 'var(--c-11)', fontFamily: 'var(--font-syne)', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    }
+
+                    // ── DONE — compact row ───────────────────────────────────
                     if (serie.completata) {
-                      const isPRRow = (() => { const c = confronto; if (!c) return false; const pa = parseFloat(serie.peso_kg) || 0; const pu = c.peso_kg ?? 0; return pa > (pu ?? 0) && pa > 0 })()
+                      const isPRRow = tipoInputNew === 'reps' ? (() => { const c = confronto; if (!c) return false; const pa = parseFloat(serie.peso_kg) || 0; return pa > (c.peso_kg ?? 0) && pa > 0 })() : false
+                      let summaryNode: React.ReactNode
+                      if (tipoInputNew === 'reps') {
+                        summaryNode = <span style={{ fontFamily: 'var(--font-syne)', fontSize: 16, fontWeight: 700, color: isPRRow ? 'var(--gold)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums' }}>{serie.peso_kg ? `${serie.peso_kg}kg` : '—'} × {serie.ripetizioni || '—'}</span>
+                      } else if (tipoInputNew === 'reps_unilaterale') {
+                        summaryNode = <span style={{ fontFamily: 'var(--font-syne)', fontSize: 15, fontWeight: 700, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums' }}>{serie.peso_kg ? `${serie.peso_kg}kg × ` : ''}{serie.reps_sx ?? '—'}sx / {serie.reps_dx ?? '—'}dx</span>
+                      } else if (tipoInputNew === 'timer') {
+                        summaryNode = <span style={{ fontFamily: 'var(--font-syne)', fontSize: 16, fontWeight: 700, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums' }}>{serie.durata_secondi && serie.durata_secondi !== '0' ? `${serie.durata_secondi}s` : '—'}{serie.peso_kg ? <span style={{ fontSize: 12, color: 'var(--c-55)', fontWeight: 600 }}> ({serie.peso_kg}kg)</span> : null}</span>
+                      } else {
+                        summaryNode = <span style={{ fontFamily: 'var(--font-syne)', fontSize: 15, fontWeight: 700, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums' }}>{serie.reps_sx ?? '—'}s sx / {serie.reps_dx ?? '—'}s dx</span>
+                      }
                       return (
                         <div key={serieIndex} style={{
                           display: 'flex', alignItems: 'center', gap: 12,
@@ -1553,128 +1577,283 @@ export default function AllenamentoPage() {
                             background: isPRRow ? 'var(--gold)' : 'var(--success)', color: 'var(--c-13)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800,
                             boxShadow: isPRRow ? '0 0 14px oklch(0.82 0.17 85 / 60%)' : '0 0 10px oklch(0.65 0.18 150 / 40%)',
-                          }}>
-                            {isPRRow ? '🏆' : '✓'}
-                          </div>
+                          }}>{isPRRow ? '🏆' : '✓'}</div>
                           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                             <span style={{ fontSize: 12, color: 'var(--c-55)', fontWeight: 600, flexShrink: 0 }}>Serie {serieIndex + 1}</span>
-                            <span style={{ fontFamily: 'var(--font-syne)', fontSize: 16, fontWeight: 700, color: isPRRow ? 'var(--gold)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums' }}>
-                              {serie.peso_kg ? `${serie.peso_kg}kg` : '—'} × {serie.ripetizioni || '—'}
-                            </span>
+                            {summaryNode}
                             {isPRRow && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'var(--gold)', color: 'var(--c-13)', flexShrink: 0 }}>PR</span>}
                           </div>
                           {miglioramento === 'up' && <span style={{ fontSize: 10, color: 'var(--success)', flexShrink: 0 }}>▲</span>}
                           {miglioramento === 'down' && <span style={{ fontSize: 10, color: 'var(--danger-text)', flexShrink: 0 }}>▼</span>}
-                          <button
-                            onClick={() => toggleSerie(ese, serieIndex)}
-                            style={{
-                              flexShrink: 0, width: 28, height: 28, borderRadius: 8,
-                              background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 30%)',
-                              color: 'var(--c-55)', fontSize: 13, cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}
-                            title="Modifica serie">✎</button>
+                          <button onClick={() => toggleSerie(ese, serieIndex)} style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'var(--c-55)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Modifica serie">✎</button>
                         </div>
                       )
                     }
 
-                    // INACTIVE — collapsed gray row
+                    // ── INACTIVE — collapsed row ─────────────────────────────
                     if (!isActiveSet) {
+                      let ultimaNode: React.ReactNode
+                      if (tipoInputNew === 'reps') ultimaNode = <span style={{ color: 'var(--c-65)', fontWeight: 700 }}>{confronto?.peso_kg ?? '—'}kg × {confronto?.ripetizioni ?? '—'}</span>
+                      else if (tipoInputNew === 'reps_unilaterale') ultimaNode = <span style={{ color: 'var(--c-65)', fontWeight: 700 }}>{confronto?.peso_kg ? `${confronto.peso_kg}kg × ` : ''}{confronto?.reps_sx ?? '—'}sx / {confronto?.reps_dx ?? '—'}dx</span>
+                      else if (tipoInputNew === 'timer') ultimaNode = <span style={{ color: 'var(--c-65)', fontWeight: 700 }}>{confronto?.durata_secondi ? `${confronto.durata_secondi}s` : '—'}</span>
+                      else ultimaNode = <span style={{ color: 'var(--c-65)', fontWeight: 700 }}>{confronto?.reps_sx ?? '—'}s sx / {confronto?.reps_dx ?? '—'}s dx</span>
                       return (
                         <div key={serieIndex} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', opacity: 0.55 }}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                            background: 'var(--c-22)', color: 'var(--c-50)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700,
-                          }}>{serieIndex + 1}</div>
-                          <span style={{ flex: 1, fontSize: 12.5, color: 'var(--c-45)' }}>
-                            Ultima: <span style={{ color: 'var(--c-65)', fontWeight: 700 }}>{confronto?.peso_kg ?? '—'}kg × {confronto?.ripetizioni ?? '—'}</span>
-                          </span>
+                          <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--c-22)', color: 'var(--c-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>{serieIndex + 1}</div>
+                          <span style={{ flex: 1, fontSize: 12.5, color: 'var(--c-45)' }}>Ultima: {ultimaNode}</span>
                         </div>
                       )
                     }
 
-                    // ACTIVE — stepper card with green CTA
-                    const wVal = serie.peso_kg
-                    const rVal = serie.ripetizioni
-                    const wCur = parseFloat(wVal) || (confronto?.peso_kg ?? 0)
-                    const rCur = parseInt(rVal) || (confronto?.ripetizioni ?? 0)
-                    const wHighlight = parseFloat(wVal) > 0 && (confronto?.peso_kg ?? 0) > 0 && parseFloat(wVal) > (confronto?.peso_kg ?? 0)
-                    const rHighlight = parseInt(rVal) > 0 && (confronto?.ripetizioni ?? 0) > 0 && parseInt(rVal) > (confronto?.ripetizioni ?? 0)
-                    const btnStyle: React.CSSProperties = {
-                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                      background: 'var(--c-22)', color: 'var(--c-80)',
-                      fontSize: 20, fontWeight: 700,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: 'none', cursor: 'pointer',
+                    // ── ACTIVE card — common header ──────────────────────────
+                    const ultimaLabel = confronto ? (
+                      tipoInputNew === 'reps' ? `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.ripetizioni ?? '—'}`
+                      : tipoInputNew === 'reps_unilaterale' ? `Ultima: ${confronto.reps_sx ?? '—'}sx / ${confronto.reps_dx ?? '—'}dx`
+                      : tipoInputNew === 'timer' ? `Ultima: ${confronto.durata_secondi ?? '—'}s`
+                      : `Ultima: ${confronto.reps_sx ?? '—'}s sx / ${confronto.reps_dx ?? '—'}s dx`
+                    ) : null
+                    const activeHeader = (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: 'var(--c-13)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{serieIndex + 1}</div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-97)' }}>Serie {serieIndex + 1}</span>
+                        {ese.tipo === 'dropset' && ese.drop_percentage && serieIndex > 0 && (() => { const p0 = parseFloat(eseLog?.serie[0]?.peso_kg || '0'); if (!p0) return null; const ps = Math.round((p0 * Math.pow(1 - ese.drop_percentage / 100, serieIndex)) / 0.5) * 0.5; return <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 12, background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>~{ps}kg</span> })()}
+                        {ese.tipo === 'piramidale' && <span style={{ fontSize: 11, color: 'oklch(0.85 0.12 80)' }}>{ese.piramidale_direzione === 'ascendente' ? '↑ sali' : '↓ scendi'}</span>}
+                        {ultimaLabel && <span style={{ fontSize: 11, color: 'var(--c-50)', marginLeft: 'auto' }}>{ultimaLabel}</span>}
+                      </div>
+                    )
+                    const activeCardWrap: React.CSSProperties = {
+                      background: 'var(--c-18)', border: '2px solid var(--accent)',
+                      borderRadius: 16, padding: 16, margin: '4px 0',
+                      animation: 'scaleIn 0.25s',
+                      boxShadow: '0 8px 24px -8px oklch(0.70 0.19 46 / 40%)',
                     }
-                    return (
-                      <div key={serieIndex} style={{
-                        background: 'var(--c-18)', border: '2px solid var(--accent)',
-                        borderRadius: 16, padding: 16, margin: '4px 0',
-                        animation: 'scaleIn 0.25s',
-                        boxShadow: '0 8px 24px -8px oklch(0.70 0.19 46 / 40%)',
-                      }}>
-                        {/* Row: number + label + ultima */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: '50%',
-                            background: 'var(--accent)', color: 'var(--c-13)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0,
-                          }}>{serieIndex + 1}</div>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-97)' }}>Serie {serieIndex + 1}</span>
-                          {confronto && <span style={{ fontSize: 11, color: 'var(--c-50)', marginLeft: 'auto' }}>Ultima: {confronto.peso_kg ?? '—'}kg × {confronto.ripetizioni ?? '—'}</span>}
+
+                    // ── reps ────────────────────────────────────────────────
+                    if (tipoInputNew === 'reps') {
+                      const wVal = serie.peso_kg
+                      const rVal = serie.ripetizioni
+                      const wCur = parseFloat(wVal) || (confronto?.peso_kg ?? 0)
+                      const rCur = parseInt(rVal) || (confronto?.ripetizioni ?? 0)
+                      const wHighlight = parseFloat(wVal) > 0 && (confronto?.peso_kg ?? 0) > 0 && parseFloat(wVal) > (confronto?.peso_kg ?? 0)
+                      const rHighlight = parseInt(rVal) > 0 && (confronto?.ripetizioni ?? 0) > 0 && parseInt(rVal) > (confronto?.ripetizioni ?? 0)
+                      return (
+                        <div key={serieIndex} style={activeCardWrap}>
+                          {activeHeader}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>PESO</div>
+                              <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: wHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)', boxShadow: wHighlight ? '0 0 0 3px oklch(0.70 0.19 46 / 12%)' : 'none' }}>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                                  <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: wHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                  <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
+                                </div>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'center', color: 'var(--c-40)', fontWeight: 700, fontSize: 16 }}>×</div>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>REPS</div>
+                              <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: rHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)' }}>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(Math.max(0, rCur - 1)))} style={btnStyle}>−</button>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <input type="text" inputMode="numeric" value={rVal} placeholder={String(confronto?.ripetizioni ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: rHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                </div>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(rCur + 1))} style={btnStyle}>+</button>
+                              </div>
+                            </div>
+                          </div>
+                          <button onClick={() => toggleSerie(ese, serieIndex)} style={{ ...ctaBaseStyle, background: 'linear-gradient(180deg, var(--success) 0%, oklch(0.58 0.17 150) 100%)', boxShadow: '0 6px 20px -4px oklch(0.65 0.18 150 / 50%)' }} onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')} onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>✓ SERIE COMPLETATA</button>
                         </div>
-                        {/* Steppers */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center', marginBottom: 14 }}>
-                          {/* PESO */}
-                          <div>
+                      )
+                    }
+
+                    // ── reps_unilaterale ────────────────────────────────────
+                    if (tipoInputNew === 'reps_unilaterale') {
+                      const wVal = serie.peso_kg
+                      const sxVal = serie.reps_sx
+                      const dxVal = serie.reps_dx
+                      const wCur = parseFloat(wVal) || (confronto?.peso_kg ?? 0)
+                      const sxCur = parseInt(sxVal) || (confronto?.reps_sx ?? 0)
+                      const dxCur = parseInt(dxVal) || (confronto?.reps_dx ?? 0)
+                      return (
+                        <div key={serieIndex} style={activeCardWrap}>
+                          {activeHeader}
+                          <div style={{ marginBottom: 10 }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>PESO</div>
-                            <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: wHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)', boxShadow: wHighlight ? '0 0 0 3px oklch(0.70 0.19 46 / 12%)' : 'none' }}>
+                            <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
                               <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
-                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)}
-                                  onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }}
-                                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: wHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }}
-                                />
+                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
                               </div>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
                             </div>
                           </div>
-                          <div style={{ textAlign: 'center', color: 'var(--c-40)', fontWeight: 700, fontSize: 16 }}>×</div>
-                          {/* REPS */}
-                          <div>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>REPS</div>
-                            <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: rHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)' }}>
-                              <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(Math.max(0, rCur - 1)))} style={btnStyle}>−</button>
-                              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <input type="text" inputMode="numeric" value={rVal} placeholder={String(confronto?.ripetizioni ?? 0)}
-                                  onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value) }}
-                                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: rHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }}
-                                />
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'oklch(0.75 0.15 100)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>SX</div>
+                              <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'reps_sx', String(Math.max(0, sxCur - 1)))} style={btnStyle}>−</button>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <input type="text" inputMode="numeric" value={sxVal} placeholder={String(confronto?.reps_sx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_sx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                </div>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'reps_sx', String(sxCur + 1))} style={btnStyle}>+</button>
                               </div>
-                              <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(rCur + 1))} style={btnStyle}>+</button>
+                            </div>
+                            <div style={{ textAlign: 'center', color: 'var(--c-40)', fontWeight: 700, fontSize: 16 }}>/</div>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'oklch(0.75 0.15 100)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>DX</div>
+                              <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'reps_dx', String(Math.max(0, dxCur - 1)))} style={btnStyle}>−</button>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <input type="text" inputMode="numeric" value={dxVal} placeholder={String(confronto?.reps_dx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_dx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                </div>
+                                <button onClick={() => updateLog(ese.id, serieIndex, 'reps_dx', String(dxCur + 1))} style={btnStyle}>+</button>
+                              </div>
                             </div>
                           </div>
+                          <button onClick={() => toggleSerie(ese, serieIndex)} style={{ ...ctaBaseStyle, background: 'linear-gradient(180deg, var(--success) 0%, oklch(0.58 0.17 150) 100%)', boxShadow: '0 6px 20px -4px oklch(0.65 0.18 150 / 50%)' }} onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')} onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>✓ SERIE COMPLETATA</button>
                         </div>
-                        {/* Green CTA */}
-                        <button onClick={() => toggleSerie(ese, serieIndex)}
-                          style={{
-                            width: '100%', height: 52, borderRadius: 14, border: 'none', cursor: 'pointer',
-                            background: 'linear-gradient(180deg, var(--success) 0%, oklch(0.58 0.17 150) 100%)',
-                            color: 'var(--c-11)', fontFamily: 'var(--font-syne)', fontSize: 15, fontWeight: 800, letterSpacing: '0.06em',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                            boxShadow: '0 6px 20px -4px oklch(0.65 0.18 150 / 50%)',
-                          }}
-                          onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')}
-                          onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')}
-                          onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')}
-                          onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>
-                          ✓ SERIE COMPLETATA
-                        </button>
-                      </div>
-                    )
+                      )
+                    }
+
+                    // ── timer ───────────────────────────────────────────────
+                    if (tipoInputNew === 'timer') {
+                      const isTimerActive = eseTimerState?.eseId === ese.id && eseTimerState?.serieIndex === serieIndex
+                      const isPre = isTimerActive && eseTimerState?.fase === 'pre'
+                      const isRun = isTimerActive && eseTimerState?.fase === 'run'
+                      const durataTarget = parseInt(ese.ripetizioni) || 30
+                      const wVal = serie.peso_kg
+                      const wCur = parseFloat(wVal) || (confronto?.peso_kg ?? 0)
+                      const handleTimerStart = () => {
+                        if (serie.completata || isViewMode) return
+                        if (eseTimerRef.current) clearInterval(eseTimerRef.current)
+                        const hasPre = (ese.prepara_secondi ?? 0) > 0
+                        if (hasPre) {
+                          setEseTimerState({ eseId: ese.id, serieIndex, fase: 'pre', secondi: ese.prepara_secondi! })
+                          eseTimerRef.current = setInterval(() => {
+                            setEseTimerState(prev => {
+                              if (!prev || prev.fase !== 'pre') return prev
+                              if (prev.secondi <= 1) {
+                                clearInterval(eseTimerRef.current!)
+                                eseTimerRef.current = setInterval(() => { setEseTimerState(p => p ? { ...p, fase: 'run', secondi: (p.secondi || 0) + 1 } : p) }, 1000)
+                                return { ...prev, fase: 'run', secondi: 0 }
+                              }
+                              return { ...prev, secondi: prev.secondi - 1 }
+                            })
+                          }, 1000)
+                        } else {
+                          setEseTimerState({ eseId: ese.id, serieIndex, fase: 'run', secondi: 0 })
+                          eseTimerRef.current = setInterval(() => { setEseTimerState(p => p ? { ...p, secondi: p.secondi + 1 } : p) }, 1000)
+                        }
+                      }
+                      const handleTimerStop = () => {
+                        if (eseTimerRef.current) { clearInterval(eseTimerRef.current); eseTimerRef.current = null }
+                        const durataEffettiva = eseTimerState?.fase === 'run' ? eseTimerState.secondi : 0
+                        updateLog(ese.id, serieIndex, 'durata_secondi', String(durataEffettiva))
+                        setEseTimerState(null)
+                        toggleSerie(ese, serieIndex, { durata_secondi: String(durataEffettiva) })
+                      }
+                      let ctaBg = 'linear-gradient(180deg, oklch(0.60 0.15 200) 0%, oklch(0.52 0.13 200) 100%)'
+                      let ctaShadow = '0 6px 20px -4px oklch(0.60 0.15 200 / 50%)'
+                      let ctaLabel = `▶ AVVIA — ${durataTarget}s`
+                      let ctaAction = handleTimerStart
+                      if (isPre) { ctaBg = 'linear-gradient(180deg, var(--accent) 0%, oklch(0.62 0.17 46) 100%)'; ctaShadow = '0 6px 20px -4px oklch(0.70 0.19 46 / 50%)'; ctaLabel = `Preparati... ${eseTimerState?.secondi}s`; ctaAction = () => {} }
+                      if (isRun) { ctaBg = 'linear-gradient(180deg, oklch(0.60 0.22 27) 0%, oklch(0.52 0.20 27) 100%)'; ctaShadow = '0 6px 20px -4px oklch(0.60 0.22 27 / 50%)'; ctaLabel = `■ STOP — ${eseTimerState?.secondi}s`; ctaAction = handleTimerStop }
+                      return (
+                        <div key={serieIndex} style={activeCardWrap}>
+                          {activeHeader}
+                          <div style={{ marginBottom: 14 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--c-50)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>ZAVORRA</div>
+                            <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
+                              <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
+                              <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
+                              </div>
+                              <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
+                            </div>
+                          </div>
+                          {isTimerActive && (
+                            <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                              <span style={{ fontFamily: 'var(--font-syne)', fontSize: 36, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: isRun ? 'var(--c-97)' : 'var(--accent)' }}>{eseTimerState?.secondi ?? 0}s</span>
+                            </div>
+                          )}
+                          <button onClick={ctaAction} style={{ ...ctaBaseStyle, background: ctaBg, boxShadow: ctaShadow }} onTouchStart={e => (e.currentTarget.style.transform = 'scale(0.97)')} onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>{ctaLabel}</button>
+                        </div>
+                      )
+                    }
+
+                    // ── timer_unilaterale ───────────────────────────────────
+                    {
+                      const durataTargetUni = parseInt(ese.ripetizioni) || 30
+                      const stateKey = `${ese.id}-${serieIndex}`
+                      const ts = timerUniState[stateKey] ?? { fase: 'idle' as const, sx: 0, dx: 0 }
+                      const hasPre = (ese.prepara_secondi ?? 0) > 0
+                      const handleStartSx = () => {
+                        if (serie.completata || isViewMode) return
+                        if (timerUniRef.current) clearInterval(timerUniRef.current)
+                        setTimerUniState(prev => ({ ...prev, [stateKey]: { fase: 'sx_run', sx: hasPre ? -(ese.prepara_secondi!) : 0, dx: 0 } }))
+                        timerUniRef.current = setInterval(() => { setTimerUniState(prev => { const cur = prev[stateKey]; if (!cur || cur.fase !== 'sx_run') { clearInterval(timerUniRef.current!); return prev } return { ...prev, [stateKey]: { ...cur, sx: cur.sx + 1 } } }) }, 1000)
+                      }
+                      const handleStopSx = () => {
+                        if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                        const sxVal = Math.max(0, ts.sx)
+                        updateLog(ese.id, serieIndex, 'reps_sx', String(sxVal))
+                        setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'sx_done', sx: sxVal } }))
+                      }
+                      const handleStartDx = () => {
+                        if (timerUniRef.current) clearInterval(timerUniRef.current)
+                        setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'dx_run', dx: hasPre ? -(ese.prepara_secondi!) : 0 } }))
+                        timerUniRef.current = setInterval(() => { setTimerUniState(prev => { const cur = prev[stateKey]; if (!cur || cur.fase !== 'dx_run') { clearInterval(timerUniRef.current!); return prev } return { ...prev, [stateKey]: { ...cur, dx: cur.dx + 1 } } }) }, 1000)
+                      }
+                      const handleStopDx = () => {
+                        if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                        const dxVal = Math.max(0, ts.dx)
+                        updateLog(ese.id, serieIndex, 'reps_sx', String(ts.sx))
+                        updateLog(ese.id, serieIndex, 'reps_dx', String(dxVal))
+                        setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'done', dx: dxVal } }))
+                      }
+                      const handleDoneUni = () => {
+                        if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                        toggleSerie(ese, serieIndex, { reps_sx: String(ts.sx), reps_dx: String(ts.dx) })
+                      }
+                      const isSxPre = ts.fase === 'sx_run' && ts.sx < 0
+                      const isDxPre = ts.fase === 'dx_run' && ts.dx < 0
+                      return (
+                        <div key={serieIndex} style={activeCardWrap}>
+                          {activeHeader}
+                          <div style={{ fontSize: 11, textAlign: 'center', color: 'oklch(0.75 0.15 100)', marginBottom: 12, fontWeight: 600 }}>Obiettivo: {durataTargetUni}s per lato</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'stretch', marginBottom: 14 }}>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'oklch(0.75 0.15 100)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>SX {ts.fase !== 'idle' && ts.sx > 0 ? `${ts.sx}s` : ''}</div>
+                              {ts.fase === 'sx_run' ? (
+                                <button onClick={handleStopSx} style={{ width: '100%', padding: '12px 8px', borderRadius: 12, border: '2px solid oklch(0.65 0.22 27 / 50%)', background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>{isSxPre ? `via tra ${-ts.sx}s` : `stop ${ts.sx}s`}</button>
+                              ) : ts.fase === 'sx_done' || ts.fase === 'dx_run' || ts.fase === 'done' ? (
+                                <div style={{ width: '100%', padding: '12px 8px', borderRadius: 12, background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)', fontWeight: 800, fontSize: 14, textAlign: 'center' }}>✓ {ts.sx}s</div>
+                              ) : (
+                                <button onClick={handleStartSx} style={{ width: '100%', padding: '12px 8px', borderRadius: 12, border: '1px solid oklch(0.75 0.15 100 / 40%)', background: 'oklch(0.75 0.15 100 / 15%)', color: 'oklch(0.75 0.15 100)', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>▶ SX</button>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-40)', fontWeight: 700, fontSize: 16 }}>/</div>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'oklch(0.75 0.15 100)', letterSpacing: '0.12em', marginBottom: 6, textAlign: 'center' }}>DX {ts.fase === 'dx_run' || ts.fase === 'done' ? `${Math.max(0, ts.dx)}s` : ''}</div>
+                              {ts.fase === 'sx_done' ? (
+                                <button onClick={handleStartDx} style={{ width: '100%', padding: '12px 8px', borderRadius: 12, border: '1px solid oklch(0.75 0.15 100 / 40%)', background: 'oklch(0.75 0.15 100 / 15%)', color: 'oklch(0.75 0.15 100)', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>▶ DX</button>
+                              ) : ts.fase === 'dx_run' ? (
+                                <button onClick={handleStopDx} style={{ width: '100%', padding: '12px 8px', borderRadius: 12, border: '2px solid oklch(0.65 0.22 27 / 50%)', background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>{isDxPre ? `via tra ${-ts.dx}s` : `stop ${ts.dx}s`}</button>
+                              ) : ts.fase === 'done' ? (
+                                <div style={{ width: '100%', padding: '12px 8px', borderRadius: 12, background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)', fontWeight: 800, fontSize: 14, textAlign: 'center' }}>✓ {ts.dx}s</div>
+                              ) : (
+                                <div style={{ width: '100%', padding: '12px 8px', borderRadius: 12, background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-35)', fontSize: 14, textAlign: 'center' }}>—</div>
+                              )}
+                            </div>
+                          </div>
+                          <button onClick={handleDoneUni} disabled={ts.fase !== 'done'} style={{ ...ctaBaseStyle, background: 'linear-gradient(180deg, var(--success) 0%, oklch(0.58 0.17 150) 100%)', boxShadow: '0 6px 20px -4px oklch(0.65 0.18 150 / 50%)', opacity: ts.fase !== 'done' ? 0.4 : 1, cursor: ts.fase !== 'done' ? 'not-allowed' : 'pointer' }} onTouchStart={e => ts.fase === 'done' && (e.currentTarget.style.transform = 'scale(0.97)')} onTouchEnd={e => (e.currentTarget.style.transform = 'scale(1)')} onMouseDown={e => ts.fase === 'done' && (e.currentTarget.style.transform = 'scale(0.97)')} onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}>✓ SERIE COMPLETATA</button>
+                        </div>
+                      )
+                    }
                   }
                   // ── END NEW DESIGN ────────────────────────────────────────
 
