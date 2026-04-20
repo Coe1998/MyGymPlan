@@ -57,6 +57,15 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* Theme init — runs before paint to avoid flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('mgp-theme');
+              if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+            } catch(e){}
+          })();
+        `}} />
       </head>
       <body className="antialiased">
         {children}

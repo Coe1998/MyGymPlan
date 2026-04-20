@@ -70,7 +70,7 @@ const EMPTY: EsForm = {
 }
 
 const TIPI = [
-  { id: 'normale', label: 'Normale', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' },
+  { id: 'normale', label: 'Normale', color: 'var(--c-55)', bg: 'var(--c-25)' },
   { id: 'superset', label: 'Superset', color: 'oklch(0.60 0.15 200)', bg: 'oklch(0.60 0.15 200 / 18%)' },
   { id: 'giant_set', label: 'Giant Set', color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 18%)' },
   { id: 'dropset', label: 'Dropset', color: 'oklch(0.70 0.19 46)', bg: 'oklch(0.70 0.19 46 / 18%)' },
@@ -163,7 +163,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
       {/* ── Esercizio primario ── */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
           Esercizio *
         </label>
         {/* Muscle filter chips */}
@@ -172,8 +172,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <button onClick={() => setFiltroMuscolo('')}
               className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
               style={{
-                background: !filtroMuscolo ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                color: !filtroMuscolo ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+                background: !filtroMuscolo ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                color: !filtroMuscolo ? 'oklch(0.70 0.19 46)' : 'var(--c-45)',
               }}>
               Tutti
             </button>
@@ -181,8 +181,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <button key={m} onClick={() => setFiltroMuscolo(filtroMuscolo === m ? '' : m)}
                 className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
                 style={{
-                  background: filtroMuscolo === m ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                  color: filtroMuscolo === m ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+                  background: filtroMuscolo === m ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                  color: filtroMuscolo === m ? 'oklch(0.70 0.19 46)' : 'var(--c-45)',
                 }}>
                 {m}
               </button>
@@ -202,8 +202,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <button key={f.id} onClick={() => setFiltroTipoInput(f.id)}
                 className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
                 style={{
-                  background: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                  color: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                  background: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                  color: filtroTipoInput === f.id ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
                   border: filtroTipoInput === f.id ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid transparent',
                 }}>
                 {f.label}
@@ -215,12 +215,12 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         {form.esercizio_id ? (
           <div className="flex items-center gap-2">
             <div className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+              style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'var(--c-97)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
               {primarioNome}
             </div>
             <button onClick={() => { set('esercizio_id', ''); setSearchP('') }}
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
               <FontAwesomeIcon icon={faXmark} className="text-xs" />
             </button>
           </div>
@@ -229,18 +229,18 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <input type="text" value={searchP} onChange={e => setSearchP(e.target.value)}
               placeholder="Cerca esercizio..."
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
+              style={{ background: 'var(--c-22)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'var(--c-97)' }} />
             {/* Crea esercizio inline */}
             {!form.esercizio_id && (showCreaEse ? (
               <div className="rounded-xl p-3 space-y-3 mt-1"
-                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+                style={{ background: 'var(--c-20)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
                 <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
                   Crea nuovo esercizio
                 </p>
                 <input type="text" value={nuovoNome} onChange={e => setNuovoNome(e.target.value)}
                   placeholder="Nome esercizio *"
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.25 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }} />
+                  style={{ background: 'var(--c-25)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'var(--c-97)' }} />
                 <div className="flex flex-wrap gap-1.5">
                   {MUSCOLI.map(m => (
                     <button key={m} onClick={() => setNuovoMuscoli(prev =>
@@ -248,8 +248,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                     )}
                       className="px-2.5 py-1 rounded-full text-xs font-medium"
                       style={{
-                        background: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.28 0 0)',
-                        color: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)',
+                        background: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-28)',
+                        color: nuovoMuscoli.includes(m) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)',
                       }}>
                       {m}
                     </button>
@@ -259,14 +259,14 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                   <button onClick={handleCreaEsercizio} disabled={creandoEse || !nuovoNome.trim()}
                     className="flex-1 py-2 rounded-xl text-sm font-bold"
                     style={{
-                      background: !nuovoNome.trim() ? 'oklch(0.28 0 0)' : 'oklch(0.70 0.19 46)',
-                      color: !nuovoNome.trim() ? 'oklch(0.42 0 0)' : 'oklch(0.11 0 0)',
+                      background: !nuovoNome.trim() ? 'var(--c-28)' : 'oklch(0.70 0.19 46)',
+                      color: !nuovoNome.trim() ? 'var(--c-42)' : 'var(--c-11)',
                     }}>
                     {creandoEse ? 'Salvataggio...' : '✓ Crea e seleziona'}
                   </button>
                   <button onClick={() => { setShowCreaEse(false); setNuovoNome(''); setNuovoMuscoli([]) }}
                     className="px-4 py-2 rounded-xl text-sm"
-                    style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                     Annulla
                   </button>
                 </div>
@@ -274,24 +274,24 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             ) : (
               <button onClick={() => setShowCreaEse(true)}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold mt-1"
-                style={{ background: 'oklch(0.20 0 0)', color: 'oklch(0.65 0.15 300)', border: '1px dashed oklch(0.65 0.15 300 / 40%)' }}>
+                style={{ background: 'var(--c-20)', color: 'oklch(0.65 0.15 300)', border: '1px dashed oklch(0.65 0.15 300 / 40%)' }}>
                 + Crea nuovo esercizio
               </button>
             ))}
 
             {(searchP.length > 0 || filtroMuscolo) && (
               <div className="rounded-xl overflow-hidden max-h-44 overflow-y-auto"
-                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-20)', border: '1px solid var(--c-w8)' }}>
                 {filtP.length === 0
                   ? <div>
-                      <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                      <p className="px-4 py-3 text-sm" style={{ color: 'var(--c-45)' }}>Nessun risultato</p>
                     </div>
                   : filtP.map((e, i) => (
                     <button key={e.id} onClick={() => { selectEsercizio(e.id) }}
                       className="w-full text-left px-4 py-2.5 transition-all active:opacity-60"
-                      style={{ borderBottom: i < filtP.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none' }}>
-                      <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{e.nome}</p>
-                      {e.muscoli && <p className="text-xs mt-0.5" style={{ color: 'oklch(0.48 0 0)' }}>{e.muscoli.slice(0, 3).join(' · ')}</p>}
+                      style={{ borderBottom: i < filtP.length - 1 ? '1px solid var(--c-w5)' : 'none' }}>
+                      <p className="text-sm font-medium" style={{ color: 'var(--c-90)' }}>{e.nome}</p>
+                      {e.muscoli && <p className="text-xs mt-0.5" style={{ color: 'var(--c-48)' }}>{e.muscoli.slice(0, 3).join(' · ')}</p>}
                     </button>
                   ))}
               </div>
@@ -302,14 +302,14 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
       {/* ── Tipo ── */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Tipo</label>
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>Tipo</label>
         <div className="flex flex-wrap gap-2">
           {TIPI.map(t => (
             <button key={t.id} onClick={() => setMany({ tipo: t.id, ripetizioni: ['amrap','max_reps'].includes(t.id) ? 'MAX' : form.ripetizioni === 'MAX' ? '8-12' : form.ripetizioni })}
               className="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
               style={{
-                background: form.tipo === t.id ? t.bg : 'oklch(0.23 0 0)',
-                color: form.tipo === t.id ? t.color : 'oklch(0.48 0 0)',
+                background: form.tipo === t.id ? t.bg : 'var(--c-23)',
+                color: form.tipo === t.id ? t.color : 'var(--c-48)',
                 border: form.tipo === t.id ? `1px solid ${t.color}40` : '1px solid transparent',
               }}>
               {t.label}
@@ -320,7 +320,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
       {/* ── Gruppo ── */}
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
           Gruppo
         </label>
         <div className="flex flex-wrap gap-2">
@@ -328,9 +328,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           <button onClick={() => set('gruppo_id', '')}
             className="px-3 py-1.5 rounded-full text-xs font-bold"
             style={{
-              background: !form.gruppo_id ? 'oklch(0.30 0 0)' : 'oklch(0.23 0 0)',
-              color: !form.gruppo_id ? 'oklch(0.80 0 0)' : 'oklch(0.48 0 0)',
-              border: !form.gruppo_id ? '1px solid oklch(1 0 0 / 20%)' : '1px solid transparent',
+              background: !form.gruppo_id ? 'var(--c-30)' : 'var(--c-23)',
+              color: !form.gruppo_id ? 'var(--c-80)' : 'var(--c-48)',
+              border: !form.gruppo_id ? '1px solid var(--c-w20)' : '1px solid transparent',
             }}>
             Nessun gruppo
           </button>
@@ -341,8 +341,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <button onClick={() => set('gruppo_id', crypto.randomUUID())}
                 className="px-3 py-1.5 rounded-full text-xs font-bold"
                 style={{
-                  background: isNuovo ? tipo.bg : 'oklch(0.23 0 0)',
-                  color: isNuovo ? tipo.color : 'oklch(0.48 0 0)',
+                  background: isNuovo ? tipo.bg : 'var(--c-23)',
+                  color: isNuovo ? tipo.color : 'var(--c-48)',
                   border: isNuovo ? `1px solid ${tipo.color}40` : '1px solid transparent',
                 }}>
                 {isNuovo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}
@@ -354,8 +354,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <button key={g.id} onClick={() => set('gruppo_id', g.id)}
               className="px-3 py-1.5 rounded-full text-xs font-bold"
               style={{
-                background: form.gruppo_id === g.id ? tipo.bg : 'oklch(0.23 0 0)',
-                color: form.gruppo_id === g.id ? tipo.color : 'oklch(0.48 0 0)',
+                background: form.gruppo_id === g.id ? tipo.bg : 'var(--c-23)',
+                color: form.gruppo_id === g.id ? tipo.color : 'var(--c-48)',
                 border: form.gruppo_id === g.id ? `1px solid ${tipo.color}40` : '1px solid transparent',
               }}>
               Gruppo {g.label}
@@ -371,13 +371,13 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>N. Drop</label>
             <input type="number" min="1" max="5" value={form.drop_count} onChange={e => set('drop_count', e.target.value)}
               className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+              style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>% Riduzione</label>
             <input type="number" min="5" max="50" value={form.drop_pct} onChange={e => set('drop_pct', e.target.value)}
               className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+              style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
           </div>
         </div>
       )}
@@ -388,7 +388,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.15 300)' }}>Secondi micro-recupero</label>
           <input type="number" value={form.rest_pause_sec} onChange={e => set('rest_pause_sec', e.target.value)}
             className="mt-1.5 w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
         </div>
       )}
 
@@ -401,8 +401,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <button key={d} onClick={() => set('piramide_dir', d)}
                 className="flex-1 py-2 rounded-xl text-sm font-bold"
                 style={{
-                  background: form.piramide_dir === d ? 'oklch(0.85 0.12 80 / 20%)' : 'oklch(0.22 0 0)',
-                  color: form.piramide_dir === d ? 'oklch(0.85 0.12 80)' : 'oklch(0.48 0 0)',
+                  background: form.piramide_dir === d ? 'oklch(0.85 0.12 80 / 20%)' : 'var(--c-22)',
+                  color: form.piramide_dir === d ? 'oklch(0.85 0.12 80)' : 'var(--c-48)',
                 }}>
                 {d === 'ascendente' ? '↑ Peso cresce' : '↓ Peso cala'}
               </button>
@@ -418,9 +418,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.18 330)' }}>Minuti per round</label>
             <input type="number" min="1" max="60" value={form.amrap_minuti} onChange={e => set('amrap_minuti', e.target.value)}
               className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+              style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
           </div>
-          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="text-xs" style={{ color: 'var(--c-50)' }}>
             Timer a countdown — scaduto parte il recupero automaticamente
           </p>
         </div>
@@ -434,19 +434,19 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Reps/min</label>
               <input type="number" min="1" value={form.emom_reps_per_minuto} onChange={e => set('emom_reps_per_minuto', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Durata (min)</label>
               <input type="number" min="1" value={form.emom_durata_minuti} onChange={e => set('emom_durata_minuti', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.65 0.18 180)' }}>Round</label>
               <input type="number" min="1" value={form.emom_rounds} onChange={e => set('emom_rounds', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
           </div>
           <p className="text-xs font-medium" style={{ color: 'oklch(0.65 0.18 180)' }}>
@@ -462,9 +462,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             <label className="text-xs font-semibold" style={{ color: 'oklch(0.75 0.15 60)' }}>Target reps totali</label>
             <input type="number" min="1" value={form.max_reps_target} onChange={e => set('max_reps_target', e.target.value)}
               className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+              style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
           </div>
-          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="text-xs" style={{ color: 'var(--c-50)' }}>
             Serie 1 = MAX reps · Serie successive = il cliente distribuisce le {form.max_reps_target} reps rimanenti
           </p>
         </div>
@@ -478,19 +478,19 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Lavoro (sec)</label>
               <input type="number" min="1" value={form.tabata_work_secondi} onChange={e => set('tabata_work_secondi', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (sec)</label>
               <input type="number" min="1" value={form.tabata_rest_secondi} onChange={e => set('tabata_rest_secondi', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
               <input type="number" min="1" value={form.tabata_rounds} onChange={e => set('tabata_rounds', e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }} />
             </div>
           </div>
           <p className="text-xs font-medium" style={{ color: 'oklch(0.70 0.15 0)' }}>
@@ -502,7 +502,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               return `Totale: ${tot}s = ${(tot / 60).toFixed(1)} min`
             })()}
           </p>
-          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="text-xs" style={{ color: 'var(--c-50)' }}>
             Se abbinato a un altro esercizio Tabata nello stesso gruppo, si alternano automaticamente
           </p>
         </div>
@@ -534,7 +534,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             {campi.map(f => (
               <div key={f.key} className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
+                  style={{ color: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46)' : 'var(--c-50)' }}>
                   {f.label}
                 </label>
                 <input
@@ -545,15 +545,15 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                   placeholder={f.ph}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
                   style={{
-                    background: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 10%)' : 'oklch(0.22 0 0)',
-                    border: isTimer && f.key === 'ripetizioni' ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
-                    color: 'oklch(0.97 0 0)',
+                    background: isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 10%)' : 'var(--c-22)',
+                    border: isTimer && f.key === 'ripetizioni' ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid var(--c-w8)',
+                    color: 'var(--c-97)',
                   }}
                   onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                  onBlur={e => e.target.style.borderColor = isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}
+                  onBlur={e => e.target.style.borderColor = isTimer && f.key === 'ripetizioni' ? 'oklch(0.70 0.19 46 / 40%)' : 'var(--c-w8)'}
                 />
                 {f.hint && (
-                  <p className="text-xs" style={{ color: 'oklch(0.42 0 0)' }}>{f.hint}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-42)' }}>{f.hint}</p>
                 )}
               </div>
             ))}
@@ -564,49 +564,49 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       {/* ── Tabata: solo recupero tra cicli ── */}
       {form.tipo === 'tabata' && (
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
             Recupero dopo tabata (s)
           </label>
           <input type="number" value={form.recupero} onChange={e => set('recupero', e.target.value)}
             placeholder="90"
             className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
             onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+            onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
         </div>
       )}
 
       {/* ── Peso consigliato & TUT ── */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Peso consigliato (kg)</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>Peso consigliato (kg)</label>
           <input type="number" inputMode="decimal" value={form.peso_consigliato_kg} onChange={e => set('peso_consigliato_kg', e.target.value)}
             placeholder="es. 60"
             className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
             onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+            onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>TUT</label>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>TUT</label>
           <input type="text" value={form.tut} onChange={e => set('tut', e.target.value)}
             placeholder="es. 3-1-2-0"
             className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
             onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+            onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
         </div>
       </div>
 
       {/* ── Note ── */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>Note coach</label>
+        <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>Note coach</label>
         <input type="text" value={form.note} onChange={e => set('note', e.target.value)}
           placeholder="Indicazioni tecniche, avvertenze..."
           className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
           onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+          onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
       </div>
 
       {/* ── Warmup specifico ── */}
@@ -629,7 +629,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           {(() => {
             const warmup: { peso: string; reps: string }[] = JSON.parse(form.warmup_serie || '[]')
             if (warmup.length === 0) return (
-              <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+              <p className="text-xs" style={{ color: 'var(--c-40)' }}>
                 Nessuna serie warmup — premi + Serie per aggiungerne una
               </p>
             )
@@ -651,7 +651,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                         }}
                         placeholder="Peso (kg)"
                         className="px-2 py-2 rounded-xl text-sm outline-none text-center"
-                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                       />
                       <input
                         type="text" value={w.reps}
@@ -662,7 +662,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                         }}
                         placeholder="Reps"
                         className="px-2 py-2 rounded-xl text-sm outline-none text-center"
-                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                       />
                     </div>
                     <button
@@ -699,7 +699,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
             ]
         return (
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
               Progressione
             </label>
             <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${opzioni.length}, 1fr)` }}>
@@ -710,13 +710,13 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
                     onClick={() => set('progressione_tipo', opt.id)}
                     className="flex flex-col items-center px-2 py-2 rounded-xl transition-all"
                     style={{
-                      background: sel ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                      border: sel ? '1px solid oklch(0.65 0.18 150 / 50%)' : '1px solid oklch(1 0 0 / 8%)',
+                      background: sel ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)',
+                      border: sel ? '1px solid oklch(0.65 0.18 150 / 50%)' : '1px solid var(--c-w8)',
                     }}>
-                    <span className="text-xs font-bold" style={{ color: sel ? 'oklch(0.65 0.18 150)' : 'oklch(0.65 0 0)' }}>
+                    <span className="text-xs font-bold" style={{ color: sel ? 'oklch(0.65 0.18 150)' : 'var(--c-65)' }}>
                       {opt.label}
                     </span>
-                    <span className="text-xs mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>{opt.sub}</span>
+                    <span className="text-xs mt-0.5" style={{ color: 'var(--c-42)' }}>{opt.sub}</span>
                   </button>
                 )
               })}
@@ -728,7 +728,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       {/* ── Pre-countdown (solo per esercizi timer / timer_unilaterale) ── */}
       {(esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer' || esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer_unilaterale') && (
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
             Pre-countdown preparazione
           </label>
           <div className="flex items-center gap-3">
@@ -738,11 +738,11 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               onChange={e => set('prepara_secondi', e.target.value)}
               placeholder="0"
               className="w-24 px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'}
             />
-            <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+            <span className="text-xs" style={{ color: 'var(--c-45)' }}>
               sec · il countdown non viene loggato, parte prima del timer reale
             </span>
           </div>
@@ -752,7 +752,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       {/* ── Alternativa ── */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
             Alternativa
           </label>
           {!showAlt && !form.alternativa_id && (
@@ -768,12 +768,12 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           form.alternativa_id ? (
             <div className="flex items-center gap-2">
               <div className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: 'oklch(0.65 0.15 300 / 12%)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(0.65 0.15 300 / 25%)' }}>
+                style={{ background: 'oklch(0.65 0.15 300 / 12%)', color: 'var(--c-97)', border: '1px solid oklch(0.65 0.15 300 / 25%)' }}>
                 {altNome}
               </div>
               <button onClick={() => { set('alternativa_id', ''); setShowAlt(false); setSearchA('') }}
                 className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                 <FontAwesomeIcon icon={faXmark} className="text-xs" />
               </button>
             </div>
@@ -782,23 +782,23 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               <input type="text" value={searchA} onChange={e => setSearchA(e.target.value)}
                 placeholder="Cerca alternativa..."
                 className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.65 0.15 300 / 40%)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', border: '1px solid oklch(0.65 0.15 300 / 40%)', color: 'var(--c-97)' }} />
               {searchA.length > 0 && (
                 <div className="rounded-xl overflow-hidden max-h-36 overflow-y-auto"
-                  style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ background: 'var(--c-20)', border: '1px solid var(--c-w8)' }}>
                   {filtA.length === 0
-                    ? <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun risultato</p>
+                    ? <p className="px-4 py-3 text-sm" style={{ color: 'var(--c-45)' }}>Nessun risultato</p>
                     : filtA.map((e, i) => (
                       <button key={e.id} onClick={() => { set('alternativa_id', e.id); setShowAlt(false); setSearchA('') }}
                         className="w-full text-left px-4 py-2.5"
-                        style={{ borderBottom: i < filtA.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none' }}>
-                        <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{e.nome}</p>
+                        style={{ borderBottom: i < filtA.length - 1 ? '1px solid var(--c-w5)' : 'none' }}>
+                        <p className="text-sm font-medium" style={{ color: 'var(--c-90)' }}>{e.nome}</p>
                       </button>
                     ))}
                 </div>
               )}
               <button onClick={() => { setShowAlt(false); setSearchA('') }}
-                className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Annulla</button>
+                className="text-xs" style={{ color: 'var(--c-45)' }}>Annulla</button>
             </div>
           )
         )}
@@ -809,8 +809,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         <button onClick={onSave} disabled={saving || !form.esercizio_id}
           className="flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: !form.esercizio_id ? 'oklch(0.28 0 0)' : 'oklch(0.70 0.19 46)',
-            color: !form.esercizio_id ? 'oklch(0.42 0 0)' : 'oklch(0.11 0 0)',
+            background: !form.esercizio_id ? 'var(--c-28)' : 'oklch(0.70 0.19 46)',
+            color: !form.esercizio_id ? 'var(--c-42)' : 'var(--c-11)',
             cursor: !form.esercizio_id ? 'not-allowed' : 'pointer',
           }}>
           <FontAwesomeIcon icon={faCheck} />
@@ -818,7 +818,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         </button>
         <button onClick={onCancel}
           className="px-5 py-3 rounded-xl text-sm font-medium"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
           Annulla
         </button>
       </div>
@@ -989,7 +989,7 @@ export default function SchedaEditorModal({
     const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
-      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
@@ -1162,7 +1162,7 @@ export default function SchedaEditorModal({
     const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
-      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
@@ -1239,7 +1239,7 @@ export default function SchedaEditorModal({
     const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
-      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
@@ -1320,7 +1320,7 @@ export default function SchedaEditorModal({
     const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.9;pointer-events:none;
-      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     el.style.opacity = '0.3'
@@ -1368,27 +1368,27 @@ export default function SchedaEditorModal({
       style={{ background: 'oklch(0 0 0 / 75%)', backdropFilter: 'blur(10px)' }}>
       <div className="w-full max-w-2xl lg:max-w-5xl flex flex-col rounded-3xl overflow-hidden"
         style={{
-          background: 'oklch(0.15 0 0)',
-          border: '1px solid oklch(1 0 0 / 10%)',
+          background: 'var(--c-15)',
+          border: '1px solid var(--c-w10)',
           maxHeight: '92vh',
         }}>
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+          style={{ borderBottom: '1px solid var(--c-w8)' }}>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
               Editor Scheda
             </p>
 			{/* Toggle editor — solo desktop */}
 			<div className="hidden lg:flex items-center gap-2 mt-1 mb-2">
-			  <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Editor</span>
+			  <span className="text-xs" style={{ color: 'var(--c-45)' }}>Editor</span>
 			  <button onClick={() => setUseDesktopEditor(p => !p)}
 				className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
 				style={{
-				  background: useDesktopEditor ? 'oklch(0.60 0.15 200 / 15%)' : 'oklch(0.22 0 0)',
-				  color: useDesktopEditor ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-				  border: `1px solid ${useDesktopEditor ? 'oklch(0.60 0.15 200 / 30%)' : 'oklch(1 0 0 / 10%)'}`,
+				  background: useDesktopEditor ? 'oklch(0.60 0.15 200 / 15%)' : 'var(--c-22)',
+				  color: useDesktopEditor ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+				  border: `1px solid ${useDesktopEditor ? 'oklch(0.60 0.15 200 / 30%)' : 'var(--c-w10)'}`,
 				}}>
 				{useDesktopEditor ? '⊞ Desktop' : '☰ Mobile'}
 			  </button>
@@ -1400,8 +1400,8 @@ export default function SchedaEditorModal({
               onKeyDown={e => e.key === 'Enter' && handleSaveNome()}
               className="w-full text-lg font-black leading-tight outline-none bg-transparent border-b"
               style={{
-                color: 'oklch(0.97 0 0)',
-                borderColor: 'oklch(1 0 0 / 15%)',
+                color: 'var(--c-97)',
+                borderColor: 'var(--c-w15)',
                 paddingBottom: '2px',
               }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
@@ -1409,7 +1409,7 @@ export default function SchedaEditorModal({
           </div>
           <button onClick={onClose}
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -1423,8 +1423,8 @@ export default function SchedaEditorModal({
         {/* ── Impostazioni scheda (RPE / RIR) ── */}
         {!loading && (
           <div className="flex items-center gap-4 px-5 py-2.5 flex-shrink-0"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.13 0 0)' }}>
-            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>
+            style={{ borderBottom: '1px solid var(--c-w8)', background: 'var(--c-13)' }}>
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-40)' }}>
               Misura intensità
             </span>
             <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1434,7 +1434,7 @@ export default function SchedaEditorModal({
                 style={{
                   width: 32, height: 18,
                   borderRadius: 9,
-                  background: richiede_rpe ? 'oklch(0.70 0.19 46)' : 'oklch(0.28 0 0)',
+                  background: richiede_rpe ? 'oklch(0.70 0.19 46)' : 'var(--c-28)',
                   transition: 'background 0.2s',
                   cursor: 'pointer',
                 }}>
@@ -1444,7 +1444,7 @@ export default function SchedaEditorModal({
                   transition: 'left 0.2s',
                 }} />
               </div>
-              <span className="text-xs font-medium" style={{ color: richiede_rpe ? 'oklch(0.75 0.10 46)' : 'oklch(0.45 0 0)' }}>
+              <span className="text-xs font-medium" style={{ color: richiede_rpe ? 'oklch(0.75 0.10 46)' : 'var(--c-45)' }}>
                 RPE
               </span>
             </label>
@@ -1455,7 +1455,7 @@ export default function SchedaEditorModal({
                 style={{
                   width: 32, height: 18,
                   borderRadius: 9,
-                  background: richiede_rir ? 'oklch(0.70 0.19 46)' : 'oklch(0.28 0 0)',
+                  background: richiede_rir ? 'oklch(0.70 0.19 46)' : 'var(--c-28)',
                   transition: 'background 0.2s',
                   cursor: 'pointer',
                 }}>
@@ -1465,17 +1465,17 @@ export default function SchedaEditorModal({
                   transition: 'left 0.2s',
                 }} />
               </div>
-              <span className="text-xs font-medium" style={{ color: richiede_rir ? 'oklch(0.75 0.10 46)' : 'oklch(0.45 0 0)' }}>
+              <span className="text-xs font-medium" style={{ color: richiede_rir ? 'oklch(0.75 0.10 46)' : 'var(--c-45)' }}>
                 RIR
               </span>
             </label>
-            {savingToggle && <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>salvataggio...</span>}
+            {savingToggle && <span className="text-xs" style={{ color: 'var(--c-40)' }}>salvataggio...</span>}
           </div>
         )}
 
         {/* ── Day tabs ── */}
             <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto flex-shrink-0 scrollbar-none"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+              style={{ borderBottom: '1px solid var(--c-w8)' }}>
               {giorni.map(g => (
                 editingGiornoId === g.id ? (
                   <input
@@ -1491,7 +1491,7 @@ export default function SchedaEditorModal({
                     className="flex-shrink-0 px-3 py-2 rounded-xl text-sm font-bold outline-none"
                     style={{
                       background: 'oklch(0.70 0.19 46)',
-                      color: 'oklch(0.11 0 0)',
+                      color: 'var(--c-11)',
                       minWidth: 80,
                       maxWidth: 160,
                     }}
@@ -1502,8 +1502,8 @@ export default function SchedaEditorModal({
                     onDoubleClick={() => { setEditingGiornoId(g.id); setEditingGiornoNome(g.nome) }}
                     className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap"
                     style={{
-                      background: activeGiorno === g.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                      color: activeGiorno === g.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                      background: activeGiorno === g.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                      color: activeGiorno === g.id ? 'var(--c-11)' : 'var(--c-55)',
                     }}
                     title="Doppio click per rinominare">
                     {g.nome}
@@ -1513,7 +1513,7 @@ export default function SchedaEditorModal({
 
               <button onClick={handleAddGiorno}
                 className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                 <FontAwesomeIcon icon={faPlus} />
               </button>
             </div>
@@ -1522,13 +1522,13 @@ export default function SchedaEditorModal({
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {!activeGiorno ? (
                 <div className="py-12 text-center">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi un giorno per iniziare</p>
+                  <p className="text-sm" style={{ color: 'var(--c-45)' }}>Aggiungi un giorno per iniziare</p>
                 </div>
               ) : (
                 <>
                   {/* Day header */}
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--c-45)' }}>
                       {eserciziGiorno.length} {eserciziGiorno.length === 1 ? 'esercizio' : 'esercizi'}
                     </p>
                     <button onClick={() => handleDeleteGiorno(activeGiorno)}
@@ -1554,9 +1554,9 @@ export default function SchedaEditorModal({
                       placeholder="es. 5 min cyclette · mobilità spalle · 10 hip circles..."
                       rows={2}
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                       onFocus={e => e.target.style.borderColor = 'oklch(0.65 0.18 150 / 60%)'}
-                      onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--c-w8)'}
                     />
                   </div>
 
@@ -1592,8 +1592,8 @@ export default function SchedaEditorModal({
 
                         <div className="rounded-2xl overflow-hidden"
                           style={{
-                            background: 'oklch(0.19 0 0)',
-                            border: `1px solid ${isGrouped ? `${tipoInfo.color}30` : 'oklch(1 0 0 / 6%)'}`,
+                            background: 'var(--c-19)',
+                            border: `1px solid ${isGrouped ? `${tipoInfo.color}30` : 'var(--c-w6)'}`,
                             borderLeft: isGrouped ? `3px solid ${tipoInfo.color}` : undefined,
                             marginBottom: isGrouped && !isLastInGroup ? '2px' : undefined,
                             borderRadius: isGrouped && !isFirstInGroup && !isLastInGroup ? '0.75rem' : undefined,
@@ -1605,7 +1605,7 @@ export default function SchedaEditorModal({
                               {/* Drag handle */}
                               <div
                                 className="flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none mt-1"
-                                style={{ color: 'oklch(0.35 0 0)', padding: '2px' }}
+                                style={{ color: 'var(--c-35)', padding: '2px' }}
                                 onPointerDown={(e) => {
                                   const row = (e.currentTarget as HTMLElement).closest('[data-eseid]') as HTMLDivElement
                                   if (row) onPointerDownDrag(e, ese.id, row)
@@ -1613,7 +1613,7 @@ export default function SchedaEditorModal({
                                 ⠿
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
                                   {ese.esercizi?.nome}
                                 </p>
                                 <div className="flex flex-wrap gap-1.5 mt-1.5">
@@ -1623,10 +1623,10 @@ export default function SchedaEditorModal({
                                       {tipoInfo.label}
                                     </span>
                                   )}
-                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
                                     {ese.serie}×{ese.ripetizioni}
                                   </span>
-                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
                                     {ese.recupero_secondi}s rec.
                                   </span>
                                   {ese.progressione_tipo && ese.progressione_tipo !== 'peso' && (
@@ -1690,7 +1690,7 @@ export default function SchedaEditorModal({
                                     </span>
                                   )}
                                   {ese.note && (
-                                    <span className="text-xs italic" style={{ color: 'oklch(0.45 0 0)' }}>
+                                    <span className="text-xs italic" style={{ color: 'var(--c-45)' }}>
                                       "{ese.note}"
                                     </span>
                                   )}
@@ -1732,7 +1732,7 @@ export default function SchedaEditorModal({
                                     })
                                   }}
                                   className="w-8 h-8 rounded-lg flex items-center justify-center"
-                                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                  style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
                                   <FontAwesomeIcon icon={faPen} className="text-xs" />
                                 </button>
                                 <button onClick={() => handleDeleteEse(ese.id)}
@@ -1764,7 +1764,7 @@ export default function SchedaEditorModal({
                                 <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                                   style={{
                                     gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px',
-                                    background: 'oklch(0.19 0 0)',
+                                    background: 'var(--c-19)',
                                     border: '1px solid oklch(0.60 0.15 200 / 40%)',
                                   }}>
                                   {/* # placeholder */}
@@ -1774,7 +1774,7 @@ export default function SchedaEditorModal({
                                     value={editFiltroMuscolo}
                                     onChange={e => { setEditFiltroMuscolo(e.target.value); setEditForm(f => ({ ...f, esercizio_id: '' })) }}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editFiltroMuscolo ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: editFiltroMuscolo ? 'var(--c-90)' : 'var(--c-45)', colorScheme: 'dark' }}>
                                     <option value="">Tutti</option>
                                     {['Petto','Dorsali','Spalle','Bicipiti','Tricipiti','Quadricipiti','Femorali','Glutei','Addome','Polpacci','Trapezio','Avambracci'].map(m => (
                                       <option key={m} value={m}>{m}</option>
@@ -1785,7 +1785,7 @@ export default function SchedaEditorModal({
                                     value={editForm.esercizio_id}
                                     onChange={e => setEditForm(f => ({ ...f, esercizio_id: e.target.value }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editForm.esercizio_id ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: editForm.esercizio_id ? 'var(--c-97)' : 'var(--c-45)', colorScheme: 'dark' }}>
                                     <option value="">Cerca esercizio...</option>
                                     {esercizi
                                       .filter(e => !editFiltroMuscolo || e.muscoli?.includes(editFiltroMuscolo))
@@ -1796,7 +1796,7 @@ export default function SchedaEditorModal({
                                     value={editForm.tipo}
                                     onChange={e => setEditForm(f => ({ ...f, tipo: e.target.value, ripetizioni: ['amrap','max_reps'].includes(e.target.value) ? 'MAX' : f.ripetizioni === 'MAX' ? '8-12' : f.ripetizioni }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                                     <option value="normale">Normale</option>
                                     <option value="superset">Superset</option>
                                     <option value="giant_set">Giant Set</option>
@@ -1815,7 +1815,7 @@ export default function SchedaEditorModal({
                                     value={editForm.serie}
                                     onChange={e => setEditForm(f => ({ ...f, serie: e.target.value }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   )}
                                   {/* Reps */}
                                   {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && editForm.tipo !== 'tabata' && (
@@ -1824,20 +1824,20 @@ export default function SchedaEditorModal({
                                     onChange={e => setEditForm(f => ({ ...f, ripetizioni: e.target.value }))}
                                     placeholder="8-12"
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   )}
                                   {/* Recupero */}
                                   <input type="number"
                                     value={editForm.recupero}
                                     onChange={e => setEditForm(f => ({ ...f, recupero: e.target.value }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   {/* Progressione */}
                                   <select
                                     value={editForm.progressione_tipo}
                                     onChange={e => setEditForm(f => ({ ...f, progressione_tipo: e.target.value }))}
                                     className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                                     <option value="peso">Peso</option>
                                     <option value="reps">Reps</option>
                                     <option value="serie">Serie</option>
@@ -1849,9 +1849,9 @@ export default function SchedaEditorModal({
                                     onClick={() => setEditExpandedAdv(v => !v)}
                                     className="w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all"
                                     style={{
-                                      background: editExpandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                                      color: editExpandedAdv ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
-                                      border: '1px solid oklch(1 0 0 / 10%)',
+                                      background: editExpandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                                      color: editExpandedAdv ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
+                                      border: '1px solid var(--c-w10)',
                                     }}
                                     title="Opzioni avanzate">▾</button>
                                   {/* Annulla */}
@@ -1864,15 +1864,15 @@ export default function SchedaEditorModal({
                                 {/* Pannello avanzato */}
                                 {editExpandedAdv && (
                                   <div className="px-2 py-3 rounded-xl space-y-3"
-                                    style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                    style={{ background: 'var(--c-16)', border: '1px solid var(--c-w8)' }}>
                                     <div className="grid grid-cols-4 gap-3">
                                       <div className="space-y-1 col-span-2">
-                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Alternativa</label>
+                                        <label className="text-xs" style={{ color: 'var(--c-45)' }}>Alternativa</label>
                                         <select
                                           value={editForm.alternativa_id}
                                           onChange={e => setEditForm(f => ({ ...f, alternativa_id: e.target.value }))}
                                           className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: editForm.alternativa_id ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: editForm.alternativa_id ? 'var(--c-90)' : 'var(--c-45)', colorScheme: 'dark' }}>
                                           <option value="">Nessuna alternativa</option>
                                           {esercizi.filter(e => e.id !== editForm.esercizio_id).map(e => (
                                             <option key={e.id} value={e.id}>{e.nome}</option>
@@ -1880,52 +1880,52 @@ export default function SchedaEditorModal({
                                         </select>
                                       </div>
                                       <div className="space-y-1">
-                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Prepara (s)</label>
+                                        <label className="text-xs" style={{ color: 'var(--c-45)' }}>Prepara (s)</label>
                                         <input type="number"
                                           value={editForm.prepara_secondi}
                                           onChange={e => setEditForm(f => ({ ...f, prepara_secondi: e.target.value }))}
                                           placeholder="es. 10"
                                           className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                       </div>
                                       {editForm.tipo === 'dropset' && (
                                         <>
                                           <div className="space-y-1">
-                                            <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop count</label>
+                                            <label className="text-xs" style={{ color: 'var(--c-45)' }}>Drop count</label>
                                             <input type="number" min="1" max="5"
                                               value={editForm.drop_count}
                                               onChange={e => setEditForm(f => ({ ...f, drop_count: e.target.value }))}
                                               className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                           </div>
                                           <div className="space-y-1">
-                                            <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop %</label>
+                                            <label className="text-xs" style={{ color: 'var(--c-45)' }}>Drop %</label>
                                             <input type="number" min="5" max="50"
                                               value={editForm.drop_pct}
                                               onChange={e => setEditForm(f => ({ ...f, drop_pct: e.target.value }))}
                                               className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                           </div>
                                         </>
                                       )}
                                       {editForm.tipo === 'rest_pause' && (
                                         <div className="space-y-1">
-                                          <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Pausa (s)</label>
+                                          <label className="text-xs" style={{ color: 'var(--c-45)' }}>Pausa (s)</label>
                                           <input type="number"
                                             value={editForm.rest_pause_sec}
                                             onChange={e => setEditForm(f => ({ ...f, rest_pause_sec: e.target.value }))}
                                             className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                         </div>
                                       )}
                                       {editForm.tipo === 'piramidale' && (
                                         <div className="space-y-1 col-span-2">
-                                          <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Direzione</label>
+                                          <label className="text-xs" style={{ color: 'var(--c-45)' }}>Direzione</label>
                                           <select
                                             value={editForm.piramide_dir}
                                             onChange={e => setEditForm(f => ({ ...f, piramide_dir: e.target.value }))}
                                             className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                                             <option value="ascendente">Ascendente</option>
                                             <option value="discendente">Discendente</option>
                                             <option value="doppia">Doppia</option>
@@ -1940,7 +1940,7 @@ export default function SchedaEditorModal({
                                               value={editForm.tabata_work_secondi}
                                               onChange={e => setEditForm(f => ({ ...f, tabata_work_secondi: e.target.value }))}
                                               className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                           </div>
                                           <div className="space-y-1">
                                             <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (s)</label>
@@ -1948,7 +1948,7 @@ export default function SchedaEditorModal({
                                               value={editForm.tabata_rest_secondi}
                                               onChange={e => setEditForm(f => ({ ...f, tabata_rest_secondi: e.target.value }))}
                                               className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                           </div>
                                           <div className="space-y-1">
                                             <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
@@ -1956,38 +1956,38 @@ export default function SchedaEditorModal({
                                               value={editForm.tabata_rounds}
                                               onChange={e => setEditForm(f => ({ ...f, tabata_rounds: e.target.value }))}
                                               className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                           </div>
                                         </>
                                       )}
                                     </div>
                                     <div className="space-y-1">
-                                      <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Note tecniche</label>
+                                      <label className="text-xs" style={{ color: 'var(--c-45)' }}>Note tecniche</label>
                                       <input type="text"
                                         value={editForm.note}
                                         onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))}
                                         placeholder="Indicazioni tecniche, avvertenze..."
                                         className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                       <div className="space-y-1">
-                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Peso consigliato (kg)</label>
+                                        <label className="text-xs" style={{ color: 'var(--c-45)' }}>Peso consigliato (kg)</label>
                                         <input type="number" inputMode="decimal"
                                           value={editForm.peso_consigliato_kg}
                                           onChange={e => setEditForm(f => ({ ...f, peso_consigliato_kg: e.target.value }))}
                                           placeholder="es. 60"
                                           className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                       </div>
                                       <div className="space-y-1">
-                                        <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>TUT</label>
+                                        <label className="text-xs" style={{ color: 'var(--c-45)' }}>TUT</label>
                                         <input type="text"
                                           value={editForm.tut}
                                           onChange={e => setEditForm(f => ({ ...f, tut: e.target.value }))}
                                           placeholder="es. 3-1-2-0"
                                           className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                       </div>
                                     </div>
                                   </div>
@@ -1997,12 +1997,12 @@ export default function SchedaEditorModal({
                                 <div className="flex gap-2 px-2">
                                   <button onClick={handleSaveEdit} disabled={saving}
                                     className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
-                                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
                                     {saving ? 'Salvataggio...' : 'Salva modifiche'}
                                   </button>
                                   <button onClick={() => setEditingId(null)}
                                     className="px-4 py-2 rounded-xl text-xs font-medium"
-                                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                    style={{ background: 'var(--c-22)', color: 'var(--c-55)', border: '1px solid var(--c-w8)' }}>
                                     Annulla
                                   </button>
                                 </div>
@@ -2022,7 +2022,7 @@ export default function SchedaEditorModal({
                       style={{ gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px' }}>
                       {['#', 'Muscolo', 'Tipo input', 'Esercizio', 'Tipo', 'Ser.', 'Reps', 'Rec.', 'Progr.', '', ''].map((h, i) => (
                         <span key={i} className="text-xs font-semibold uppercase tracking-wider"
-                          style={{ color: 'oklch(0.40 0 0)' }}>{h}</span>
+                          style={{ color: 'var(--c-40)' }}>{h}</span>
                       ))}
                     </div>
                   )}
@@ -2032,7 +2032,7 @@ export default function SchedaEditorModal({
 
                       {/* MOBILE: card espandibile — invariato */}
                       <div className={`${useDesktopEditor ? 'hidden' : 'block'} rounded-2xl overflow-hidden`}
-                        style={{ background: 'oklch(0.19 0 0)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
+                        style={{ background: 'var(--c-19)', border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(0.70 0.19 46 / 40%)'}` }}>
                         <div className="px-4 py-3 flex items-center gap-3 cursor-pointer"
                           onClick={() => setPendingEsercizi(prev => prev.map(x =>
                             x.tempId === p.tempId ? { ...x, expanded: !x.expanded } : { ...x, expanded: false }
@@ -2047,10 +2047,10 @@ export default function SchedaEditorModal({
                           <div className="flex-1 min-w-0">
                             {p.form.esercizio_id ? (
                               <>
-                                <p className="text-sm font-bold truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                                <p className="text-sm font-bold truncate" style={{ color: 'var(--c-97)' }}>
                                   {esercizi.find(e => e.id === p.form.esercizio_id)?.nome ?? 'Esercizio'}
                                 </p>
-                                <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                                <p className="text-xs" style={{ color: 'var(--c-50)' }}>
                                   {p.form.tipo === 'emom'
                                     ? `${p.form.emom_reps_per_minuto}r/min × ${p.form.emom_durata_minuti}min × ${p.form.emom_rounds}rd · ${p.form.recupero}s rec.`
                                     : `${p.form.serie}×${p.form.ripetizioni} · ${p.form.recupero}s rec.`}
@@ -2069,7 +2069,7 @@ export default function SchedaEditorModal({
                           </button>
                         </div>
                         {p.expanded && (
-                          <div style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+                          <div style={{ borderTop: '1px solid var(--c-w8)' }}>
                             <EsercizioForm
                               form={p.form}
                               onChange={newForm => setPendingEsercizi(prev => prev.map(x => x.tempId === p.tempId ? { ...x, form: newForm } : x))}
@@ -2089,11 +2089,11 @@ export default function SchedaEditorModal({
                         <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                           style={{
                             gridTemplateColumns: '24px 90px 80px 1fr 100px 70px 80px 80px 130px 32px 32px',
-                            background: p.form.esercizio_id ? 'oklch(0.19 0 0)' : 'oklch(0.17 0 0)',
+                            background: p.form.esercizio_id ? 'var(--c-19)' : 'oklch(0.17 0 0)',
                             border: `1px solid ${p.form.esercizio_id ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.70 0.19 46 / 25%)'}`,
                           }}>
                           {/* # */}
-                          <span className="text-xs font-bold" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <span className="text-xs font-bold" style={{ color: 'var(--c-45)' }}>
                             {(giorni.find(g => g.id === activeGiorno)?.scheda_esercizi?.length ?? 0) +
                               pendingEsercizi.filter(x => x.giornoId === activeGiorno).indexOf(p) + 1}
                           </span>
@@ -2104,7 +2104,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, filtroMuscolo: e.target.value, form: { ...x.form, esercizio_id: '' } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.filtroMuscolo ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: p.filtroMuscolo ? 'var(--c-90)' : 'var(--c-45)', colorScheme: 'dark' }}>
                             <option value="">Tutti</option>
                             {['Petto','Dorsali','Spalle','Bicipiti','Tricipiti','Quadricipiti','Femorali','Glutei','Addome','Polpacci','Trapezio','Avambracci'].map(m => (
                               <option key={m} value={m}>{m}</option>
@@ -2117,7 +2117,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, filtroTipoInput: e.target.value, form: { ...x.form, esercizio_id: '' } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.filtroTipoInput ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: p.filtroTipoInput ? 'var(--c-90)' : 'var(--c-45)', colorScheme: 'dark' }}>
                             <option value="">Tutti</option>
                             <option value="reps">Reps</option>
                             <option value="reps_unilaterale">Unilaterale</option>
@@ -2130,7 +2130,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, form: { ...x.form, esercizio_id: e.target.value } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.form.esercizio_id ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: p.form.esercizio_id ? 'var(--c-97)' : 'var(--c-45)', colorScheme: 'dark' }}>
                             <option value="">Cerca esercizio...</option>
                             {esercizi
                               .filter(e => (!p.filtroMuscolo || e.muscoli?.includes(p.filtroMuscolo)) && (!p.filtroTipoInput || e.tipo_input === p.filtroTipoInput))
@@ -2143,7 +2143,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, form: { ...x.form, tipo: e.target.value, ripetizioni: ['amrap','max_reps'].includes(e.target.value) ? 'MAX' : x.form.ripetizioni === 'MAX' ? '8-12' : x.form.ripetizioni } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                             <option value="normale">Normale</option>
                             <option value="superset">Superset</option>
                             <option value="giant_set">Giant Set</option>
@@ -2163,7 +2163,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, form: { ...x.form, serie: e.target.value } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                           )}
                           {/* Reps */}
                           {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && p.form.tipo !== 'tabata' && (
@@ -2174,7 +2174,7 @@ export default function SchedaEditorModal({
                             ))}
                             placeholder="8-12"
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                           )}
                           {/* Recupero */}
                           <input type="number"
@@ -2183,7 +2183,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, form: { ...x.form, recupero: e.target.value } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1 text-center"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                           {/* Progressione */}
                           <select
                             value={p.form.progressione_tipo}
@@ -2191,7 +2191,7 @@ export default function SchedaEditorModal({
                               x.tempId === p.tempId ? { ...x, form: { ...x.form, progressione_tipo: e.target.value } } : x
                             ))}
                             className="w-full text-xs rounded-lg outline-none px-1.5 py-1"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                             <option value="peso">Peso</option>
                             <option value="reps">Reps</option>
                             <option value="serie">Serie</option>
@@ -2205,9 +2205,9 @@ export default function SchedaEditorModal({
                             ))}
                             className="w-6 h-6 rounded-md flex items-center justify-center text-xs transition-all"
                             style={{
-                              background: p.expandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                              color: p.expandedAdv ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
-                              border: '1px solid oklch(1 0 0 / 10%)',
+                              background: p.expandedAdv ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                              color: p.expandedAdv ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
+                              border: '1px solid var(--c-w10)',
                             }}
                             title="Opzioni avanzate">▾</button>
                           {/* Rimuovi */}
@@ -2220,18 +2220,18 @@ export default function SchedaEditorModal({
                         {/* Pannello avanzato espandibile */}
                         {p.expandedAdv && (
                           <div className="mt-1 mb-1 px-2 py-3 rounded-xl space-y-3"
-                            style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                            style={{ background: 'var(--c-16)', border: '1px solid var(--c-w8)' }}>
                             <div className="grid grid-cols-4 gap-3">
                               {/* Alternativa */}
                               <div className="space-y-1 col-span-2">
-                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Alternativa</label>
+                                <label className="text-xs" style={{ color: 'var(--c-45)' }}>Alternativa</label>
                                 <select
                                   value={p.form.alternativa_id}
                                   onChange={e => setPendingEsercizi(prev => prev.map(x =>
                                     x.tempId === p.tempId ? { ...x, form: { ...x.form, alternativa_id: e.target.value } } : x
                                   ))}
                                   className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: p.form.alternativa_id ? 'oklch(0.90 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: p.form.alternativa_id ? 'var(--c-90)' : 'var(--c-45)', colorScheme: 'dark' }}>
                                   <option value="">Nessuna alternativa</option>
                                   {esercizi.filter(e => e.id !== p.form.esercizio_id).map(e => (
                                     <option key={e.id} value={e.id}>{e.nome}</option>
@@ -2240,7 +2240,7 @@ export default function SchedaEditorModal({
                               </div>
                               {/* Prepara secondi */}
                               <div className="space-y-1">
-                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Prepara (s)</label>
+                                <label className="text-xs" style={{ color: 'var(--c-45)' }}>Prepara (s)</label>
                                 <input type="number"
                                   value={p.form.prepara_secondi}
                                   onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2248,57 +2248,57 @@ export default function SchedaEditorModal({
                                   ))}
                                   placeholder="es. 10"
                                   className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                               </div>
                               {/* Dropset */}
                               {p.form.tipo === 'dropset' && (
                                 <>
                                   <div className="space-y-1">
-                                    <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop count</label>
+                                    <label className="text-xs" style={{ color: 'var(--c-45)' }}>Drop count</label>
                                     <input type="number" min="1" max="5"
                                       value={p.form.drop_count}
                                       onChange={e => setPendingEsercizi(prev => prev.map(x =>
                                         x.tempId === p.tempId ? { ...x, form: { ...x.form, drop_count: e.target.value } } : x
                                       ))}
                                       className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   </div>
                                   <div className="space-y-1">
-                                    <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Drop %</label>
+                                    <label className="text-xs" style={{ color: 'var(--c-45)' }}>Drop %</label>
                                     <input type="number" min="5" max="50"
                                       value={p.form.drop_pct}
                                       onChange={e => setPendingEsercizi(prev => prev.map(x =>
                                         x.tempId === p.tempId ? { ...x, form: { ...x.form, drop_pct: e.target.value } } : x
                                       ))}
                                       className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   </div>
                                 </>
                               )}
                               {/* Rest-pause */}
                               {p.form.tipo === 'rest_pause' && (
                                 <div className="space-y-1">
-                                  <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Pausa (s)</label>
+                                  <label className="text-xs" style={{ color: 'var(--c-45)' }}>Pausa (s)</label>
                                   <input type="number"
                                     value={p.form.rest_pause_sec}
                                     onChange={e => setPendingEsercizi(prev => prev.map(x =>
                                       x.tempId === p.tempId ? { ...x, form: { ...x.form, rest_pause_sec: e.target.value } } : x
                                     ))}
                                     className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                 </div>
                               )}
                               {/* Piramidale */}
                               {p.form.tipo === 'piramidale' && (
                                 <div className="space-y-1 col-span-2">
-                                  <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Direzione</label>
+                                  <label className="text-xs" style={{ color: 'var(--c-45)' }}>Direzione</label>
                                   <select
                                     value={p.form.piramide_dir}
                                     onChange={e => setPendingEsercizi(prev => prev.map(x =>
                                       x.tempId === p.tempId ? { ...x, form: { ...x.form, piramide_dir: e.target.value } } : x
                                     ))}
                                     className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}>
+                                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}>
                                     <option value="ascendente">Ascendente</option>
                                     <option value="discendente">Discendente</option>
                                     <option value="doppia">Doppia</option>
@@ -2316,7 +2316,7 @@ export default function SchedaEditorModal({
                                         x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_work_secondi: e.target.value } } : x
                                       ))}
                                       className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   </div>
                                   <div className="space-y-1">
                                     <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (s)</label>
@@ -2326,7 +2326,7 @@ export default function SchedaEditorModal({
                                         x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_rest_secondi: e.target.value } } : x
                                       ))}
                                       className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   </div>
                                   <div className="space-y-1">
                                     <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
@@ -2336,14 +2336,14 @@ export default function SchedaEditorModal({
                                         x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_rounds: e.target.value } } : x
                                       ))}
                                       className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                   </div>
                                 </>
                               )}
                             </div>
                             {/* Note */}
                             <div className="space-y-1">
-                              <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Note tecniche</label>
+                              <label className="text-xs" style={{ color: 'var(--c-45)' }}>Note tecniche</label>
                               <input type="text"
                                 value={p.form.note}
                                 onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2351,12 +2351,12 @@ export default function SchedaEditorModal({
                                 ))}
                                 placeholder="Indicazioni tecniche, avvertenze..."
                                 className="w-full text-xs rounded-lg outline-none px-2 py-1.5"
-                                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                             </div>
                             {/* Peso consigliato & TUT */}
                             <div className="grid grid-cols-2 gap-3">
                               <div className="space-y-1">
-                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Peso consigliato (kg)</label>
+                                <label className="text-xs" style={{ color: 'var(--c-45)' }}>Peso consigliato (kg)</label>
                                 <input type="number" inputMode="decimal"
                                   value={p.form.peso_consigliato_kg}
                                   onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2364,10 +2364,10 @@ export default function SchedaEditorModal({
                                   ))}
                                   placeholder="es. 60"
                                   className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>TUT</label>
+                                <label className="text-xs" style={{ color: 'var(--c-45)' }}>TUT</label>
                                 <input type="text"
                                   value={p.form.tut}
                                   onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2375,13 +2375,13 @@ export default function SchedaEditorModal({
                                   ))}
                                   placeholder="es. 3-1-2-0"
                                   className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
-                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                               </div>
                             </div>
                             {/* Warmup serie */}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
-                                <label className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Warmup serie</label>
+                                <label className="text-xs" style={{ color: 'var(--c-45)' }}>Warmup serie</label>
                                 <button
                                   onClick={() => {
                                     const current = JSON.parse(p.form.warmup_serie || '[]')
@@ -2390,7 +2390,7 @@ export default function SchedaEditorModal({
                                     ))
                                   }}
                                   className="text-xs px-2 py-0.5 rounded-md"
-                                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                                  style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
                                   + Serie
                                 </button>
                               </div>
@@ -2409,7 +2409,7 @@ export default function SchedaEditorModal({
                                         ))
                                       }}
                                       className="text-xs rounded-lg outline-none px-2 py-1 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                     <input type="number" value={w.reps} placeholder="Reps"
                                       onChange={e => {
                                         const updated = [...warmup]; updated[wi] = { ...updated[wi], reps: e.target.value }
@@ -2418,7 +2418,7 @@ export default function SchedaEditorModal({
                                         ))
                                       }}
                                       className="text-xs rounded-lg outline-none px-2 py-1 text-center"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                     </div>
                                     <button onClick={() => {
                                       const updated = warmup.filter((_, i) => i !== wi)
@@ -2432,14 +2432,14 @@ export default function SchedaEditorModal({
                               })()}
                             </div>
                             {/* Crea esercizio al volo */}
-                            <div style={{ borderTop: '1px solid oklch(1 0 0 / 8%)', paddingTop: 10 }}>
-                              <p className="text-xs font-semibold mb-2" style={{ color: 'oklch(0.50 0 0)' }}>
+                            <div style={{ borderTop: '1px solid var(--c-w8)', paddingTop: 10 }}>
+                              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--c-50)' }}>
                                 Esercizio non in lista? Crealo al volo:
                               </p>
                               <div className="flex gap-2">
                                 <input type="text" id={`nuovo-nome-${p.tempId}`} placeholder="Nome esercizio"
                                   className="flex-1 text-xs rounded-lg outline-none px-2 py-1.5"
-                                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }} />
                                 <button
                                   onClick={async () => {
                                     const input = document.getElementById(`nuovo-nome-${p.tempId}`) as HTMLInputElement
@@ -2500,9 +2500,9 @@ export default function SchedaEditorModal({
                       className="w-full py-4 rounded-2xl text-sm font-black flex items-center justify-center gap-2 transition-all active:scale-95"
                       style={{
                         background: pendingEsercizi.filter(p => p.giornoId === activeGiorno && p.form.esercizio_id).length > 0
-                          ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                          ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
                         color: pendingEsercizi.filter(p => p.giornoId === activeGiorno && p.form.esercizio_id).length > 0
-                          ? 'oklch(0.11 0 0)' : 'oklch(0.40 0 0)',
+                          ? 'var(--c-11)' : 'var(--c-40)',
                       }}>
                       {savingPending
                         ? 'Salvataggio...'

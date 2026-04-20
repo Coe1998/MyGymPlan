@@ -113,7 +113,7 @@ export default function CheckinPesoCards({
           onClick={() => !checkinFatto && setOpenModal('checkin')}
           className="rounded-2xl p-5 text-left transition-all active:scale-95"
           style={{
-            background: checkinFatto ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.18 0 0)',
+            background: checkinFatto ? 'oklch(0.65 0.18 150 / 10%)' : 'var(--c-18)',
             border: `1px solid ${checkinFatto ? 'oklch(0.65 0.18 150 / 35%)' : 'oklch(0.60 0.15 200 / 40%)'}`,
             cursor: checkinFatto ? 'default' : 'pointer',
           }}>
@@ -132,8 +132,8 @@ export default function CheckinPesoCards({
               </span>
             )}
           </div>
-          <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Check-in</p>
-          <p className="text-xs mt-1" style={{ color: checkinFatto ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Check-in</p>
+          <p className="text-xs mt-1" style={{ color: checkinFatto ? 'oklch(0.65 0.18 150)' : 'var(--c-50)' }}>
             {checkinFatto
               ? (willTrainLabel ?? '✓ Completato oggi')
               : 'Come stai oggi?'}
@@ -145,7 +145,7 @@ export default function CheckinPesoCards({
           onClick={() => setOpenModal('peso')}
           className="rounded-2xl p-5 text-left transition-all active:scale-95"
           style={{
-            background: pesoSalvato ? 'oklch(0.70 0.19 46 / 8%)' : 'oklch(0.18 0 0)',
+            background: pesoSalvato ? 'oklch(0.70 0.19 46 / 8%)' : 'var(--c-18)',
             border: `1px solid ${pesoSalvato ? 'oklch(0.70 0.19 46 / 35%)' : 'oklch(0.70 0.19 46 / 30%)'}`,
           }}>
           <div className="flex items-center justify-between mb-3">
@@ -160,8 +160,8 @@ export default function CheckinPesoCards({
               </span>
             )}
           </div>
-          <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Peso</p>
-          <p className="text-xs mt-1" style={{ color: pesoSalvato ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Peso</p>
+          <p className="text-xs mt-1" style={{ color: pesoSalvato ? 'oklch(0.70 0.19 46)' : 'var(--c-50)' }}>
             {pesoSalvato ? `${pesoSalvato} kg` : 'Registra il tuo peso'}
           </p>
         </button>
@@ -175,7 +175,7 @@ export default function CheckinPesoCards({
           onClick={() => setOpenModal(null)}>
           <div
             className="w-full max-w-2xl rounded-t-3xl p-6 space-y-5"
-            style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+            style={{ background: 'var(--c-15)', border: '1px solid var(--c-w8)' }}
             onClick={e => e.stopPropagation()}>
 
             <div className="flex items-center justify-between">
@@ -183,11 +183,11 @@ export default function CheckinPesoCards({
                 <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'oklch(0.60 0.15 200)' }}>
                   Check-in giornaliero
                 </p>
-                <p className="font-bold text-lg" style={{ color: 'oklch(0.97 0 0)' }}>Come stai oggi?</p>
+                <p className="font-bold text-lg" style={{ color: 'var(--c-97)' }}>Come stai oggi?</p>
               </div>
               <button onClick={() => setOpenModal(null)}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                 <FontAwesomeIcon icon={faXmark} />
               </button>
             </div>
@@ -195,9 +195,9 @@ export default function CheckinPesoCards({
             {CHECKIN_CAMPI.map(campo => (
               <div key={campo.key} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{campo.label}</label>
+                  <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>{campo.label}</label>
                   {'hint' in campo && (
-                    <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{campo.hint}</span>
+                    <span className="text-xs" style={{ color: 'var(--c-45)' }}>{campo.hint}</span>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -206,7 +206,7 @@ export default function CheckinPesoCards({
                       onClick={() => setCheckin(p => ({ ...p, [campo.key]: v }))}
                       className="flex-1 py-3 rounded-xl text-xl transition-all active:scale-95"
                       style={{
-                        background: checkin[campo.key] === v ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
+                        background: checkin[campo.key] === v ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
                         border: checkin[campo.key] === v ? '2px solid oklch(0.60 0.15 200)' : '2px solid transparent',
                       }}>
                       {getEmojiCheckin(campo.key, v)
@@ -220,7 +220,7 @@ export default function CheckinPesoCards({
 
             {/* Ti alleni oggi? */}
             <div className="space-y-2">
-              <p className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Ti alleni oggi?</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Ti alleni oggi?</p>
               <div className="grid grid-cols-2 gap-2">
                 {([
                   { val: true,  label: '💪 Sì', color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 15%)' },
@@ -230,9 +230,9 @@ export default function CheckinPesoCards({
                     onClick={() => setWillTrain(opt.val)}
                     className="py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
                     style={{
-                      background: willTrain === opt.val ? opt.bg : 'oklch(0.22 0 0)',
+                      background: willTrain === opt.val ? opt.bg : 'var(--c-22)',
                       border: `2px solid ${willTrain === opt.val ? opt.color : 'transparent'}`,
-                      color: willTrain === opt.val ? opt.color : 'oklch(0.45 0 0)',
+                      color: willTrain === opt.val ? opt.color : 'var(--c-45)',
                     }}>
                     {opt.label}
                   </button>
@@ -241,16 +241,16 @@ export default function CheckinPesoCards({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note (opzionale)</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Note (opzionale)</label>
               <textarea
                 value={noteCheckin}
                 onChange={e => setNoteCheckin(e.target.value)}
                 placeholder="Come stai? Qualcosa da segnalare al coach?"
                 rows={2}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                 onFocus={e => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
-                onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+                onBlur={e => e.target.style.borderColor = 'var(--c-w8)'}
               />
             </div>
 
@@ -259,8 +259,8 @@ export default function CheckinPesoCards({
               disabled={saving || !checkinCompleto}
               className="w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95"
               style={{
-                background: checkinCompleto ? 'oklch(0.60 0.15 200)' : 'oklch(0.22 0 0)',
-                color: checkinCompleto ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
+                background: checkinCompleto ? 'oklch(0.60 0.15 200)' : 'var(--c-22)',
+                color: checkinCompleto ? 'var(--c-13)' : 'var(--c-40)',
                 cursor: checkinCompleto ? 'pointer' : 'not-allowed',
               }}>
               {saving ? 'Salvataggio...' : 'Invia check-in'}
@@ -277,7 +277,7 @@ export default function CheckinPesoCards({
           onClick={() => setOpenModal(null)}>
           <div
             className="w-full max-w-2xl rounded-t-3xl p-6 space-y-5"
-            style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+            style={{ background: 'var(--c-15)', border: '1px solid var(--c-w8)' }}
             onClick={e => e.stopPropagation()}>
 
             <div className="flex items-center justify-between">
@@ -285,19 +285,19 @@ export default function CheckinPesoCards({
                 <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
                   Peso corporeo
                 </p>
-                <p className="font-bold text-lg" style={{ color: 'oklch(0.97 0 0)' }}>
+                <p className="font-bold text-lg" style={{ color: 'var(--c-97)' }}>
                   {pesoSalvato ? `Ultimo: ${pesoSalvato} kg` : 'Inserisci il tuo peso'}
                 </p>
               </div>
               <button onClick={() => setOpenModal(null)}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                 <FontAwesomeIcon icon={faXmark} />
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Peso (kg)</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Peso (kg)</label>
               <input
                 type="number"
                 inputMode="decimal"
@@ -305,7 +305,7 @@ export default function CheckinPesoCards({
                 onChange={e => setNuovoPeso(e.target.value)}
                 placeholder={pesoSalvato ? String(pesoSalvato) : '70.0'}
                 className="w-full px-4 py-4 rounded-xl text-3xl font-black outline-none text-center"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'var(--c-97)' }}
                 onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
                 onBlur={e => e.target.style.borderColor = 'oklch(0.70 0.19 46 / 40%)'}
                 autoFocus
@@ -317,8 +317,8 @@ export default function CheckinPesoCards({
               disabled={saving || !nuovoPeso}
               className="w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95"
               style={{
-                background: nuovoPeso ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                color: nuovoPeso ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
+                background: nuovoPeso ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                color: nuovoPeso ? 'var(--c-13)' : 'var(--c-40)',
                 cursor: nuovoPeso ? 'pointer' : 'not-allowed',
               }}>
               {saving ? 'Salvataggio...' : 'Salva peso'}

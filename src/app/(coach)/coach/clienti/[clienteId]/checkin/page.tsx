@@ -73,22 +73,22 @@ function WeekCalendar({
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
 
       {/* Header giorni */}
-      <div className="grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+      <div className="grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)', borderBottom: '1px solid var(--c-w8)' }}>
         <div />
         {days.map((d, i) => {
           const isToday = d.getTime() === today.getTime()
           return (
             <div key={i} className="py-3 text-center">
-              <p className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-xs font-medium" style={{ color: 'var(--c-45)' }}>
                 {d.toLocaleDateString('it-IT', { weekday: 'short' }).toUpperCase()}
               </p>
               <div className={`mx-auto mt-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold`}
                 style={{
                   background: isToday ? 'oklch(0.60 0.15 200)' : 'transparent',
-                  color: isToday ? 'white' : 'oklch(0.75 0 0)',
+                  color: isToday ? 'white' : 'var(--c-75)',
                 }}>
                 {d.getDate()}
               </div>
@@ -106,11 +106,11 @@ function WeekCalendar({
             <div key={h} className="contents">
               <div className="absolute text-right pr-2"
                 style={{ top: `${(h - HOUR_START) * PX_PER_HOUR - 8}px`, left: 0, width: '44px' }}>
-                <span className="text-xs" style={{ color: 'oklch(0.35 0 0)' }}>{h}:00</span>
+                <span className="text-xs" style={{ color: 'var(--c-35)' }}>{h}:00</span>
               </div>
               {/* Linea orizzontale su tutta la griglia */}
               <div className="absolute left-11 right-0"
-                style={{ top: `${(h - HOUR_START) * PX_PER_HOUR}px`, borderTop: '1px solid oklch(1 0 0 / 5%)' }} />
+                style={{ top: `${(h - HOUR_START) * PX_PER_HOUR}px`, borderTop: '1px solid var(--c-w5)' }} />
             </div>
           ))}
 
@@ -127,7 +127,7 @@ function WeekCalendar({
                 style={{
                   gridColumn: colIdx + 2,
                   gridRow: 1,
-                  borderLeft: '1px solid oklch(1 0 0 / 5%)',
+                  borderLeft: '1px solid var(--c-w5)',
                 }}>
                 {dayApps.map(a => {
                   const startDate = new Date(a.data_ora)
@@ -137,7 +137,7 @@ function WeekCalendar({
                   const isCurrentCliente = a.cliente_id === clienteId
                   const colors = isCurrentCliente
                     ? (TIPO_COLOR[a.tipo] ?? TIPO_COLOR.videocall)
-                    : { bg: 'oklch(0.25 0 0)', border: 'oklch(0.35 0 0)', text: 'oklch(0.50 0 0)' }
+                    : { bg: 'var(--c-25)', border: 'var(--c-35)', text: 'var(--c-50)' }
 
                   return (
                     <div key={a.id}
@@ -158,20 +158,20 @@ function WeekCalendar({
                       {/* Tooltip azioni */}
                       {tooltip === a.id && isCurrentCliente && (
                         <div className="absolute left-0 top-full mt-1 z-50 rounded-xl overflow-hidden shadow-xl min-w-44"
-                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 14%)' }}
+                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w14)' }}
                           onClick={e => e.stopPropagation()}>
-                          <div className="px-3 py-2" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-                            <p className="text-xs font-bold" style={{ color: 'oklch(0.85 0 0)' }}>
+                          <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--c-w8)' }}>
+                            <p className="text-xs font-bold" style={{ color: 'var(--c-85)' }}>
                               {a.profiles?.full_name} · {new Date(a.data_ora).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} {new Date(a.data_ora).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                             </p>
-                            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{a.durata_minuti}min · {a.tipo}</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>{a.durata_minuti}min · {a.tipo}</p>
                             {a.link && <a href={a.link} target="_blank" rel="noopener noreferrer" className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Link →</a>}
-                            {a.note && <p className="text-xs italic mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{a.note}</p>}
+                            {a.note && <p className="text-xs italic mt-0.5" style={{ color: 'var(--c-45)' }}>{a.note}</p>}
                           </div>
                           <div className="flex">
                             <button onClick={() => { onDelete(a.id, 'completato'); setTooltip(null) }}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold"
-                              style={{ color: 'oklch(0.65 0.18 150)', borderRight: '1px solid oklch(1 0 0 / 8%)' }}>
+                              style={{ color: 'oklch(0.65 0.18 150)', borderRight: '1px solid var(--c-w8)' }}>
                               <FontAwesomeIcon icon={faCheck} /> Fatto
                             </button>
                             <button onClick={() => { onDelete(a.id, 'annullato'); setTooltip(null) }}
@@ -276,9 +276,9 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
     : `${weekStart.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} – ${weekEnd.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}`
 
   const inputStyle = {
-    background: 'oklch(0.14 0 0)',
-    border: '1px solid oklch(1 0 0 / 10%)',
-    color: 'oklch(0.97 0 0)',
+    background: 'var(--c-14)',
+    border: '1px solid var(--c-w10)',
+    color: 'var(--c-97)',
     borderRadius: '10px',
     padding: '8px 12px',
     fontSize: '14px',
@@ -290,23 +290,23 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
       <div>
         <Link href="/coach/clienti"
           className="inline-flex items-center gap-2 text-sm mb-4"
-          style={{ color: 'oklch(0.50 0 0)' }}>
+          style={{ color: 'var(--c-50)' }}>
           <FontAwesomeIcon icon={faArrowLeft} />
           Clienti
         </Link>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+            <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
               Check-in con {nomeCliente}
             </h1>
-            <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+            <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>
               {futuri.length} programmati · {storici.length} passati
             </p>
           </div>
           <button
             onClick={() => setShowForm(p => !p)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-all active:scale-95"
-            style={{ background: showForm ? 'oklch(0.22 0 0)' : 'oklch(0.70 0.19 46)', color: showForm ? 'oklch(0.55 0 0)' : 'oklch(0.11 0 0)' }}>
+            style={{ background: showForm ? 'var(--c-22)' : 'oklch(0.70 0.19 46)', color: showForm ? 'var(--c-55)' : 'var(--c-11)' }}>
             <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
             {showForm ? 'Chiudi' : 'Nuovo'}
           </button>
@@ -319,13 +319,13 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
           <div className="flex items-center gap-3">
             <button onClick={() => setWeekOffset(p => p - 1)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-white/8"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
             </button>
-            <p className="text-sm font-semibold" style={{ color: 'oklch(0.75 0 0)' }}>{labelSettimana}</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--c-75)' }}>{labelSettimana}</p>
             <button onClick={() => setWeekOffset(p => p + 1)}
               className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-white/8"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
             </button>
             {weekOffset !== 0 && (
@@ -338,11 +338,11 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
           <div className="hidden sm:flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm" style={{ background: 'oklch(0.60 0.15 200 / 30%)', borderLeft: '2px solid oklch(0.60 0.15 200)' }} />
-              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{nomeCliente}</span>
+              <span className="text-xs" style={{ color: 'var(--c-45)' }}>{nomeCliente}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-sm" style={{ background: 'oklch(0.25 0 0)', borderLeft: '2px solid oklch(0.35 0 0)' }} />
-              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Altri clienti</span>
+              <div className="w-3 h-3 rounded-sm" style={{ background: 'var(--c-25)', borderLeft: '2px solid var(--c-35)' }} />
+              <span className="text-xs" style={{ color: 'var(--c-45)' }}>Altri clienti</span>
             </div>
           </div>
         </div>
@@ -361,9 +361,9 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
 
       {/* Form nuovo appuntamento */}
       {showForm && <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
-        <div className="px-5 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
             <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.70 0.19 46)' }} />
             Nuovo appuntamento
           </p>
@@ -371,12 +371,12 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Data</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Data</label>
               <input type="date" value={data} onChange={e => setData(e.target.value)}
                 required style={inputStyle} />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Ora</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Ora</label>
               <input type="time" value={ora} onChange={e => setOra(e.target.value)}
                 required style={inputStyle} />
             </div>
@@ -384,7 +384,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Durata</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Durata</label>
               <select value={durata} onChange={e => setDurata(e.target.value)} style={inputStyle}>
                 {['15', '30', '45', '60'].map(d => (
                   <option key={d} value={d}>{d} min</option>
@@ -392,7 +392,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Tipo</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Tipo</label>
               <select value={tipo} onChange={e => setTipo(e.target.value)} style={inputStyle}>
                 <option value="videocall">Videocall</option>
                 <option value="chiamata">Chiamata</option>
@@ -402,13 +402,13 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Link (opzionale)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Link (opzionale)</label>
             <input type="url" value={link} onChange={e => setLink(e.target.value)}
               placeholder="https://meet.google.com/..." style={inputStyle} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'oklch(0.55 0 0)' }}>Note (opzionale)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--c-55)' }}>Note (opzionale)</label>
             <textarea value={note} onChange={e => setNote(e.target.value)}
               rows={2} placeholder="Argomenti da discutere..."
               style={{ ...inputStyle, resize: 'none' }} />
@@ -416,7 +416,7 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
 
           <button type="submit" disabled={saving}
             className="w-full py-2.5 rounded-xl text-sm font-bold transition-opacity disabled:opacity-50"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
             {saving ? 'Salvataggio...' : 'Fissa appuntamento'}
           </button>
         </form>
@@ -425,21 +425,21 @@ export default function CheckinPage({ params }: { params: Promise<{ clienteId: s
       {/* Storico di questo cliente */}
       {!loading && storici.length > 0 && (
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--c-40)' }}>
             Storico
           </p>
           <div className="space-y-2">
             {storici.map(a => (
               <div key={a.id} className="rounded-2xl px-4 py-3 flex items-center gap-3"
-                style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 4%)', opacity: 0.6 }}>
+                style={{ background: 'var(--c-16)', border: '1px solid var(--c-w4)', opacity: 0.6 }}>
                 <FontAwesomeIcon icon={TIPO_ICON[a.tipo] ?? faCalendarDays}
-                  style={{ color: 'oklch(0.40 0 0)' }} />
+                  style={{ color: 'var(--c-40)' }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: 'oklch(0.70 0 0)' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--c-70)' }}>
                     {new Date(a.data_ora).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                     {' · '}{new Date(a.data_ora).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
                   </p>
-                  <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{a.stato} · {a.tipo}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-40)' }}>{a.stato} · {a.tipo}</p>
                 </div>
               </div>
             ))}

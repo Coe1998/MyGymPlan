@@ -264,19 +264,19 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
   const cycleDay = abilitato && startDate ? getCurrentCycleDay(startDate) : null
 
   return (
-    <div style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+    <div style={{ borderTop: '1px solid var(--c-w6)' }}>
       {/* ── Header + Toggle ── */}
       <div className="px-5 pt-5 pb-4 flex items-center justify-between">
         <div>
           <p className="text-sm font-bold" style={{ color: 'oklch(0.65 0.18 180)' }}>Carb Cycling avanzato</p>
-          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>Ciclo settimanale con profili personalizzati</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>Ciclo settimanale con profili personalizzati</p>
         </div>
         <button
           onClick={handleToggle}
           disabled={savingToggle}
           aria-pressed={abilitato}
           className="relative w-12 h-6 rounded-full transition-all flex-shrink-0"
-          style={{ background: abilitato ? 'oklch(0.65 0.18 150)' : 'oklch(0.28 0 0)' }}
+          style={{ background: abilitato ? 'oklch(0.65 0.18 150)' : 'var(--c-28)' }}
         >
           <span
             className="absolute top-0.5 w-5 h-5 rounded-full transition-all"
@@ -289,8 +289,8 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
         <div className="px-5 pb-6 space-y-5">
           {/* ── Data di inizio ciclo ── */}
           <div className="rounded-2xl p-4 space-y-3"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-40)' }}>
               Inizio ciclo
             </p>
             <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-xl text-sm"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}
               />
               <button
                 onClick={handleSaveStartDate}
@@ -316,13 +316,13 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                   <button
                     onClick={() => handleShift(-1)}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                    style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}
                   >← −1</button>
-                  <span className="text-xs px-1" style={{ color: 'oklch(0.40 0 0)' }}>Sposta ciclo</span>
+                  <span className="text-xs px-1" style={{ color: 'var(--c-40)' }}>Sposta ciclo</span>
                   <button
                     onClick={() => handleShift(1)}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                    style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}
                   >+1 →</button>
                 </div>
                 {cycleDay && (
@@ -338,7 +338,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
           {/* ── Profili macro ── */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-40)' }}>
                 Profili macro
               </p>
               {profili.length < 4 && (
@@ -353,7 +353,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
             </div>
 
             {profili.length === 0 && (
-              <p className="text-sm text-center py-4" style={{ color: 'oklch(0.40 0 0)' }}>
+              <p className="text-sm text-center py-4" style={{ color: 'var(--c-40)' }}>
                 Aggiungi almeno 2 profili per configurare il ciclo.
               </p>
             )}
@@ -362,7 +362,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
               const pal = PROFILE_COLORS[i] ?? PROFILE_COLORS[0]
               return (
                 <div key={i} className="rounded-2xl p-4 space-y-3"
-                  style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${pal.border}` }}>
+                  style={{ background: 'var(--c-18)', border: `1px solid ${pal.border}` }}>
                   <div className="flex items-center gap-2">
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black flex-shrink-0"
                       style={{ background: pal.bg, color: pal.color, border: `1px solid ${pal.border}` }}>
@@ -373,7 +373,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                       onChange={e => setProfili(prev => prev.map((x, j) => j === i ? { ...x, nome: e.target.value } : x))}
                       placeholder="Nome (es. A, High)"
                       className="flex-1 px-2.5 py-1.5 rounded-lg text-sm font-semibold"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.90 0 0)' }}
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-90)' }}
                     />
                     <button
                       onClick={() => removeProfilo(i)}
@@ -389,7 +389,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                       { label: 'Grassi', key: 'grassi_g', unit: 'g' },
                     ].map(({ label, key, unit }) => (
                       <div key={key}>
-                        <label className="text-xs mb-1 block" style={{ color: 'oklch(0.45 0 0)' }}>{label}</label>
+                        <label className="text-xs mb-1 block" style={{ color: 'var(--c-45)' }}>{label}</label>
                         <div className="flex items-center gap-1">
                           <input
                             type="number"
@@ -397,9 +397,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                             value={(p as any)[key]}
                             onChange={e => setProfili(prev => prev.map((x, j) => j === i ? { ...x, [key]: e.target.value } : x))}
                             className="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg text-sm text-right tabular-nums"
-                            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.90 0 0)' }}
+                            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-90)' }}
                           />
-                          <span className="text-xs w-8 flex-shrink-0" style={{ color: 'oklch(0.40 0 0)' }}>{unit}</span>
+                          <span className="text-xs w-8 flex-shrink-0" style={{ color: 'var(--c-40)' }}>{unit}</span>
                         </div>
                       </div>
                     ))}
@@ -432,7 +432,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
           {/* ── Ciclo 7 giorni ── */}
           {profili.length >= 2 && (
             <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-40)' }}>
                 Ciclo 7 giorni
               </p>
 
@@ -444,7 +444,7 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                   const isToday = cycleDay === giorno
                   return (
                     <div key={giorno} className="flex flex-col gap-1.5 items-center">
-                      <span className="text-xs font-semibold" style={{ color: isToday ? 'oklch(0.65 0.18 180)' : 'oklch(0.40 0 0)' }}>
+                      <span className="text-xs font-semibold" style={{ color: isToday ? 'oklch(0.65 0.18 180)' : 'var(--c-40)' }}>
                         G{giorno}{isToday ? '●' : ''}
                       </span>
                       <select
@@ -452,9 +452,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                         onChange={e => setAssegnazioni(prev => ({ ...prev, [giorno]: e.target.value || null }))}
                         className="w-full py-2 rounded-xl text-xs font-black text-center appearance-none cursor-pointer"
                         style={{
-                          background: pal ? pal.bg : 'oklch(0.22 0 0)',
-                          border: `1px solid ${pal ? pal.border : 'oklch(1 0 0 / 8%)'}`,
-                          color: pal ? pal.color : 'oklch(0.40 0 0)',
+                          background: pal ? pal.bg : 'var(--c-22)',
+                          border: `1px solid ${pal ? pal.border : 'var(--c-w8)'}`,
+                          color: pal ? pal.color : 'var(--c-40)',
                           boxShadow: isToday ? `0 0 0 2px oklch(0.65 0.18 180 / 50%)` : 'none',
                         }}
                       >
@@ -481,9 +481,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                     <span key={giorno}
                       className="px-2.5 py-1 rounded-full text-xs font-black"
                       style={{
-                        background: pal ? pal.bg : 'oklch(0.22 0 0)',
-                        color: pal ? pal.color : 'oklch(0.35 0 0)',
-                        border: `1px solid ${pal ? pal.border : 'oklch(1 0 0 / 8%)'}`,
+                        background: pal ? pal.bg : 'var(--c-22)',
+                        color: pal ? pal.color : 'var(--c-35)',
+                        border: `1px solid ${pal ? pal.border : 'var(--c-w8)'}`,
                       }}>
                       {nome}
                     </span>
@@ -512,9 +512,9 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
           {/* ── Override giornaliero ── */}
           {savedProfiliIds.length >= 1 && (
             <div className="rounded-2xl p-4 space-y-3"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-40)' }}>
                   Override giornaliero
                 </p>
                 {overrideEsistente && (
@@ -530,13 +530,13 @@ export default function CarbCyclingForm({ clienteId }: { clienteId: string }) {
                   value={overrideData}
                   onChange={e => setOverrideData(e.target.value)}
                   className="flex-1 px-3 py-2 rounded-xl text-sm"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)', colorScheme: 'dark' }}
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)', colorScheme: 'dark' }}
                 />
                 <select
                   value={overrideProfiloId}
                   onChange={e => setOverrideProfiloId(e.target.value)}
                   className="flex-1 px-3 py-2 rounded-xl text-sm"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)' }}
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)' }}
                 >
                   <option value="">Scegli profilo</option>
                   {profili.filter(p => p.id).map((p, i) => (

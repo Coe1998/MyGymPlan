@@ -148,9 +148,9 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
           <button key={t} onClick={() => setTema(t)}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
-              background: tema === t ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-              color: tema === t ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
-              border: '1px solid oklch(1 0 0 / 8%)',
+              background: tema === t ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+              color: tema === t ? 'var(--c-13)' : 'var(--c-55)',
+              border: '1px solid var(--c-w8)',
             }}>
             {t === 'dark' ? <><FontAwesomeIcon icon={faMoon} /> Dark</> : <><FontAwesomeIcon icon={faSun} /> Light</>}
           </button>
@@ -169,7 +169,7 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
         </div>
       </div>
 
-      <p className="text-xs text-center" style={{ color: 'oklch(0.40 0 0)' }}>
+      <p className="text-xs text-center" style={{ color: 'var(--c-40)' }}>
         La scacchiera indica la trasparenza del PNG finale
       </p>
 
@@ -178,21 +178,21 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
           className="px-6 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
           style={{
             background: downloading ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)',
-            color: 'oklch(0.13 0 0)',
+            color: 'var(--c-13)',
           }}>
           {downloading ? 'Generando...' : <><FontAwesomeIcon icon={faDownload} /> Scarica / Condividi</>}
         </button>
       </div>
 
       {/* Tutorial */}
-      <details className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+      <details className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)' }}>
         <summary className="px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between select-none"
-          style={{ color: 'oklch(0.60 0 0)' }}>
+          style={{ color: 'var(--c-60)' }}>
           <span>💡 Come condividerlo su Instagram</span>
           <span style={{ fontSize: 10 }}>▼</span>
         </summary>
-        <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>Segui questi semplici passaggi:</p>
+        <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid var(--c-w6)' }}>
+          <p className="text-xs pt-3" style={{ color: 'var(--c-50)' }}>Segui questi semplici passaggi:</p>
           {[
             { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
             { n: '2', text: 'Vai nella galleria, tieni premuto sull\'immagine → Copia' },
@@ -206,10 +206,10 @@ export default function ShareOverlayWeek({ weekLabel, volume, reps, sessioni, du
                 style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
                 {step.n}
               </span>
-              <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.65 0 0)' }}>{step.text}</p>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--c-65)' }}>{step.text}</p>
             </div>
           ))}
-          <p className="text-xs pt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-xs pt-1" style={{ color: 'var(--c-40)' }}>
             Funziona allo stesso modo su TikTok, WhatsApp e tutti i social con le storie.
           </p>
         </div>

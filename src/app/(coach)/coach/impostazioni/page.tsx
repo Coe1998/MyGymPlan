@@ -9,6 +9,7 @@ import {
   faUser, faEnvelope, faLock, faTrash,
   faCheck, faTriangleExclamation, faXmark,
 } from '@fortawesome/free-solid-svg-icons'
+import ThemeToggle from '@/components/shared/ThemeToggle'
 
 const ONBOARDING_KEY = 'bynari-coach-onboarding-done'
 
@@ -103,45 +104,45 @@ export default function ImpostazioniPage() {
       {/* Header */}
       <div>
         <button onClick={() => router.push(dashboardUrl)}
-          className="text-sm mb-4 inline-block hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>
+          className="text-sm mb-4 inline-block hover:opacity-70" style={{ color: 'var(--c-50)' }}>
           ← Dashboard
         </button>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
           Impostazioni
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
+        <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
           Gestisci il tuo profilo e la sicurezza dell'account
         </p>
       </div>
 
       {/* ── Profilo ── */}
       <div className="rounded-2xl p-6 space-y-5"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
             <FontAwesomeIcon icon={faUser} />
           </div>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Profilo</h2>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Profilo</h2>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Nome completo</label>
+          <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Nome completo</label>
           <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
             onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+            onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Email</label>
+          <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Email</label>
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm"
-            style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 6%)', color: 'oklch(0.50 0 0)' }}>
+            style={{ background: 'var(--c-16)', border: '1px solid var(--c-w6)', color: 'var(--c-50)' }}>
             <FontAwesomeIcon icon={faEnvelope} />
             <span>{email}</span>
             <span className="ml-auto text-xs px-2 py-0.5 rounded-full"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.40 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-40)' }}>
               Non modificabile
             </span>
           </div>
@@ -160,20 +161,20 @@ export default function ImpostazioniPage() {
 
         <button onClick={handleSaveName} disabled={savingName || !fullName.trim()}
           className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
           {savingName ? 'Salvataggio...' : 'Salva nome'}
         </button>
       </div>
 
       {/* ── Password ── */}
       <div className="rounded-2xl p-6 space-y-5"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
             <FontAwesomeIcon icon={faLock} />
           </div>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Sicurezza</h2>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Sicurezza</h2>
         </div>
 
         {[
@@ -181,12 +182,12 @@ export default function ImpostazioniPage() {
           { label: 'Conferma password', value: confirmPassword, setter: setConfirmPassword },
         ].map(f => (
           <div key={f.label} className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{f.label}</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>{f.label}</label>
             <input type="password" value={f.value} onChange={e => f.setter(e.target.value)}
               placeholder="••••••••" className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.60 0.15 200)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
         ))}
 
@@ -204,8 +205,8 @@ export default function ImpostazioniPage() {
         <button onClick={handleSavePassword} disabled={savingPassword || !newPassword}
           className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
           style={{
-            background: !newPassword ? 'oklch(0.25 0 0)' : 'oklch(0.60 0.15 200)',
-            color: !newPassword ? 'oklch(0.40 0 0)' : 'oklch(0.13 0 0)',
+            background: !newPassword ? 'var(--c-25)' : 'oklch(0.60 0.15 200)',
+            color: !newPassword ? 'var(--c-40)' : 'var(--c-13)',
           }}>
           {savingPassword ? 'Aggiornamento...' : 'Aggiorna password'}
         </button>
@@ -214,20 +215,20 @@ export default function ImpostazioniPage() {
 
       {/* ── Tutorial ── */}
       <div className="rounded-2xl p-6 space-y-4"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
             🎓
           </div>
           <div>
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Tutorial</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Tutorial</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
               Rivedi la guida introduttiva all&apos;app
             </p>
           </div>
         </div>
-        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--c-55)' }}>
           Hai già completato il tutorial ma vuoi rivederlo? Clicca qui sotto per ripartire dall&apos;inizio.
         </p>
         <button
@@ -241,17 +242,35 @@ export default function ImpostazioniPage() {
         </button>
       </div>
 
+      {/* ── Tema ── */}
+      <div className="rounded-2xl p-6 space-y-4"
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+            🎨
+          </div>
+          <div>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Tema</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
+              Scegli l&apos;aspetto dell&apos;app
+            </p>
+          </div>
+        </div>
+        <ThemeToggle />
+      </div>
+
       {/* ── Zona pericolo ── */}
       <div className="rounded-2xl p-6 space-y-4"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)' }}>
             <FontAwesomeIcon icon={faTrash} />
           </div>
           <div>
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Zona pericolosa</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Zona pericolosa</h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
               Azioni irreversibili sull'account
             </p>
           </div>
@@ -262,7 +281,7 @@ export default function ImpostazioniPage() {
           <p className="text-sm font-semibold" style={{ color: 'oklch(0.85 0.10 46)' }}>
             Elimina account
           </p>
-          <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--c-55)' }}>
             Tutti i tuoi dati verranno eliminati permanentemente: allenamenti, schede, misurazioni, foto. Questa azione non può essere annullata.
           </p>
           <button onClick={() => setShowDeleteModal(true)}
@@ -279,7 +298,7 @@ export default function ImpostazioniPage() {
           style={{ background: 'oklch(0 0 0 / 70%)' }}
           onClick={() => !deleting && setShowDeleteModal(false)}>
           <div className="w-full max-w-sm rounded-3xl p-6 space-y-5"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.22 27 / 40%)' }}
+            style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 40%)' }}
             onClick={e => e.stopPropagation()}>
 
             <div className="flex items-start justify-between">
@@ -290,30 +309,30 @@ export default function ImpostazioniPage() {
               {!deleting && (
                 <button onClick={() => setShowDeleteModal(false)}
                   className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                  style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                   <FontAwesomeIcon icon={faXmark} />
                 </button>
               )}
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+              <h2 className="text-xl font-black" style={{ color: 'var(--c-97)' }}>
                 Sei sicuro?
               </h2>
-              <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--c-55)' }}>
                 Questa azione è <strong style={{ color: 'oklch(0.75 0.15 27)' }}>irreversibile</strong>. Tutti i tuoi dati verranno eliminati per sempre.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.70 0 0)' }}>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-70)' }}>
                 Scrivi <strong style={{ color: 'oklch(0.75 0.15 27)' }}>ELIMINA</strong> per confermare
               </label>
               <input type="text" value={deleteConfirm}
                 onChange={e => setDeleteConfirm(e.target.value)}
                 placeholder="ELIMINA"
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none font-mono"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.65 0.22 27 / 30%)', color: 'oklch(0.97 0 0)' }} />
+                style={{ background: 'var(--c-22)', border: '1px solid oklch(0.65 0.22 27 / 30%)', color: 'var(--c-97)' }} />
             </div>
 
             <div className="space-y-2">
@@ -321,15 +340,15 @@ export default function ImpostazioniPage() {
                 disabled={deleteConfirm !== 'ELIMINA' || deleting}
                 className="w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-95"
                 style={{
-                  background: deleteConfirm === 'ELIMINA' ? 'oklch(0.55 0.20 27)' : 'oklch(0.25 0 0)',
-                  color: deleteConfirm === 'ELIMINA' ? 'white' : 'oklch(0.40 0 0)',
+                  background: deleteConfirm === 'ELIMINA' ? 'oklch(0.55 0.20 27)' : 'var(--c-25)',
+                  color: deleteConfirm === 'ELIMINA' ? 'white' : 'var(--c-40)',
                   cursor: deleteConfirm !== 'ELIMINA' ? 'not-allowed' : 'pointer',
                 }}>
                 {deleting ? 'Eliminazione in corso...' : 'Elimina definitivamente'}
               </button>
               <button onClick={() => setShowDeleteModal(false)} disabled={deleting}
                 className="w-full py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                 Annulla
               </button>
             </div>

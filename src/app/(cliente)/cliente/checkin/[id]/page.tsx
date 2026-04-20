@@ -122,7 +122,7 @@ export default function ClienteCheckinPage() {
     <div className="flex items-center justify-center min-h-screen px-6">
       <div className="text-center space-y-3">
         <p className="text-5xl">❌</p>
-        <p className="font-bold text-lg" style={{ color: 'oklch(0.97 0 0)' }}>Check-in non trovato</p>
+        <p className="font-bold text-lg" style={{ color: 'var(--c-97)' }}>Check-in non trovato</p>
         <button onClick={() => router.push('/cliente/dashboard')}
           className="text-sm" style={{ color: 'oklch(0.60 0.15 200)' }}>
           Torna alla dashboard
@@ -140,14 +140,14 @@ export default function ClienteCheckinPage() {
           <FontAwesomeIcon icon={faCircleCheck} className="text-4xl" style={{ color: 'oklch(0.65 0.18 150)' }} />
         </div>
         <div>
-          <p className="text-2xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>Check-in inviato!</p>
-          <p className="text-sm mt-2" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="text-2xl font-black" style={{ color: 'var(--c-97)' }}>Check-in inviato!</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--c-50)' }}>
             Il tuo coach riceverà le tue risposte a breve.
           </p>
         </div>
         <button onClick={() => router.push('/cliente/dashboard')}
           className="w-full py-3 rounded-xl text-sm font-bold"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
           Torna alla dashboard
         </button>
       </div>
@@ -163,19 +163,19 @@ export default function ClienteCheckinPage() {
       <div className="flex items-center gap-3 mb-8">
         <button onClick={() => step > 0 ? setStep(p => p - 1) : router.push('/cliente/dashboard')}
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
           <FontAwesomeIcon icon={faChevronLeft} />
         </button>
         <div className="flex-1">
           <p className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>{titolo}</p>
-          <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>
             Domanda {step + 1} di {totalSteps}
           </p>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 rounded-full mb-8" style={{ background: 'oklch(0.25 0 0)' }}>
+      <div className="h-1 rounded-full mb-8" style={{ background: 'var(--c-25)' }}>
         <div className="h-1 rounded-full transition-all duration-300"
           style={{ background: 'oklch(0.70 0.19 46)', width: `${((step + 1) / totalSteps) * 100}%` }} />
       </div>
@@ -188,12 +188,12 @@ export default function ClienteCheckinPage() {
           <>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide mb-2"
-                style={{ color: 'oklch(0.45 0 0)' }}>
+                style={{ color: 'var(--c-45)' }}>
                 {currentDomanda.tipo === 'scala' ? 'Scala 1–5' :
                  currentDomanda.tipo === 'numero' ? 'Numero' :
                  currentDomanda.tipo === 'testo' ? 'Testo libero' : 'Risposta'}
               </p>
-              <p className="text-2xl font-black leading-snug" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="text-2xl font-black leading-snug" style={{ color: 'var(--c-97)' }}>
                 {currentDomanda.testo}
               </p>
             </div>
@@ -206,8 +206,8 @@ export default function ClienteCheckinPage() {
                     onClick={() => handleRisposta(v)}
                     className="aspect-square rounded-2xl flex items-center justify-center text-2xl font-black transition-all active:scale-95"
                     style={{
-                      background: risposte[currentDomanda.id] === v ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                      color: risposte[currentDomanda.id] === v ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                      background: risposte[currentDomanda.id] === v ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                      color: risposte[currentDomanda.id] === v ? 'var(--c-13)' : 'var(--c-55)',
                       border: `2px solid ${risposte[currentDomanda.id] === v ? 'oklch(0.70 0.19 46)' : 'transparent'}`,
                     }}>
                     {v}
@@ -225,7 +225,7 @@ export default function ClienteCheckinPage() {
                 onChange={e => handleRisposta(e.target.value)}
                 placeholder="0"
                 className="w-full px-5 py-5 rounded-2xl text-4xl font-black text-center outline-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'oklch(0.97 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid oklch(0.70 0.19 46 / 40%)', color: 'var(--c-97)' }}
                 autoFocus
               />
             )}
@@ -238,7 +238,7 @@ export default function ClienteCheckinPage() {
                 placeholder="Scrivi qui..."
                 rows={5}
                 className="w-full px-4 py-4 rounded-2xl text-sm outline-none resize-none"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }}
                 autoFocus
               />
             )}
@@ -250,13 +250,13 @@ export default function ClienteCheckinPage() {
           <>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide mb-2"
-                style={{ color: 'oklch(0.45 0 0)' }}>
+                style={{ color: 'var(--c-45)' }}>
                 Foto progress
               </p>
-              <p className="text-2xl font-black leading-snug" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="text-2xl font-black leading-snug" style={{ color: 'var(--c-97)' }}>
                 Aggiungi le tue foto
               </p>
-              <p className="text-sm mt-2" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-sm mt-2" style={{ color: 'var(--c-45)' }}>
                 Opzionale — frontale, laterale, posteriore
               </p>
             </div>
@@ -264,7 +264,7 @@ export default function ClienteCheckinPage() {
             <div className="grid grid-cols-3 gap-3">
               {foto.map((f, i) => (
                 <div key={i} className="relative aspect-square rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.22 0 0)' }}>
+                  style={{ background: 'var(--c-22)' }}>
                   <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
                   <button onClick={() => removeFoto(i)}
                     className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center"
@@ -275,9 +275,9 @@ export default function ClienteCheckinPage() {
               ))}
               {foto.length < 6 && (
                 <label className="aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1.5px dashed oklch(1 0 0 / 15%)' }}>
-                  <FontAwesomeIcon icon={faImage} style={{ color: 'oklch(0.40 0 0)', fontSize: 20 }} />
-                  <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>Aggiungi</span>
+                  style={{ background: 'var(--c-22)', border: '1.5px dashed var(--c-w15)' }}>
+                  <FontAwesomeIcon icon={faImage} style={{ color: 'var(--c-40)', fontSize: 20 }} />
+                  <span className="text-xs" style={{ color: 'var(--c-40)' }}>Aggiungi</span>
                   <input type="file" accept="image/*" multiple className="hidden" onChange={handleFoto} />
                 </label>
               )}
@@ -289,14 +289,14 @@ export default function ClienteCheckinPage() {
       {/* Riepilogo rapido prima di inviare */}
       {isLastStep && Object.keys(risposte).length > 0 && (
         <div className="mt-6 rounded-2xl p-4 space-y-2"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.45 0 0)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-45)' }}>
             Riepilogo
           </p>
           {domande.map(d => (
             risposte[d.id] !== undefined && (
               <div key={d.id} className="flex justify-between items-center">
-                <p className="text-xs truncate flex-1 mr-3" style={{ color: 'oklch(0.55 0 0)' }}>{d.testo}</p>
+                <p className="text-xs truncate flex-1 mr-3" style={{ color: 'var(--c-55)' }}>{d.testo}</p>
                 <p className="text-xs font-bold flex-shrink-0" style={{ color: 'oklch(0.70 0.19 46)' }}>
                   {d.tipo === 'scala' ? `${risposte[d.id]}/5` : risposte[d.id]}
                 </p>
@@ -311,15 +311,15 @@ export default function ClienteCheckinPage() {
         {isLastStep ? (
           <button onClick={handleInvia} disabled={saving}
             className="w-full py-4 rounded-2xl text-sm font-black transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', opacity: saving ? 0.7 : 1 }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Invio in corso...' : '✓ Invia check-in'}
           </button>
         ) : (
           <button onClick={() => canProceed() && setStep(p => p + 1)}
             className="w-full py-4 rounded-2xl text-sm font-black transition-all active:scale-95 flex items-center justify-center gap-2"
             style={{
-              background: canProceed() ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-              color: canProceed() ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
+              background: canProceed() ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+              color: canProceed() ? 'var(--c-13)' : 'var(--c-40)',
             }}>
             Avanti <FontAwesomeIcon icon={faChevronRight} />
           </button>

@@ -383,18 +383,18 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
 
   const tipoStyle: Record<string, { bg: string; border: string; color: string; dot: string }> = {
     warning: { bg: 'oklch(0.65 0.22 27 / 10%)', border: 'oklch(0.65 0.22 27 / 25%)', color: 'oklch(0.80 0.12 46)', dot: 'oklch(0.75 0.18 27)' },
-    info: { bg: 'oklch(0.60 0.15 200 / 10%)', border: 'oklch(0.60 0.15 200 / 25%)', color: 'oklch(0.75 0 0)', dot: 'oklch(0.60 0.15 200)' },
-    tip: { bg: 'oklch(0.65 0.18 150 / 10%)', border: 'oklch(0.65 0.18 150 / 25%)', color: 'oklch(0.75 0 0)', dot: 'oklch(0.65 0.18 150)' },
+    info: { bg: 'oklch(0.60 0.15 200 / 10%)', border: 'oklch(0.60 0.15 200 / 25%)', color: 'var(--c-75)', dot: 'oklch(0.60 0.15 200)' },
+    tip: { bg: 'oklch(0.65 0.18 150 / 10%)', border: 'oklch(0.65 0.18 150 / 25%)', color: 'var(--c-75)', dot: 'oklch(0.65 0.18 150)' },
   }
 
   if (loading) return (
-    <div className="py-6 text-center text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+    <div className="py-6 text-center text-sm" style={{ color: 'var(--c-45)' }}>
       Analisi in corso...
     </div>
   )
 
   if (insights.length === 0) return (
-    <div className="py-6 text-center text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+    <div className="py-6 text-center text-sm" style={{ color: 'var(--c-45)' }}>
       ✓ Nessuna anomalia rilevata negli ultimi 90 giorni
     </div>
   )
@@ -409,7 +409,7 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
     <div className="space-y-4">
       {Object.entries(perCategoria).map(([cat, items]) => (
         <div key={cat}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--c-40)' }}>
             {categoriaLabel[cat] ?? cat}
           </p>
           <div className="space-y-2">
@@ -422,7 +422,7 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
                     <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: s.dot }} />
                     <div>
                       <p className="text-sm font-bold" style={{ color: s.color }}>{ins.titolo}</p>
-                      <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'oklch(0.60 0 0)' }}>{ins.testo}</p>
+                      <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--c-60)' }}>{ins.testo}</p>
                     </div>
                   </div>
                 </div>

@@ -15,7 +15,7 @@ export default async function CoachPendingLayout({ children }: { children: React
   if (profile.coach_status === 'approved') redirect('/coach/dashboard')
 
   return (
-    <div className="min-h-screen" style={{ background: 'oklch(0.13 0 0)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--c-13)' }}>
       {children}
     </div>
   )

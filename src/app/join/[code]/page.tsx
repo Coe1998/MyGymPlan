@@ -16,13 +16,13 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
   if (!coach) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'oklch(0.13 0 0)' }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--c-13)' }}>
         <div className="text-center space-y-3">
           <p className="text-4xl">❌</p>
-          <p className="font-bold text-lg" style={{ color: 'oklch(0.97 0 0)' }}>Link non valido</p>
-          <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Questo link di invito non esiste o è scaduto.</p>
+          <p className="font-bold text-lg" style={{ color: 'var(--c-97)' }}>Link non valido</p>
+          <p className="text-sm" style={{ color: 'var(--c-50)' }}>Questo link di invito non esiste o è scaduto.</p>
           <a href="/" className="inline-block mt-4 px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             Vai alla home
           </a>
         </div>
@@ -69,23 +69,23 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
     // Mostra pagina "richiesta inviata"
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'oklch(0.13 0 0)' }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--c-13)' }}>
         <div className="w-full max-w-sm text-center space-y-5">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto"
             style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
             ✓
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>Richiesta inviata!</h1>
-            <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+            <h1 className="text-2xl font-black" style={{ color: 'var(--c-97)' }}>Richiesta inviata!</h1>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--c-55)' }}>
               La tua richiesta di collegamento al coach{' '}
-              <strong style={{ color: 'oklch(0.97 0 0)' }}>{coach.full_name}</strong>{' '}
+              <strong style={{ color: 'var(--c-97)' }}>{coach.full_name}</strong>{' '}
               è stata inviata. Riceverai accesso non appena verrà approvata.
             </p>
           </div>
           <a href="/atleta/dashboard"
             className="inline-block px-6 py-3 rounded-xl text-sm font-semibold"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w10)' }}>
             Torna alla dashboard
           </a>
         </div>
@@ -95,18 +95,18 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
   // Utente NON loggato → pagina di benvenuto con scelta login/register
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'oklch(0.13 0 0)' }}>
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--c-13)' }}>
       <div className="w-full max-w-sm space-y-8">
         {/* Logo */}
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>B</div>
-          <span className="font-black text-lg tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>BYNARI</span>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>B</div>
+          <span className="font-black text-lg tracking-tight" style={{ color: 'var(--c-97)' }}>BYNARI</span>
         </div>
 
         {/* Card invito */}
         <div className="rounded-2xl p-6 space-y-4"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
           <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
             {coach.full_name?.charAt(0).toUpperCase()}
@@ -115,10 +115,10 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
               Invito personale
             </p>
-            <h1 className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+            <h1 className="text-xl font-black" style={{ color: 'var(--c-97)' }}>
               {coach.full_name} ti ha invitato
             </h1>
-            <p className="text-sm mt-1 leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+            <p className="text-sm mt-1 leading-relaxed" style={{ color: 'var(--c-55)' }}>
               Accedi o crea un account gratuito per iniziare ad allenarti con il tuo coach su Bynari.
             </p>
           </div>
@@ -128,12 +128,12 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
         <div className="space-y-3">
           <a href={`/register?code=${code}`}
             className="w-full py-3 rounded-xl font-bold text-sm text-center block transition-all hover:scale-105 active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
             Crea account gratuito →
           </a>
           <a href={`/login?code=${code}`}
             className="w-full py-3 rounded-xl font-bold text-sm text-center block transition-all"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w10)' }}>
             Ho già un account → Accedi
           </a>
         </div>

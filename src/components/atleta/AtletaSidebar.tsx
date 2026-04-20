@@ -48,9 +48,9 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
     <>
       {/* SIDEBAR — solo desktop */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col"
-        style={{ background: 'oklch(0.16 0 0)', borderRight: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-16)', borderRight: '1px solid var(--c-w6)' }}>
         {/* Logo */}
-        <div className="p-6" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="p-6" style={{ borderBottom: '1px solid var(--c-w6)' }}>
           <div className="flex flex-col gap-0.5">
             <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
             <p className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Area Atleta</p>
@@ -60,7 +60,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-3"
-            style={{ color: 'oklch(0.40 0 0)' }}>Navigazione</p>
+            style={{ color: 'var(--c-40)' }}>Navigazione</p>
 
           {navItems.map((item) => {
             const href = item.label === 'Allena' ? allenamentoUrl : item.href
@@ -70,7 +70,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{
                   background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent',
-                  color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.55 0 0)',
+                  color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-55)',
                   borderLeft: isActive ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
                 }}>
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
@@ -83,7 +83,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
           {!isPro && (
             <Link href="/atleta/progressi"
               className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all opacity-50 hover:opacity-70"
-              style={{ color: 'oklch(0.45 0 0)', borderLeft: '3px solid transparent' }}>
+              style={{ color: 'var(--c-45)', borderLeft: '3px solid transparent' }}>
               <div className="flex items-center gap-3">
                 <FontAwesomeIcon icon={faChartLine} className="w-4 h-4" />
                 Progressi
@@ -101,37 +101,37 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
           <div className="mx-4 mb-4 p-4 rounded-2xl space-y-2"
             style={{ background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
             <p className="text-xs font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>Piano Free</p>
-            <p className="text-xs" style={{ color: 'oklch(0.55 0 0)' }}>
+            <p className="text-xs" style={{ color: 'var(--c-55)' }}>
               1 scheda · 3 giorni · no progressi
             </p>
             <button
               onClick={() => alert('Stripe in arrivo!')}
               className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               <FontAwesomeIcon icon={faRocket} /> Passa a Pro
             </button>
           </div>
         )}
 
         {/* User */}
-        <div className="p-4" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="p-4" style={{ borderTop: '1px solid var(--c-w6)' }}>
           <div className="flex items-center gap-3 px-3 py-2 mb-1">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
               style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
               {profile.full_name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-97)' }}>
                 {profile.full_name}
               </p>
-              <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                 {isPro ? '✦ Pro' : 'Free'}
               </p>
             </div>
           </div>
           <button onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
-            style={{ color: 'oklch(0.45 0 0)' }}>
+            style={{ color: 'var(--c-45)' }}>
             <FontAwesomeIcon icon={faRightFromBracket} /> Esci
           </button>
         </div>
@@ -140,8 +140,8 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
       {/* BOTTOM NAV — solo mobile */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
         style={{
-          background: 'oklch(0.16 0 0)',
-          borderTop: '1px solid oklch(1 0 0 / 8%)',
+          background: 'var(--c-16)',
+          borderTop: '1px solid var(--c-w8)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
         {navItemsMobile.map((item) => {
@@ -152,9 +152,9 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
               className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
               style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
               <FontAwesomeIcon icon={item.icon} className="text-xl"
-                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }} />
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
               <span className="text-xs font-medium"
-                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
                 {item.label}
               </span>
             </Link>
@@ -168,7 +168,7 @@ export default function AtletaSidebar({ profile }: { profile: Profile }) {
             {profile.full_name?.charAt(0).toUpperCase()}
           </div>
           <span className="text-xs font-medium"
-            style={{ color: pathname.startsWith('/atleta/impostazioni') ? 'oklch(0.70 0.19 46)' : 'oklch(0.45 0 0)' }}>
+            style={{ color: pathname.startsWith('/atleta/impostazioni') ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
             Profilo
           </span>
         </Link>

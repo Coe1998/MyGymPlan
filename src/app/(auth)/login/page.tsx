@@ -79,10 +79,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'oklch(0.13 0 0)' }}>
+    <div className="min-h-screen flex" style={{ background: 'var(--c-13)' }}>
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden"
-        style={{ background: 'oklch(0.16 0 0)' }}>
+        style={{ background: 'var(--c-16)' }}>
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-10"
           style={{ background: 'oklch(0.70 0.19 46)' }} />
         <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full opacity-10"
@@ -93,18 +93,18 @@ function LoginForm() {
         </div>
 
         <div className="relative z-10 space-y-6">
-          <h2 className="text-5xl font-black leading-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+          <h2 className="text-5xl font-black leading-tight" style={{ color: 'var(--c-97)' }}>
             Allena.<br />
             <span style={{ color: 'oklch(0.70 0.19 46)' }}>Monitora.</span><br />
             Migliora.
           </h2>
-          <p className="text-lg" style={{ color: 'oklch(0.60 0 0)' }}>
+          <p className="text-lg" style={{ color: 'var(--c-60)' }}>
             La piattaforma che connette coach e atleti per risultati misurabili.
           </p>
           <div className="flex flex-wrap gap-3 pt-4">
             {['Schede personalizzate', 'Progressione in tempo reale', 'Analytics avanzate'].map((f) => (
               <span key={f} className="px-4 py-2 rounded-full text-sm font-medium"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+                style={{ background: 'var(--c-22)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
                 {f}
               </span>
             ))}
@@ -112,7 +112,7 @@ function LoginForm() {
         </div>
 
         <div className="relative z-10">
-          <p className="text-sm italic" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-sm italic" style={{ color: 'var(--c-45)' }}>
             "Il progresso non è un caso. È una scelta."
           </p>
         </div>
@@ -128,14 +128,14 @@ function LoginForm() {
           {/* Banner invito */}
           {inviteCode && (
             <div className="px-4 py-3 rounded-xl text-sm"
-              style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.80 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'var(--c-80)' }}>
               🎯 Accedi per collegarti al tuo coach
             </div>
           )}
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Bentornato</h1>
-            <p style={{ color: 'oklch(0.60 0 0)' }}>Accedi al tuo account per continuare</p>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--c-97)' }}>Bentornato</h1>
+            <p style={{ color: 'var(--c-60)' }}>Accedi al tuo account per continuare</p>
           </div>
 
           <div className="space-y-4">
@@ -144,13 +144,13 @@ function LoginForm() {
               { label: 'Password', value: password, setter: setPassword, type: 'password', placeholder: '••••••••' },
             ].map((f) => (
               <div key={f.label} className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{f.label}</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>{f.label}</label>
                 <input type={f.type} value={f.value} onChange={e => f.setter(e.target.value)}
                   placeholder={f.placeholder} onKeyDown={e => e.key === 'Enter' && handleLogin()}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                  style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                  style={{ background: 'var(--c-20)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                   onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                  onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                  onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
               </div>
             ))}
 
@@ -165,13 +165,13 @@ function LoginForm() {
               className="w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95"
               style={{
                 background: loading ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)',
-                color: 'oklch(0.13 0 0)', cursor: loading ? 'not-allowed' : 'pointer',
+                color: 'var(--c-13)', cursor: loading ? 'not-allowed' : 'pointer',
               }}>
               {loading ? 'Accesso in corso...' : 'Accedi →'}
             </button>
           </div>
 
-          <p className="text-center text-sm" style={{ color: 'oklch(0.60 0 0)' }}>
+          <p className="text-center text-sm" style={{ color: 'var(--c-60)' }}>
             Non hai un account?{' '}
             <a href={inviteCode ? `/register?code=${inviteCode}` : '/register'}
               className="font-semibold transition-opacity hover:opacity-80"
@@ -188,7 +188,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'oklch(0.13 0 0)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--c-13)' }}>
         <BynariLoader file="blue" size={80} />
       </div>
     }>

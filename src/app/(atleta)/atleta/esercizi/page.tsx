@@ -106,14 +106,14 @@ export default function AtletaEserciziPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Esercizi</h1>
-          <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Esercizi</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
             {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
           </p>
         </div>
         <button onClick={() => { resetForm(); setShowForm(true) }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
           <FontAwesomeIcon icon={faPlus} /> Nuovo
         </button>
       </div>
@@ -121,34 +121,34 @@ export default function AtletaEserciziPage() {
       {/* Form */}
       {showForm && (
         <div className="rounded-2xl p-6 space-y-4"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
           <div className="flex items-center justify-between">
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>
               {editingId ? 'Modifica esercizio' : 'Nuovo esercizio'}
             </h2>
             <button onClick={resetForm} className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
               <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Nome *</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Nome *</label>
             <input type="text" value={nome} onChange={e => setNome(e.target.value)}
               placeholder="es. Panca Piana" autoFocus
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Muscoli</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Muscoli</label>
             <div className="flex flex-wrap gap-2">
               {MUSCOLI_OPTIONS.map(m => (
                 <button key={m} onClick={() => toggleMuscolo(m)}
                   className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                   style={{
-                    background: muscoli.includes(m) ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                    color: muscoli.includes(m) ? 'oklch(0.70 0.19 46)' : 'oklch(0.55 0 0)',
+                    background: muscoli.includes(m) ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                    color: muscoli.includes(m) ? 'oklch(0.70 0.19 46)' : 'var(--c-55)',
                     border: muscoli.includes(m) ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid transparent',
                   }}>
                   {m}
@@ -157,25 +157,25 @@ export default function AtletaEserciziPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Note / Descrizione</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Note / Descrizione</label>
             <textarea value={descrizione} onChange={e => setDescrizione(e.target.value)}
               placeholder="es. Supinato, busto eretto, schiena dritta..."
               rows={2} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
           <div className="flex gap-3">
             <button onClick={handleSave} disabled={saving || !nome.trim()}
               className="px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"
               style={{
-                background: !nome.trim() ? 'oklch(0.35 0 0)' : 'oklch(0.70 0.19 46)',
-                color: 'oklch(0.13 0 0)', cursor: !nome.trim() ? 'not-allowed' : 'pointer',
+                background: !nome.trim() ? 'var(--c-35)' : 'oklch(0.70 0.19 46)',
+                color: 'var(--c-13)', cursor: !nome.trim() ? 'not-allowed' : 'pointer',
               }}>
               <FontAwesomeIcon icon={faCheck} /> {saving ? 'Salvataggio...' : 'Salva'}
             </button>
             <button onClick={resetForm} className="px-6 py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
               Annulla
             </button>
           </div>
@@ -187,9 +187,9 @@ export default function AtletaEserciziPage() {
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Cerca per nome o muscolo..."
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
           onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+          onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
 
         <div className="flex gap-2">
           {[
@@ -200,8 +200,8 @@ export default function AtletaEserciziPage() {
             <button key={f.id} onClick={() => setFiltroTipo(f.id as any)}
               className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
               style={{
-                background: filtroTipo === f.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                color: filtroTipo === f.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                background: filtroTipo === f.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                color: filtroTipo === f.id ? 'var(--c-11)' : 'var(--c-55)',
               }}>
               {f.label}
             </button>
@@ -212,9 +212,9 @@ export default function AtletaEserciziPage() {
           <button onClick={() => setFiltroMuscolo(null)}
             className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
             style={{
-              background: filtroMuscolo === null ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-              color: filtroMuscolo === null ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-              border: filtroMuscolo === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+              background: filtroMuscolo === null ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+              color: filtroMuscolo === null ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+              border: filtroMuscolo === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
             }}>
             Tutti i muscoli
           </button>
@@ -222,9 +222,9 @@ export default function AtletaEserciziPage() {
             <button key={m} onClick={() => setFiltroMuscolo(filtroMuscolo === m ? null : m)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: filtroMuscolo === m ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                color: filtroMuscolo === m ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-                border: filtroMuscolo === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                background: filtroMuscolo === m ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                color: filtroMuscolo === m ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+                border: filtroMuscolo === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
               }}>
               {m}
             </button>
@@ -237,27 +237,27 @@ export default function AtletaEserciziPage() {
         <BynariLoader file="blue" size={80} />
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           <p className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></p>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
+          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>
             {search || filtroTipo !== 'tutti' || filtroMuscolo ? 'Nessun risultato' : 'Nessun esercizio ancora'}
           </p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>
             {search || filtroTipo !== 'tutti' || filtroMuscolo ? 'Prova a cambiare i filtri' : 'Aggiungi il tuo primo esercizio'}
           </p>
         </div>
       ) : (
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           <div className="px-5 py-3 flex items-center justify-between"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
-            <p className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>
+            style={{ borderBottom: '1px solid var(--c-w6)', background: 'var(--c-15)' }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--c-45)' }}>
               {filtered.length} esercizi trovati
             </p>
           </div>
           {visibiliEsercizi.map((e, i) => (
             <div key={e.id} className="flex items-center gap-4 px-5 py-4 group"
-              style={{ borderBottom: i < visibiliEsercizi.length - 1 || haAltri ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              style={{ borderBottom: i < visibiliEsercizi.length - 1 || haAltri ? '1px solid var(--c-w4)' : 'none' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{
                   background: e.is_global ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.70 0.19 46 / 15%)',
@@ -266,7 +266,7 @@ export default function AtletaEserciziPage() {
                 <FontAwesomeIcon icon={faDumbbell} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{e.nome}</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{e.nome}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {e.muscoli?.map(m => (
                     <span key={m} className="text-xs px-2 py-0.5 rounded-full"
@@ -276,7 +276,7 @@ export default function AtletaEserciziPage() {
                   ))}
                 </div>
                 {e.descrizione && (
-                  <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{e.descrizione}</p>
+                  <p className="text-xs mt-1 italic" style={{ color: 'var(--c-45)' }}>{e.descrizione}</p>
                 )}
               </div>
               {e.is_global ? (
@@ -288,7 +288,7 @@ export default function AtletaEserciziPage() {
                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
                   <button onClick={() => handleEdit(e)}
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+                    style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
                     <FontAwesomeIcon icon={faPen} />
                   </button>
                   <button onClick={() => handleDelete(e.id, e.nome)}
@@ -304,7 +304,7 @@ export default function AtletaEserciziPage() {
             <div className="px-5 py-4 text-center">
               <button onClick={() => setVisibili(v => v + PAGE_SIZE)}
                 className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80 active:scale-95"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
                 Mostra altri ({filtered.length - visibili} rimasti)
               </button>
             </div>

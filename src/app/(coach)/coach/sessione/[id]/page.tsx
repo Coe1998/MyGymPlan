@@ -150,15 +150,15 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
 
       {/* Header sessione */}
       <div className="rounded-2xl px-5 py-4"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest mb-1"
-              style={{ color: 'oklch(0.50 0 0)' }}>Sessione</p>
-            <h1 className="text-2xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+              style={{ color: 'var(--c-50)' }}>Sessione</p>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
               {(sessione as any).scheda_giorni?.nome ?? 'Allenamento'}
             </h1>
-            <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>{dataSessione}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>{dataSessione}</p>
           </div>
           <div className="text-right flex-shrink-0">
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
@@ -169,7 +169,7 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
               {(sessione as any).completata ? '✓ Completata' : 'In corso'}
             </span>
             {formatDurata((sessione as any).durata_secondi) && (
-              <p className="text-xs mt-1.5" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-xs mt-1.5" style={{ color: 'var(--c-45)' }}>
                 ⏱ {formatDurata((sessione as any).durata_secondi)}
               </p>
             )}
@@ -180,8 +180,8 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
       {/* Esercizi */}
       {esercizi.length === 0 ? (
         <div className="rounded-2xl py-12 text-center"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun log registrato per questa sessione</p>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun log registrato per questa sessione</p>
         </div>
       ) : esercizi.map((ese, eseIdx) => {
         const tipoColor = TIPO_COLORS[ese.tipo]
@@ -191,10 +191,10 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
 
         return (
           <div key={ese.id} className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             {/* Header esercizio */}
             <div className="px-4 py-3 flex items-start gap-3"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ borderBottom: '1px solid var(--c-w6)' }}>
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
                 style={{
                   background: tutteCompletate ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.60 0.15 200 / 15%)',
@@ -203,9 +203,9 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
                 {tutteCompletate ? '✓' : eseIdx + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{ese.nome}</p>
+                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{ese.nome}</p>
                 <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                  <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                  <span className="text-xs" style={{ color: 'var(--c-50)' }}>
                     {ese.ripetizioni} reps · {serieCompletate}/{ese.serie.length} serie
                   </span>
                   {tipoColor && ese.tipo !== 'standard' && (
@@ -238,13 +238,13 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
             {/* Nota cliente */}
             {notaCliente && (
               <div className="px-4 py-2.5 flex items-start gap-2"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
+                style={{ borderBottom: '1px solid var(--c-w5)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
                 <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>📝</span>
                 <div>
                   <p className="text-xs font-semibold mb-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
                     Nota del cliente
                   </p>
-                  <p className="text-xs leading-snug" style={{ color: 'oklch(0.72 0 0)', whiteSpace: 'pre-line' }}>
+                  <p className="text-xs leading-snug" style={{ color: 'var(--c-72)', whiteSpace: 'pre-line' }}>
                     {notaCliente}
                   </p>
                 </div>
@@ -257,14 +257,14 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
                 {ese.serie.map((s, si) => (
                   <div key={si} className="px-4 py-2.5 flex items-center gap-3"
                     style={{
-                      borderBottom: si < ese.serie.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+                      borderBottom: si < ese.serie.length - 1 ? '1px solid var(--c-w4)' : 'none',
                       background: s.completata ? 'oklch(0.65 0.18 150 / 4%)' : 'transparent',
                     }}>
                     <span className="text-xs font-bold w-14 flex-shrink-0"
-                      style={{ color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.40 0 0)' }}>
+                      style={{ color: s.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-40)' }}>
                       {s.completata ? '✓' : '○'} S{s.numero_serie}
                     </span>
-                    <span className="text-sm font-bold flex-1" style={{ color: s.completata ? 'oklch(0.90 0 0)' : 'oklch(0.50 0 0)' }}>
+                    <span className="text-sm font-bold flex-1" style={{ color: s.completata ? 'var(--c-90)' : 'var(--c-50)' }}>
                       {s.peso_kg != null ? `${s.peso_kg} kg × ` : ''}
                       {s.ripetizioni != null ? `${s.ripetizioni} reps` : ''}
                       {s.reps_sx != null && s.reps_dx != null ? `${s.reps_sx}↑ / ${s.reps_dx}↑` : ''}
@@ -274,13 +274,13 @@ export default async function CoachSessioneViewPage({ params }: { params: Promis
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {s.rpe != null && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full"
-                          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                          style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                           RPE {s.rpe}
                         </span>
                       )}
                       {s.rir != null && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full"
-                          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                          style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                           RIR {s.rir}
                         </span>
                       )}

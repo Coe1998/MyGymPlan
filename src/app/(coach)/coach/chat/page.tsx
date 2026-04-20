@@ -185,7 +185,7 @@ export default function CoachChatPage() {
       return (
         <a key={i} href={parte} target="_blank" rel="noopener noreferrer"
           className="underline break-all"
-          style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'oklch(0.20 0 0)' }}>
+          style={{ color: daCoach ? 'oklch(0.55 0.15 200)' : 'var(--c-20)' }}>
           {parte}
         </a>
       )
@@ -195,7 +195,7 @@ export default function CoachChatPage() {
   const renderMessaggi = (ref: React.RefObject<HTMLDivElement | null>) => (
     <div ref={ref} className="flex-1 overflow-y-auto p-4 space-y-2">
       {messaggi.length === 0 && (
-        <p className="text-sm text-center py-8" style={{ color: 'oklch(0.40 0 0)' }}>Nessun messaggio ancora.</p>
+        <p className="text-sm text-center py-8" style={{ color: 'var(--c-40)' }}>Nessun messaggio ancora.</p>
       )}
       {messaggi.map((m, i) => {
         const prevM = messaggi[i - 1]
@@ -204,28 +204,28 @@ export default function CoachChatPage() {
           <div key={m.id}>
             {showDate && (
               <div className="flex items-center gap-3 my-3">
-                <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
-                <span className="text-xs font-semibold px-2" style={{ color: 'oklch(0.45 0 0)' }}>
+                <div className="flex-1 h-px" style={{ background: 'var(--c-w6)' }} />
+                <span className="text-xs font-semibold px-2" style={{ color: 'var(--c-45)' }}>
                   {formatDataSeparatore(m.created_at)}
                 </span>
-                <div className="flex-1 h-px" style={{ background: 'oklch(1 0 0 / 6%)' }} />
+                <div className="flex-1 h-px" style={{ background: 'var(--c-w6)' }} />
               </div>
             )}
             <div className={`flex ${m.da_coach ? 'justify-end' : 'justify-start'}`}>
               <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
                 style={{
-                  background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
+                  background: m.da_coach ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
                   borderBottomRightRadius: m.da_coach ? 4 : 16,
                   borderBottomLeftRadius: m.da_coach ? 16 : 4,
                 }}>
                 {m.metadata ? (
                   <ChatAllegatoCard metadata={m.metadata} daCoach={m.da_coach} ruolo="coach" clienteId={clienteAttivo?.id} />
                 ) : (
-                  <p className="text-sm" style={{ color: m.da_coach ? 'oklch(0.11 0 0)' : 'oklch(0.90 0 0)' }}>
+                  <p className="text-sm" style={{ color: m.da_coach ? 'var(--c-11)' : 'var(--c-90)' }}>
                     {renderTesto(m.testo ?? '', m.da_coach)}
                   </p>
                 )}
-                <p className="text-xs mt-1" style={{ color: m.da_coach ? 'oklch(0.30 0 0)' : 'oklch(0.45 0 0)' }}>
+                <p className="text-xs mt-1" style={{ color: m.da_coach ? 'var(--c-30)' : 'var(--c-45)' }}>
                   {formatOra(m.created_at)}
                 </p>
               </div>
@@ -237,14 +237,14 @@ export default function CoachChatPage() {
   )
 
   const pannelloAllegati = (
-    <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+    <div className="px-4 pb-2 flex-shrink-0" style={{ borderBottom: '1px solid var(--c-w6)' }}>
       {loadingAllegati ? (
         <BynariLoader file="blue" size={60} />
       ) : (
         <div className="space-y-3 py-2">
           {schedeCoach.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Schede assegnate</p>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--c-40)' }}>Schede assegnate</p>
               <div className="flex flex-wrap gap-2">
                 {schedeCoach.map(s => (
                   <button key={s.id}
@@ -259,7 +259,7 @@ export default function CoachChatPage() {
           )}
           {sessioniCliente.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.40 0 0)' }}>Sessioni recenti</p>
+              <p className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--c-40)' }}>Sessioni recenti</p>
               <div className="flex flex-wrap gap-2">
                 {sessioniCliente.slice(0, 5).map((s: any) => (
                   <button key={s.id}
@@ -277,7 +277,7 @@ export default function CoachChatPage() {
             </div>
           )}
           {schedeCoach.length === 0 && sessioniCliente.length === 0 && (
-            <p className="text-xs py-2 text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda o sessione disponibile</p>
+            <p className="text-xs py-2 text-center" style={{ color: 'var(--c-45)' }}>Nessuna scheda o sessione disponibile</p>
           )}
         </div>
       )}
@@ -285,7 +285,7 @@ export default function CoachChatPage() {
   )
 
   const inputArea = (mobile = false) => (
-    <div className="flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+    <div className="flex-shrink-0" style={{ borderTop: '1px solid var(--c-w6)' }}>
       {showAllegati && pannelloAllegati}
       <div className="px-4 py-3 flex gap-3"
         style={mobile ? { paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' } : {}}>
@@ -293,9 +293,9 @@ export default function CoachChatPage() {
           onClick={() => { setShowAllegati(p => !p); if (!showAllegati) fetchAllegati() }}
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
           style={{
-            background: showAllegati ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-            color: showAllegati ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
-            border: '1px solid oklch(1 0 0 / 8%)',
+            background: showAllegati ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+            color: showAllegati ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
+            border: '1px solid var(--c-w8)',
           }}>
           <FontAwesomeIcon icon={faPaperclip} className="text-sm" />
         </button>
@@ -303,10 +303,10 @@ export default function CoachChatPage() {
           onKeyDown={e => e.key === 'Enter' && inviaMessaggio()}
           placeholder="Scrivi un messaggio..."
           className="flex-1 px-4 py-2.5 rounded-xl text-sm outline-none"
-          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }} />
         <button onClick={inviaMessaggio} disabled={!testo.trim()}
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: testo.trim() ? 1 : 0.4 }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)', opacity: testo.trim() ? 1 : 0.4 }}>
           <FontAwesomeIcon icon={faPaperPlane} className="text-sm" />
         </button>
       </div>
@@ -319,31 +319,31 @@ export default function CoachChatPage() {
       <div className={`${clienteAttivo ? 'hidden lg:flex' : 'flex'} lg:flex flex-col`}
         style={{ height: clienteAttivo ? undefined : 'calc(100vh - 8rem)' }}>
         <div className="lg:hidden mb-3">
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Chat</h1>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Chat</h1>
         </div>
         <div className="lg:hidden rounded-2xl overflow-hidden flex flex-col flex-1"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           <div className="flex-1 overflow-y-auto">
             {clienti.length === 0 ? (
-              <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
+              <p className="px-4 py-8 text-sm text-center" style={{ color: 'var(--c-45)' }}>Nessun cliente</p>
             ) : clienti.map(c => (
               <button key={c.id} onClick={() => { setClienteAttivo(c); setShowAllegati(false) }}
                 className="w-full flex items-center gap-3 px-4 py-4 transition-all hover:opacity-80"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                style={{ borderBottom: '1px solid var(--c-w4)' }}>
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                   style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                   {c.full_name?.charAt(0).toUpperCase()}
                 </div>
-                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'var(--c-90)' }}>
                   {c.full_name}
                 </p>
                 {(unread[c.id] ?? 0) > 0 && (
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
                     {unread[c.id]}
                   </span>
                 )}
-                <span style={{ color: 'oklch(0.40 0 0)' }}>›</span>
+                <span style={{ color: 'var(--c-40)' }}>›</span>
               </button>
             ))}
           </div>
@@ -360,31 +360,31 @@ export default function CoachChatPage() {
           bottom: '1rem',
         }}>
         <div className="w-72 flex-shrink-0 rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <div className="px-4 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Chat</p>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+          <div className="px-4 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+            <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>Chat</p>
           </div>
           <div className="flex-1 overflow-y-auto">
             {clienti.length === 0 ? (
-              <p className="px-4 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente</p>
+              <p className="px-4 py-8 text-sm text-center" style={{ color: 'var(--c-45)' }}>Nessun cliente</p>
             ) : clienti.map(c => (
               <button key={c.id} onClick={() => { setClienteAttivo(c); setShowAllegati(false) }}
                 className="w-full flex items-center gap-3 px-4 py-3 transition-all hover:opacity-80"
                 style={{
                   background: clienteAttivo?.id === c.id ? 'oklch(0.70 0.19 46 / 12%)' : 'transparent',
                   borderLeft: clienteAttivo?.id === c.id ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
-                  borderBottom: '1px solid oklch(1 0 0 / 4%)',
+                  borderBottom: '1px solid var(--c-w4)',
                 }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                   style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                   {c.full_name?.charAt(0).toUpperCase()}
                 </div>
-                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+                <p className="text-sm font-medium flex-1 text-left truncate" style={{ color: 'var(--c-90)' }}>
                   {c.full_name}
                 </p>
                 {(unread[c.id] ?? 0) > 0 && (
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
                     {unread[c.id]}
                   </span>
                 )}
@@ -395,24 +395,24 @@ export default function CoachChatPage() {
 
         {clienteAttivo ? (
           <div className="flex-1 flex flex-col rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ borderBottom: '1px solid var(--c-w6)' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                 style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                 {clienteAttivo.full_name?.charAt(0).toUpperCase()}
               </div>
-              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
+              <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{clienteAttivo.full_name}</p>
             </div>
             {renderMessaggi(scrollRef)}
             {inputArea(false)}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center rounded-2xl"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="text-center space-y-2">
               <p className="text-3xl">💬</p>
-              <p className="text-sm font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Seleziona un cliente per chattare</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--c-55)' }}>Seleziona un cliente per chattare</p>
             </div>
           </div>
         )}
@@ -421,19 +421,19 @@ export default function CoachChatPage() {
       {/* MOBILE: area chat */}
       {clienteAttivo && (
         <div className="lg:hidden flex flex-col rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)', height: 'calc(100vh - 8rem)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)', height: 'calc(100vh - 8rem)' }}>
           <div className="px-4 py-3 flex items-center gap-3 flex-shrink-0"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ borderBottom: '1px solid var(--c-w6)' }}>
             <button onClick={() => { setClienteAttivo(null); setShowAllegati(false) }}
               className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
             </button>
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
               style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
               {clienteAttivo.full_name?.charAt(0).toUpperCase()}
             </div>
-            <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAttivo.full_name}</p>
+            <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{clienteAttivo.full_name}</p>
           </div>
           {renderMessaggi(scrollRefMobile)}
           {inputArea(true)}

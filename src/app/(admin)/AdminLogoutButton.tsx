@@ -16,7 +16,7 @@ export default function AdminLogoutButton() {
     <button
       onClick={handleLogout}
       className="text-xs font-medium px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+      style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
       Esci
     </button>
   )

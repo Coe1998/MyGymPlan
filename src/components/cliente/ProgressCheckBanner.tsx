@@ -16,21 +16,21 @@ export default function ProgressCheckBanner({ schedulazioneId, titolo }: Props) 
       style={{ background: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46)' }}>
       <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
         style={{ background: 'oklch(0 0 0 / 20%)' }}>
-        <FontAwesomeIcon icon={faCircleCheck} style={{ color: 'oklch(0.13 0 0)', fontSize: 18 }} />
+        <FontAwesomeIcon icon={faCircleCheck} style={{ color: 'var(--c-13)', fontSize: 18 }} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-bold uppercase tracking-wide mb-0.5"
           style={{ color: 'oklch(0.40 0.10 46)' }}>
           Check-in di oggi
         </p>
-        <p className="text-sm font-black truncate" style={{ color: 'oklch(0.13 0 0)' }}>
+        <p className="text-sm font-black truncate" style={{ color: 'var(--c-13)' }}>
           {titolo} — Il tuo coach ti aspetta
         </p>
         <p className="text-xs mt-0.5" style={{ color: 'oklch(0.35 0.08 46)' }}>
           Hai fino a mezzanotte per inviarlo
         </p>
       </div>
-      <FontAwesomeIcon icon={faChevronRight} style={{ color: 'oklch(0.13 0 0)', flexShrink: 0 }} />
+      <FontAwesomeIcon icon={faChevronRight} style={{ color: 'var(--c-13)', flexShrink: 0 }} />
     </Link>
   )
 }

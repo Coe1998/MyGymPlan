@@ -71,10 +71,10 @@ export default function ClienteOnboarding() {
     <div className="fixed inset-0 z-[9998] flex items-end sm:items-center justify-center p-4"
       style={{ background: 'oklch(0 0 0 / 70%)' }}>
       <div className="w-full max-w-sm rounded-3xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 10%)', boxShadow: '0 24px 60px oklch(0 0 0 / 60%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w10)', boxShadow: '0 24px 60px oklch(0 0 0 / 60%)' }}>
 
         {/* Progress bar */}
-        <div className="h-1" style={{ background: 'oklch(0.25 0 0)' }}>
+        <div className="h-1" style={{ background: 'var(--c-25)' }}>
           <div className="h-full transition-all duration-500"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%`, background: 'oklch(0.70 0.19 46)' }} />
         </div>
@@ -83,16 +83,16 @@ export default function ClienteOnboarding() {
         <div className="p-6 space-y-4">
           <div className="flex items-start justify-between">
             <div className="text-4xl">{current.icon}</div>
-            <span className="text-xs font-bold" style={{ color: 'oklch(0.40 0 0)' }}>
+            <span className="text-xs font-bold" style={{ color: 'var(--c-40)' }}>
               {step + 1} / {STEPS.length}
             </span>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)', fontFamily: 'Syne, sans-serif' }}>
+            <h2 className="text-xl font-black tracking-tight" style={{ color: 'var(--c-97)', fontFamily: 'Syne, sans-serif' }}>
               {current.title}
             </h2>
-            <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.62 0 0)', fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--c-62)', fontFamily: 'Inter, sans-serif' }}>
               {current.body}
             </p>
           </div>
@@ -116,14 +116,14 @@ export default function ClienteOnboarding() {
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
               className="px-4 py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
               ←
             </button>
           )}
           <button
             onClick={isLast ? chiudi : () => setStep(s => s + 1)}
             className="flex-1 py-3 rounded-2xl font-black text-sm transition-all active:scale-95 hover:brightness-110"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
             {isLast ? 'Inizia ad allenarti! 🚀' : 'Avanti →'}
           </button>
         </div>
@@ -132,7 +132,7 @@ export default function ClienteOnboarding() {
         {!isLast && (
           <button onClick={chiudi}
             className="w-full pb-5 text-xs text-center transition-opacity hover:opacity-70"
-            style={{ color: 'oklch(0.35 0 0)' }}>
+            style={{ color: 'var(--c-35)' }}>
             Salta tutorial
           </button>
         )}

@@ -109,17 +109,17 @@ export default function StoricoSessioni({ clienteId }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-        <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Storico sessioni</h2>
-        <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>Ultimi 90 giorni</p>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Storico sessioni</h2>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>Ultimi 90 giorni</p>
       </div>
 
       {loading && pagina === 0 ? (
         <BynariLoader file="blue" size={80} />
       ) : sessioni.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione nel periodo</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessuna sessione nel periodo</p>
         </div>
       ) : (
         <>
@@ -129,7 +129,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
               const logs = logMap[s.id] ?? []
               const esercizi = isAperta ? raggruppaPerEsercizio(logs) : []
               return (
-                <div key={s.id} style={{ borderBottom: i < sessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                <div key={s.id} style={{ borderBottom: i < sessioni.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                   {/* Header sessione */}
                   <div
                     onClick={() => toggleSessione(s.id)}
@@ -137,35 +137,35 @@ export default function StoricoSessioni({ clienteId }: Props) {
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                         style={{
-                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)',
+                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-45)',
                         }}>
                         <span className="text-xs font-bold">{s.completata ? '✓' : '○'}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>
                           {s.giornoNome}
                         </p>
-                        <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                        <p className="text-xs" style={{ color: 'var(--c-50)' }}>
                           {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                           {formatDurata(s.durata_secondi) ? ` · ${formatDurata(s.durata_secondi)}` : ''}
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs transition-transform" style={{ color: 'oklch(0.45 0 0)', display: 'inline-block', transform: isAperta ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                    <span className="text-xs transition-transform" style={{ color: 'var(--c-45)', display: 'inline-block', transform: isAperta ? 'rotate(90deg)' : 'rotate(0deg)' }}>
                       ›
                     </span>
                   </div>
 
                   {/* Dettaglio esercizi */}
                   {isAperta && (
-                    <div style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
+                    <div style={{ borderTop: '1px solid var(--c-w6)', background: 'var(--c-15)' }}>
                       {loadingLog === s.id ? (
                         <BynariLoader file="blue" size={60} />
                       ) : logs.length === 0 ? (
-                        <p className="px-5 py-4 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun dato registrato</p>
+                        <p className="px-5 py-4 text-sm" style={{ color: 'var(--c-45)' }}>Nessun dato registrato</p>
                       ) : (
-                        <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
+                        <div className="divide-y" style={{ borderColor: 'var(--c-w4)' }}>
                           {esercizi.map(([nome, serie]) => (
                             <div key={nome} className="px-5 py-3 space-y-2">
                               <p className="text-xs font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>{nome}</p>
@@ -173,24 +173,24 @@ export default function StoricoSessioni({ clienteId }: Props) {
                                 {serie.map((r, idx) => (
                                   <div key={idx} className="flex items-center gap-3 px-3 py-1.5 rounded-lg"
                                     style={{
-                                      background: r.completata ? 'oklch(0.65 0.18 150 / 8%)' : 'oklch(0.22 0 0)',
-                                      border: `1px solid ${r.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(1 0 0 / 5%)'}`,
+                                      background: r.completata ? 'oklch(0.65 0.18 150 / 8%)' : 'var(--c-22)',
+                                      border: `1px solid ${r.completata ? 'oklch(0.65 0.18 150 / 20%)' : 'var(--c-w5)'}`,
                                     }}>
-                                    <span className="text-xs w-12 flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>
+                                    <span className="text-xs w-12 flex-shrink-0" style={{ color: 'var(--c-50)' }}>
                                       Serie {r.numero_serie}
                                     </span>
                                     {r.completata ? (
                                       <>
-                                        <span className="text-sm font-black flex-1" style={{ color: 'oklch(0.97 0 0)' }}>
+                                        <span className="text-sm font-black flex-1" style={{ color: 'var(--c-97)' }}>
                                           {r.peso_kg ?? '—'} kg
                                         </span>
-                                        <span className="text-sm font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+                                        <span className="text-sm font-black" style={{ color: 'var(--c-97)' }}>
                                           × {r.ripetizioni ?? '—'} reps
                                         </span>
                                         <span className="text-xs" style={{ color: 'oklch(0.65 0.18 150)' }}>✓</span>
                                       </>
                                     ) : (
-                                      <span className="text-xs flex-1" style={{ color: 'oklch(0.40 0 0)' }}>Non completata</span>
+                                      <span className="text-xs flex-1" style={{ color: 'var(--c-40)' }}>Non completata</span>
                                     )}
                                   </div>
                                 ))}
@@ -212,7 +212,7 @@ export default function StoricoSessioni({ clienteId }: Props) {
                 onClick={() => setPagina(p => p + 1)}
                 disabled={loading}
                 className="w-full py-2.5 rounded-xl text-xs font-semibold transition-all"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)', border: '1px solid var(--c-w8)' }}>
                 {loading ? 'Caricamento...' : 'Mostra sessioni precedenti'}
               </button>
             </div>

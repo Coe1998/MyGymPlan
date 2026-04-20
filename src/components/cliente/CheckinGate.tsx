@@ -68,8 +68,8 @@ export default function CheckinGate() {
       <div
         className="w-full max-w-lg rounded-3xl p-6 space-y-5 overflow-y-auto"
         style={{
-          background: 'oklch(0.13 0 0)',
-          border: '1px solid oklch(1 0 0 / 10%)',
+          background: 'var(--c-13)',
+          border: '1px solid var(--c-w10)',
           maxHeight: '95dvh',
         }}>
 
@@ -78,8 +78,8 @@ export default function CheckinGate() {
           <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.60 0.15 200)' }}>
             Check-in mattutino
           </p>
-          <p className="text-2xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>Come stai oggi?</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-2xl font-black" style={{ color: 'var(--c-97)' }}>Come stai oggi?</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>
             {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
@@ -88,11 +88,11 @@ export default function CheckinGate() {
         {CAMPI.map(campo => (
           <div key={campo.key} className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold" style={{ color: 'oklch(0.80 0 0)' }}>
+              <label className="text-sm font-semibold" style={{ color: 'var(--c-80)' }}>
                 {campo.label}
               </label>
               {'hint' in campo && (
-                <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{campo.hint}</span>
+                <span className="text-xs" style={{ color: 'var(--c-40)' }}>{campo.hint}</span>
               )}
             </div>
             <div className="flex gap-2">
@@ -105,7 +105,7 @@ export default function CheckinGate() {
                     onClick={() => setVoti(prev => ({ ...prev, [campo.key]: v }))}
                     className="flex-1 py-3.5 rounded-2xl text-xl transition-all active:scale-90"
                     style={{
-                      background: selected ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.20 0 0)',
+                      background: selected ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-20)',
                       border: `2px solid ${selected ? 'oklch(0.60 0.15 200)' : 'transparent'}`,
                     }}>
                     {icon ? <FontAwesomeIcon icon={icon} /> : null}
@@ -118,7 +118,7 @@ export default function CheckinGate() {
 
         {/* Ti alleni oggi? */}
         <div className="space-y-2">
-          <p className="text-sm font-semibold" style={{ color: 'oklch(0.80 0 0)' }}>Ti alleni oggi?</p>
+          <p className="text-sm font-semibold" style={{ color: 'var(--c-80)' }}>Ti alleni oggi?</p>
           <div className="grid grid-cols-2 gap-3">
             {([
               { val: true,  label: '💪 Sì, mi alleno', color: 'oklch(0.70 0.19 46)',  bg: 'oklch(0.70 0.19 46 / 15%)' },
@@ -129,9 +129,9 @@ export default function CheckinGate() {
                 onClick={() => setWillTrain(opt.val)}
                 className="py-4 rounded-2xl text-sm font-bold transition-all active:scale-95"
                 style={{
-                  background: willTrain === opt.val ? opt.bg : 'oklch(0.20 0 0)',
+                  background: willTrain === opt.val ? opt.bg : 'var(--c-20)',
                   border: `2px solid ${willTrain === opt.val ? opt.color : 'transparent'}`,
-                  color: willTrain === opt.val ? opt.color : 'oklch(0.45 0 0)',
+                  color: willTrain === opt.val ? opt.color : 'var(--c-45)',
                 }}>
                 {opt.label}
               </button>
@@ -141,7 +141,7 @@ export default function CheckinGate() {
 
         {/* Note */}
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold" style={{ color: 'oklch(0.80 0 0)' }}>
+          <label className="text-sm font-semibold" style={{ color: 'var(--c-80)' }}>
             Note (opzionale)
           </label>
           <textarea
@@ -151,9 +151,9 @@ export default function CheckinGate() {
             rows={2}
             className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
             style={{
-              background: 'oklch(0.20 0 0)',
-              border: '1px solid oklch(1 0 0 / 8%)',
-              color: 'oklch(0.97 0 0)',
+              background: 'var(--c-20)',
+              border: '1px solid var(--c-w8)',
+              color: 'var(--c-97)',
             }}
           />
         </div>
@@ -162,10 +162,10 @@ export default function CheckinGate() {
         <div className="flex gap-1.5">
           {CAMPI.map(campo => (
             <div key={campo.key} className="flex-1 h-1 rounded-full transition-all"
-              style={{ background: voti[campo.key] > 0 ? 'oklch(0.60 0.15 200)' : 'oklch(0.25 0 0)' }} />
+              style={{ background: voti[campo.key] > 0 ? 'oklch(0.60 0.15 200)' : 'var(--c-25)' }} />
           ))}
           <div className="flex-1 h-1 rounded-full transition-all"
-            style={{ background: willTrain !== null ? 'oklch(0.70 0.19 46)' : 'oklch(0.25 0 0)' }} />
+            style={{ background: willTrain !== null ? 'oklch(0.70 0.19 46)' : 'var(--c-25)' }} />
         </div>
 
         {/* CTA */}
@@ -174,8 +174,8 @@ export default function CheckinGate() {
           disabled={saving || !pronto}
           className="w-full py-4 rounded-2xl text-base font-black transition-all active:scale-95"
           style={{
-            background: pronto ? 'oklch(0.70 0.19 46)' : 'oklch(0.20 0 0)',
-            color: pronto ? 'oklch(0.11 0 0)' : 'oklch(0.35 0 0)',
+            background: pronto ? 'oklch(0.70 0.19 46)' : 'var(--c-20)',
+            color: pronto ? 'var(--c-11)' : 'var(--c-35)',
             cursor: pronto ? 'pointer' : 'not-allowed',
           }}>
           {saving ? 'Un secondo...' : 'Inizia la giornata →'}

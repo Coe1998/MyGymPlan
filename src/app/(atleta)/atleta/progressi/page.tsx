@@ -76,10 +76,10 @@ export default function AtletaProgressiPage() {
             <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
               Funzionalità Pro
             </p>
-            <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+            <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
               Traccia i tuoi progressi
             </h1>
-            <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--c-55)' }}>
               I progressi avanzati sono disponibili con il piano Pro.
               Sblocca grafici, misurazioni e foto per vedere davvero quanto sei migliorato.
             </p>
@@ -87,17 +87,17 @@ export default function AtletaProgressiPage() {
         </div>
 
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           {FEATURES_PRO.map((f, i) => (
             <div key={f.label} className="flex items-center gap-4 px-5 py-4"
-              style={{ borderBottom: i < FEATURES_PRO.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              style={{ borderBottom: i < FEATURES_PRO.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                 <FontAwesomeIcon icon={f.icon} />
               </div>
               <div>
-                <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{f.label}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{f.desc}</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{f.label}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>{f.desc}</p>
               </div>
               <FontAwesomeIcon icon={faCircleCheck} className="ml-auto flex-shrink-0"
                 style={{ color: 'oklch(0.70 0.19 46)' }} />
@@ -109,11 +109,11 @@ export default function AtletaProgressiPage() {
           <button
             onClick={() => alert('Stripe in arrivo — stay tuned!')}
             className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             <FontAwesomeIcon icon={faRocket} />
             Passa a Pro
           </button>
-          <p className="text-center text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-center text-xs" style={{ color: 'var(--c-40)' }}>
             Disponibile a breve · Nessun addebito ora
           </p>
         </div>
@@ -126,8 +126,8 @@ export default function AtletaProgressiPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Progressi</h1>
-        <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>Analisi dei tuoi allenamenti</p>
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Progressi</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>Analisi dei tuoi allenamenti</p>
       </div>
 
       {/* Tabs */}
@@ -136,9 +136,9 @@ export default function AtletaProgressiPage() {
           <button key={t.key} onClick={() => setTab(t.key)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 transition-all"
             style={{
-              background: tab === t.key ? 'oklch(0.70 0.19 46)' : 'oklch(0.18 0 0)',
-              color: tab === t.key ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
-              border: tab === t.key ? 'none' : '1px solid oklch(1 0 0 / 6%)',
+              background: tab === t.key ? 'oklch(0.70 0.19 46)' : 'var(--c-18)',
+              color: tab === t.key ? 'var(--c-13)' : 'var(--c-55)',
+              border: tab === t.key ? 'none' : '1px solid var(--c-w6)',
             }}>
             <FontAwesomeIcon icon={t.icon} />
             {t.label}

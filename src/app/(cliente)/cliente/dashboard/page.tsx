@@ -94,10 +94,10 @@ export default async function ClienteDashboard() {
         <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.60 0.15 200)' }}>
           {saluto} <FontAwesomeIcon icon={faHand} />
         </p>
-        <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+        <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
           {profile.full_name}
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+        <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
@@ -113,7 +113,7 @@ export default async function ClienteDashboard() {
                 <p className="text-sm font-bold" style={{ color: carbUX.color }}>{carbUX.title}</p>
                 {carbUX.label && (
                   <span className="text-xs font-black px-2 py-0.5 rounded-full"
-                    style={{ background: carbUX.color, color: 'oklch(0.11 0 0)' }}>
+                    style={{ background: carbUX.color, color: 'var(--c-11)' }}>
                     {carbUX.label}
                   </span>
                 )}
@@ -124,7 +124,7 @@ export default async function ClienteDashboard() {
                   </span>
                 )}
               </div>
-              <p className="text-sm" style={{ color: 'oklch(0.65 0 0)' }}>{carbUX.message}</p>
+              <p className="text-sm" style={{ color: 'var(--c-65)' }}>{carbUX.message}</p>
             </div>
           </div>
           {todayMacros && (
@@ -137,7 +137,7 @@ export default async function ClienteDashboard() {
                 <div key={m.label} className="flex-1 text-center rounded-xl py-2"
                   style={{ background: 'oklch(0 0 0 / 15%)' }}>
                   <p className="text-base font-black tabular-nums" style={{ color: m.color }}>{m.val}g</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>{m.label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>{m.label}</p>
                 </div>
               ))}
             </div>
@@ -159,9 +159,9 @@ export default async function ClienteDashboard() {
       {/* Progress Check */}
       {progressCheckList.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
-          <div className="px-5 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Prossimi check-in</p>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+          <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+            <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Prossimi check-in</p>
           </div>
           {(progressCheckList as any[]).map((pc: any) => {
             const completato = pc.progress_check_risposte?.length > 0
@@ -174,21 +174,21 @@ export default async function ClienteDashboard() {
             if (isFuturo) {
               return (
                 <div key={pc.id} className="flex items-center gap-3 px-5 py-3"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)', opacity: 0.45, cursor: 'not-allowed' }}>
-                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.45 0 0)' }} />
-                  <p className="flex-1 text-sm font-semibold" style={{ color: 'oklch(0.85 0 0)' }}>
+                  style={{ borderBottom: '1px solid var(--c-w4)', opacity: 0.45, cursor: 'not-allowed' }}>
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--c-45)' }} />
+                  <p className="flex-1 text-sm font-semibold" style={{ color: 'var(--c-85)' }}>
                     {pc.progress_check_set?.titolo ?? 'Check-in'}
                   </p>
-                  <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>{label} 🔒</p>
+                  <p className="text-xs flex-shrink-0" style={{ color: 'var(--c-50)' }}>{label} 🔒</p>
                 </div>
               )
             }
             return (
               <Link key={pc.id} href={`/cliente/checkin/${pc.id}`}
                 className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                style={{ borderBottom: '1px solid var(--c-w4)' }}>
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.70 0.19 46)' }} />
-                <p className="flex-1 text-sm font-semibold" style={{ color: 'oklch(0.85 0 0)' }}>
+                <p className="flex-1 text-sm font-semibold" style={{ color: 'var(--c-85)' }}>
                   {pc.progress_check_set?.titolo ?? 'Check-in'}
                 </p>
                 <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.70 0.19 46)' }}>{label} →</p>
@@ -205,9 +205,9 @@ export default async function ClienteDashboard() {
           { label: 'Questa settimana', value: sessioniSettimana ?? 0, icon: faCalendarDays, color: 'oklch(0.70 0.19 46)' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl p-6 space-y-3"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
+              <p className="text-sm" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
               <FontAwesomeIcon icon={stat.icon} className="text-2xl" />
             </div>
             <p className="text-5xl font-black" style={{ color: stat.color }}>{stat.value}</p>
@@ -217,20 +217,20 @@ export default async function ClienteDashboard() {
 
       {/* Scheda attiva */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="px-6 py-4"
-          style={{ borderBottom: assegnazioni && assegnazioni.length > 0 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Le tue schede</h2>
+          style={{ borderBottom: assegnazioni && assegnazioni.length > 0 ? '1px solid var(--c-w6)' : 'none' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Le tue schede</h2>
         </div>
         <SchedeSelector assegnazioni={(assegnazioni as any) ?? []} />
       </div>
 
       {/* Ultime sessioni */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="px-6 py-4 flex items-center justify-between"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Ultimi allenamenti</h2>
+          style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Ultimi allenamenti</h2>
           <Link href="/cliente/progressi"
             className="text-sm font-medium transition-opacity hover:opacity-70"
             style={{ color: 'oklch(0.60 0.15 200)' }}>
@@ -240,8 +240,8 @@ export default async function ClienteDashboard() {
         {!ultimeSessioni || ultimeSessioni.length === 0 ? (
           <div className="py-12 text-center space-y-3">
             <p className="text-4xl"><FontAwesomeIcon icon={faPersonRunning} /></p>
-            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun allenamento ancora</p>
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+            <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun allenamento ancora</p>
+            <p className="text-sm" style={{ color: 'var(--c-45)' }}>
               Inizia il tuo primo allenamento dalla scheda qui sopra
             </p>
           </div>

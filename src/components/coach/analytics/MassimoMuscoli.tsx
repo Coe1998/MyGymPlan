@@ -108,10 +108,10 @@ export default function MassimoMuscoli({ clienteId }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-        <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Muscoli più lavorati</h2>
-        <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Muscoli più lavorati</h2>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
           Serie completate ultimi 90gg vs 90gg precedenti
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
         {loading ? (
           <BynariLoader file="blue" size={80} />
         ) : dati.length === 0 ? (
-          <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-sm text-center py-8" style={{ color: 'var(--c-45)' }}>
             Nessun dato disponibile
           </p>
         ) : (
@@ -128,11 +128,11 @@ export default function MassimoMuscoli({ clienteId }: Props) {
             <div className="space-y-3">
               {lista.map(m => (
                 <div key={m.muscolo} className="flex items-center gap-3">
-                  <span className="text-sm w-28 flex-shrink-0" style={{ color: 'oklch(0.80 0 0)' }}>
+                  <span className="text-sm w-28 flex-shrink-0" style={{ color: 'var(--c-80)' }}>
                     {m.muscolo}
                   </span>
                   <div className="flex-1 h-2 rounded-full overflow-hidden"
-                    style={{ background: 'oklch(0.25 0 0)' }}>
+                    style={{ background: 'var(--c-25)' }}>
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${Math.round((m.volume / maxSerie) * 100)}%`,
@@ -140,7 +140,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
                       }} />
                   </div>
                   <span className="text-xs w-20 text-right flex-shrink-0"
-                    style={{ color: m.delta > 0 ? 'oklch(0.65 0.18 150)' : m.delta < 0 ? 'oklch(0.75 0.15 27)' : 'oklch(0.50 0 0)' }}>
+                    style={{ color: m.delta > 0 ? 'oklch(0.65 0.18 150)' : m.delta < 0 ? 'oklch(0.75 0.15 27)' : 'var(--c-50)' }}>
                     {m.volumePrec > 0
                       ? `${m.delta > 0 ? '+' : ''}${m.delta}%`
                       : 'nuovo'}
@@ -152,7 +152,7 @@ export default function MassimoMuscoli({ clienteId }: Props) {
             {!showAll && dati.length > 6 && (
               <button onClick={() => setShowAll(true)}
                 className="mt-4 w-full py-2.5 rounded-xl text-xs font-semibold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)', border: '1px solid var(--c-w8)' }}>
                 Mostra tutti ({dati.length - 6} altri muscoli)
               </button>
             )}

@@ -87,7 +87,7 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8" style={{ background: 'oklch(0.13 0 0)' }}>
+    <div className="min-h-screen flex items-center justify-center p-8" style={{ background: 'var(--c-13)' }}>
       <div className="w-full max-w-md space-y-8">
         <div>
           <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
@@ -95,9 +95,9 @@ function RegisterForm() {
 
         {inviteCode && (
           <div className="px-4 py-3 rounded-xl text-sm"
-            style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.80 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46 / 12%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'var(--c-80)' }}>
             🎯 Sei stato invitato da{' '}
-            <strong style={{ color: 'oklch(0.97 0 0)' }}>
+            <strong style={{ color: 'var(--c-97)' }}>
               {coachNome ?? 'un coach'}
             </strong>.
             Crea il tuo account gratuito per iniziare.
@@ -105,8 +105,8 @@ function RegisterForm() {
         )}
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Crea il tuo account</h1>
-          <p style={{ color: 'oklch(0.60 0 0)' }}>Inizia subito, è gratuito</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--c-97)' }}>Crea il tuo account</h1>
+          <p style={{ color: 'var(--c-60)' }}>Inizia subito, è gratuito</p>
         </div>
 
         {!inviteCode && (
@@ -118,14 +118,14 @@ function RegisterForm() {
               <button key={r.value} onClick={() => setRole(r.value as UserRole)}
                 className="p-4 rounded-xl text-left transition-all"
                 style={{
-                  background: role === r.value ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.20 0 0)',
-                  border: role === r.value ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid oklch(1 0 0 / 8%)',
+                  background: role === r.value ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-20)',
+                  border: role === r.value ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid var(--c-w8)',
                 }}>
                 <div className="text-2xl mb-2"><FontAwesomeIcon icon={r.icon} /></div>
-                <div className="font-semibold text-sm" style={{ color: role === r.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.97 0 0)' }}>
+                <div className="font-semibold text-sm" style={{ color: role === r.value ? 'oklch(0.70 0.19 46)' : 'var(--c-97)' }}>
                   {r.label}
                 </div>
-                <div className="text-xs mt-1" style={{ color: 'oklch(0.55 0 0)' }}>{r.desc}</div>
+                <div className="text-xs mt-1" style={{ color: 'var(--c-55)' }}>{r.desc}</div>
               </button>
             ))}
           </div>
@@ -138,14 +138,14 @@ function RegisterForm() {
             { label: 'Password', value: password, setter: setPassword, type: 'password', placeholder: '••••••••' },
           ].map((field) => (
             <div key={field.label} className="space-y-2">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>{field.label}</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>{field.label}</label>
               <input type={field.type} value={field.value}
                 onChange={(e) => field.setter(e.target.value)}
                 placeholder={field.placeholder}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                style={{ background: 'var(--c-20)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                 onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                onBlur={(e) => e.target.style.borderColor = 'var(--c-w8)'} />
             </div>
           ))}
 
@@ -160,13 +160,13 @@ function RegisterForm() {
             className="w-full py-3 rounded-xl font-semibold text-sm transition-all active:scale-95"
             style={{
               background: loading ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)',
-              color: 'oklch(0.13 0 0)', cursor: loading ? 'not-allowed' : 'pointer',
+              color: 'var(--c-13)', cursor: loading ? 'not-allowed' : 'pointer',
             }}>
             {loading ? 'Registrazione in corso...' : 'Crea account →'}
           </button>
         </div>
 
-        <p className="text-center text-sm" style={{ color: 'oklch(0.60 0 0)' }}>
+        <p className="text-center text-sm" style={{ color: 'var(--c-60)' }}>
           Hai già un account?{' '}
           <a href={inviteCode ? `/login?code=${inviteCode}` : '/login'}
             className="font-semibold hover:opacity-80 transition-opacity"
@@ -182,7 +182,7 @@ function RegisterForm() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'oklch(0.13 0 0)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--c-13)' }}>
         <BynariLoader file="blue" size={80} />
       </div>
     }>

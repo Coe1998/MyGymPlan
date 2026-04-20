@@ -292,7 +292,7 @@ export default function SchedaDetailPage() {
 
     const clone = el.cloneNode(true) as HTMLDivElement
     clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.92;pointer-events:none;
-      border-radius:12px;background:oklch(0.28 0 0);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
       left:${rect.left}px;top:${rect.top}px;`
     document.body.appendChild(clone)
     dragGhost.current = clone
@@ -345,13 +345,13 @@ export default function SchedaDetailPage() {
       {/* Header */}
 		<div className="space-y-3">
 		  <button onClick={() => router.push('/coach/schede')}
-			className="text-sm transition-opacity hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>
+			className="text-sm transition-opacity hover:opacity-70" style={{ color: 'var(--c-50)' }}>
 			← Schede
 		  </button>
 		  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
 			<div>
 			  <div className="flex items-center gap-3 flex-wrap">
-				<h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+				<h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
 				  {scheda?.nome}
 				</h1>
 				{assegnazioniAttive.length > 0 && (
@@ -362,18 +362,18 @@ export default function SchedaDetailPage() {
 				)}
 			  </div>
 			  {scheda?.descrizione && (
-				<p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{scheda.descrizione}</p>
+				<p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>{scheda.descrizione}</p>
 			  )}
 			</div>
 			<div className="flex gap-2 flex-shrink-0">
 			  <button onClick={() => setShowFormAssegna(!showFormAssegna)}
 				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-				style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+				style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
 				<FontAwesomeIcon icon={faUser} /> Assegna
 			  </button>
 			  <button onClick={() => setShowEditor(true)}
 				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
-				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+				style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
 				<FontAwesomeIcon icon={faTableList} /> Editor scheda
 			  </button>
 			  <a
@@ -381,7 +381,7 @@ export default function SchedaDetailPage() {
 				target="_blank"
 				rel="noopener noreferrer"
 				className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 flex items-center gap-2"
-				style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+				style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}
 			  >
 				<FontAwesomeIcon icon={faPrint} />
 				Stampa
@@ -393,33 +393,33 @@ export default function SchedaDetailPage() {
       {/* Form modifica info */}
       {editingInfo && (
         <div className="rounded-2xl p-6 space-y-4"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Modifica scheda</h2>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Modifica scheda</h2>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Nome</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Nome</label>
             <input type="text" value={editNome} onChange={(e) => setEditNome(e.target.value)}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={(e) => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Descrizione</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Descrizione</label>
             <textarea value={editDescrizione} onChange={(e) => setEditDescrizione(e.target.value)}
               rows={3} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={(e) => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
           <div className="flex gap-3">
             <button onClick={handleSaveInfo} disabled={savingInfo}
               className="px-6 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               {savingInfo ? 'Salvataggio...' : 'Salva'}
             </button>
             <button onClick={() => { setEditingInfo(false); setEditNome(scheda?.nome ?? ''); setEditDescrizione(scheda?.descrizione ?? '') }}
               className="px-6 py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
               Annulla
             </button>
           </div>
@@ -428,33 +428,33 @@ export default function SchedaDetailPage() {
 
       {/* Sezione assegnazioni — SEMPRE VISIBILE */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}` }}>
+        style={{ background: 'var(--c-18)', border: `1px solid ${assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150 / 30%)' : 'var(--c-w6)'}` }}>
         <div className="px-6 py-4 flex items-center justify-between"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ borderBottom: '1px solid var(--c-w6)' }}>
           <div className="flex items-center gap-3">
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Clienti assegnati</h2>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Clienti assegnati</h2>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
               style={{
-                background: assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                color: assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                background: assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)',
+                color: assegnazioniAttive.length > 0 ? 'oklch(0.65 0.18 150)' : 'var(--c-45)',
               }}>
               {assegnazioniAttive.length} attive
             </span>
           </div>
           <button onClick={() => setShowFormAssegna(!showFormAssegna)}
             className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             + Assegna
           </button>
         </div>
 
         {/* Form aggiunta assegnazione */}
         {showFormAssegna && (
-          <div className="px-6 py-5 space-y-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
+          <div className="px-6 py-5 space-y-4" style={{ borderBottom: '1px solid var(--c-w6)', background: 'var(--c-15)' }}>
             <h3 className="font-semibold text-sm" style={{ color: 'oklch(0.70 0.19 46)' }}>Nuova assegnazione</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Cliente</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Cliente</label>
                 <select value={selectedCliente} onChange={async (e) => {
                   setSelectedCliente(e.target.value)
                   setNoteAnamnesi([])
@@ -464,7 +464,7 @@ export default function SchedaDetailPage() {
                   }
                 }}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: selectedCliente ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)' }}>
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: selectedCliente ? 'var(--c-97)' : 'var(--c-45)' }}>
                   <option value="">Seleziona cliente...</option>
                   {clienti.map(c => (
                     <option key={c.cliente_id} value={c.cliente_id}>{c.profiles?.full_name}</option>
@@ -472,22 +472,22 @@ export default function SchedaDetailPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Data inizio</label>
+                <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Data inizio</label>
                 <input type="date" value={dataInizio} onChange={(e) => setDataInizio(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }}
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', colorScheme: 'dark' }}
                   onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                  onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                  onBlur={(e) => e.target.style.borderColor = 'var(--c-w8)'} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
-                  Data fine <span style={{ color: 'oklch(0.45 0 0)' }}>(opzionale)</span>
+                <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>
+                  Data fine <span style={{ color: 'var(--c-45)' }}>(opzionale)</span>
                 </label>
                 <input type="date" value={dataFine} onChange={(e) => setDataFine(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }}
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', colorScheme: 'dark' }}
                   onFocus={(e) => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                  onBlur={(e) => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                  onBlur={(e) => e.target.style.borderColor = 'var(--c-w8)'} />
               </div>
             </div>
             {assegnaError && (
@@ -504,7 +504,7 @@ export default function SchedaDetailPage() {
                   📋 Note dal profilo cliente
                 </p>
                 {noteAnamnesi.map((n, i) => (
-                  <p key={i} className="text-xs leading-relaxed" style={{ color: 'oklch(0.75 0 0)' }}>{n.testo}</p>
+                  <p key={i} className="text-xs leading-relaxed" style={{ color: 'var(--c-75)' }}>{n.testo}</p>
                 ))}
               </div>
             )}
@@ -513,13 +513,13 @@ export default function SchedaDetailPage() {
                 className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   background: !selectedCliente ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
-                  color: 'oklch(0.13 0 0)', cursor: !selectedCliente ? 'not-allowed' : 'pointer',
+                  color: 'var(--c-13)', cursor: !selectedCliente ? 'not-allowed' : 'pointer',
                 }}>
                 {assegnando ? 'Assegnazione...' : 'Conferma assegnazione'}
               </button>
               <button onClick={() => { setShowFormAssegna(false); setAssegnaError(null) }}
                 className="px-6 py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
                 Annulla
               </button>
             </div>
@@ -530,14 +530,14 @@ export default function SchedaDetailPage() {
         {assegnazioni.length === 0 ? (
           <div className="py-10 text-center space-y-2">
             <p className="text-3xl"><FontAwesomeIcon icon={faUser} /></p>
-            <p className="text-sm font-medium" style={{ color: 'oklch(0.60 0 0)' }}>Nessun cliente assegnato</p>
-            <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>Clicca "+ Assegna" per assegnare questa scheda a un cliente</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--c-60)' }}>Nessun cliente assegnato</p>
+            <p className="text-xs" style={{ color: 'var(--c-40)' }}>Clicca "+ Assegna" per assegnare questa scheda a un cliente</p>
           </div>
         ) : (
           <div>
             {assegnazioni.map((a, i) => (
               <div key={a.id} className="px-6 py-4"
-                style={{ borderBottom: i < assegnazioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                style={{ borderBottom: i < assegnazioni.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                 {/* Riga principale */}
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
@@ -545,10 +545,10 @@ export default function SchedaDetailPage() {
                     {(a as any).profiles?.full_name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                    <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>
                       {(a as any).profiles?.full_name}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                       Dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
                       {a.data_fine ? ` · Scade il ${new Date(a.data_fine).toLocaleDateString('it-IT')}` : ' · Nessuna scadenza'}
                     </p>
@@ -556,8 +556,8 @@ export default function SchedaDetailPage() {
                   <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
                     <span className="text-xs px-2.5 py-1 rounded-full"
                       style={{
-                        background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.30 0 0)',
-                        color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                        background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-30)',
+                        color: a.attiva ? 'oklch(0.65 0.18 150)' : 'var(--c-45)',
                       }}>
                       {a.attiva ? 'Attiva' : 'Inattiva'}
                     </span>
@@ -577,23 +577,23 @@ export default function SchedaDetailPage() {
                 {/* Form modifica assegnazione inline */}
                 {editingAssId === a.id && (
                   <div className="mt-3 ml-14 p-3 rounded-xl space-y-3"
-                    style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
+                    style={{ background: 'var(--c-15)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="space-y-1">
-                        <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>
-                          Data fine <span style={{ color: 'oklch(0.40 0 0)' }}>(opzionale)</span>
+                        <label className="text-xs font-semibold" style={{ color: 'var(--c-55)' }}>
+                          Data fine <span style={{ color: 'var(--c-40)' }}>(opzionale)</span>
                         </label>
                         <input type="date" value={editDataFine} onChange={e => setEditDataFine(e.target.value)}
                           className="px-3 py-2 rounded-lg text-xs outline-none"
-                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }} />
+                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', colorScheme: 'dark' }} />
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Attiva</label>
+                        <label className="text-xs font-semibold" style={{ color: 'var(--c-55)' }}>Attiva</label>
                         <button onClick={() => setEditAttiva(p => !p)} className="relative">
                           <div className="w-10 h-6 rounded-full transition-colors duration-200"
-                            style={{ background: editAttiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                            style={{ background: editAttiva ? 'oklch(0.65 0.18 150)' : 'var(--c-30)' }}>
                             <div className="absolute top-0.5 w-5 h-5 rounded-full shadow transition-transform duration-200"
-                              style={{ background: 'oklch(0.97 0 0)', transform: editAttiva ? 'translateX(1.1rem)' : 'translateX(0.1rem)' }} />
+                              style={{ background: 'var(--c-97)', transform: editAttiva ? 'translateX(1.1rem)' : 'translateX(0.1rem)' }} />
                           </div>
                         </button>
                       </div>
@@ -606,7 +606,7 @@ export default function SchedaDetailPage() {
                       </button>
                       <button onClick={() => setEditingAssId(null)}
                         className="px-4 py-2 rounded-lg text-xs font-medium"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                        style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                         Annulla
                       </button>
                     </div>
@@ -632,7 +632,7 @@ export default function SchedaDetailPage() {
                         }}
                         disabled={uploadingPdf === a.id}
                         className="text-xs px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        style={{ background: 'var(--c-22)', color: 'var(--c-55)', border: '1px solid var(--c-w8)' }}>
                         <FontAwesomeIcon icon={faUpload} /> Sostituisci
                       </button>
                       <button
@@ -650,7 +650,7 @@ export default function SchedaDetailPage() {
                       }}
                       disabled={uploadingPdf === a.id}
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all border border-dashed hover:opacity-80"
-                      style={{ background: 'transparent', borderColor: 'oklch(1 0 0 / 15%)', color: 'oklch(0.50 0 0)' }}>
+                      style={{ background: 'transparent', borderColor: 'var(--c-w15)', color: 'var(--c-50)' }}>
                       {uploadingPdf === a.id
                         ? <><FontAwesomeIcon icon={faUpload} /> Caricamento...</>
                         : <><FontAwesomeIcon icon={faFilePdf} /> + Scheda alimentare</>}
@@ -666,13 +666,13 @@ export default function SchedaDetailPage() {
       {/* Giorni — read-only, editing via modal */}
       {giorni.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           <p className="text-5xl"><FontAwesomeIcon icon={faCalendarDays} /></p>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun giorno ancora</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Apri l'editor per costruire la tua scheda</p>
+          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun giorno ancora</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Apri l'editor per costruire la tua scheda</p>
           <button onClick={() => setShowEditor(true)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             <FontAwesomeIcon icon={faTableList} /> Apri editor
           </button>
         </div>
@@ -680,23 +680,23 @@ export default function SchedaDetailPage() {
         <div className="space-y-4">
           {giorni.map(giorno => (
             <div key={giorno.id} className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <div className="px-5 py-3 flex items-center justify-between"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}>
+                style={{ borderBottom: '1px solid var(--c-w6)', background: 'var(--c-15)' }}>
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black"
                     style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                     {giorno.ordine + 1}
                   </div>
-                  <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{giorno.nome}</p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{giorno.nome}</p>
                 </div>
-                <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                <span className="text-xs" style={{ color: 'var(--c-45)' }}>
                   {giorno.scheda_esercizi?.length ?? 0} esercizi
                 </span>
               </div>
               {(giorno.scheda_esercizi?.length ?? 0) === 0 ? (
                 <div className="px-5 py-4">
-                  <p className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>Nessun esercizio — apri l'editor per aggiungerne</p>
+                  <p className="text-sm" style={{ color: 'var(--c-40)' }}>Nessun esercizio — apri l'editor per aggiungerne</p>
                 </div>
               ) : (() => {
                 const TIPO_COLORS: Record<string, { color: string; bg: string }> = {
@@ -742,20 +742,20 @@ export default function SchedaDetailPage() {
                           )}
                           <div className="flex items-start gap-3 px-4 py-3 rounded-xl"
                             style={{
-                              background: 'oklch(0.20 0 0)',
+                              background: 'var(--c-20)',
                               borderLeft: isGrouped && tipoColors ? `3px solid ${tipoColors.color}60` : 'none',
                             }}>
                             <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                              style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.55 0 0)' }}>
+                              style={{ background: 'var(--c-28)', color: 'var(--c-55)' }}>
                               {i + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{se.esercizi?.nome}</p>
+                              <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{se.esercizi?.nome}</p>
                               <div className="flex flex-wrap gap-1.5 mt-1">
-                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--c-28)', color: 'var(--c-60)' }}>
                                   {se.serie}×{se.ripetizioni}
                                 </span>
-                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.28 0 0)', color: 'oklch(0.60 0 0)' }}>
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--c-28)', color: 'var(--c-60)' }}>
                                   {se.recupero_secondi}s
                                 </span>
                                 {tipoColors && tipoLabel && (
@@ -769,7 +769,7 @@ export default function SchedaDetailPage() {
                                     style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>{m}</span>
                                 ))}
                               </div>
-                              {se.note && <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{se.note}</p>}
+                              {se.note && <p className="text-xs mt-1 italic" style={{ color: 'var(--c-45)' }}>{se.note}</p>}
                             </div>
                           </div>
                         </div>

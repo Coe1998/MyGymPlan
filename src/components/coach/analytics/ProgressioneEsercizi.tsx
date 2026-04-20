@@ -171,16 +171,16 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
       <div className="px-5 py-4 flex items-center justify-between"
-        style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-        <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Progressione esercizi</h2>
+        style={{ borderBottom: '1px solid var(--c-w6)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Progressione esercizi</h2>
         <div className="flex items-center gap-3">
           <select
             value={giorni}
             onChange={e => setGiorni(Number(e.target.value))}
             className="text-xs px-3 py-1.5 rounded-xl outline-none"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.65 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-65)', border: '1px solid var(--c-w8)' }}>
             <option value={90}>Ultimi 90gg</option>
             <option value={180}>Ultimi 6 mesi</option>
             <option value={9999}>Tutto</option>
@@ -191,11 +191,11 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
       <div className="p-5">
         {loading ? (
           <div className="py-10 text-center">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento dati...</p>
+            <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento dati...</p>
           </div>
         ) : esercizi.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun dato sufficiente nel periodo selezionato</p>
+            <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun dato sufficiente nel periodo selezionato</p>
           </div>
         ) : (
           <>
@@ -205,9 +205,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   onClick={() => { setMuscoloFiltro(null); setShowAll(false) }}
                   className="text-xs px-3 py-1 rounded-full font-medium transition-all"
                   style={{
-                    background: muscoloFiltro === null ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                    color: muscoloFiltro === null ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-                    border: muscoloFiltro === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                    background: muscoloFiltro === null ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                    color: muscoloFiltro === null ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+                    border: muscoloFiltro === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
                   }}>
                   Tutti
                 </button>
@@ -216,9 +216,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                     onClick={() => { setMuscoloFiltro(m === muscoloFiltro ? null : m); setShowAll(false) }}
                     className="text-xs px-3 py-1 rounded-full font-medium transition-all capitalize"
                     style={{
-                      background: muscoloFiltro === m ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                      color: muscoloFiltro === m ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-                      border: muscoloFiltro === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                      background: muscoloFiltro === m ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                      color: muscoloFiltro === m ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+                      border: muscoloFiltro === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
                     }}>
                     {m}
                   </button>
@@ -232,9 +232,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   onClick={() => setEseSelezionato(e.eseId)}
                   className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
                   style={{
-                    background: eseSelezionato === e.eseId ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                    color: eseSelezionato === e.eseId ? 'oklch(0.70 0.19 46)' : 'oklch(0.55 0 0)',
-                    border: eseSelezionato === e.eseId ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                    background: eseSelezionato === e.eseId ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                    color: eseSelezionato === e.eseId ? 'oklch(0.70 0.19 46)' : 'var(--c-55)',
+                    border: eseSelezionato === e.eseId ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid var(--c-w8)',
                   }}>
                   {e.nome}
                 </button>
@@ -242,7 +242,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
               {!showAll && eserciziFiltrati.length > 8 && (
                 <button onClick={() => setShowAll(true)}
                   className="text-xs px-3 py-1.5 rounded-full"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.50 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ background: 'var(--c-22)', color: 'var(--c-50)', border: '1px solid var(--c-w8)' }}>
                   +{eserciziFiltrati.length - 8} altri
                 </button>
               )}
@@ -273,10 +273,10 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                     },
                   ].map(k => (
                     <div key={k.label} className="rounded-xl p-3"
-                      style={{ background: 'oklch(0.22 0 0)' }}>
-                      <p className="text-xs mb-1" style={{ color: 'oklch(0.50 0 0)' }}>{k.label}</p>
-                      <p className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>{k.val}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{k.sub}</p>
+                      style={{ background: 'var(--c-22)' }}>
+                      <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>{k.label}</p>
+                      <p className="text-xl font-black" style={{ color: 'var(--c-97)' }}>{k.val}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{k.sub}</p>
                     </div>
                   ))}
                 </div>
@@ -285,20 +285,20 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={ese.punti} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                       <XAxis dataKey="data"
-                        tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }}
+                        tick={{ fontSize: 10, fill: 'var(--c-45)' }}
                         tickLine={false} axisLine={false}
                         tickFormatter={v => v.slice(5)} />
                       <YAxis yAxisId="e1rm"
-                        tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }}
+                        tick={{ fontSize: 10, fill: 'var(--c-45)' }}
                         tickLine={false} axisLine={false}
                         domain={['auto', 'auto']} />
                       <YAxis yAxisId="vol" orientation="right"
-                        tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }}
+                        tick={{ fontSize: 10, fill: 'var(--c-45)' }}
                         tickLine={false} axisLine={false}
                         domain={['auto', 'auto']} />
                       <Tooltip
-                        contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
-                        labelStyle={{ color: 'oklch(0.70 0 0)' }}
+                        contentStyle={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', borderRadius: 8, fontSize: 12 }}
+                        labelStyle={{ color: 'var(--c-70)' }}
                         formatter={(val: any, name?: any) => {
                           if (name === 'e1rm') return [`${val} ${isTimer ? 's' : 'kg'}`, isTimer ? 'Durata' : 'e1RM']
                           return [`${Math.round(val).toLocaleString('it-IT')} ${isTimer ? 's' : 'kg'}`, 'Volume']
@@ -324,7 +324,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                       style={{ color: eff.score >= 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }}>
                       {eff.score >= 0 ? 'Progressione efficiente' : 'Progressione in calo'}
                     </p>
-                    <p className="text-xs" style={{ color: 'oklch(0.60 0 0)' }}>
+                    <p className="text-xs" style={{ color: 'var(--c-60)' }}>
                       {isTimer
                         ? `Durata ${eff.deltaE1rm > 0 ? '+' : ''}${eff.deltaE1rm}% · volume ${eff.deltaVol > 0 ? '+' : ''}${eff.deltaVol}%`
                         : `e1RM ${eff.deltaE1rm > 0 ? '+' : ''}${eff.deltaE1rm}% · volume ${eff.deltaVol > 0 ? '+' : ''}${eff.deltaVol}%`

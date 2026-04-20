@@ -128,7 +128,7 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
         <p className="font-bold text-sm" style={{ color: 'oklch(0.70 0.19 46)' }}>🎯 Macro target</p>
         <button onClick={calcolaCalorie}
           className="text-xs px-3 py-1.5 rounded-lg font-medium"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
           Ricalcola kcal
         </button>
       </div>
@@ -141,10 +141,10 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
           { label: 'Grassi (g)', val: grassi, set: setGrassi, color: 'oklch(0.65 0.18 150)' },
         ].map(f => (
           <div key={f.label} className="space-y-1.5">
-            <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>{f.label}</label>
+            <label className="text-xs font-semibold" style={{ color: 'var(--c-55)' }}>{f.label}</label>
             <input type="number" value={f.val} onChange={e => f.set(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
-              style={{ background: 'oklch(0.22 0 0)', border: `1px solid ${f.color}30`, color: f.color }}
+              style={{ background: 'var(--c-22)', border: `1px solid ${f.color}30`, color: f.color }}
               onFocus={e => e.target.style.borderColor = f.color}
               onBlur={e => e.target.style.borderColor = `${f.color}30`} />
           </div>
@@ -154,7 +154,7 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
       {/* ── Ripartizione pasti ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.55 0 0)' }}>
+          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--c-55)' }}>
             Ripartizione pasti
           </p>
           <div className="flex gap-1">
@@ -162,8 +162,8 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
               <button key={n} onClick={() => setNumPasti(n)}
                 className="w-7 h-7 rounded-lg text-xs font-bold transition-all"
                 style={{
-                  background: numPasti === n ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                  color: numPasti === n ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+                  background: numPasti === n ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                  color: numPasti === n ? 'var(--c-13)' : 'var(--c-50)',
                 }}>
                 {n}
               </button>
@@ -176,7 +176,7 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
           return (
             <div className="flex items-center justify-between px-3 py-2 rounded-xl"
               style={{ background: tot === 100 ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.65 0.22 27 / 10%)' }}>
-              <span className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Totale</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--c-55)' }}>Totale</span>
               <span className="text-sm font-black"
                 style={{ color: tot === 100 ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }}>
                 {tot}% {tot !== 100 && `(${tot < 100 ? `mancano ${100 - tot}%` : `eccedono ${tot - 100}%`})`}
@@ -220,7 +220,7 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
 
           return (
             <div key={i} className="rounded-xl overflow-hidden"
-              style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-20)', border: '1px solid var(--c-w6)' }}>
               {/* Row 1: nome + % */}
               <div className="flex items-center gap-2 p-3">
                 <input
@@ -228,32 +228,32 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
                   value={pasto.nome}
                   onChange={e => setPastiConfig(prev => prev.map((p, j) => j === i ? { ...p, nome: e.target.value } : p))}
                   className="flex-1 px-2 py-1.5 rounded-lg text-sm font-semibold outline-none"
-                  style={{ background: 'oklch(0.16 0 0)', color: 'oklch(0.90 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                  style={{ background: 'var(--c-16)', color: 'var(--c-90)', border: '1px solid var(--c-w8)' }}
                 />
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button
                     onClick={() => setPastiConfig(prev => prev.map((p, j) => j === i ? { ...p, percentuale: Math.max(0, p.percentuale - 1) } : p))}
                     className="w-6 h-6 rounded-md flex items-center justify-center text-sm font-bold"
-                    style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>−</button>
+                    style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>−</button>
                   <input
                     type="number"
                     value={pasto.percentuale}
                     onChange={e => setPastiConfig(prev => prev.map((p, j) => j === i ? { ...p, percentuale: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) } : p))}
                     className="w-12 text-center text-sm font-black outline-none rounded-lg py-1"
-                    style={{ background: 'oklch(0.16 0 0)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}
+                    style={{ background: 'var(--c-16)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}
                   />
-                  <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>%</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--c-50)' }}>%</span>
                   <button
                     onClick={() => setPastiConfig(prev => prev.map((p, j) => j === i ? { ...p, percentuale: Math.min(100, p.percentuale + 1) } : p))}
                     className="w-6 h-6 rounded-md flex items-center justify-center text-sm font-bold"
-                    style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>+</button>
+                    style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>+</button>
                 </div>
               </div>
 
               {/* Row 2: macro preview + toggle personalizza */}
               <div className="px-3 pb-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs tabular-nums" style={{ color: 'oklch(0.40 0 0)' }}>
+                  <p className="text-xs tabular-nums" style={{ color: 'var(--c-40)' }}>
                     {kcalPasto} kcal · {protPasto}g prot · {carbPasto}g carb · {grassiPasto}g grassi
                   </p>
                   <button
@@ -263,8 +263,8 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
                     }
                     className="text-xs px-2 py-0.5 rounded-md font-semibold flex-shrink-0 ml-2"
                     style={{
-                      background: macroCustom ? 'oklch(0.75 0.18 80 / 15%)' : 'oklch(0.25 0 0)',
-                      color: macroCustom ? 'oklch(0.75 0.18 80)' : 'oklch(0.50 0 0)',
+                      background: macroCustom ? 'oklch(0.75 0.18 80 / 15%)' : 'var(--c-25)',
+                      color: macroCustom ? 'oklch(0.75 0.18 80)' : 'var(--c-50)',
                     }}>
                     {macroCustom ? '✓ Custom' : 'Personalizza'}
                   </button>
@@ -273,7 +273,7 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
                 {/* Row 3: custom macro split */}
                 {macroCustom && (
                   <div className="rounded-lg p-2.5 space-y-2"
-                    style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                    style={{ background: 'var(--c-16)', border: '1px solid var(--c-w8)' }}>
                     {[
                       { label: 'Prot %', key: 'prot_pct' as const, color: 'oklch(0.60 0.15 200)', val: protPct },
                       { label: 'Carb %', key: 'carb_pct' as const, color: 'oklch(0.70 0.19 46)', val: carbPct },
@@ -285,20 +285,20 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
                           <button
                             onClick={() => setPastiConfig(prev => prev.map((p, j) => j !== i ? p : { ...p, [m.key]: Math.max(0, (p[m.key] ?? 0) - 1) }))}
                             className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
-                            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>−</button>
+                            style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>−</button>
                           <input
                             type="number"
                             value={m.val}
                             onChange={e => setPastiConfig(prev => prev.map((p, j) => j !== i ? p : { ...p, [m.key]: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) }))}
                             className="w-12 text-center text-xs font-black outline-none rounded py-1"
-                            style={{ background: 'oklch(0.22 0 0)', color: m.color, border: `1px solid ${m.color}40` }}
+                            style={{ background: 'var(--c-22)', color: m.color, border: `1px solid ${m.color}40` }}
                           />
                           <button
                             onClick={() => setPastiConfig(prev => prev.map((p, j) => j !== i ? p : { ...p, [m.key]: Math.min(100, (p[m.key] ?? 0) + 1) }))}
                             className="w-5 h-5 rounded flex items-center justify-center text-xs font-bold"
-                            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>+</button>
+                            style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>+</button>
                         </div>
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
                           <div className="h-full rounded-full transition-all duration-200"
                             style={{ width: `${Math.min(100, m.val)}%`, background: m.color }} />
                         </div>
@@ -306,8 +306,8 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
                     ))}
                     {/* Totale split */}
                     <div className="flex items-center justify-between pt-1"
-                      style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Totale split</span>
+                      style={{ borderTop: '1px solid var(--c-w6)' }}>
+                      <span className="text-xs" style={{ color: 'var(--c-45)' }}>Totale split</span>
                       <span className="text-xs font-black tabular-nums"
                         style={{ color: splitTot === 100 ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }}>
                         {splitTot}% {splitTot !== 100 && `(${splitTot < 100 ? `mancano ${100 - splitTot}%` : `eccedono ${splitTot - 100}%`})`}
@@ -322,16 +322,16 @@ export default function MacroTargetForm({ clienteId, onClose }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold" style={{ color: 'oklch(0.55 0 0)' }}>Note (opzionale)</label>
+        <label className="text-xs font-semibold" style={{ color: 'var(--c-55)' }}>Note (opzionale)</label>
         <input type="text" value={note} onChange={e => setNote(e.target.value)}
           placeholder="es. Deficit calorico, refeed il sabato..."
           className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }} />
       </div>
 
       <button onClick={handleSave} disabled={saving}
         className="w-full py-3 rounded-xl text-sm font-bold transition-all"
-        style={{ background: saved ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+        style={{ background: saved ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
         {saved ? '✓ Salvato!' : saving ? 'Salvataggio...' : 'Salva macro target'}
       </button>
     </div>

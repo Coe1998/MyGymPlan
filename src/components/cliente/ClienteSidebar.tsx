@@ -117,9 +117,9 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
     <>
       {/* SIDEBAR — solo desktop */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col"
-        style={{ background: 'oklch(0.16 0 0)', borderRight: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-16)', borderRight: '1px solid var(--c-w6)' }}>
         {/* Logo */}
-        <div className="p-6" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="p-6" style={{ borderBottom: '1px solid var(--c-w6)' }}>
           <div className="flex flex-col gap-0.5">
             <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={120} height={28} style={{ height: '28px', width: 'auto' }} />
             <p className="text-xs" style={{ color: 'oklch(0.60 0.15 200)' }}>Area Atleta</p>
@@ -129,7 +129,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
           <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-3"
-            style={{ color: 'oklch(0.40 0 0)' }}>
+            style={{ color: 'var(--c-40)' }}>
             Navigazione
           </p>
           {navItemsAll.map((item) => {
@@ -145,7 +145,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                   style={{
                     background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
-                    color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.55 0 0)',
+                    color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-55)',
                     borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
                   }}>
                   <div className="relative w-4 h-4">
@@ -164,14 +164,14 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
                 style={{
                   background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
-                  color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.55 0 0)',
+                  color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-55)',
                   borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
                 }}>
                 <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
 				{item.label}
 				{item.href === '/cliente/chat' && unreadCoach > 0 && (
 				  <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
-					style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.97 0 0)' }}>
+					style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-97)' }}>
 					{unreadCoach}
 				  </span>
 				)}
@@ -181,22 +181,22 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
         </nav>
 
         {/* User */}
-        <div className="p-4" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+        <div className="p-4" style={{ borderTop: '1px solid var(--c-w6)' }}>
           <div className="flex items-center gap-3 px-3 py-2 mb-1">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
               style={{ background: 'oklch(0.60 0.15 200 / 20%)', color: 'oklch(0.60 0.15 200)' }}>
               {profile.full_name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-97)' }}>
                 {profile.full_name}
               </p>
-              <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Atleta</p>
+              <p className="text-xs" style={{ color: 'var(--c-45)' }}>Atleta</p>
             </div>
           </div>
           <button onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-white/5"
-            style={{ color: 'oklch(0.45 0 0)' }}>
+            style={{ color: 'var(--c-45)' }}>
             <FontAwesomeIcon icon={faRightFromBracket} />
             Esci
           </button>
@@ -206,8 +206,8 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
       {/* BOTTOM NAV — solo mobile */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
         style={{
-          background: 'oklch(0.16 0 0)',
-          borderTop: '1px solid oklch(1 0 0 / 8%)',
+          background: 'var(--c-16)',
+          borderTop: '1px solid var(--c-w8)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}>
         {navItems.map((item) => {
@@ -224,14 +224,14 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
                 style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
                 <div className="relative">
                   <FontAwesomeIcon icon={item.icon} className="text-2xl"
-                    style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+                    style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
                   {haSessioneInCorso && (
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full"
-                      style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid oklch(0.16 0 0)' }} />
+                      style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid var(--c-16)' }} />
                   )}
                 </div>
                 <span className="text-xs font-medium"
-                  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+                  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
                   {item.label}
                 </span>
               </button>
@@ -243,16 +243,16 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
 			  style={{ background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
 			  <div className="relative">
 				<FontAwesomeIcon icon={item.icon} className="text-2xl"
-				  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+				  style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
 				{item.href === '/cliente/chat' && unreadCoach > 0 && (
 				  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center font-black"
-					style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.97 0 0)', fontSize: 9 }}>
+					style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-97)', fontSize: 9 }}>
 					{unreadCoach}
 				  </span>
 				)}
 			  </div>
 			  <span className="text-xs font-medium"
-				style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+				style={{ color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
 				{item.label}
 			  </span>
 			</Link>
@@ -266,9 +266,9 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
             style={{ background: menuOpen ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent' }}>
             <FontAwesomeIcon icon={faEllipsisVertical} className="text-xl"
-              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }} />
+              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }} />
             <span className="text-xs font-medium"
-              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)' }}>
+              style={{ color: menuOpen ? 'oklch(0.60 0.15 200)' : 'var(--c-45)' }}>
               Altro
             </span>
           </button>
@@ -278,11 +278,11 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
             <>
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
               <div className="absolute bottom-14 right-0 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 12%)' }}>
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w12)' }}>
                 <Link href="/cliente/impostazioni"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'oklch(0.80 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
                   <FontAwesomeIcon icon={faGear} className="w-4" />
                   Impostazioni
                 </Link>

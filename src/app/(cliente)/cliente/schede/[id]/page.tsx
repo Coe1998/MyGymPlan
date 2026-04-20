@@ -93,17 +93,17 @@ export default function ClienteSchedaPage({ params }: { params: Promise<{ id: st
       <div>
         <Link href="/cliente/dashboard"
           className="inline-flex items-center gap-2 text-sm mb-4"
-          style={{ color: 'oklch(0.50 0 0)' }}>
+          style={{ color: 'var(--c-50)' }}>
           <FontAwesomeIcon icon={faArrowLeft} />
           Dashboard
         </Link>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
           {scheda.nome}
         </h1>
         {scheda.descrizione && (
-          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{scheda.descrizione}</p>
+          <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>{scheda.descrizione}</p>
         )}
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+        <p className="mt-1 text-sm" style={{ color: 'var(--c-45)' }}>
           {giorni.length} {giorni.length === 1 ? 'giorno' : 'giorni'}
         </p>
       </div>
@@ -111,22 +111,22 @@ export default function ClienteSchedaPage({ params }: { params: Promise<{ id: st
       <div className="space-y-3">
         {giorni.map(g => (
           <div key={g.id} className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             {/* Header giorno */}
             <button
               onClick={() => setGiornoAperto(giornoAperto === g.id ? null : g.id)}
               className="w-full flex items-center justify-between px-5 py-4 text-left"
-              style={{ borderBottom: giornoAperto === g.id ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+              style={{ borderBottom: giornoAperto === g.id ? '1px solid var(--c-w6)' : 'none' }}>
               <div>
-                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{g.nome}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{g.nome}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   {g.scheda_esercizi.length} esercizi
                 </p>
               </div>
               <FontAwesomeIcon icon={faChevronDown}
                 className="text-xs transition-transform"
                 style={{
-                  color: 'oklch(0.40 0 0)',
+                  color: 'var(--c-40)',
                   transform: giornoAperto === g.id ? 'rotate(180deg)' : 'none',
                 }} />
             </button>
@@ -135,27 +135,27 @@ export default function ClienteSchedaPage({ params }: { params: Promise<{ id: st
             {giornoAperto === g.id && (
               <div>
                 {g.scheda_esercizi.length === 0 ? (
-                  <p className="px-5 py-4 text-sm" style={{ color: 'oklch(0.40 0 0)' }}>
+                  <p className="px-5 py-4 text-sm" style={{ color: 'var(--c-40)' }}>
                     Nessun esercizio
                   </p>
                 ) : g.scheda_esercizi.map((e, i) => (
                   <div key={e.id} className="px-5 py-3 flex items-start gap-3"
-                    style={{ borderBottom: i < g.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < g.scheda_esercizi.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                       style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}>
                       <FontAwesomeIcon icon={faDumbbell} style={{ fontSize: 10 }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>
                         {e.esercizi?.nome ?? '—'}
                       </p>
                       <div className="flex flex-wrap gap-2 mt-1">
                         <span className="text-xs px-2 py-0.5 rounded-md"
-                          style={{ background: 'oklch(0.23 0 0)', color: 'oklch(0.60 0 0)' }}>
+                          style={{ background: 'var(--c-23)', color: 'var(--c-60)' }}>
                           {e.serie} × {e.ripetizioni}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded-md"
-                          style={{ background: 'oklch(0.23 0 0)', color: 'oklch(0.60 0 0)' }}>
+                          style={{ background: 'var(--c-23)', color: 'var(--c-60)' }}>
                           {e.recupero_secondi}s rec.
                         </span>
                         {e.tipo && e.tipo !== 'normale' && (
@@ -166,12 +166,12 @@ export default function ClienteSchedaPage({ params }: { params: Promise<{ id: st
                         )}
                       </div>
                       {e.esercizi?.muscoli && e.esercizi.muscoli.length > 0 && (
-                        <p className="text-xs mt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+                        <p className="text-xs mt-1" style={{ color: 'var(--c-40)' }}>
                           {e.esercizi.muscoli.join(', ')}
                         </p>
                       )}
                       {e.note && (
-                        <p className="text-xs mt-1 italic" style={{ color: 'oklch(0.45 0 0)' }}>{e.note}</p>
+                        <p className="text-xs mt-1 italic" style={{ color: 'var(--c-45)' }}>{e.note}</p>
                       )}
                     </div>
                   </div>

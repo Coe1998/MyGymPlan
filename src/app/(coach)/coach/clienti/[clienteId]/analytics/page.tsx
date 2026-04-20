@@ -117,7 +117,7 @@ export default function ClienteAnalyticsPage({
   if (stato === 'forbidden') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Cliente non trovato.</p>
+        <p className="text-sm" style={{ color: 'var(--c-45)' }}>Cliente non trovato.</p>
       </div>
     )
   }
@@ -128,7 +128,7 @@ export default function ClienteAnalyticsPage({
         <Link
           href="/coach/analytics"
           className="text-sm hover:opacity-70 transition-opacity"
-          style={{ color: 'oklch(0.50 0 0)' }}>
+          style={{ color: 'var(--c-50)' }}>
           ← Analytics
         </Link>
       </div>

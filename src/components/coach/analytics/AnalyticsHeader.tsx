@@ -111,8 +111,8 @@ export default function AnalyticsHeader({
             {iniziali}
           </div>
           <div>
-            <p className="font-black text-xl" style={{ color: 'oklch(0.97 0 0)' }}>{nomeCliente}</p>
-            <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+            <p className="font-black text-xl" style={{ color: 'var(--c-97)' }}>{nomeCliente}</p>
+            <p className="text-xs" style={{ color: 'var(--c-50)' }}>
               {clienteDalLabel ? `Cliente dal ${clienteDalLabel} · ` : ''}{totSessioni} sessioni totali
             </p>
           </div>
@@ -120,7 +120,7 @@ export default function AnalyticsHeader({
         <button
           onClick={() => setShowReport(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.65 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-65)', border: '1px solid var(--c-w8)' }}>
           <FontAwesomeIcon icon={faPrint} />
           <span className="hidden sm:inline">Stampa report</span>
         </button>
@@ -131,8 +131,8 @@ export default function AnalyticsHeader({
           <button key={p.value} onClick={() => setPeriodo(p.value)}
             className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
             style={{
-              background: periodo === p.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-              color: periodo === p.value ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+              background: periodo === p.value ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+              color: periodo === p.value ? 'var(--c-11)' : 'var(--c-55)',
             }}>
             {p.label}
           </button>
@@ -172,9 +172,9 @@ export default function AnalyticsHeader({
           },
         ].map(stat => (
           <div key={stat.label} className="rounded-2xl p-4 space-y-2"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
               <FontAwesomeIcon icon={stat.icon} style={{ color: stat.color, fontSize: 14 }} />
             </div>
             <p className="text-3xl font-black" style={{ color: stat.color }}>{stat.val}</p>
@@ -190,9 +190,9 @@ export default function AnalyticsHeader({
       </div>
 
       <div className="rounded-2xl p-4"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <p className="text-xs font-semibold uppercase tracking-widest mb-3"
-          style={{ color: 'oklch(0.45 0 0)' }}>
+          style={{ color: 'var(--c-45)' }}>
           Schede assegnate
         </p>
         <div className="flex flex-wrap gap-2">
@@ -200,16 +200,16 @@ export default function AnalyticsHeader({
             <span key={a.id}
               className="text-xs px-3 py-1.5 rounded-full font-medium"
               style={{
-                background: a.attiva ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
-                color: a.attiva ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
-                border: a.attiva ? '1px solid oklch(0.70 0.19 46 / 30%)' : '1px solid oklch(1 0 0 / 8%)',
+                background: a.attiva ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+                color: a.attiva ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
+                border: a.attiva ? '1px solid oklch(0.70 0.19 46 / 30%)' : '1px solid var(--c-w8)',
               }}>
               {a.schede?.nome ?? 'Scheda'}
               {a.attiva && ' · attiva'}
             </span>
           ))}
           {assegnazioni.length === 0 && (
-            <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda assegnata</span>
+            <span className="text-xs" style={{ color: 'var(--c-45)' }}>Nessuna scheda assegnata</span>
           )}
         </div>
       </div>

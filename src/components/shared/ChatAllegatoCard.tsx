@@ -57,7 +57,7 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
       <Link href={href}
         className="flex flex-col gap-1.5 rounded-xl px-3 py-2.5 mt-1 transition-all hover:opacity-80"
         style={{
-          background: 'oklch(0.16 0 0)',
+          background: 'var(--c-16)',
           border: '1px solid oklch(0.70 0.19 46 / 30%)',
           textDecoration: 'none',
           minWidth: 200,
@@ -73,12 +73,12 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
           </p>
         </div>
         {metadata.esercizio_nome && (
-          <p className="text-sm font-bold" style={{ color: 'oklch(0.90 0 0)' }}>
+          <p className="text-sm font-bold" style={{ color: 'var(--c-90)' }}>
             {metadata.esercizio_nome}
           </p>
         )}
         {metadata.testo_nota && (
-          <p className="text-xs leading-snug" style={{ color: 'oklch(0.62 0 0)' }}>
+          <p className="text-xs leading-snug" style={{ color: 'var(--c-62)' }}>
             {metadata.testo_nota.length > 100 ? metadata.testo_nota.slice(0, 100) + '…' : metadata.testo_nota}
           </p>
         )}
@@ -93,7 +93,7 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
     <Link href={href}
       className="flex items-center gap-3 rounded-xl px-3 py-2.5 mt-1 transition-all hover:opacity-80"
       style={{
-        background: 'oklch(0.16 0 0)',
+        background: 'var(--c-16)',
         border: `1px solid ${accent}40`,
         display: 'flex',
         textDecoration: 'none',
@@ -110,19 +110,19 @@ export default function ChatAllegatoCard({ metadata, daCoach, ruolo, clienteId }
         </p>
         {isScheda ? (
           <>
-            <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-90)' }}>
               {metadata.nome ?? 'Scheda'}
             </p>
             {metadata.giorni && (
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{metadata.giorni} giorni</p>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>{metadata.giorni} giorni</p>
             )}
           </>
         ) : (
           <>
-            <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-90)' }}>
               {metadata.giorno_nome ?? 'Allenamento'}
             </p>
-            <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+            <p className="text-xs" style={{ color: 'var(--c-50)' }}>
               {metadata.data && new Date(metadata.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
               {metadata.durata_secondi ? ` · ${formatDurata(metadata.durata_secondi)}` : ''}
               {metadata.completata !== undefined ? ` · ${metadata.completata ? '✓ completata' : 'incompleta'}` : ''}

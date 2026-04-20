@@ -108,17 +108,17 @@ export default function PatternBenessere({ clienteId }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-        <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Pattern benessere</h2>
-        <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>Ultimi 90 giorni</p>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+        <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Pattern benessere</h2>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>Ultimi 90 giorni</p>
       </div>
 
       <div className="p-5">
         {loading ? (
           <BynariLoader file="blue" size={80} />
         ) : !dati ? (
-          <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-sm text-center py-8" style={{ color: 'var(--c-45)' }}>
             Nessun check-in disponibile
           </p>
         ) : (
@@ -144,7 +144,7 @@ export default function PatternBenessere({ clienteId }: Props) {
                     : '—',
                   sub: 'energia con stress alto',
                   color: dati.correlStressVolume !== null && dati.correlStressVolume < -15
-                    ? 'oklch(0.75 0.15 27)' : 'oklch(0.60 0 0)',
+                    ? 'oklch(0.75 0.15 27)' : 'var(--c-60)',
                 },
                 {
                   label: 'Check-in compilati',
@@ -154,16 +154,16 @@ export default function PatternBenessere({ clienteId }: Props) {
                 },
               ].map(k => (
                 <div key={k.label} className="rounded-xl p-3"
-                  style={{ background: 'oklch(0.22 0 0)' }}>
-                  <p className="text-xs mb-1" style={{ color: 'oklch(0.50 0 0)' }}>{k.label}</p>
+                  style={{ background: 'var(--c-22)' }}>
+                  <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>{k.label}</p>
                   <p className="text-xl font-black" style={{ color: k.color }}>{k.val}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{k.sub}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{k.sub}</p>
                 </div>
               ))}
             </div>
 
             <p className="text-xs font-semibold uppercase tracking-widest mb-3"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: 'var(--c-45)' }}>
               Energia media per giorno della settimana
             </p>
             <div className="flex gap-2 items-end mb-5" style={{ height: 60 }}>
@@ -178,7 +178,7 @@ export default function PatternBenessere({ clienteId }: Props) {
                           ? 'oklch(0.75 0.15 27 / 60%)'
                           : 'oklch(0.70 0.19 46 / 50%)',
                     }} />
-                  <span className="text-xs" style={{ color: 'oklch(0.45 0 0)', fontSize: 10 }}>
+                  <span className="text-xs" style={{ color: 'var(--c-45)', fontSize: 10 }}>
                     {GIORNI_SETTIMANA[i]}
                   </span>
                 </div>
@@ -186,15 +186,15 @@ export default function PatternBenessere({ clienteId }: Props) {
             </div>
 
             <p className="text-xs font-semibold uppercase tracking-widest mb-3"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: 'var(--c-45)' }}>
               Storico check-in
             </p>
             <div className="space-y-2">
               {checkinVisibili.map((c, i) => (
                 <div key={i} className="rounded-xl px-4 py-3"
-                  style={{ background: 'oklch(0.22 0 0)' }}>
+                  style={{ background: 'var(--c-22)' }}>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold" style={{ color: 'oklch(0.75 0 0)' }}>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--c-75)' }}>
                       {new Date(c.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                     </p>
                     <div className="flex gap-3">
@@ -205,14 +205,14 @@ export default function PatternBenessere({ clienteId }: Props) {
                         { label: 'M', val: c.motivazione, warn: c.motivazione <= 2 },
                       ].map(item => (
                         <span key={item.label} className="text-xs font-bold"
-                          style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.60 0 0)' }}>
+                          style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'var(--c-60)' }}>
                           {item.label} {item.val}
                         </span>
                       ))}
                     </div>
                   </div>
                   {c.note && (
-                    <p className="text-xs italic" style={{ color: 'oklch(0.50 0 0)' }}>
+                    <p className="text-xs italic" style={{ color: 'var(--c-50)' }}>
                       "{c.note}"
                     </p>
                   )}
@@ -223,7 +223,7 @@ export default function PatternBenessere({ clienteId }: Props) {
             {!showAll && (dati.checkins.length > 7) && (
               <button onClick={() => setShowAll(true)}
                 className="mt-3 w-full py-2.5 rounded-xl text-xs font-semibold"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-55)', border: '1px solid var(--c-w8)' }}>
                 Mostra tutti i check-in ({dati.checkins.length - 7} altri)
               </button>
             )}

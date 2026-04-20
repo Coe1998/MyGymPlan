@@ -78,10 +78,10 @@ export default async function AtletaDashboard() {
         <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
           {saluto} <FontAwesomeIcon icon={faHand} />
         </p>
-        <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+        <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
           {profile.full_name}
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+        <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
@@ -100,9 +100,9 @@ export default async function AtletaDashboard() {
           { label: 'Questa settimana', value: sessioniSettimana ?? 0, icon: faCalendarDays, color: 'oklch(0.60 0.15 200)' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl p-6 space-y-3"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
+              <p className="text-sm" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
               <FontAwesomeIcon icon={stat.icon} style={{ color: stat.color }} />
             </div>
             <p className="text-5xl font-black" style={{ color: stat.color }}>{stat.value}</p>
@@ -112,10 +112,10 @@ export default async function AtletaDashboard() {
 
       {/* Scheda attiva / Allenamento rapido */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="px-6 py-4 flex items-center justify-between"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Allenati ora</h2>
+          style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Allenati ora</h2>
           <Link href="/atleta/schede"
             className="text-sm font-medium" style={{ color: 'oklch(0.70 0.19 46)' }}>
             Gestisci schede →
@@ -125,17 +125,17 @@ export default async function AtletaDashboard() {
         {!schedaAttiva ? (
           <div className="py-16 text-center space-y-3">
             <p className="text-5xl"><FontAwesomeIcon icon={faClipboardList} /></p>
-            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda attiva</p>
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Crea la tua prima scheda per iniziare</p>
+            <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessuna scheda attiva</p>
+            <p className="text-sm" style={{ color: 'var(--c-45)' }}>Crea la tua prima scheda per iniziare</p>
             <Link href="/atleta/schede"
               className="inline-block mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               Crea scheda
             </Link>
           </div>
         ) : (
           <div className="p-6 space-y-4">
-            <h3 className="text-xl font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+            <h3 className="text-xl font-bold" style={{ color: 'var(--c-97)' }}>
               {schedaAttiva.nome}
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -145,12 +145,12 @@ export default async function AtletaDashboard() {
                   <Link key={giorno.id}
                     href={`/atleta/allenamento?giorno=${giorno.id}&assegnazione=${assegnazioneAttiva!.id}`}
                     className="p-4 rounded-xl transition-all hover:opacity-80 active:scale-95"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)' }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold mb-2"
                       style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
                       {giorno.ordine + 1}
                     </div>
-                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--c-97)' }}>
                       {giorno.nome}
                     </p>
                     <p className="text-xs mt-1" style={{ color: 'oklch(0.70 0.19 46)' }}>Inizia →</p>
@@ -163,9 +163,9 @@ export default async function AtletaDashboard() {
 
       {/* Ultime sessioni */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-        <div className="px-6 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Ultimi allenamenti</h2>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+        <div className="px-6 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Ultimi allenamenti</h2>
         </div>
 
         <UltimeSessioniList sessioni={(ultimeSessioni as any) ?? []} />

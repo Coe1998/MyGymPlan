@@ -245,7 +245,7 @@ export default function CoachCheckinPage() {
     return (
       <div key={s.id}
         className="flex items-center gap-3 px-5 py-3 transition-all cursor-pointer hover:bg-white/3"
-        style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}
+        style={{ borderBottom: '1px solid var(--c-w4)' }}
         onClick={() => setDrawerCliente(s)}>
         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
           style={{ background: completato ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.70 0.19 46 / 15%)', color: completato ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)' }}>
@@ -253,7 +253,7 @@ export default function CoachCheckinPage() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.90 0 0)' }}>
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-90)' }}>
               {s.profiles?.full_name ?? 'Cliente'}
             </p>
             {nonVisto && (
@@ -263,10 +263,10 @@ export default function CoachCheckinPage() {
               </span>
             )}
             {s.ricorsivo && (
-              <FontAwesomeIcon icon={faRotate} className="text-xs" style={{ color: 'oklch(0.45 0 0)' }} />
+              <FontAwesomeIcon icon={faRotate} className="text-xs" style={{ color: 'var(--c-45)' }} />
             )}
           </div>
-          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
             {s.progress_check_set?.titolo ?? 'Nessun set'}
             {showDate && ` · ${formatData(s.data)}`}
           </p>
@@ -281,7 +281,7 @@ export default function CoachCheckinPage() {
             style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.70 0.15 27)' }}>
             <FontAwesomeIcon icon={faTrash} className="text-xs" />
           </button>
-          <FontAwesomeIcon icon={faChevronRight} className="text-xs" style={{ color: 'oklch(0.35 0 0)' }} />
+          <FontAwesomeIcon icon={faChevronRight} className="text-xs" style={{ color: 'var(--c-35)' }} />
         </div>
       </div>
     )
@@ -290,15 +290,15 @@ export default function CoachCheckinPage() {
   const AccordionHeader = ({ label, count, completati, open, onToggle, color = 'oklch(0.70 0.19 46)' }: any) => (
     <button onClick={onToggle}
       className="w-full flex items-center justify-between px-5 py-4 transition-all hover:bg-white/2"
-      style={{ borderBottom: open && count > 0 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+      style={{ borderBottom: open && count > 0 ? '1px solid var(--c-w6)' : 'none' }}>
       <div className="flex items-center gap-3">
-        <span className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{label}</span>
+        <span className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>{label}</span>
         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
           style={{ background: `${color}20`, color }}>
           {completati}/{count}
         </span>
       </div>
-      <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="text-xs" style={{ color: 'oklch(0.45 0 0)' }} />
+      <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="text-xs" style={{ color: 'var(--c-45)' }} />
     </button>
   )
 
@@ -310,29 +310,29 @@ export default function CoachCheckinPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
             Check-in
           </h1>
-          <p className="mt-0.5 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--c-50)' }}>
             Gestisci i progress check-in dei tuoi clienti
           </p>
         </div>
         <button onClick={() => { setTab('pianifica') }}
           className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
           + Nuovo
         </button>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         {([['panoramica', 'Panoramica'], ['set', 'Set domande'], ['pianifica', 'Pianifica']] as [Tab, string][]).map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className="flex-1 py-2 rounded-lg text-sm font-semibold transition-all"
             style={{
               background: tab === key ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === key ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+              color: tab === key ? 'var(--c-13)' : 'var(--c-50)',
             }}>
             {label}
           </button>
@@ -348,12 +348,12 @@ export default function CoachCheckinPage() {
 
               {schedulazioni.length === 0 ? (
                 <div className="rounded-2xl py-16 text-center space-y-3"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <div className="text-4xl"><FontAwesomeIcon icon={faCircleCheck} style={{ color: 'oklch(0.35 0 0)' }} /></div>
-                  <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun check-in programmato</p>
+                  style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                  <div className="text-4xl"><FontAwesomeIcon icon={faCircleCheck} style={{ color: 'var(--c-35)' }} /></div>
+                  <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun check-in programmato</p>
                   <button onClick={() => setTab('pianifica')}
                     className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
                     + Pianifica il primo
                   </button>
                 </div>
@@ -361,7 +361,7 @@ export default function CoachCheckinPage() {
                 <>
                   {/* OGGI */}
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
                     <AccordionHeader
                       label="Oggi"
                       count={schedOggi.length}
@@ -371,7 +371,7 @@ export default function CoachCheckinPage() {
                     />
                     {oggiOpen && schedOggi.length === 0 && (
                       <div className="px-5 py-4">
-                        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun check-in per oggi</p>
+                        <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun check-in per oggi</p>
                       </div>
                     )}
                     {oggiOpen && schedOggi.map(s => (
@@ -381,7 +381,7 @@ export default function CoachCheckinPage() {
 
                   {/* DOMANI */}
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     <AccordionHeader
                       label="Domani"
                       count={schedDomani.length}
@@ -392,7 +392,7 @@ export default function CoachCheckinPage() {
                     />
                     {domaniOpen && schedDomani.length === 0 && (
                       <div className="px-5 py-4">
-                        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun check-in per domani</p>
+                        <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun check-in per domani</p>
                       </div>
                     )}
                     {domaniOpen && schedDomani.map(s => (
@@ -402,18 +402,18 @@ export default function CoachCheckinPage() {
 
                   {/* PROSSIMI 90GG */}
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     <AccordionHeader
                       label="Prossimi 90 giorni"
                       count={schedFuturo.length}
                       completati={0}
                       open={futuroOpen}
                       onToggle={() => setFuturoOpen(p => !p)}
-                      color="oklch(0.55 0 0)"
+                      color="var(--c-55)"
                     />
                     {futuroOpen && schedFuturo.length === 0 && (
                       <div className="px-5 py-4">
-                        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun check-in nei prossimi 90 giorni</p>
+                        <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun check-in nei prossimi 90 giorni</p>
                       </div>
                     )}
                     {futuroOpen && schedFuturo.map(s => (
@@ -429,10 +429,10 @@ export default function CoachCheckinPage() {
           {tab === 'set' && (
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden"
-                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                 <div className="px-5 py-4 flex items-center justify-between"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>I tuoi set</h2>
+                  style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                  <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>I tuoi set</h2>
                   <button onClick={openNewSet}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold"
                     style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
@@ -442,26 +442,26 @@ export default function CoachCheckinPage() {
 
                 {sets.length === 0 ? (
                   <div className="py-12 text-center space-y-3">
-                    <div className="text-4xl"><FontAwesomeIcon icon={faClipboardList} style={{ color: 'oklch(0.35 0 0)' }} /></div>
-                    <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun set ancora</p>
-                    <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Crea un set di domande da assegnare ai clienti</p>
+                    <div className="text-4xl"><FontAwesomeIcon icon={faClipboardList} style={{ color: 'var(--c-35)' }} /></div>
+                    <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun set ancora</p>
+                    <p className="text-sm" style={{ color: 'var(--c-45)' }}>Crea un set di domande da assegnare ai clienti</p>
                     <button onClick={openNewSet}
                       className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+                      style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
                       + Crea set
                     </button>
                   </div>
                 ) : (
                   sets.map((s, i) => (
                     <div key={s.id} className="flex items-center gap-3 px-5 py-4 group"
-                      style={{ borderBottom: i < sets.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      style={{ borderBottom: i < sets.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.70 0.19 46)' }}>
                         <FontAwesomeIcon icon={faClipboardList} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{s.titolo}</p>
-                        <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                        <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{s.titolo}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                           {s.progress_check_domande.length} domande
                           {s.descrizione && ` · ${s.descrizione}`}
                         </p>
@@ -488,10 +488,10 @@ export default function CoachCheckinPage() {
           {/* ── TAB PIANIFICA ── */}
           {tab === 'pianifica' && (
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Pianifica check-in</h2>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Pianifica check-in</h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   Assegna un check-in a un cliente con data e set di domande
                 </p>
               </div>
@@ -499,12 +499,12 @@ export default function CoachCheckinPage() {
 
                 {/* Cliente */}
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'oklch(0.55 0 0)' }}>
+                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'var(--c-55)' }}>
                     Cliente *
                   </label>
                   <select value={pianClienteId} onChange={e => setPianClienteId(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl text-sm"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.85 0 0)' }}>
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-85)' }}>
                     <option value="">Seleziona cliente...</option>
                     {clienti.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
                   </select>
@@ -512,12 +512,12 @@ export default function CoachCheckinPage() {
 
                 {/* Set domande */}
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'oklch(0.55 0 0)' }}>
+                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'var(--c-55)' }}>
                     Set di domande
                   </label>
                   <select value={pianSetId} onChange={e => setPianSetId(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl text-sm"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.85 0 0)' }}>
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-85)' }}>
                     <option value="">Nessun set (solo foto)</option>
                     {sets.map(s => <option key={s.id} value={s.id}>{s.titolo} ({s.progress_check_domande.length} domande)</option>)}
                   </select>
@@ -525,28 +525,28 @@ export default function CoachCheckinPage() {
 
                 {/* Data */}
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'oklch(0.55 0 0)' }}>
+                  <label className="text-xs font-semibold uppercase tracking-wide mb-1.5 block" style={{ color: 'var(--c-55)' }}>
                     Data *
                   </label>
                   <input type="date" value={pianData} onChange={e => setPianData(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full px-3 py-2.5 rounded-xl text-sm"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.85 0 0)' }} />
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-85)' }} />
                 </div>
 
                 {/* Toggles */}
-                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid oklch(1 0 0 / 8%)' }}>
+                <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-w8)' }}>
 
                   {/* Ricorsivo */}
                   <div className="flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ borderBottom: '1px solid var(--c-w6)' }}>
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>Ricorsivo</p>
-                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Si ripete automaticamente</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>Ricorsivo</p>
+                      <p className="text-xs" style={{ color: 'var(--c-45)' }}>Si ripete automaticamente</p>
                     </div>
                     <button onClick={() => setPianRicorsivo(p => !p)}
                       className="w-12 h-6 rounded-full transition-all relative"
-                      style={{ background: pianRicorsivo ? 'oklch(0.70 0.19 46)' : 'oklch(0.30 0 0)' }}>
+                      style={{ background: pianRicorsivo ? 'oklch(0.70 0.19 46)' : 'var(--c-30)' }}>
                       <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
                         style={{ left: pianRicorsivo ? '26px' : '2px' }} />
                     </button>
@@ -555,15 +555,15 @@ export default function CoachCheckinPage() {
                   {/* Tipo ricorrenza */}
                   {pianRicorsivo && (
                     <div className="flex items-center justify-between px-4 py-3"
-                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>Frequenza</p>
+                      style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>Frequenza</p>
                       <div className="flex gap-2">
                         {(['mensile', 'settimanale'] as const).map(t => (
                           <button key={t} onClick={() => setPianTipoRic(t)}
                             className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
                             style={{
-                              background: pianTipoRic === t ? 'oklch(0.70 0.19 46)' : 'oklch(0.25 0 0)',
-                              color: pianTipoRic === t ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                              background: pianTipoRic === t ? 'oklch(0.70 0.19 46)' : 'var(--c-25)',
+                              color: pianTipoRic === t ? 'var(--c-13)' : 'var(--c-55)',
                             }}>
                             {t.charAt(0).toUpperCase() + t.slice(1)}
                           </button>
@@ -575,12 +575,12 @@ export default function CoachCheckinPage() {
                   {/* Richiedi foto */}
                   <div className="flex items-center justify-between px-4 py-3">
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>Richiedi foto progress</p>
-                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Il cliente vedrà la sezione foto</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>Richiedi foto progress</p>
+                      <p className="text-xs" style={{ color: 'var(--c-45)' }}>Il cliente vedrà la sezione foto</p>
                     </div>
                     <button onClick={() => setPianFoto(p => !p)}
                       className="w-12 h-6 rounded-full transition-all relative"
-                      style={{ background: pianFoto ? 'oklch(0.70 0.19 46)' : 'oklch(0.30 0 0)' }}>
+                      style={{ background: pianFoto ? 'oklch(0.70 0.19 46)' : 'var(--c-30)' }}>
                       <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
                         style={{ left: pianFoto ? '26px' : '2px' }} />
                     </button>
@@ -601,8 +601,8 @@ export default function CoachCheckinPage() {
                 <button onClick={savePianifica} disabled={savingPian || !pianClienteId || !pianData}
                   className="w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
                   style={{
-                    background: (!pianClienteId || !pianData) ? 'oklch(0.25 0 0)' : 'oklch(0.70 0.19 46)',
-                    color: (!pianClienteId || !pianData) ? 'oklch(0.45 0 0)' : 'oklch(0.13 0 0)',
+                    background: (!pianClienteId || !pianData) ? 'var(--c-25)' : 'oklch(0.70 0.19 46)',
+                    color: (!pianClienteId || !pianData) ? 'var(--c-45)' : 'var(--c-13)',
                   }}>
                   {savingPian ? 'Salvataggio...' : '✓ Pianifica check-in'}
                 </button>
@@ -618,22 +618,22 @@ export default function CoachCheckinPage() {
           style={{ background: 'oklch(0 0 0 / 65%)' }}
           onClick={() => setDrawerCliente(null)}>
           <div className="w-full max-w-md h-full overflow-y-auto flex flex-col"
-            style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+            style={{ background: 'var(--c-13)', borderLeft: '1px solid var(--c-w8)' }}
             onClick={e => e.stopPropagation()}>
 
             {/* Header drawer */}
             <div className="sticky top-0 z-10 flex items-center gap-3 px-5 py-4"
-              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+              style={{ background: 'var(--c-13)', borderBottom: '1px solid var(--c-w8)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
               <button onClick={() => setDrawerCliente(null)}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
                 <FontAwesomeIcon icon={faXmark} />
               </button>
               <div className="flex-1 min-w-0">
-                <p className="font-black text-base truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                <p className="font-black text-base truncate" style={{ color: 'var(--c-97)' }}>
                   {drawerCliente.profiles?.full_name ?? 'Cliente'}
                 </p>
-                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                   {formatData(drawerCliente.data)} · {drawerCliente.progress_check_set?.titolo ?? 'Nessun set'}
                 </p>
               </div>
@@ -651,7 +651,7 @@ export default function CoachCheckinPage() {
                   }
                 </p>
                 {drawerCliente.ricorsivo && (
-                  <p className="text-xs mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
+                  <p className="text-xs mt-1" style={{ color: 'var(--c-50)' }}>
                     <FontAwesomeIcon icon={faRotate} className="mr-1" />
                     Ricorsivo {drawerCliente.tipo_ricorrenza}
                   </p>
@@ -661,7 +661,7 @@ export default function CoachCheckinPage() {
               {/* Risposte */}
               {drawerCliente.progress_check_risposte?.length > 0 && drawerCliente.progress_check_set && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'oklch(0.45 0 0)' }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--c-45)' }}>
                     Risposte
                   </p>
                   <div className="space-y-3">
@@ -671,14 +671,14 @@ export default function CoachCheckinPage() {
                         const risposta = (drawerCliente.progress_check_risposte[0] as any)?.risposte?.[d.id]
                         return (
                           <div key={d.id} className="rounded-xl p-3"
-                            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                            <p className="text-xs mb-1.5" style={{ color: 'oklch(0.50 0 0)' }}>{d.testo}</p>
+                            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                            <p className="text-xs mb-1.5" style={{ color: 'var(--c-50)' }}>{d.testo}</p>
                             {risposta !== undefined ? (
-                              <p className="text-sm font-bold" style={{ color: 'oklch(0.90 0 0)' }}>
+                              <p className="text-sm font-bold" style={{ color: 'var(--c-90)' }}>
                                 {d.tipo === 'scala' ? `${risposta}/5` : risposta}
                               </p>
                             ) : (
-                              <p className="text-sm" style={{ color: 'oklch(0.35 0 0)' }}>—</p>
+                              <p className="text-sm" style={{ color: 'var(--c-35)' }}>—</p>
                             )}
                           </div>
                         )
@@ -690,7 +690,7 @@ export default function CoachCheckinPage() {
 
               {/* Timeline storico */}
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--c-45)' }}>
                   Storico
                 </p>
                 <TimelineStorico clienteId={drawerCliente.cliente_id} supabase={supabase} />
@@ -706,17 +706,17 @@ export default function CoachCheckinPage() {
           style={{ background: 'oklch(0 0 0 / 70%)' }}
           onClick={() => setShowSetForm(false)}>
           <div className="w-full max-w-lg rounded-3xl overflow-hidden max-h-[85vh] flex flex-col"
-            style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}
+            style={{ background: 'var(--c-16)', border: '1px solid var(--c-w10)' }}
             onClick={e => e.stopPropagation()}>
 
             <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-              <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>
+              style={{ borderBottom: '1px solid var(--c-w8)' }}>
+              <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>
                 {editingSet ? 'Modifica set' : 'Nuovo set domande'}
               </p>
               <button onClick={() => setShowSetForm(false)}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                 <FontAwesomeIcon icon={faXmark} className="text-xs" />
               </button>
             </div>
@@ -727,19 +727,19 @@ export default function CoachCheckinPage() {
                 value={setTitolo}
                 onChange={e => setSetTitolo(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)' }}
               />
               <input
                 placeholder="Descrizione (opzionale)"
                 value={setDesc}
                 onChange={e => setSetDesc(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-sm"
-                style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.90 0 0)' }}
+                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-90)' }}
               />
 
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.45 0 0)' }}>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-45)' }}>
                     Domande ({domande.length})
                   </p>
                   <button onClick={addDomanda}
@@ -752,13 +752,13 @@ export default function CoachCheckinPage() {
                   {domande.map((d, i) => (
                     <div key={i} className="flex gap-2 items-start">
                       <div className="flex-1 rounded-xl overflow-hidden"
-                        style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        style={{ background: 'var(--c-20)', border: '1px solid var(--c-w8)' }}>
                         <input
                           placeholder={`Domanda ${i + 1}`}
                           value={d.testo}
                           onChange={e => updateDomanda(i, 'testo', e.target.value)}
                           className="w-full px-3 py-2.5 text-sm bg-transparent"
-                          style={{ color: 'oklch(0.90 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}
+                          style={{ color: 'var(--c-90)', borderBottom: '1px solid var(--c-w6)' }}
                         />
                         <div className="flex gap-1 p-2">
                           {(['scala', 'numero', 'testo', 'foto'] as TipoQ[]).map(t => (
@@ -766,7 +766,7 @@ export default function CoachCheckinPage() {
                               className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all"
                               style={{
                                 background: d.tipo === t ? 'oklch(0.70 0.19 46 / 20%)' : 'transparent',
-                                color: d.tipo === t ? 'oklch(0.70 0.19 46)' : 'oklch(0.40 0 0)',
+                                color: d.tipo === t ? 'oklch(0.70 0.19 46)' : 'var(--c-40)',
                               }}>
                               <FontAwesomeIcon icon={TIPO_ICONS[t]} />
                               <span className="hidden sm:inline">{TIPO_LABELS[t]}</span>
@@ -785,12 +785,12 @@ export default function CoachCheckinPage() {
               </div>
             </div>
 
-            <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+            <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid var(--c-w8)' }}>
               <button onClick={saveSet} disabled={savingSet || !setTitolo.trim()}
                 className="w-full py-3 rounded-xl text-sm font-bold"
                 style={{
-                  background: !setTitolo.trim() ? 'oklch(0.25 0 0)' : 'oklch(0.70 0.19 46)',
-                  color: !setTitolo.trim() ? 'oklch(0.45 0 0)' : 'oklch(0.13 0 0)',
+                  background: !setTitolo.trim() ? 'var(--c-25)' : 'oklch(0.70 0.19 46)',
+                  color: !setTitolo.trim() ? 'var(--c-45)' : 'var(--c-13)',
                 }}>
                 {savingSet ? 'Salvataggio...' : editingSet ? '✓ Salva modifiche' : '✓ Crea set'}
               </button>
@@ -824,31 +824,31 @@ function TimelineStorico({ clienteId, supabase }: { clienteId: string; supabase:
 
   if (loading) return <BynariLoader file="blue" size={40} />
   if (storico.length === 0) return (
-    <p className="text-sm" style={{ color: 'oklch(0.35 0 0)' }}>Nessuno storico disponibile</p>
+    <p className="text-sm" style={{ color: 'var(--c-35)' }}>Nessuno storico disponibile</p>
   )
 
   return (
     <div className="relative">
       {/* Linea verticale */}
-      <div className="absolute left-3.5 top-4 bottom-4 w-px" style={{ background: 'oklch(1 0 0 / 8%)' }} />
+      <div className="absolute left-3.5 top-4 bottom-4 w-px" style={{ background: 'var(--c-w8)' }} />
       <div className="space-y-3">
         {storico.map((s, i) => {
           const completato = s.progress_check_risposte?.length > 0
           return (
             <div key={s.id} className="flex items-center gap-3 relative">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10"
-                style={{ background: completato ? 'oklch(0.65 0.18 150 / 20%)' : 'oklch(0.25 0 0)', border: `1px solid ${completato ? 'oklch(0.65 0.18 150 / 40%)' : 'oklch(1 0 0 / 10%)'}` }}>
+                style={{ background: completato ? 'oklch(0.65 0.18 150 / 20%)' : 'var(--c-25)', border: `1px solid ${completato ? 'oklch(0.65 0.18 150 / 40%)' : 'var(--c-w10)'}` }}>
                 <FontAwesomeIcon
                   icon={completato ? faCircleCheck : faCircle}
                   className="text-xs"
-                  style={{ color: completato ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}
+                  style={{ color: completato ? 'oklch(0.65 0.18 150)' : 'var(--c-30)' }}
                 />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-semibold" style={{ color: completato ? 'oklch(0.75 0 0)' : 'oklch(0.45 0 0)' }}>
+                <p className="text-xs font-semibold" style={{ color: completato ? 'var(--c-75)' : 'var(--c-45)' }}>
                   {new Date(s.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
-                <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+                <p className="text-xs" style={{ color: 'var(--c-40)' }}>
                   {completato ? `Inviato il ${new Date(s.progress_check_risposte[0].inviato_at).toLocaleDateString('it-IT')}` : 'Non compilato'}
                 </p>
               </div>

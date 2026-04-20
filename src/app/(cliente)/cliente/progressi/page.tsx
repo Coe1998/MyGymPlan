@@ -394,8 +394,8 @@ export default function ProgressiPage() {
   }).length
 
   const tooltipStyle = {
-    backgroundColor: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)',
-    borderRadius: '12px', color: 'oklch(0.97 0 0)', fontSize: '12px',
+    backgroundColor: 'var(--c-22)', border: '1px solid var(--c-w10)',
+    borderRadius: '12px', color: 'var(--c-97)', fontSize: '12px',
   }
 
   const frequenzaSettimanale = () => {
@@ -422,8 +422,8 @@ export default function ProgressiPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Progressi</h1>
-        <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Il tuo percorso di miglioramento</p>
+        <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Progressi</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>Il tuo percorso di miglioramento</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -433,9 +433,9 @@ export default function ProgressiPage() {
           { label: 'Check-in', value: checkins.length, icon: faCircleCheck, color: 'oklch(0.65 0.18 150)' },
         ].map((stat) => (
           <div key={stat.label} className="rounded-2xl p-4 space-y-2"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
               <FontAwesomeIcon icon={stat.icon} />
             </div>
             <p className="text-3xl font-black" style={{ color: stat.color }}>{stat.value}</p>
@@ -443,13 +443,13 @@ export default function ProgressiPage() {
         ))}
       </div>
 
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
+      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: tab === t.id ? 'oklch(0.60 0.15 200)' : 'transparent',
-              color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
             }}>
             <FontAwesomeIcon icon={t.icon} />
             <span className="hidden sm:inline">{t.label}</span>
@@ -463,11 +463,11 @@ export default function ProgressiPage() {
 
           {/* ── Riepilogo settimanale ── */}
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
 
             {/* Header con frecce navigazione */}
             <div className="px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ borderBottom: '1px solid var(--c-w6)' }}>
               <div className="flex items-center gap-2">
                 {/* ← solo se siamo sulla settimana corrente (per andare alla precedente) */}
                 <button
@@ -475,8 +475,8 @@ export default function ProgressiPage() {
                   disabled={weekOffset === -1}
                   className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
                   style={{
-                    background: weekOffset === -1 ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    color: weekOffset === -1 ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                    background: weekOffset === -1 ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                    color: weekOffset === -1 ? 'var(--c-13)' : 'var(--c-55)',
                     opacity: weekOffset === -1 ? 1 : 0.6,
                   }}>
                   <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
@@ -486,14 +486,14 @@ export default function ProgressiPage() {
                     style={{ color: 'oklch(0.70 0.19 46)' }}>
                     {weekOffset === 0 ? 'Questa settimana' : 'Settimana scorsa'}
                   </p>
-                  <p className="font-black text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{weekLabel}</p>
+                  <p className="font-black text-sm" style={{ color: 'var(--c-97)' }}>{weekLabel}</p>
                 </div>
                 {/* → torna alla corrente */}
                 {weekOffset === -1 && (
                   <button
                     onClick={() => { setWeekOffset(0); setShowWeekShare(false) }}
                     className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                     <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
                   </button>
                 )}
@@ -503,7 +503,7 @@ export default function ProgressiPage() {
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                 style={{
                   background: showWeekShare ? 'oklch(0.70 0.19 46)' : 'oklch(0.70 0.19 46 / 15%)',
-                  color: showWeekShare ? 'oklch(0.13 0 0)' : 'oklch(0.70 0.19 46)',
+                  color: showWeekShare ? 'var(--c-13)' : 'oklch(0.70 0.19 46)',
                 }}>
                 <FontAwesomeIcon icon={faShareNodes} />
                 {showWeekShare ? 'Chiudi' : 'Condividi'}
@@ -513,7 +513,7 @@ export default function ProgressiPage() {
             {/* Stats mini */}
             {!showWeekShare && (
               <div className="grid grid-cols-4 divide-x"
-                style={{ borderColor: 'oklch(1 0 0 / 6%)' }}>
+                style={{ borderColor: 'var(--c-w6)' }}>
                 {[
                   { label: 'Allenamenti', value: weekSessioni },
                   { label: 'Volume kg', value: weekVolume.toLocaleString('it-IT') },
@@ -521,8 +521,8 @@ export default function ProgressiPage() {
                   { label: 'Tempo', value: formatDurataShort(weekDurataSecondi) },
                 ].map(s => (
                   <div key={s.label} className="p-3 text-center">
-                    <p className="text-base font-black" style={{ color: 'oklch(0.97 0 0)' }}>{s.value}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</p>
+                    <p className="text-base font-black" style={{ color: 'var(--c-97)' }}>{s.value}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -542,17 +542,17 @@ export default function ProgressiPage() {
             )}
             {showWeekShare && weekSessioni === 0 && (
               <div className="p-6 text-center">
-                <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Nessun allenamento questa settimana.</p>
+                <p className="text-sm" style={{ color: 'var(--c-50)' }}>Nessun allenamento questa settimana.</p>
               </div>
             )}
 
             {/* Storico button */}
             {!showWeekShare && storicoSettimane.length > 2 && (
-              <div className="px-5 py-3" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
+              <div className="px-5 py-3" style={{ borderTop: '1px solid var(--c-w6)' }}>
                 <button
                   onClick={() => setShowStorico(true)}
                   className="w-full py-2.5 rounded-xl text-xs font-bold transition-all"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
                   Visualizza storico completo ({storicoSettimane.length} settimane) →
                 </button>
               </div>
@@ -565,19 +565,19 @@ export default function ProgressiPage() {
               style={{ background: 'oklch(0 0 0 / 75%)' }}
               onClick={() => { setShowStorico(false); setStoricoShareIdx(null) }}>
               <div className="w-full max-w-lg rounded-3xl overflow-hidden"
-                style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+                style={{ background: 'var(--c-16)', border: '1px solid var(--c-w8)', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
                 onClick={e => e.stopPropagation()}>
 
                 {/* Modal header */}
                 <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ borderBottom: '1px solid var(--c-w8)' }}>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>Storico</p>
-                    <h2 className="font-black" style={{ color: 'oklch(0.97 0 0)' }}>Tutti i riepiloghi</h2>
+                    <h2 className="font-black" style={{ color: 'var(--c-97)' }}>Tutti i riepiloghi</h2>
                   </div>
                   <button onClick={() => { setShowStorico(false); setStoricoShareIdx(null) }}
                     className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                    style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                     <FontAwesomeIcon icon={faXmark} />
                   </button>
                 </div>
@@ -587,21 +587,21 @@ export default function ProgressiPage() {
                   {storicoSettimane.map((w, i) => (
                     <div key={w.inizioISO}>
                       <div className="px-5 py-4"
-                        style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
+                        style={{ borderBottom: '1px solid var(--c-w5)' }}>
                         {/* Header settimana */}
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="text-xs font-bold" style={{ color: 'oklch(0.70 0.19 46)' }}>
                               {i === 0 ? 'Questa settimana' : i === 1 ? 'Settimana scorsa' : w.label}
                             </p>
-                            {i > 1 && <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>{w.label}</p>}
+                            {i > 1 && <p className="text-xs mt-0.5" style={{ color: 'var(--c-40)' }}>{w.label}</p>}
                           </div>
                           <button
                             onClick={() => setStoricoShareIdx(storicoShareIdx === i ? null : i)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
                             style={{
-                              background: storicoShareIdx === i ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                              color: storicoShareIdx === i ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                              background: storicoShareIdx === i ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                              color: storicoShareIdx === i ? 'var(--c-13)' : 'var(--c-55)',
                             }}>
                             <FontAwesomeIcon icon={faShareNodes} />
                             {storicoShareIdx === i ? 'Chiudi' : 'Share'}
@@ -618,9 +618,9 @@ export default function ProgressiPage() {
                               { label: 'Tempo', value: formatDurataShort(w.durataSecondi) },
                             ].map(s => (
                               <div key={s.label} className="rounded-xl p-2.5 text-center"
-                                style={{ background: 'oklch(0.20 0 0)' }}>
-                                <p className="text-sm font-black" style={{ color: 'oklch(0.97 0 0)' }}>{s.value}</p>
-                                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>{s.label}</p>
+                                style={{ background: 'var(--c-20)' }}>
+                                <p className="text-sm font-black" style={{ color: 'var(--c-97)' }}>{s.value}</p>
+                                <p className="text-xs mt-0.5" style={{ color: 'var(--c-42)' }}>{s.label}</p>
                               </div>
                             ))}
                           </div>
@@ -643,20 +643,20 @@ export default function ProgressiPage() {
 
                 {/* Drag handle */}
                 <div className="flex justify-center py-3 flex-shrink-0">
-                  <div className="w-10 h-1 rounded-full" style={{ background: 'oklch(0.28 0 0)' }} />
+                  <div className="w-10 h-1 rounded-full" style={{ background: 'var(--c-28)' }} />
                 </div>
               </div>
             </div>
           )}
           {sessioniCompletate > 0 && (
             <div className="rounded-2xl p-5 space-y-4"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Frequenza settimanale</h2>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Frequenza settimanale</h2>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={frequenzaSettimanale()} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
-                  <XAxis dataKey="settimana" tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--c-w5)" />
+                  <XAxis dataKey="settimana" tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
+                  <YAxis tick={{ fill: 'var(--c-50)', fontSize: 10 }} allowDecimals={false} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Bar dataKey="allenamenti" fill="oklch(0.60 0.15 200)" radius={[6, 6, 0, 0]} name="Allenamenti" />
                 </BarChart>
@@ -666,12 +666,12 @@ export default function ProgressiPage() {
 
           {esercizi.length > 0 && (
             <div className="rounded-2xl p-5 space-y-5"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Progressione</h2>
+                <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Progressione</h2>
                 <select value={selectedEsercizio} onChange={(e) => setSelectedEsercizio(e.target.value)}
                   className="px-3 py-2 rounded-xl text-sm outline-none"
-                  style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}>
+                  style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}>
                   {esercizi.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
                 </select>
               </div>
@@ -683,18 +683,18 @@ export default function ProgressiPage() {
                 <div className="h-40 flex items-center justify-center text-center">
                   <div>
                     <p className="text-2xl mb-2"><FontAwesomeIcon icon={faChartBar} /></p>
-                    <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Servono almeno 2 sessioni per il grafico</p>
+                    <p className="text-sm" style={{ color: 'var(--c-50)' }}>Servono almeno 2 sessioni per il grafico</p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-5">
                   <div>
-                    <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'oklch(0.45 0 0)' }}>Peso max (kg)</p>
+                    <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--c-45)' }}>Peso max (kg)</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <LineChart data={graficoDati} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
-                        <XAxis dataKey="data" tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
-                        <YAxis tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--c-w5)" />
+                        <XAxis dataKey="data" tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
+                        <YAxis tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
                         <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} kg`, 'Peso max']} />
                         <Line type="monotone" dataKey="peso_max" stroke="oklch(0.70 0.19 46)"
                           strokeWidth={2.5} dot={{ fill: 'oklch(0.70 0.19 46)', r: 4 }} activeDot={{ r: 6 }} />
@@ -702,12 +702,12 @@ export default function ProgressiPage() {
                     </ResponsiveContainer>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'oklch(0.45 0 0)' }}>Volume totale (kg×reps)</p>
+                    <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--c-45)' }}>Volume totale (kg×reps)</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <LineChart data={graficoDati} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
-                        <XAxis dataKey="data" tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
-                        <YAxis tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--c-w5)" />
+                        <XAxis dataKey="data" tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
+                        <YAxis tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
                         <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v}`, 'Volume']} />
                         <Line type="monotone" dataKey="volume" stroke="oklch(0.60 0.15 200)"
                           strokeWidth={2.5} dot={{ fill: 'oklch(0.60 0.15 200)', r: 4 }} activeDot={{ r: 6 }} />
@@ -721,10 +721,10 @@ export default function ProgressiPage() {
 
           {/* Storico cliccabile */}
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-              <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Storico allenamenti</h2>
+              style={{ borderBottom: '1px solid var(--c-w6)' }}>
+              <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Storico allenamenti</h2>
               <span className="text-xs px-3 py-1 rounded-full"
                 style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>
                 {sessioni.length}
@@ -733,36 +733,36 @@ export default function ProgressiPage() {
             {sessioni.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-4xl mb-2"><FontAwesomeIcon icon={faPersonRunning} /></p>
-                <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun allenamento ancora</p>
+                <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun allenamento ancora</p>
               </div>
             ) : (
               <div>
                 {sessioni.map((s, i) => (
                   <div key={s.id}
                     className="flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors hover:bg-white/2"
-                    style={{ borderBottom: i < sessioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
+                    style={{ borderBottom: i < sessioni.length - 1 ? '1px solid var(--c-w4)' : 'none' }}
                     onClick={() => router.push(`/cliente/allenamento?sessione=${s.id}`)}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-                      style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)' }}>
+                      style={{ background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)' }}>
                       {s.completata ? <FontAwesomeIcon icon={faCircleCheck} /> : <FontAwesomeIcon icon={faPause} />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                      <p className="font-semibold text-sm truncate" style={{ color: 'var(--c-97)' }}>
                         {(s as any).scheda_giorni?.nome ?? 'Allenamento'}
                       </p>
-                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                      <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                         {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs px-2 py-1 rounded-full"
                         style={{
-                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                          background: s.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)',
+                          color: s.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-45)',
                         }}>
                         {s.completata ? 'Fatto' : 'Parziale'}
                       </span>
-                      <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>→</span>
+                      <span className="text-xs" style={{ color: 'var(--c-40)' }}>→</span>
                     </div>
                   </div>
                 ))}
@@ -777,8 +777,8 @@ export default function ProgressiPage() {
         <div className="space-y-5">
           {misurazioni.length >= 2 && (
             <div className="rounded-2xl p-5 space-y-4"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Andamento peso</h2>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Andamento peso</h2>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart
                   data={[...misurazioni].reverse().map(m => ({
@@ -786,9 +786,9 @@ export default function ProgressiPage() {
                     peso: m.peso_kg,
                   }))}
                   margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 5%)" />
-                  <XAxis dataKey="data" tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'oklch(0.50 0 0)', fontSize: 10 }} domain={['auto', 'auto']} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--c-w5)" />
+                  <XAxis dataKey="data" tick={{ fill: 'var(--c-50)', fontSize: 10 }} />
+                  <YAxis tick={{ fill: 'var(--c-50)', fontSize: 10 }} domain={['auto', 'auto']} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v} kg`, 'Peso']} />
                   <Line type="monotone" dataKey="peso" stroke="oklch(0.65 0.15 300)"
                     strokeWidth={2.5} dot={{ fill: 'oklch(0.65 0.15 300)', r: 4 }} activeDot={{ r: 6 }} />
@@ -798,10 +798,10 @@ export default function ProgressiPage() {
           )}
 
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-              <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Storico misurazioni</h2>
+              style={{ borderBottom: '1px solid var(--c-w6)' }}>
+              <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Storico misurazioni</h2>
               <span className="text-xs px-3 py-1 rounded-full"
                 style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
                 {misurazioni.length}
@@ -810,13 +810,13 @@ export default function ProgressiPage() {
             {misurazioni.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-4xl mb-2"><FontAwesomeIcon icon={faScaleBalanced} /></p>
-                <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna misurazione ancora</p>
+                <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessuna misurazione ancora</p>
               </div>
             ) : (
               <div>
                 {misurazioni.map((m, i) => (
                   <div key={m.id} className="flex items-center gap-4 px-5 py-3 group"
-                    style={{ borderBottom: i < misurazioni.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < misurazioni.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-black" style={{ color: 'oklch(0.65 0.15 300)' }}>
@@ -834,7 +834,7 @@ export default function ProgressiPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                         {new Date(m.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'long' })}
                         {m.note && ` · ${m.note}`}
                       </p>
@@ -856,23 +856,23 @@ export default function ProgressiPage() {
       {tab === 'foto' && (
         <div className="space-y-5">
           <div className="rounded-2xl p-5 space-y-3"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Foto progressi</h2>
-            <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>Visibili solo a te e al tuo coach</p>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Foto progressi</h2>
+            <p className="text-sm" style={{ color: 'var(--c-50)' }}>Visibili solo a te e al tuo coach</p>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUploadFoto} />
             <button onClick={() => fileRef.current?.click()} disabled={uploadingFoto}
               className="w-full py-3 rounded-xl text-sm font-semibold border-2 border-dashed transition-all"
-              style={{ background: 'oklch(0.22 0 0)', borderColor: 'oklch(1 0 0 / 15%)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-22)', borderColor: 'var(--c-w15)', color: 'var(--c-60)' }}>
               {uploadingFoto ? <><FontAwesomeIcon icon={faUpload} /> Caricamento...</> : <><FontAwesomeIcon icon={faCamera} /> Carica foto</>}
             </button>
           </div>
 
           {foto.length === 0 ? (
             <div className="rounded-2xl py-16 text-center"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <p className="text-5xl mb-3"><FontAwesomeIcon icon={faCamera} /></p>
-              <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna foto ancora</p>
-              <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>Carica la tua prima foto per tracciare i progressi visivi</p>
+              <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessuna foto ancora</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--c-45)' }}>Carica la tua prima foto per tracciare i progressi visivi</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -900,7 +900,7 @@ export default function ProgressiPage() {
               <img src={fotoSelezionata} alt="Foto ingrandita"
                 className="max-w-full max-h-full rounded-2xl object-contain" />
               <button className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }}>✕</button>
+                style={{ background: 'var(--c-22)', color: 'var(--c-97)' }}>✕</button>
             </div>
           )}
         </div>
@@ -910,9 +910,9 @@ export default function ProgressiPage() {
       {tab === 'checkin' && (
         <div className="space-y-5">
           <div className="rounded-2xl p-5 space-y-5"
-            style={{ background: 'oklch(0.18 0 0)', border: `1px solid ${checkinOggi ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 6%)'}` }}>
+            style={{ background: 'var(--c-18)', border: `1px solid ${checkinOggi ? 'oklch(0.65 0.18 150 / 30%)' : 'var(--c-w6)'}` }}>
             <div className="flex items-center justify-between">
-              <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Check-in di oggi</h2>
+              <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Check-in di oggi</h2>
               {checkinOggi && (
                 <span className="text-xs px-3 py-1 rounded-full"
                   style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
@@ -929,26 +929,26 @@ export default function ProgressiPage() {
                   { label: 'Stress', key: 'stress', value: checkinOggi.stress },
                   { label: 'Motivazione', key: 'motivazione', value: checkinOggi.motivazione },
                 ].map(item => (
-                  <div key={item.label} className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
-                    <p className="text-xs mb-1" style={{ color: 'oklch(0.55 0 0)' }}>{item.label}</p>
+                  <div key={item.label} className="rounded-xl p-3 text-center" style={{ background: 'var(--c-22)' }}>
+                    <p className="text-xs mb-1" style={{ color: 'var(--c-55)' }}>{item.label}</p>
                     <p className="text-2xl">{getEmojiCheckin(item.key, item.value) && <FontAwesomeIcon icon={getEmojiCheckin(item.key, item.value)!} />}</p>
-                    <p className="text-xs font-bold mt-1" style={{ color: 'oklch(0.97 0 0)' }}>{item.value}/5</p>
+                    <p className="text-xs font-bold mt-1" style={{ color: 'var(--c-97)' }}>{item.value}/5</p>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex items-center gap-4 py-2">
                 <div className="flex-1">
-                  <p className="text-sm font-medium" style={{ color: 'oklch(0.70 0 0)' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--c-70)' }}>
                     Nessun check-in oggi
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                     Inseriscilo dalla home per non perdere il tracciamento
                   </p>
                 </div>
                 <Link href="/cliente/dashboard"
                   className="px-4 py-2 rounded-xl text-xs font-semibold flex-shrink-0 transition-all active:scale-95"
-                  style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.13 0 0)' }}>
+                  style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-13)' }}>
                   Vai alla home
                 </Link>
               </div>
@@ -957,15 +957,15 @@ export default function ProgressiPage() {
 
           {checkins.length > 0 && (
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Storico check-in</h2>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Storico check-in</h2>
               </div>
               <div>
                 {checkins.slice(0, 10).map((c, i) => (
                   <div key={c.id} className="px-5 py-4"
-                    style={{ borderBottom: i < Math.min(checkins.length, 10) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
-                    <p className="text-sm font-semibold mb-2" style={{ color: 'oklch(0.97 0 0)' }}>
+                    style={{ borderBottom: i < Math.min(checkins.length, 10) - 1 ? '1px solid var(--c-w4)' : 'none' }}>
+                    <p className="text-sm font-semibold mb-2" style={{ color: 'var(--c-97)' }}>
                       {new Date(c.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                     <div className="flex gap-4">
@@ -977,11 +977,11 @@ export default function ProgressiPage() {
                       ].map(item => (
                         <div key={item.label} className="text-center">
                           <p className="text-xl">{getEmojiCheckin(item.key, item.value) && <FontAwesomeIcon icon={getEmojiCheckin(item.key, item.value)!} />}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{item.label.slice(0, 3)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{item.label.slice(0, 3)}</p>
                         </div>
                       ))}
                     </div>
-                    {c.note && <p className="text-xs mt-2 italic" style={{ color: 'oklch(0.50 0 0)' }}>"{c.note}"</p>}
+                    {c.note && <p className="text-xs mt-2 italic" style={{ color: 'var(--c-50)' }}>"{c.note}"</p>}
                   </div>
                 ))}
               </div>

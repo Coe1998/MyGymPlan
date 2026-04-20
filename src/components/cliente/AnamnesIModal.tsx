@@ -139,9 +139,9 @@ export default function AnamnesIModal({ onComplete }: Props) {
   }
 
   const inputStyle = {
-    background: 'oklch(0.20 0 0)',
-    border: '1px solid oklch(1 0 0 / 10%)',
-    color: 'oklch(0.97 0 0)',
+    background: 'var(--c-20)',
+    border: '1px solid var(--c-w10)',
+    color: 'var(--c-97)',
   }
 
   const inputClass = 'w-full px-4 py-3 rounded-xl text-sm outline-none transition-all'
@@ -151,15 +151,15 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 0: return (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Sesso</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Sesso</label>
             <div className="grid grid-cols-2 gap-3">
               {([{ v: 'M', label: '♂ Uomo' }, { v: 'F', label: '♀ Donna' }] as const).map(({ v, label }) => (
                 <button key={v} onClick={() => set('sesso', v)}
                   className="py-3 rounded-xl text-sm font-bold transition-all"
                   style={{
-                    background: form.sesso === v ? 'oklch(0.70 0.19 46)' : 'oklch(0.20 0 0)',
-                    color: form.sesso === v ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
-                    border: `1px solid ${form.sesso === v ? 'oklch(0.70 0.19 46)' : 'oklch(1 0 0 / 8%)'}`,
+                    background: form.sesso === v ? 'oklch(0.70 0.19 46)' : 'var(--c-20)',
+                    color: form.sesso === v ? 'var(--c-13)' : 'var(--c-55)',
+                    border: `1px solid ${form.sesso === v ? 'oklch(0.70 0.19 46)' : 'var(--c-w8)'}`,
                   }}>
                   {label}
                 </button>
@@ -167,22 +167,22 @@ export default function AnamnesIModal({ onComplete }: Props) {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Età</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Età</label>
             <input type="number" placeholder="es. 28" value={form.eta} onChange={e => set('eta', e.target.value)}
               className={inputClass} style={inputStyle} min={10} max={99} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Altezza (cm)</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Altezza (cm)</label>
             <input type="number" placeholder="es. 175" value={form.altezza_cm} onChange={e => set('altezza_cm', e.target.value)}
               className={inputClass} style={inputStyle} min={100} max={250} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>
-              Peso attuale (kg) <span style={{ color: 'oklch(0.45 0 0)' }}>— opzionale</span>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>
+              Peso attuale (kg) <span style={{ color: 'var(--c-45)' }}>— opzionale</span>
             </label>
             <input type="number" placeholder="es. 72.5" value={form.prima_pesata} onChange={e => set('prima_pesata', e.target.value)}
               className={inputClass} style={inputStyle} min={30} max={300} step={0.1} />
-            <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+            <p className="text-xs" style={{ color: 'var(--c-40)' }}>
               Verrà salvata automaticamente nel tuo storico pesi
             </p>
           </div>
@@ -192,18 +192,18 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 1: return (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Occupazione</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Occupazione</label>
             <input type="text" placeholder="es. Studente universitario, Impiegato ufficio, Operaio..." value={form.occupazione}
               onChange={e => set('occupazione', e.target.value)} className={inputClass} style={inputStyle} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Ore in piedi/giorno</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Ore in piedi/giorno</label>
               <input type="number" placeholder="es. 3" value={form.ore_piedi_giorno} onChange={e => set('ore_piedi_giorno', e.target.value)}
                 className={inputClass} style={inputStyle} min={0} max={16} step={0.5} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Ore seduto/giorno</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Ore seduto/giorno</label>
               <input type="number" placeholder="es. 8" value={form.ore_seduto_giorno} onChange={e => set('ore_seduto_giorno', e.target.value)}
                 className={inputClass} style={inputStyle} min={0} max={16} step={0.5} />
             </div>
@@ -215,34 +215,34 @@ export default function AnamnesIModal({ onComplete }: Props) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Ore di sonno</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Ore di sonno</label>
               <input type="number" placeholder="es. 7.5" value={form.ore_sonno} onChange={e => set('ore_sonno', e.target.value)}
                 className={inputClass} style={inputStyle} min={3} max={12} step={0.5} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Orario in cui vai a letto</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Orario in cui vai a letto</label>
               <input type="text" placeholder="es. 23:30" value={form.orario_sonno} onChange={e => set('orario_sonno', e.target.value)}
                 className={inputClass} style={inputStyle} />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Qualità del sonno</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Qualità del sonno</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map(v => (
                 <button key={v} onClick={() => set('qualita_sonno', v)}
                   className="flex-1 py-3 rounded-xl text-sm font-bold transition-all"
                   style={{
-                    background: form.qualita_sonno === v ? 'oklch(0.70 0.19 46)' : 'oklch(0.20 0 0)',
-                    color: form.qualita_sonno === v ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
-                    border: '1px solid oklch(1 0 0 / 8%)',
+                    background: form.qualita_sonno === v ? 'oklch(0.70 0.19 46)' : 'var(--c-20)',
+                    color: form.qualita_sonno === v ? 'var(--c-13)' : 'var(--c-50)',
+                    border: '1px solid var(--c-w8)',
                   }}>
                   {v}
                 </button>
               ))}
             </div>
             <div className="flex justify-between px-1">
-              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Pessima</span>
-              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Ottima</span>
+              <span className="text-xs" style={{ color: 'var(--c-45)' }}>Pessima</span>
+              <span className="text-xs" style={{ color: 'var(--c-45)' }}>Ottima</span>
             </div>
           </div>
         </div>
@@ -251,14 +251,14 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 3: return (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Esempio di giornata alimentare tipica</label>
-            <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Cosa mangi in una giornata normale? Anche approssimativo va bene.</p>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Esempio di giornata alimentare tipica</label>
+            <p className="text-xs" style={{ color: 'var(--c-45)' }}>Cosa mangi in una giornata normale? Anche approssimativo va bene.</p>
             <textarea value={form.giornata_alimentare_esempio} onChange={e => set('giornata_alimentare_esempio', e.target.value)}
               rows={4} placeholder="es. Colazione: caffè e brioche. Pranzo: pasta. Cena: carne con verdure..." 
               className={`${inputClass} resize-none`} style={inputStyle} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Timing dei pasti</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Timing dei pasti</label>
             <input type="text" placeholder="es. Colazione 7:00, spuntino 10:00, pranzo 13:00, cena 20:00"
               value={form.timing_pasti} onChange={e => set('timing_pasti', e.target.value)}
               className={inputClass} style={inputStyle} />
@@ -269,7 +269,7 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 4: return (
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>
               Allenamenti a settimana: <span style={{ color: 'oklch(0.70 0.19 46)' }}>{form.allenamenti_settimana}</span>
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -277,9 +277,9 @@ export default function AnamnesIModal({ onComplete }: Props) {
                 <button key={v} onClick={() => set('allenamenti_settimana', v)}
                   className="w-10 h-10 rounded-xl text-sm font-bold transition-all"
                   style={{
-                    background: form.allenamenti_settimana === v ? 'oklch(0.70 0.19 46)' : 'oklch(0.20 0 0)',
-                    color: form.allenamenti_settimana === v ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
-                    border: '1px solid oklch(1 0 0 / 8%)',
+                    background: form.allenamenti_settimana === v ? 'oklch(0.70 0.19 46)' : 'var(--c-20)',
+                    color: form.allenamenti_settimana === v ? 'var(--c-13)' : 'var(--c-55)',
+                    border: '1px solid var(--c-w8)',
                   }}>
                   {v}
                 </button>
@@ -288,13 +288,13 @@ export default function AnamnesIModal({ onComplete }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Durata media (min)</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Durata media (min)</label>
               <input type="number" placeholder="es. 60" value={form.durata_allenamento_minuti}
                 onChange={e => set('durata_allenamento_minuti', e.target.value)}
                 className={inputClass} style={inputStyle} min={0} max={300} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Orario preferito</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Orario preferito</label>
               <input type="text" placeholder="es. Mattina, ore 18" value={form.orario_allenamento}
                 onChange={e => set('orario_allenamento', e.target.value)}
                 className={inputClass} style={inputStyle} />
@@ -306,24 +306,24 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 5: return (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Patologie o infortuni</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Patologie o infortuni</label>
             <textarea value={form.patologie} onChange={e => set('patologie', e.target.value)}
               rows={3} placeholder="es. Lombosciatalgia, lesione menisco sx, nessuna..."
               className={`${inputClass} resize-none`} style={inputStyle} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Intolleranze e allergie</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Intolleranze e allergie</label>
             <input type="text" placeholder="es. Lattosio, glutine, nichel, nessuna..." value={form.intolleranze}
               onChange={e => set('intolleranze', e.target.value)} className={inputClass} style={inputStyle} />
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Assumi farmaci?</label>
+              <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Assumi farmaci?</label>
               <button onClick={() => set('farmaci', !form.farmaci)} className="relative flex-shrink-0">
                 <div className="w-12 h-7 rounded-full transition-colors duration-200"
-                  style={{ background: form.farmaci ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                  style={{ background: form.farmaci ? 'oklch(0.65 0.18 150)' : 'var(--c-30)' }}>
                   <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
-                    style={{ background: 'oklch(0.97 0 0)', transform: form.farmaci ? 'translateX(1.25rem)' : 'translateX(0.125rem)' }} />
+                    style={{ background: 'var(--c-97)', transform: form.farmaci ? 'translateX(1.25rem)' : 'translateX(0.125rem)' }} />
                 </div>
               </button>
             </div>
@@ -338,36 +338,36 @@ export default function AnamnesIModal({ onComplete }: Props) {
       case 6: return (
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>Descriviti come persona</label>
-            <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>es. costantemente stressata, tranquilla, ansiosa, molto motivata...</p>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>Descriviti come persona</label>
+            <p className="text-xs" style={{ color: 'var(--c-45)' }}>es. costantemente stressata, tranquilla, ansiosa, molto motivata...</p>
             <textarea value={form.descrizione_caratteriale} onChange={e => set('descrizione_caratteriale', e.target.value)}
               rows={3} placeholder="Descriviti brevemente dal punto di vista caratteriale..."
               className={`${inputClass} resize-none`} style={inputStyle} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.75 0 0)' }}>
-              4 foto in posizione anatomica <span style={{ color: 'oklch(0.50 0 0)' }}>(opzionale)</span>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-75)' }}>
+              4 foto in posizione anatomica <span style={{ color: 'var(--c-50)' }}>(opzionale)</span>
             </label>
-            <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+            <p className="text-xs" style={{ color: 'var(--c-45)' }}>
               Total body in boxer/mutande: frontale, laterale sx, laterale dx, posteriore. Stanza illuminata, luci fredde.
             </p>
             <div className="grid grid-cols-2 gap-3">
               {(['Frontale', 'Laterale sx', 'Laterale dx', 'Posteriore'] as const).map((label, i) => (
                 <div key={i} className="relative aspect-square rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}>
+                  style={{ background: 'var(--c-18)', border: '1px solid var(--c-w10)' }}>
                   {fotoPreview[i] ? (
                     <>
                       <img src={fotoPreview[i]!} alt={label} className="w-full h-full object-cover" />
                       <button onClick={() => removeFoto(i)}
                         className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
                         style={{ background: 'oklch(0 0 0 / 60%)' }}>
-                        <FontAwesomeIcon icon={faXmark} className="text-xs" style={{ color: 'oklch(0.97 0 0)' }} />
+                        <FontAwesomeIcon icon={faXmark} className="text-xs" style={{ color: 'var(--c-97)' }} />
                       </button>
                     </>
                   ) : (
                     <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer gap-1.5">
-                      <FontAwesomeIcon icon={faCamera} style={{ color: 'oklch(0.40 0 0)', fontSize: '1.25rem' }} />
-                      <span className="text-xs font-medium" style={{ color: 'oklch(0.45 0 0)' }}>{label}</span>
+                      <FontAwesomeIcon icon={faCamera} style={{ color: 'var(--c-40)', fontSize: '1.25rem' }} />
+                      <span className="text-xs font-medium" style={{ color: 'var(--c-45)' }}>{label}</span>
                       <input type="file" accept="image/*" capture="environment" className="hidden"
                         onChange={e => handleFoto(i, e.target.files?.[0] ?? null)} />
                     </label>
@@ -387,7 +387,7 @@ export default function AnamnesIModal({ onComplete }: Props) {
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
       style={{ background: 'oklch(0 0 0 / 80%)' }}>
       <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col"
-        style={{ background: 'oklch(0.13 0 0)', border: '1px solid oklch(1 0 0 / 8%)', maxHeight: '92dvh' }}>
+        style={{ background: 'var(--c-13)', border: '1px solid var(--c-w8)', maxHeight: '92dvh' }}>
 
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex-shrink-0">
@@ -396,7 +396,7 @@ export default function AnamnesIModal({ onComplete }: Props) {
               <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.70 0.19 46)' }}>
                 Anamnesi corporea
               </p>
-              <h2 className="text-xl font-black mt-0.5" style={{ color: 'oklch(0.97 0 0)' }}>
+              <h2 className="text-xl font-black mt-0.5" style={{ color: 'var(--c-97)' }}>
                 {STEPS[step]}
               </h2>
             </div>
@@ -410,7 +410,7 @@ export default function AnamnesIModal({ onComplete }: Props) {
           <div className="flex gap-1.5">
             {STEPS.map((_, i) => (
               <div key={i} className="flex-1 h-1 rounded-full transition-all duration-300"
-                style={{ background: i <= step ? 'oklch(0.70 0.19 46)' : 'oklch(0.25 0 0)' }} />
+                style={{ background: i <= step ? 'oklch(0.70 0.19 46)' : 'var(--c-25)' }} />
             ))}
           </div>
         </div>
@@ -422,24 +422,24 @@ export default function AnamnesIModal({ onComplete }: Props) {
 
         {/* Footer */}
         <div className="px-6 py-4 flex gap-3 flex-shrink-0"
-          style={{ borderTop: '1px solid oklch(1 0 0 / 8%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+          style={{ borderTop: '1px solid var(--c-w8)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
               className="px-5 py-3 rounded-xl text-sm font-semibold flex items-center gap-2"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faArrowLeft} /> Indietro
             </button>
           )}
           {step < STEPS.length - 1 ? (
             <button onClick={() => setStep(s => s + 1)}
               className="flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               Avanti <FontAwesomeIcon icon={faArrowRight} />
             </button>
           ) : (
             <button onClick={handleSubmit} disabled={saving}
               className="flex-1 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
-              style={{ background: saving ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', cursor: saving ? 'not-allowed' : 'pointer' }}>
+              style={{ background: saving ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)', color: 'var(--c-13)', cursor: saving ? 'not-allowed' : 'pointer' }}>
               {saving ? 'Salvataggio...' : <><FontAwesomeIcon icon={faCheck} /> Completa anamnesi</>}
             </button>
           )}

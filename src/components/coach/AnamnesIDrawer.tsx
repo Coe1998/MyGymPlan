@@ -57,9 +57,9 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
     if (value === null || value === undefined || value === '') return null
     return (
       <div className="flex items-start justify-between gap-4 py-2.5"
-        style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
-        <span className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)', minWidth: 120 }}>{label}</span>
-        <span className="text-sm text-right" style={{ color: 'oklch(0.85 0 0)' }}>{value}</span>
+        style={{ borderBottom: '1px solid var(--c-w5)' }}>
+        <span className="text-xs flex-shrink-0" style={{ color: 'var(--c-50)', minWidth: 120 }}>{label}</span>
+        <span className="text-sm text-right" style={{ color: 'var(--c-85)' }}>{value}</span>
       </div>
     )
   }
@@ -68,19 +68,19 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
     <div className="fixed inset-0 z-[55] flex justify-end" style={{ background: 'oklch(0 0 0 / 60%)' }}
       onClick={onClose}>
       <div className="w-full max-w-md h-full overflow-y-auto flex flex-col"
-        style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+        style={{ background: 'var(--c-13)', borderLeft: '1px solid var(--c-w8)' }}
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center gap-3 px-5"
-          style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
+          style={{ background: 'var(--c-13)', borderBottom: '1px solid var(--c-w8)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
           <button onClick={onClose} className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
           <div>
-            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>{clienteNome}</p>
-            <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>Anamnesi corporea</p>
+            <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>{clienteNome}</p>
+            <p className="text-xs" style={{ color: 'var(--c-50)' }}>Anamnesi corporea</p>
           </div>
         </div>
 
@@ -91,8 +91,8 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
         ) : !anamnesi ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
             <p className="text-3xl">📋</p>
-            <p className="font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>Anamnesi non ancora compilata</p>
-            <p className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>Il cliente la vedrà alla prossima apertura dell'app</p>
+            <p className="font-semibold" style={{ color: 'var(--c-60)' }}>Anamnesi non ancora compilata</p>
+            <p className="text-sm" style={{ color: 'var(--c-40)' }}>Il cliente la vedrà alla prossima apertura dell'app</p>
           </div>
         ) : (
           <div className="p-5 space-y-5">
@@ -100,7 +100,7 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             {/* Note algoritmo */}
             {note.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>
+                <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--c-40)' }}>
                   Note per la programmazione
                 </p>
                 {note.map((n, i) => {
@@ -117,8 +117,8 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             )}
 
             {/* Dati personali */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Dati personali
               </p>
               <div className="px-4">
@@ -129,8 +129,8 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             </div>
 
             {/* Stile di vita */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Stile di vita
               </p>
               <div className="px-4">
@@ -141,8 +141,8 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             </div>
 
             {/* Sonno */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Sonno
               </p>
               <div className="px-4">
@@ -153,24 +153,24 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             </div>
 
             {/* Alimentazione */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Alimentazione
               </p>
               <div className="px-4">
                 <Row label="Timing pasti" value={anamnesi.timing_pasti} />
                 {anamnesi.giornata_alimentare_esempio && (
-                  <div className="py-2.5" style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
-                    <p className="text-xs mb-1.5" style={{ color: 'oklch(0.50 0 0)' }}>Esempio giornata alimentare</p>
-                    <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.80 0 0)' }}>{anamnesi.giornata_alimentare_esempio}</p>
+                  <div className="py-2.5" style={{ borderBottom: '1px solid var(--c-w5)' }}>
+                    <p className="text-xs mb-1.5" style={{ color: 'var(--c-50)' }}>Esempio giornata alimentare</p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--c-80)' }}>{anamnesi.giornata_alimentare_esempio}</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Allenamento pregresso */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Allenamento pregresso
               </p>
               <div className="px-4">
@@ -181,8 +181,8 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             </div>
 
             {/* Salute */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                 Salute
               </p>
               <div className="px-4">
@@ -194,11 +194,11 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
 
             {/* Carattere */}
             {anamnesi.descrizione_caratteriale && (
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                <p className="px-4 py-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)', borderBottom: '1px solid var(--c-w6)' }}>
                   Carattere
                 </p>
-                <p className="px-4 py-3 text-sm leading-relaxed" style={{ color: 'oklch(0.80 0 0)' }}>
+                <p className="px-4 py-3 text-sm leading-relaxed" style={{ color: 'var(--c-80)' }}>
                   {anamnesi.descrizione_caratteriale}
                 </p>
               </div>
@@ -207,18 +207,18 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
             {/* Foto */}
             {fotoUrls.filter(Boolean).length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'oklch(0.40 0 0)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--c-40)' }}>
                   Foto anatomiche
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {(['Frontale', 'Laterale sx', 'Laterale dx', 'Posteriore'] as const).map((label, i) =>
                     fotoUrls[i] ? (
                       <div key={i} className="relative aspect-square rounded-2xl overflow-hidden"
-                        style={{ background: 'oklch(0.18 0 0)' }}>
+                        style={{ background: 'var(--c-18)' }}>
                         <img src={fotoUrls[i]!} alt={label} className="w-full h-full object-cover" />
                         <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5"
                           style={{ background: 'oklch(0 0 0 / 50%)' }}>
-                          <p className="text-xs font-medium text-center" style={{ color: 'oklch(0.90 0 0)' }}>{label}</p>
+                          <p className="text-xs font-medium text-center" style={{ color: 'var(--c-90)' }}>{label}</p>
                         </div>
                       </div>
                     ) : null
@@ -229,7 +229,7 @@ export default function AnamnesIDrawer({ clienteId, clienteNome, onClose }: Prop
 
             {/* Data compilazione */}
             {anamnesi.completata_at && (
-              <p className="text-xs text-center" style={{ color: 'oklch(0.35 0 0)' }}>
+              <p className="text-xs text-center" style={{ color: 'var(--c-35)' }}>
                 Compilata il {new Date(anamnesi.completata_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             )}

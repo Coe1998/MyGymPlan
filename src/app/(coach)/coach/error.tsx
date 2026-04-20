@@ -16,16 +16,16 @@ export default function CoachError({
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
       <p className="text-4xl">⚠️</p>
-      <p className="text-lg font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
+      <p className="text-lg font-semibold" style={{ color: 'var(--c-97)' }}>
         Qualcosa è andato storto
       </p>
-      <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+      <p className="text-sm" style={{ color: 'var(--c-50)' }}>
         {error.message || 'Errore sconosciuto'}
       </p>
       <button
         onClick={reset}
         className="mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-        style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}
+        style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}
       >
         Riprova
       </button>

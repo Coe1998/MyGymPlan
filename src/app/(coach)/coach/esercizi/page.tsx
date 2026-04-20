@@ -155,15 +155,15 @@ export default function EserciziPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Esercizi</h1>
-          <p className="mt-1 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Esercizi</h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>
             {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
           </p>
         </div>
         {!showForm && (
           <button onClick={() => { setShowForm(true); setEditingId(null); setForm(EMPTY_FORM) }}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             + Nuovo esercizio
           </button>
         )}
@@ -172,27 +172,27 @@ export default function EserciziPage() {
       {/* Form creazione/modifica */}
       {showForm && (
         <div className="rounded-2xl p-6 space-y-5"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
-          <h2 className="font-bold text-lg" style={{ color: 'oklch(0.97 0 0)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+          <h2 className="font-bold text-lg" style={{ color: 'var(--c-97)' }}>
             {editingId ? 'Modifica esercizio' : 'Nuovo esercizio'}
           </h2>
 
           {/* Nome */}
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>
               Nome <span style={{ color: 'oklch(0.70 0.19 46)' }}>*</span>
             </label>
             <input type="text" value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))}
               placeholder="es. Panca Piana"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
 
           {/* Tipo input — nuovo */}
           <div className="space-y-3">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>
               Tipo di input nel logger
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -205,13 +205,13 @@ export default function EserciziPage() {
                     onClick={() => setForm(p => ({ ...p, tipo_input: opt.value }))}
                     className="flex flex-col items-start px-4 py-3 rounded-xl text-left transition-all"
                     style={{
-                      background: selected ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
-                      border: selected ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid oklch(1 0 0 / 8%)',
+                      background: selected ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+                      border: selected ? '1px solid oklch(0.70 0.19 46 / 60%)' : '1px solid var(--c-w8)',
                     }}>
-                    <span className="text-sm font-semibold" style={{ color: selected ? 'oklch(0.70 0.19 46)' : 'oklch(0.80 0 0)' }}>
+                    <span className="text-sm font-semibold" style={{ color: selected ? 'oklch(0.70 0.19 46)' : 'var(--c-80)' }}>
                       {opt.label}
                     </span>
-                    <span className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+                    <span className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
                       {opt.sub}
                     </span>
                   </button>
@@ -237,29 +237,29 @@ export default function EserciziPage() {
 
           {/* Descrizione */}
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Descrizione</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Descrizione</label>
             <textarea value={form.descrizione} onChange={e => setForm(p => ({ ...p, descrizione: e.target.value }))}
               placeholder="Istruzioni di esecuzione, note tecniche..." rows={3}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
 
           {/* Video URL */}
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>URL video (opzionale)</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>URL video (opzionale)</label>
             <input type="url" value={form.video_url} onChange={e => setForm(p => ({ ...p, video_url: e.target.value }))}
               placeholder="https://youtube.com/..."
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
           </div>
 
           {/* Muscoli */}
           <div className="space-y-2">
-            <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>Muscoli coinvolti</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--c-80)' }}>Muscoli coinvolti</label>
             <div className="flex flex-wrap gap-2">
               {MUSCOLI_DISPONIBILI.map(muscolo => {
                 const selected = form.muscoli.includes(muscolo)
@@ -267,9 +267,9 @@ export default function EserciziPage() {
                   <button key={muscolo} type="button" onClick={() => toggleMuscolo(muscolo)}
                     className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
                     style={{
-                      background: selected ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                      color: selected ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-                      border: selected ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                      background: selected ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                      color: selected ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+                      border: selected ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
                     }}>
                     {muscolo}
                   </button>
@@ -288,12 +288,12 @@ export default function EserciziPage() {
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving}
               className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-              style={{ background: saving ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: saving ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               {saving ? 'Salvataggio...' : editingId ? 'Salva modifiche' : 'Crea esercizio'}
             </button>
             <button onClick={handleCancel}
               className="px-6 py-2.5 rounded-xl text-sm font-medium"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
               Annulla
             </button>
           </div>
@@ -305,9 +305,9 @@ export default function EserciziPage() {
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Cerca per nome o muscolo..."
           className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)', color: 'oklch(0.97 0 0)' }}
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)', color: 'var(--c-97)' }}
           onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 6%)'} />
+          onBlur={e => e.target.style.borderColor = 'var(--c-w6)'} />
 
         {/* Tipo proprietà */}
         <div className="flex gap-2">
@@ -319,8 +319,8 @@ export default function EserciziPage() {
             <button key={f.id} onClick={() => setFiltroTipo(f.id as typeof filtroTipo)}
               className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
               style={{
-                background: filtroTipo === f.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                color: filtroTipo === f.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                background: filtroTipo === f.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                color: filtroTipo === f.id ? 'var(--c-11)' : 'var(--c-55)',
               }}>
               {f.label}
             </button>
@@ -332,9 +332,9 @@ export default function EserciziPage() {
           <button onClick={() => setFiltroInput(null)}
             className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
             style={{
-              background: filtroInput === null ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
-              color: filtroInput === null ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
-              border: filtroInput === null ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+              background: filtroInput === null ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+              color: filtroInput === null ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
+              border: filtroInput === null ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid var(--c-w8)',
             }}>
             Tutti i tipi
           </button>
@@ -342,9 +342,9 @@ export default function EserciziPage() {
             <button key={opt.value} onClick={() => setFiltroInput(filtroInput === opt.value ? null : opt.value)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: filtroInput === opt.value ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
-                color: filtroInput === opt.value ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
-                border: filtroInput === opt.value ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                background: filtroInput === opt.value ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+                color: filtroInput === opt.value ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
+                border: filtroInput === opt.value ? '1px solid oklch(0.70 0.19 46 / 40%)' : '1px solid var(--c-w8)',
               }}>
               {opt.label}
             </button>
@@ -356,9 +356,9 @@ export default function EserciziPage() {
           <button onClick={() => setFiltroMuscolo(null)}
             className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
             style={{
-              background: filtroMuscolo === null ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-              color: filtroMuscolo === null ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-              border: filtroMuscolo === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+              background: filtroMuscolo === null ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+              color: filtroMuscolo === null ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+              border: filtroMuscolo === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
             }}>
             Tutti i muscoli
           </button>
@@ -366,9 +366,9 @@ export default function EserciziPage() {
             <button key={m} onClick={() => setFiltroMuscolo(filtroMuscolo === m ? null : m)}
               className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: filtroMuscolo === m ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                color: filtroMuscolo === m ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-                border: filtroMuscolo === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid oklch(1 0 0 / 8%)',
+                background: filtroMuscolo === m ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                color: filtroMuscolo === m ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+                border: filtroMuscolo === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
               }}>
               {m}
             </button>
@@ -378,10 +378,10 @@ export default function EserciziPage() {
 
       {/* Lista */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="px-6 py-4 flex items-center justify-between"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Libreria esercizi</h2>
+          style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Libreria esercizi</h2>
           <span className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
             {filtered.length} risultati
@@ -393,10 +393,10 @@ export default function EserciziPage() {
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center space-y-3">
             <div className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></div>
-            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
+            <p className="font-semibold" style={{ color: 'var(--c-97)' }}>
               {search || filtroTipo !== 'tutti' || filtroMuscolo || filtroInput ? 'Nessun risultato' : 'Nessun esercizio ancora'}
             </p>
-            <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+            <p className="text-sm" style={{ color: 'var(--c-45)' }}>
               {search || filtroTipo !== 'tutti' || filtroMuscolo || filtroInput ? 'Prova a cambiare i filtri' : 'Crea il tuo primo esercizio'}
             </p>
           </div>
@@ -406,7 +406,7 @@ export default function EserciziPage() {
               const badge = TIPO_INPUT_BADGE[e.tipo_input ?? 'reps']
               return (
                 <div key={e.id} className="flex items-start gap-4 px-6 py-5 group transition-colors"
-                  style={{ borderBottom: i < visibiliEsercizi.length - 1 || haAltri ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                  style={{ borderBottom: i < visibiliEsercizi.length - 1 || haAltri ? '1px solid var(--c-w4)' : 'none' }}>
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0 mt-0.5"
                     style={{ background: e.is_global ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.70 0.19 46 / 10%)' }}>
                     <FontAwesomeIcon icon={faDumbbell} style={{ color: e.is_global ? 'oklch(0.65 0.18 150)' : 'oklch(0.70 0.19 46)' }} />
@@ -414,14 +414,14 @@ export default function EserciziPage() {
 
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{e.nome}</p>
+                      <p className="font-semibold" style={{ color: 'var(--c-97)' }}>{e.nome}</p>
                       <span className="text-xs px-2 py-0.5 rounded-full"
                         style={{ background: badge.bg, color: badge.color }}>
                         {badge.label}
                       </span>
                     </div>
                     {e.descrizione && (
-                      <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>{e.descrizione}</p>
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--c-55)' }}>{e.descrizione}</p>
                     )}
                     <div className="flex flex-wrap items-center gap-2">
                       {e.muscoli?.map(m => (
@@ -449,7 +449,7 @@ export default function EserciziPage() {
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 mt-0.5">
                       <button onClick={() => handleEdit(e)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                        style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
                         Modifica
                       </button>
                       <button onClick={() => handleDelete(e.id, e.nome)}
@@ -467,7 +467,7 @@ export default function EserciziPage() {
               <div className="px-6 py-4 text-center">
                 <button onClick={() => setVisibili(v => v + PAGE_SIZE)}
                   className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-80 active:scale-95"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                  style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
                   Mostra altri ({filtered.length - visibili} rimasti)
                 </button>
               </div>

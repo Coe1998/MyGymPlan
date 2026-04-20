@@ -298,15 +298,15 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
       onClick={onClose}>
       <div
         className="w-full max-w-lg rounded-3xl overflow-hidden flex flex-col"
-        style={{ background: 'oklch(0.15 0 0)', border: '1px solid oklch(1 0 0 / 10%)', maxHeight: '92vh' }}
+        style={{ background: 'var(--c-15)', border: '1px solid var(--c-w10)', maxHeight: '92vh' }}
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-          <p className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Genera report</p>
+          style={{ borderBottom: '1px solid var(--c-w8)' }}>
+          <p className="font-bold" style={{ color: 'var(--c-97)' }}>Genera report</p>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -314,7 +314,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: 'var(--c-45)' }}>
               Messaggio del coach (opzionale)
             </label>
             <textarea
@@ -323,15 +323,15 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
               placeholder="es. Ottimo lavoro questo mese! La tua costanza sta dando risultati..."
               rows={3}
               className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+              style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
               onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-              onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'}
+              onBlur={e => e.target.style.borderColor = 'var(--c-w8)'}
             />
           </div>
 
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ color: 'var(--c-45)' }}>
               Anteprima
             </p>
 
@@ -448,12 +448,12 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
         </div>
 
         <div className="px-5 py-4 flex gap-3 flex-shrink-0"
-          style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+          style={{ borderTop: '1px solid var(--c-w8)' }}>
           <button
             onClick={handleSalvaImmagine}
             disabled={loading || saving}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.80 0 0)', border: '1px solid oklch(1 0 0 / 8%)', opacity: loading ? 0.5 : 1 }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-80)', border: '1px solid var(--c-w8)', opacity: loading ? 0.5 : 1 }}>
             {saving
               ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
               : <FontAwesomeIcon icon={faDownload} />}
@@ -463,7 +463,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
             onClick={handleInviaChat}
             disabled={loading || sending}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', opacity: loading ? 0.5 : 1 }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', opacity: loading ? 0.5 : 1 }}>
             {sending
               ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
               : <FontAwesomeIcon icon={faPaperPlane} />}

@@ -223,9 +223,9 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
           <button key={t} onClick={() => setTema(t)}
             className="px-4 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
-              background: tema === t ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-              color: tema === t ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
-              border: '1px solid oklch(1 0 0 / 8%)',
+              background: tema === t ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+              color: tema === t ? 'var(--c-13)' : 'var(--c-55)',
+              border: '1px solid var(--c-w8)',
             }}>
             {t === 'dark' ? <><FontAwesomeIcon icon={faMoon} /> Dark</> : <><FontAwesomeIcon icon={faSun} /> Light</>}
           </button>
@@ -237,9 +237,9 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         <button onClick={() => setShowCoach(p => !p)}
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all flex-shrink-0"
           style={{
-            background: showCoach ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-            color: showCoach ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
-            border: `1px solid ${showCoach ? 'oklch(0.60 0.15 200 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+            background: showCoach ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+            color: showCoach ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
+            border: `1px solid ${showCoach ? 'oklch(0.60 0.15 200 / 40%)' : 'var(--c-w8)'}`,
           }}>
           <span style={{ fontSize: 10 }}>{showCoach ? '✓' : '○'}</span>
           Coach / PT
@@ -251,7 +251,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
             onChange={e => setCoachInput(e.target.value)}
             placeholder="Nome coach o PT..."
             className="flex-1 px-3 py-2 rounded-xl text-xs outline-none"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }}
+            style={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', color: 'var(--c-97)' }}
           />
         )}
       </div>
@@ -259,16 +259,16 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
       {/* Selezione esercizi highlight */}
       {esercizi.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w6)' }}>
           <div className="px-4 py-3 flex items-center justify-between"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="text-xs font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>
+            style={{ borderBottom: '1px solid var(--c-w6)' }}>
+            <p className="text-xs font-semibold" style={{ color: 'var(--c-97)' }}>
               Scegli fino a 3 highlights
             </p>
             <span className="text-xs px-2 py-1 rounded-full"
               style={{
-                background: selezionati.length === 3 ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.30 0 0)',
-                color: selezionati.length === 3 ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
+                background: selezionati.length === 3 ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-30)',
+                color: selezionati.length === 3 ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
               }}>
               {selezionati.length}/3
             </span>
@@ -283,7 +283,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
                   onClick={() => !isDisabled && toggleEsercizio(ese)}
                   className="w-full flex items-center justify-between px-4 py-3 transition-all text-left"
                   style={{
-                    borderBottom: i < esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+                    borderBottom: i < esercizi.length - 1 ? '1px solid var(--c-w4)' : 'none',
                     background: isSelected ? 'oklch(0.70 0.19 46 / 10%)' : 'transparent',
                     opacity: isDisabled ? 0.35 : 1,
                     cursor: isDisabled ? 'not-allowed' : 'pointer',
@@ -291,19 +291,19 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
                       style={{
-                        background: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.30 0 0)',
-                        border: isSelected ? 'none' : '1px solid oklch(1 0 0 / 15%)',
+                        background: isSelected ? 'oklch(0.70 0.19 46)' : 'var(--c-30)',
+                        border: isSelected ? 'none' : '1px solid var(--c-w15)',
                       }}>
                       {isSelected && (
-                        <span style={{ color: 'oklch(0.13 0 0)', fontSize: '11px', fontWeight: 700 }}>✓</span>
+                        <span style={{ color: 'var(--c-13)', fontSize: '11px', fontWeight: 700 }}>✓</span>
                       )}
                     </div>
-                    <span className="text-sm font-medium" style={{ color: isSelected ? 'oklch(0.97 0 0)' : 'oklch(0.70 0 0)' }}>
+                    <span className="text-sm font-medium" style={{ color: isSelected ? 'var(--c-97)' : 'var(--c-70)' }}>
                       {ese.nome}
                     </span>
                   </div>
                   <span className="text-sm font-bold flex-shrink-0"
-                    style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)' }}>
+                    style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'var(--c-50)' }}>
                     {ese.tipoInput === 'timer' ? `${ese.durataMax ?? 0}s` : `${ese.pesoMax} kg`}
                   </span>
                 </button>
@@ -326,7 +326,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
         </div>
       </div>
 
-      <p className="text-xs text-center" style={{ color: 'oklch(0.40 0 0)' }}>
+      <p className="text-xs text-center" style={{ color: 'var(--c-40)' }}>
         La scacchiera indica la trasparenza del PNG finale
       </p>
 
@@ -336,7 +336,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
           className="px-6 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
           style={{
             background: downloading ? 'oklch(0.50 0.12 46)' : 'oklch(0.70 0.19 46)',
-            color: 'oklch(0.13 0 0)',
+            color: 'var(--c-13)',
             cursor: downloading ? 'not-allowed' : 'pointer',
           }}>
           {downloading ? 'Generando...' : <><FontAwesomeIcon icon={faDownload} /> Scarica / Condividi</>}
@@ -344,14 +344,14 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
       </div>
 
       {/* Tutorial */}
-      <details className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+      <details className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)' }}>
         <summary className="px-4 py-3 text-xs font-semibold cursor-pointer flex items-center justify-between select-none"
-          style={{ color: 'oklch(0.60 0 0)' }}>
+          style={{ color: 'var(--c-60)' }}>
           <span>💡 Come condividerlo su Instagram</span>
           <span style={{ fontSize: 10 }}>▼</span>
         </summary>
-        <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-xs pt-3" style={{ color: 'oklch(0.50 0 0)' }}>Segui questi semplici passaggi:</p>
+        <div className="px-4 pb-4 space-y-2.5" style={{ borderTop: '1px solid var(--c-w6)' }}>
+          <p className="text-xs pt-3" style={{ color: 'var(--c-50)' }}>Segui questi semplici passaggi:</p>
           {[
             { n: '1', text: 'Scarica il badge con il bottone qui sopra' },
             { n: '2', text: 'Vai nella galleria, tieni premuto sull\'immagine → Copia' },
@@ -365,10 +365,10 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
                 style={{ background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)' }}>
                 {step.n}
               </span>
-              <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.65 0 0)' }}>{step.text}</p>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--c-65)' }}>{step.text}</p>
             </div>
           ))}
-          <p className="text-xs pt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-xs pt-1" style={{ color: 'var(--c-40)' }}>
             Funziona allo stesso modo su TikTok, WhatsApp e tutti i social con le storie.
           </p>
         </div>

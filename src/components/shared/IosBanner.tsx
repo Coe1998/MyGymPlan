@@ -40,7 +40,7 @@ export default function IosBanner() {
       <div
         className="w-full max-w-sm mx-auto rounded-2xl p-4 flex items-start gap-3"
         style={{
-          background: 'oklch(0.18 0 0)',
+          background: 'var(--c-18)',
           border: '1px solid oklch(0.70 0.19 46 / 35%)',
           boxShadow: '0 8px 32px oklch(0 0 0 / 60%)',
         }}
@@ -48,23 +48,23 @@ export default function IosBanner() {
         {/* Logo */}
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center font-black text-lg flex-shrink-0"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}
         >
           B
         </div>
 
         {/* Testo */}
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
             Installa Bynari
           </p>
-          <p className="text-xs mt-1 leading-relaxed" style={{ color: 'oklch(0.60 0 0)' }}>
+          <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--c-60)' }}>
             Tocca{' '}
             <span className="inline-flex items-center justify-center w-5 h-5 rounded align-middle mx-0.5"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.80 0 0)', fontSize: 11 }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-80)', fontSize: 11 }}>
               ⬆
             </span>
-            {' '}poi <strong style={{ color: 'oklch(0.80 0 0)' }}>"Aggiungi a schermata Home"</strong> per usarla come un&apos;app
+            {' '}poi <strong style={{ color: 'var(--c-80)' }}>"Aggiungi a schermata Home"</strong> per usarla come un&apos;app
           </p>
         </div>
 
@@ -72,7 +72,7 @@ export default function IosBanner() {
         <button
           onClick={dismiss}
           className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-sm transition-opacity hover:opacity-70"
-          style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}
+          style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}
           aria-label="Chiudi"
         >
           ✕

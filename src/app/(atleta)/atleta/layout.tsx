@@ -16,7 +16,7 @@ export default async function AtletaLayout({ children }: { children: React.React
   if (profile.role !== 'atleta') redirect('/login')
 
   return (
-    <div className="min-h-screen" style={{ background: 'oklch(0.13 0 0)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--c-13)' }}>
       <AtletaSidebar profile={profile} />
       <main
         className="lg:ml-64 pb-24 lg:pb-8"

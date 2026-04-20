@@ -36,8 +36,8 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
     return (
       <div className="py-12 text-center space-y-3">
         <p className="text-4xl"><FontAwesomeIcon icon={faPersonRunning} /></p>
-        <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun allenamento ancora</p>
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>
+        <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun allenamento ancora</p>
+        <p className="text-sm" style={{ color: 'var(--c-45)' }}>
           Inizia il tuo primo allenamento dalla scheda qui sopra
         </p>
       </div>
@@ -58,7 +58,7 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
         return (
           <div key={s.id} className="flex items-center gap-4 px-6 py-4"
             style={{
-              borderBottom: i < lista.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+              borderBottom: i < lista.length - 1 ? '1px solid var(--c-w4)' : 'none',
               borderLeft: isInCorso ? '3px solid oklch(0.70 0.19 46)' : '3px solid transparent',
               background: isInCorso ? 'oklch(0.70 0.19 46 / 4%)' : 'transparent',
             }}>
@@ -79,10 +79,10 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
             <div className="flex-1 min-w-0"
               style={{ cursor: isInCorso && resumeUrl ? 'pointer' : 'default' }}
               onClick={handleResume}>
-              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>
                 {s.scheda_giorni?.nome ?? 'Allenamento'}
               </p>
-              <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                 {new Date(s.data).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
                   <button
                     onClick={() => setConferma(null)}
                     className="text-xs px-2.5 py-1 rounded-lg transition-all"
-                    style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.50 0 0)' }}>
+                    style={{ background: 'var(--c-22)', color: 'var(--c-50)' }}>
                     Annulla
                   </button>
                 </div>
@@ -123,7 +123,7 @@ export default function SessioniList({ sessioni }: { sessioni: Sessione[] }) {
                 <button
                   onClick={() => setConferma(s.id)}
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all active:scale-90 hover:opacity-80"
-                  style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.40 0 0)' }}
+                  style={{ background: 'var(--c-22)', color: 'var(--c-40)' }}
                   title="Elimina sessione">
                   <FontAwesomeIcon icon={faTrash} className="text-xs" />
                 </button>

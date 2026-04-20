@@ -99,23 +99,23 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
       {clienti.length === 0 ? (
         <div className="py-16 text-center space-y-3">
           <div className="text-5xl"><FontAwesomeIcon icon={faDumbbell} /></div>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
+          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun cliente ancora</p>
         </div>
       ) : (
         <div>
           {clienti.map((c, i) => (
             <div key={c.cliente_id} onClick={() => apriCliente(c)}
               className="flex items-center gap-4 px-6 py-4 cursor-pointer transition-all hover:opacity-80 active:opacity-60"
-              style={{ borderBottom: i < clienti.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              style={{ borderBottom: i < clienti.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                 style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
                 {c.profiles?.full_name?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
-                <p className="font-medium text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.profiles?.full_name}</p>
-                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>Aggiunto il {new Date(c.created_at).toLocaleDateString('it-IT')}</p>
+                <p className="font-medium text-sm" style={{ color: 'var(--c-97)' }}>{c.profiles?.full_name}</p>
+                <p className="text-xs" style={{ color: 'var(--c-45)' }}>Aggiunto il {new Date(c.created_at).toLocaleDateString('it-IT')}</p>
               </div>
-              <span className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>→</span>
+              <span className="text-sm" style={{ color: 'var(--c-40)' }}>→</span>
             </div>
           ))}
         </div>
@@ -124,25 +124,25 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
       {/* Drawer */}
       {clienteAperto && (
         <div className="fixed inset-0 z-50 flex justify-end" style={{ background: 'oklch(0 0 0 / 60%)' }} onClick={() => setClienteAperto(null)}>
-          <div className="w-full max-w-xl h-full flex flex-col" style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }} onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-xl h-full flex flex-col" style={{ background: 'var(--c-13)', borderLeft: '1px solid var(--c-w8)' }} onClick={e => e.stopPropagation()}>
             
             {/* Header */}
             <div className="sticky top-0 z-10 flex items-center gap-4 px-5 flex-shrink-0"
-              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
-              <button onClick={() => setClienteAperto(null)} className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-13)', borderBottom: '1px solid var(--c-w8)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
+              <button onClick={() => setClienteAperto(null)} className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
                 <FontAwesomeIcon icon={faXmark} />
               </button>
-              <h3 className="font-black text-lg truncate" style={{ color: 'oklch(0.97 0 0)' }}>{clienteAperto.profiles?.full_name}</h3>
+              <h3 className="font-black text-lg truncate" style={{ color: 'var(--c-97)' }}>{clienteAperto.profiles?.full_name}</h3>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--c-w8)' }}>
               <button onClick={() => setDrawerTab('overview')} className="flex-1 py-2 rounded-xl text-sm font-semibold"
-                style={{ background: drawerTab === 'overview' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)', color: drawerTab === 'overview' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)' }}>
+                style={{ background: drawerTab === 'overview' ? 'oklch(0.70 0.19 46)' : 'var(--c-22)', color: drawerTab === 'overview' ? 'var(--c-11)' : 'var(--c-50)' }}>
                 📊 Overview
               </button>
               <button onClick={() => setDrawerTab('nutrizione')} className="flex-1 py-2 rounded-xl text-sm font-semibold"
-                style={{ background: drawerTab === 'nutrizione' ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)', color: drawerTab === 'nutrizione' ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)' }}>
+                style={{ background: drawerTab === 'nutrizione' ? 'oklch(0.70 0.19 46)' : 'var(--c-22)', color: drawerTab === 'nutrizione' ? 'var(--c-11)' : 'var(--c-50)' }}>
                 🥗 Nutrizione
               </button>
             </div>
@@ -156,15 +156,15 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
               ) : drawerTab === 'nutrizione' ? (
                 <div className="p-5">
                    {/* Toggle Dieta */}
-                   <div className="px-5 py-3 mb-5 flex items-center justify-between rounded-2xl" style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
-                    <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Abilita Nutrizione</p>
+                   <div className="px-5 py-3 mb-5 flex items-center justify-between rounded-2xl" style={{ background: 'var(--c-16)', border: '1px solid var(--c-w8)' }}>
+                    <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Abilita Nutrizione</p>
                     <button onClick={handleToggleDieta} disabled={togglingDieta} className="relative">
-                      <div className="w-12 h-7 rounded-full transition-colors" style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                      <div className="w-12 h-7 rounded-full transition-colors" style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'var(--c-30)' }}>
                         <div className="absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform" style={{ transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)' }} />
                       </div>
                     </button>
                   </div>
-                  {dietaAbilitata ? <MacroTargetForm clienteId={clienteAperto.cliente_id} /> : <p className="text-center py-10 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Abilita la nutrizione per questo cliente.</p>}
+                  {dietaAbilitata ? <MacroTargetForm clienteId={clienteAperto.cliente_id} /> : <p className="text-center py-10 text-sm" style={{ color: 'var(--c-45)' }}>Abilita la nutrizione per questo cliente.</p>}
                 </div>
               ) : (
                 /* TAB OVERVIEW */
@@ -173,15 +173,15 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                     <>
                       {/* Grid Stats */}
                       <div className="grid grid-cols-3 gap-3">
-                        <div className="rounded-2xl p-4 text-center" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                           <p className="text-2xl font-black" style={{ color: 'oklch(0.60 0.15 200)' }}>{dettaglio.sessioni.length}</p>
                           <p className="text-xs uppercase text-zinc-500">Sessioni</p>
                         </div>
-                        <div className="rounded-2xl p-4 text-center" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                           <p className="text-2xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>{sessCompletate}</p>
                           <p className="text-xs uppercase text-zinc-500">Fatte</p>
                         </div>
-                        <div className="rounded-2xl p-4 text-center" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                        <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                           <p className="text-2xl font-black" style={{ color: 'oklch(0.70 0.19 46)' }}>{benessereScore ?? '—'}</p>
                           <p className="text-xs uppercase text-zinc-500">Mood</p>
                         </div>
@@ -189,7 +189,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
 
                       {/* Peso */}
                       {dettaglio.misurazioni.length > 0 && (
-                        <div className="rounded-2xl p-5" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                        <div className="rounded-2xl p-5" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                           <div className="flex justify-between items-center mb-4">
                             <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Andamento Peso</p>
                             <p className="text-lg font-black">{ultimoPeso} kg</p>
@@ -201,7 +201,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                       )}
 
                       {/* Ultime Sessioni */}
-                      <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                         <div className="px-4 py-3 border-b border-white/5 bg-white/5">
                           <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Attività Recenti</p>
                         </div>
@@ -222,11 +222,11 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
 
             {/* Footer fisso - pulsante analytics sempre visibile */}
             {!loading && drawerTab === 'overview' && (
-              <div className="flex-shrink-0 p-4" style={{ borderTop: '1px solid oklch(1 0 0 / 8%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)', background: 'oklch(0.13 0 0)' }}>
+              <div className="flex-shrink-0 p-4" style={{ borderTop: '1px solid var(--c-w8)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)', background: 'var(--c-13)' }}>
                 <Link
                   href={`/coach/clienti/${clienteAperto.cliente_id}/analytics`}
                   className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all active:scale-95"
-                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
+                  style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
                 >
                   <FontAwesomeIcon icon={faArrowTrendUp} />
                   ANALYTICS AVANZATE →

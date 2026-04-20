@@ -164,26 +164,26 @@ export default function AtletaSchedePage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight truncate" style={{ color: 'var(--c-97)' }}>
             Schede
           </h1>
-          <p className="mt-0.5 text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+          <p className="mt-0.5 text-sm" style={{ color: 'var(--c-50)' }}>
             {loading ? '...' : `${schede.length}/${limite === Infinity ? '∞' : limite} schede`}
           </p>
         </div>
         <button onClick={handleNuovaScheda} disabled={creating}
           className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
           {creating ? '...' : '+ Nuova'}
         </button>
       </div>
 
       {/* Lista */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="px-5 py-4 flex items-center justify-between"
-          style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Le tue schede</h2>
+          style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Le tue schede</h2>
           <span className="text-xs font-semibold px-3 py-1 rounded-full"
             style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
             {schede.length} totali
@@ -194,13 +194,13 @@ export default function AtletaSchedePage() {
           <BynariLoader file="blue" size={80} />
         ) : schede.length === 0 ? (
           <div className="py-16 text-center space-y-3">
-            <div className="text-5xl" style={{ color: 'oklch(0.35 0 0)' }}>
+            <div className="text-5xl" style={{ color: 'var(--c-35)' }}>
               <FontAwesomeIcon icon={faClipboardList} />
             </div>
-            <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessuna scheda ancora</p>
+            <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessuna scheda ancora</p>
             <button onClick={handleNuovaScheda}
               className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
               + Crea scheda
             </button>
           </div>
@@ -213,7 +213,7 @@ export default function AtletaSchedePage() {
               return (
                 <div key={s.id}
                   className="flex items-center gap-3 px-4 py-4 group transition-colors cursor-pointer hover:bg-white/2"
-                  style={{ borderBottom: i < schede.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}
+                  style={{ borderBottom: i < schede.length - 1 ? '1px solid var(--c-w4)' : 'none' }}
                   onClick={() => setEditingScheda({ id: s.id, nome: s.nome })}>
 
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
@@ -224,7 +224,7 @@ export default function AtletaSchedePage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold truncate" style={{ color: 'oklch(0.97 0 0)' }}>{s.nome}</p>
+                      <p className="font-semibold truncate" style={{ color: 'var(--c-97)' }}>{s.nome}</p>
                       {isAttiva && (
                         <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
                           style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
@@ -232,7 +232,7 @@ export default function AtletaSchedePage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-40)' }}>
                       {s.scheda_giorni?.length ?? 0} giorni ·{' '}
                       {new Date(s.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>

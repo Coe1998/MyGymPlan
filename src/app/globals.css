@@ -123,6 +123,139 @@
   --sidebar-ring: oklch(0.70 0.19 46);
 }
 
+/* =============================================
+   NEUTRAL COLOR TOKENS
+   Dark mode (default) + Light mode overrides
+   ============================================= */
+
+:root {
+  /* Solid neutrals */
+  --c-11: oklch(0.11 0 0);
+  --c-13: oklch(0.13 0 0);
+  --c-14: oklch(0.14 0 0);
+  --c-15: oklch(0.15 0 0);
+  --c-16: oklch(0.16 0 0);
+  --c-18: oklch(0.18 0 0);
+  --c-19: oklch(0.19 0 0);
+  --c-20: oklch(0.20 0 0);
+  --c-22: oklch(0.22 0 0);
+  --c-23: oklch(0.23 0 0);
+  --c-25: oklch(0.25 0 0);
+  --c-28: oklch(0.28 0 0);
+  --c-30: oklch(0.30 0 0);
+  --c-35: oklch(0.35 0 0);
+  --c-38: oklch(0.38 0 0);
+  --c-40: oklch(0.40 0 0);
+  --c-42: oklch(0.42 0 0);
+  --c-45: oklch(0.45 0 0);
+  --c-48: oklch(0.48 0 0);
+  --c-50: oklch(0.50 0 0);
+  --c-52: oklch(0.52 0 0);
+  --c-55: oklch(0.55 0 0);
+  --c-60: oklch(0.60 0 0);
+  --c-62: oklch(0.62 0 0);
+  --c-65: oklch(0.65 0 0);
+  --c-70: oklch(0.70 0 0);
+  --c-72: oklch(0.72 0 0);
+  --c-75: oklch(0.75 0 0);
+  --c-80: oklch(0.80 0 0);
+  --c-82: oklch(0.82 0 0);
+  --c-85: oklch(0.85 0 0);
+  --c-90: oklch(0.90 0 0);
+  --c-97: oklch(0.97 0 0);
+  /* White-alpha tokens (borders, subtle bg) */
+  --c-w3: oklch(1 0 0 / 3%);
+  --c-w4: oklch(1 0 0 / 4%);
+  --c-w5: oklch(1 0 0 / 5%);
+  --c-w6: oklch(1 0 0 / 6%);
+  --c-w7: oklch(1 0 0 / 7%);
+  --c-w8: oklch(1 0 0 / 8%);
+  --c-w10: oklch(1 0 0 / 10%);
+  --c-w12: oklch(1 0 0 / 12%);
+  --c-w14: oklch(1 0 0 / 14%);
+  --c-w15: oklch(1 0 0 / 15%);
+  --c-w20: oklch(1 0 0 / 20%);
+  /* Special: dark bg with opacity (e.g. blurred headers) */
+  --c-11a85: oklch(0.11 0 0 / 85%);
+}
+
+[data-theme="light"] {
+  /* Shadcn vars — light overrides */
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.05 0 0);
+  --card: oklch(0.96 0 0);
+  --card-foreground: oklch(0.05 0 0);
+  --popover: oklch(0.96 0 0);
+  --popover-foreground: oklch(0.05 0 0);
+  --primary: oklch(0.70 0.19 46);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.91 0 0);
+  --secondary-foreground: oklch(0.05 0 0);
+  --muted: oklch(0.91 0 0);
+  --muted-foreground: oklch(0.42 0 0);
+  --accent: oklch(0.91 0 0);
+  --accent-foreground: oklch(0.05 0 0);
+  --destructive: oklch(0.65 0.22 27);
+  --border: oklch(0 0 0 / 8%);
+  --input: oklch(0 0 0 / 12%);
+  --ring: oklch(0.70 0.19 46);
+  --sidebar: oklch(0.96 0 0);
+  --sidebar-foreground: oklch(0.05 0 0);
+  --sidebar-primary: oklch(0.70 0.19 46);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0 0);
+  --sidebar-accent-foreground: oklch(0.05 0 0);
+  --sidebar-border: oklch(0 0 0 / 8%);
+  --sidebar-ring: oklch(0.70 0.19 46);
+  /* Neutral color tokens — light values */
+  --c-11: oklch(0.99 0 0);
+  --c-13: oklch(0.98 0 0);
+  --c-14: oklch(0.97 0 0);
+  --c-15: oklch(0.96 0 0);
+  --c-16: oklch(0.96 0 0);
+  --c-18: oklch(0.95 0 0);
+  --c-19: oklch(0.94 0 0);
+  --c-20: oklch(0.93 0 0);
+  --c-22: oklch(0.92 0 0);
+  --c-23: oklch(0.91 0 0);
+  --c-25: oklch(0.90 0 0);
+  --c-28: oklch(0.88 0 0);
+  --c-30: oklch(0.86 0 0);
+  --c-35: oklch(0.83 0 0);
+  --c-38: oklch(0.81 0 0);
+  --c-40: oklch(0.55 0 0);
+  --c-42: oklch(0.53 0 0);
+  --c-45: oklch(0.50 0 0);
+  --c-48: oklch(0.47 0 0);
+  --c-50: oklch(0.45 0 0);
+  --c-52: oklch(0.43 0 0);
+  --c-55: oklch(0.40 0 0);
+  --c-60: oklch(0.35 0 0);
+  --c-62: oklch(0.33 0 0);
+  --c-65: oklch(0.30 0 0);
+  --c-70: oklch(0.25 0 0);
+  --c-72: oklch(0.23 0 0);
+  --c-75: oklch(0.20 0 0);
+  --c-80: oklch(0.15 0 0);
+  --c-82: oklch(0.13 0 0);
+  --c-85: oklch(0.10 0 0);
+  --c-90: oklch(0.08 0 0);
+  --c-97: oklch(0.05 0 0);
+  /* White-alpha → black-alpha in light mode */
+  --c-w3: oklch(0 0 0 / 3%);
+  --c-w4: oklch(0 0 0 / 4%);
+  --c-w5: oklch(0 0 0 / 5%);
+  --c-w6: oklch(0 0 0 / 6%);
+  --c-w7: oklch(0 0 0 / 7%);
+  --c-w8: oklch(0 0 0 / 8%);
+  --c-w10: oklch(0 0 0 / 10%);
+  --c-w12: oklch(0 0 0 / 12%);
+  --c-w14: oklch(0 0 0 / 14%);
+  --c-w15: oklch(0 0 0 / 15%);
+  --c-w20: oklch(0 0 0 / 20%);
+  --c-11a85: oklch(0.99 0 0 / 90%);
+}
+
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }

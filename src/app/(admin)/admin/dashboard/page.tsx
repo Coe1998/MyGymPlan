@@ -94,12 +94,12 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Admin Dashboard</h1>
-          <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>Panoramica globale di Bynari</p>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Admin Dashboard</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>Panoramica globale di Bynari</p>
         </div>
         <button onClick={fetchAll}
           className="px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
           ↻ Aggiorna
         </button>
       </div>
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
           </div>
           <button onClick={() => { setTab('coach'); setFiltroCoach('pending') }}
             className="px-4 py-2 rounded-xl text-xs font-bold"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
             Vai →
           </button>
         </div>
@@ -129,14 +129,14 @@ export default function AdminDashboard() {
             <p className="font-bold text-sm" style={{ color: 'oklch(0.85 0.12 46)' }}>
               {coachARischio.length} coach approvati non hanno ancora usato la piattaforma
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-55)' }}>
               {coachARischio.map(c => c.full_name).join(', ')}
             </p>
           </div>
         </div>
       )}
 
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
+      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
         {[
           { id: 'overview', label: '📊 Overview' },
           { id: 'coach', label: `👥 Coach${stats?.coach_pending ? ` (${stats.coach_pending})` : ''}` },
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
             }}>
             {t.label}
           </button>
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
 
       {loading ? (
         <div className="py-20 text-center">
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento dati...</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento dati...</p>
         </div>
       ) : (
         <>
@@ -169,10 +169,10 @@ export default function AdminDashboard() {
                   { label: 'Nuovi oggi', value: stats.nuovi_oggi, sub: 'registrazioni', color: 'oklch(0.65 0.18 150)' },
                 ].map(s => (
                   <div key={s.label} className="rounded-2xl p-5 space-y-2"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{s.label}</p>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                    <p className="text-xs" style={{ color: 'var(--c-50)' }}>{s.label}</p>
                     <p className="text-4xl font-black" style={{ color: s.color }}>{s.value}</p>
-                    <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{s.sub}</p>
+                    <p className="text-xs" style={{ color: 'var(--c-40)' }}>{s.sub}</p>
                   </div>
                 ))}
               </div>
@@ -182,10 +182,10 @@ export default function AdminDashboard() {
                   { label: 'Schede create', value: stats.totale_schede, icon: '📋', color: 'oklch(0.70 0.19 46)' },
                 ].map(s => (
                   <div key={s.label} className="rounded-2xl p-5 flex items-center gap-4"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     <div className="text-4xl">{s.icon}</div>
                     <div>
-                      <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{s.label}</p>
+                      <p className="text-xs" style={{ color: 'var(--c-50)' }}>{s.label}</p>
                       <p className="text-4xl font-black" style={{ color: s.color }}>{s.value}</p>
                     </div>
                   </div>
@@ -193,20 +193,20 @@ export default function AdminDashboard() {
               </div>
               {coachARischio.length > 0 && (
                 <div className="rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
-                  <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>⚠️ Coach inattivi dopo approvazione</p>
+                  style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 20%)' }}>
+                  <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                    <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>⚠️ Coach inattivi dopo approvazione</p>
                   </div>
                   {coachARischio.map((c, i) => (
                     <div key={c.id} className="flex items-center gap-4 px-5 py-3"
-                      style={{ borderBottom: i < coachARischio.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      style={{ borderBottom: i < coachARischio.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
                         style={{ background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)' }}>
                         {c.full_name?.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
-                        <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                        <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
+                        <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                           Iscritto il {new Date(c.created_at).toLocaleDateString('it-IT')} · 0 clienti · 0 schede
                         </p>
                       </div>
@@ -228,22 +228,22 @@ export default function AdminDashboard() {
                   <button key={f.id} onClick={() => setFiltroCoach(f.id as any)}
                     className="px-4 py-2 rounded-xl text-xs font-bold transition-all"
                     style={{
-                      background: filtroCoach === f.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                      color: filtroCoach === f.id ? 'oklch(0.11 0 0)' : 'oklch(0.55 0 0)',
+                      background: filtroCoach === f.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                      color: filtroCoach === f.id ? 'var(--c-11)' : 'var(--c-55)',
                     }}>
                     {f.label}
                   </button>
                 ))}
               </div>
               <div className="rounded-2xl overflow-hidden"
-                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                 {coachFiltrati.length === 0 ? (
                   <div className="py-12 text-center">
-                    <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun coach in questa categoria</p>
+                    <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun coach in questa categoria</p>
                   </div>
                 ) : coachFiltrati.map((c, i) => (
                   <div key={c.id} className="px-5 py-4 flex flex-col md:flex-row md:items-center gap-3"
-                    style={{ borderBottom: i < coachFiltrati.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < coachFiltrati.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
                         style={{
@@ -253,8 +253,8 @@ export default function AdminDashboard() {
                         {c.full_name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
-                        {c.email && <p className="text-xs truncate" style={{ color: 'oklch(0.45 0 0)' }}>{c.email}</p>}
+                        <p className="font-semibold text-sm truncate" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
+                        {c.email && <p className="text-xs truncate" style={{ color: 'var(--c-45)' }}>{c.email}</p>}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                         }}>
                         {c.coach_status === 'pending' ? '⏳ Pending' : c.coach_status === 'approved' ? '✓ Approvato' : '✗ Sospeso'}
                       </span>
-                      <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                      <span className="text-xs" style={{ color: 'var(--c-45)' }}>
                         👥 {c.clienti_count} · 📋 {c.schede_count} · {new Date(c.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
                       </span>
                     </div>
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
                       {c.coach_status === 'approved' && (
                         <button onClick={() => handleAzione(c.id, 'sospendi')} disabled={processingId === c.id}
                           className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95"
-                          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.50 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+                          style={{ background: 'var(--c-22)', color: 'var(--c-50)', border: '1px solid var(--c-w8)' }}>
                           Sospendi
                         </button>
                       )}
@@ -305,27 +305,27 @@ export default function AdminDashboard() {
 
           {tab === 'attivita' && (
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <div className="px-5 py-4" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <p className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Ultimi eventi sulla piattaforma</p>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                <p className="font-bold" style={{ color: 'var(--c-97)' }}>Ultimi eventi sulla piattaforma</p>
               </div>
               {eventi.length === 0 ? (
                 <div className="py-12 text-center">
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun evento recente</p>
+                  <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun evento recente</p>
                 </div>
               ) : eventi.map((e, i) => {
                 const colori = TIPO_COLORI[e.tipo] ?? TIPO_COLORI.registrazione
                 return (
                   <div key={i} className="flex items-center gap-4 px-5 py-3"
-                    style={{ borderBottom: i < eventi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < eventi.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-sm"
                       style={{ background: colori.bg }}>
                       {colori.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate" style={{ color: 'oklch(0.80 0 0)' }}>{e.descrizione}</p>
+                      <p className="text-sm truncate" style={{ color: 'var(--c-80)' }}>{e.descrizione}</p>
                     </div>
-                    <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.40 0 0)' }}>
+                    <p className="text-xs flex-shrink-0" style={{ color: 'var(--c-40)' }}>
                       {formatData(e.data)}
                     </p>
                   </div>

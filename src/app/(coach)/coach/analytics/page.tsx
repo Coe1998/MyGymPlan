@@ -87,25 +87,25 @@ function SchedaPreviewContent({ schedaId }: { schedaId: string }) {
   }, [schedaId])
 
   if (loading) return <BynariLoader file="blue" size={80} />
-  if (giorni.length === 0) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno nella scheda</p></div>
+  if (giorni.length === 0) return <div className="flex-1 flex items-center justify-center"><p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun giorno nella scheda</p></div>
 
   return (
     <div className="flex-1 p-5 space-y-4">
       {giorni.map(g => (
         <div key={g.id} className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{g.nome}</p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{g.scheda_esercizi?.length ?? 0} esercizi</p>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+            <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{g.nome}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{g.scheda_esercizi?.length ?? 0} esercizi</p>
           </div>
           {(g.scheda_esercizi ?? []).sort((a: any, b: any) => a.ordine - b.ordine).map((e: any, i: number) => (
             <div key={e.id} className="flex items-center gap-3 px-4 py-3"
-              style={{ borderBottom: i < g.scheda_esercizi.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+              style={{ borderBottom: i < g.scheda_esercizi.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: 'oklch(0.85 0 0)' }}>
+                <p className="text-sm font-medium truncate" style={{ color: 'var(--c-85)' }}>
                   {e.esercizi?.nome ?? '—'}
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   {e.serie} × {e.ripetizioni}
                   {e.tipo !== 'normale' && <span className="ml-1.5 px-1.5 py-0.5 rounded text-xs" style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>{e.tipo}</span>}
                 </p>
@@ -621,8 +621,8 @@ export default function AnalyticsPage() {
   }
 
   const getStatoCliente = (giorni: number | null, sessioni: number) => {
-    if (sessioni === 0) return { label: 'Mai allenato', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' }
-    if (giorni === null) return { label: 'Nessuna sessione', color: 'oklch(0.55 0 0)', bg: 'oklch(0.25 0 0)' }
+    if (sessioni === 0) return { label: 'Mai allenato', color: 'var(--c-55)', bg: 'var(--c-25)' }
+    if (giorni === null) return { label: 'Nessuna sessione', color: 'var(--c-55)', bg: 'var(--c-25)' }
     if (giorni <= 3) return { label: 'Attivo', color: 'oklch(0.65 0.18 150)', bg: 'oklch(0.65 0.18 150 / 15%)' }
     if (giorni <= 7) return { label: 'Regolare', color: 'oklch(0.70 0.19 46)', bg: 'oklch(0.70 0.19 46 / 15%)' }
     if (giorni <= 14) return { label: 'In calo', color: 'oklch(0.75 0.18 80)', bg: 'oklch(0.75 0.18 80 / 15%)' }
@@ -677,19 +677,19 @@ export default function AnalyticsPage() {
           <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
             Dashboard <FontAwesomeIcon icon={faHand} />
           </p>
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
             I tuoi clienti
           </h1>
           <div className="flex items-center gap-4 mt-1">
             {[
-              { label: 'Totali', value: totaleClienti, color: 'oklch(0.50 0 0)' },
+              { label: 'Totali', value: totaleClienti, color: 'var(--c-50)' },
               { label: 'Nuovi', value: clientiNuovi, color: 'oklch(0.70 0.19 46)' },
               { label: 'Attivi', value: clientiAttivi, color: 'oklch(0.65 0.18 150)' },
             ].map((s, i) => (
               <div key={s.label} className="flex items-center gap-2">
-                {i > 0 && <span style={{ color: 'oklch(0.30 0 0)' }}>·</span>}
+                {i > 0 && <span style={{ color: 'var(--c-30)' }}>·</span>}
                 <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
-                <span className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</span>
+                <span className="text-sm" style={{ color: 'var(--c-45)' }}>{s.label}</span>
               </div>
             ))}
           </div>
@@ -697,12 +697,12 @@ export default function AnalyticsPage() {
         <div className="flex gap-2 flex-shrink-0">
           <a href="/coach/schede"
             className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.70 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
             + Scheda
           </a>
           <a href="/coach/clienti"
             className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
             + Cliente
           </a>
         </div>
@@ -717,7 +717,7 @@ export default function AnalyticsPage() {
             <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0.10 46)' }}>
               {clientiConAlert.length} {clientiConAlert.length === 1 ? 'cliente richiede' : 'clienti richiedono'} attenzione
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.60 0 0)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-60)' }}>
               {clientiConAlert.map(c => c.full_name).join(', ')}
             </p>
           </div>
@@ -728,9 +728,9 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {overviewStats.map((stat) => (
           <div key={stat.label} className="rounded-2xl p-4 space-y-2"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{stat.label}</p>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
               <FontAwesomeIcon icon={stat.icon} />
             </div>
             <p className="text-3xl lg:text-4xl font-black" style={{ color: stat.color }}>{stat.value}</p>
@@ -740,9 +740,9 @@ export default function AnalyticsPage() {
       {/* Prossimi appuntamenti */}
       {prossimiCheckin.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
-          <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
+          <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+            <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
               <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.60 0.15 200)' }} />
               Prossimi appuntamenti
             </p>
@@ -762,12 +762,12 @@ export default function AnalyticsPage() {
             return (
               <Link key={a.id} href={`/coach/appuntamenti`}
                 className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
-                style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.60 0.15 200)' }} />
-                <p className="flex-1 text-sm font-semibold truncate" style={{ color: 'oklch(0.85 0 0)' }}>
+                <p className="flex-1 text-sm font-semibold truncate" style={{ color: 'var(--c-85)' }}>
                   {(a as any).profiles?.full_name ?? 'Cliente'}
                 </p>
-                <p className="text-xs flex-shrink-0" style={{ color: 'oklch(0.50 0 0)' }}>{gg} · {a.durata_minuti}min</p>
+                <p className="text-xs flex-shrink-0" style={{ color: 'var(--c-50)' }}>{gg} · {a.durata_minuti}min</p>
               </Link>
             )
           })}
@@ -776,9 +776,9 @@ export default function AnalyticsPage() {
 
       {/* Prossimi check-in mensili */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
             <FontAwesomeIcon icon={faClipboardList} className="mr-2" style={{ color: 'oklch(0.70 0.19 46)' }} />
             Prossimi check-in
           </p>
@@ -787,7 +787,7 @@ export default function AnalyticsPage() {
           </Link>
         </div>
         <div className="px-5 py-4 text-center">
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun check-in programmato</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun check-in programmato</p>
           <Link href="/coach/checkin"
             className="inline-block mt-2 text-xs font-semibold"
             style={{ color: 'oklch(0.70 0.19 46)' }}>
@@ -797,7 +797,7 @@ export default function AnalyticsPage() {
       </div>
       
       {/* Tabs */}
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
+      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
         {[
           { id: 'overview' as VistaTab, label: 'Attività', icon: faChartBar },
           { id: 'attivita' as VistaTab, label: 'Alert', icon: faTriangleExclamation, badge: clientiConAlert.length },
@@ -806,7 +806,7 @@ export default function AnalyticsPage() {
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all relative"
             style={{
               background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
             }}>
             <FontAwesomeIcon icon={t.icon} />
             <span className="hidden sm:inline">{t.label}</span>
@@ -822,14 +822,14 @@ export default function AnalyticsPage() {
 
       {loading ? (
         <div className="py-16 text-center">
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Caricamento analytics...</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento analytics...</p>
         </div>
       ) : clientiStats.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           <p className="text-5xl"><FontAwesomeIcon icon={faChartBar} /></p>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Nessun cliente ancora</p>
-          <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Aggiungi clienti per vedere le analytics</p>
+          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun cliente ancora</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Aggiungi clienti per vedere le analytics</p>
         </div>
       ) : (
         <>
@@ -837,7 +837,7 @@ export default function AnalyticsPage() {
           {tab === 'overview' && (
             <>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold" style={{ color: 'oklch(0.45 0 0)' }}>Ordina:</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--c-45)' }}>Ordina:</span>
               {([
                 { id: 'alert', label: '⚠ Alert' },
                 { id: 'ultima_attivita', label: '🕐 Ultima attività' },
@@ -848,22 +848,22 @@ export default function AnalyticsPage() {
                 <button key={o.id} onClick={() => setOrdinamento(o.id)}
                   className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
                   style={{
-                    background: ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    color: ordinamento === o.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
-                    border: `1px solid ${ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'oklch(1 0 0 / 8%)'}`,
+                    background: ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                    color: ordinamento === o.id ? 'var(--c-13)' : 'var(--c-50)',
+                    border: `1px solid ${ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'var(--c-w8)'}`,
                   }}>
                   {o.label}
                 </button>
               ))}
             </div>
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               {/* Header colonne */}
               <div className="px-5 py-3 grid grid-cols-12 gap-2 hidden lg:grid"
-                style={{ background: 'oklch(0.15 0 0)', borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ background: 'var(--c-15)', borderBottom: '1px solid var(--c-w6)' }}>
                 {['Cliente', 'Schede', 'Sessioni', 'Ultima sessione', 'Stato'].map((h, i) => (
                   <p key={h} className={`text-xs font-semibold uppercase tracking-wider ${i === 0 ? 'col-span-4' : i === 3 ? 'col-span-2 text-center' : 'col-span-2 text-center'}`}
-                    style={{ color: 'oklch(0.40 0 0)' }}>{h}</p>
+                    style={{ color: 'var(--c-40)' }}>{h}</p>
                 ))}
               </div>
 
@@ -873,7 +873,7 @@ export default function AnalyticsPage() {
                   <div key={c.id}
                     onClick={() => apriCliente(c)}
                     className="px-5 py-4 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center flex flex-col gap-2 cursor-pointer transition-colors hover:opacity-80"
-                    style={{ borderBottom: i < clientiOrdinati.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < clientiOrdinati.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     {/* Cliente */}
                     <div className="lg:col-span-4 flex items-center gap-3">
                       <div className="relative flex-shrink-0">
@@ -883,13 +883,13 @@ export default function AnalyticsPage() {
                         </div>
                         {isNuovo(c) && (
                           <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
-                            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', fontSize: '0.6rem' }}>
+                            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>
                             NEW
                           </span>
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
+                        <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
                         {c.alert.length > 0 && (
                           <p className="text-xs" style={{ color: 'oklch(0.75 0.15 27)' }}>
                             <FontAwesomeIcon icon={faTriangleExclamation} /> {c.alert.length} alert
@@ -903,11 +903,11 @@ export default function AnalyticsPage() {
                       <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: stato.bg, color: stato.color }}>
                         {stato.label}
                       </span>
-                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                      <span className="text-xs" style={{ color: 'var(--c-50)' }}>
                         {c.totale_sessioni} sessioni
                       </span>
                       {c.ultima_sessione && (
-                        <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                        <span className="text-xs" style={{ color: 'var(--c-50)' }}>
                           {c.giorni_inattivo === 0 ? 'Oggi' : c.giorni_inattivo === 1 ? 'Ieri' : `${c.giorni_inattivo}gg fa`}
                         </span>
                       )}
@@ -915,20 +915,20 @@ export default function AnalyticsPage() {
 
                     {/* Desktop: colonne */}
                     <div className="lg:col-span-2 text-center hidden lg:block">
-                      <p className="text-sm font-semibold" style={{ color: c.schede_attive > 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)' }}>
+                      <p className="text-sm font-semibold" style={{ color: c.schede_attive > 0 ? 'oklch(0.65 0.18 150)' : 'var(--c-45)' }}>
                         {c.schede_attive}
                       </p>
                     </div>
                     <div className="lg:col-span-2 text-center hidden lg:block">
-                      <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{c.totale_sessioni}</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--c-97)' }}>{c.totale_sessioni}</p>
                     </div>
                     <div className="lg:col-span-2 text-center hidden lg:block">
                       {c.ultima_sessione ? (
-                        <p className="text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+                        <p className="text-sm" style={{ color: 'var(--c-97)' }}>
                           {c.giorni_inattivo === 0 ? 'Oggi' : c.giorni_inattivo === 1 ? 'Ieri' : `${c.giorni_inattivo}gg fa`}
                         </p>
                       ) : (
-                        <p className="text-sm" style={{ color: 'oklch(0.40 0 0)' }}>—</p>
+                        <p className="text-sm" style={{ color: 'var(--c-40)' }}>—</p>
                       )}
                     </div>
                     <div className="lg:col-span-2 lg:flex lg:justify-center hidden lg:block">
@@ -949,19 +949,19 @@ export default function AnalyticsPage() {
             <div className="space-y-4">
               {clientiConAlert.length === 0 ? (
                 <div className="rounded-2xl py-16 text-center space-y-3"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                   <p className="text-5xl"><FontAwesomeIcon icon={faCircleCheck} /></p>
-                  <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Tutto ok!</p>
-                  <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun cliente richiede attenzione</p>
+                  <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Tutto ok!</p>
+                  <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun cliente richiede attenzione</p>
                 </div>
               ) : (
                 <>
-                  <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+                  <p className="text-sm" style={{ color: 'var(--c-50)' }}>
                     Clienti che potrebbero aver bisogno di supporto o contatto
                   </p>
                   {clientiConAlert.map((c) => (
                     <div key={c.id} className="rounded-2xl p-5 space-y-3"
-                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
+                      style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
                       <div className="flex items-center gap-3">
                         <div className="relative flex-shrink-0">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
@@ -970,14 +970,14 @@ export default function AnalyticsPage() {
                           </div>
                           {isNuovo(c) && (
                             <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
-                              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', fontSize: '0.6rem' }}>
+                              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>
                               NEW
                             </span>
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{c.full_name}</p>
-                          <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
+                          <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                             {c.totale_sessioni} sessioni totali
                             {c.ultima_sessione && ` · ultima ${c.giorni_inattivo === 0 ? 'oggi' : c.giorni_inattivo === 1 ? 'ieri' : `${c.giorni_inattivo}gg fa`}`}
                           </p>
@@ -1002,7 +1002,7 @@ export default function AnalyticsPage() {
                               </button>
                               {isOpen && (
                                 <div className="absolute bottom-full left-0 mb-2 z-50 w-64 rounded-2xl px-4 py-3 text-xs"
-                                  style={{ background: 'oklch(0.20 0 0)', border: `1px solid ${color}`, color: 'oklch(0.80 0 0)', lineHeight: 1.6, boxShadow: '0 8px 24px oklch(0 0 0 / 40%)' }}>
+                                  style={{ background: 'var(--c-20)', border: `1px solid ${color}`, color: 'var(--c-80)', lineHeight: 1.6, boxShadow: '0 8px 24px oklch(0 0 0 / 40%)' }}>
                                   <p style={{ color, fontWeight: 600, marginBottom: 4 }}>{a.label}</p>
                                   <p>{a.dettaglio}</p>
                                 </div>
@@ -1025,15 +1025,15 @@ export default function AnalyticsPage() {
         <div className="fixed inset-0 z-50 flex justify-end" style={{ background: 'oklch(0 0 0 / 60%)' }}
           onClick={chiudiCliente}>
           <div className="w-full max-w-xl h-full overflow-y-auto flex flex-col"
-            style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+            style={{ background: 'var(--c-13)', borderLeft: '1px solid var(--c-w8)' }}
             onClick={e => e.stopPropagation()}>
 
             {/* Header drawer */}
             <div className="sticky top-0 z-10 flex items-center gap-4 px-5"
-              style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
+              style={{ background: 'var(--c-13)', borderBottom: '1px solid var(--c-w8)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
               <button onClick={chiudiCliente}
                 className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
-                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+                style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
                 <FontAwesomeIcon icon={faXmark} />
               </button>
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -1042,10 +1042,10 @@ export default function AnalyticsPage() {
                   {clienteSelezionato.full_name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-black text-base truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                  <p className="font-black text-base truncate" style={{ color: 'var(--c-97)' }}>
                     {clienteSelezionato.full_name}
                   </p>
-                  <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                  <p className="text-xs" style={{ color: 'var(--c-50)' }}>
                     {clienteSelezionato.totale_sessioni} sessioni totali
                   </p>
                 </div>
@@ -1060,7 +1060,7 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Drawer tabs */}
-            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
+            <div className="flex gap-2 p-3 flex-shrink-0" style={{ borderBottom: '1px solid var(--c-w8)' }}>
               {[
                 { id: 'overview', label: '📊 Overview' },
                 { id: 'nutrizione', label: '🥗 Nutrizione' },
@@ -1069,8 +1069,8 @@ export default function AnalyticsPage() {
                 <button key={t.id} onClick={() => setDrawerTab(t.id as any)}
                   className="flex-1 py-2 rounded-xl text-sm font-semibold transition-all"
                   style={{
-                    background: drawerTab === t.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                    color: drawerTab === t.id ? 'oklch(0.11 0 0)' : 'oklch(0.50 0 0)',
+                    background: drawerTab === t.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                    color: drawerTab === t.id ? 'var(--c-11)' : 'var(--c-50)',
                   }}>
                   {t.label}
                 </button>
@@ -1079,10 +1079,10 @@ export default function AnalyticsPage() {
 
             {/* Toggle dieta — sempre visibile */}
             <div className="px-5 py-3 flex items-center justify-between flex-shrink-0"
-              style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)', background: 'oklch(0.16 0 0)' }}>
+              style={{ borderBottom: '1px solid var(--c-w8)', background: 'var(--c-16)' }}>
               <div>
-                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Piano dieta</p>
-                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Piano dieta</p>
+                <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                   {dietaAbilitata ? 'Abilitato ✓' : 'Non abilitato'}
                 </p>
               </div>
@@ -1090,10 +1090,10 @@ export default function AnalyticsPage() {
                 className="relative flex-shrink-0"
                 style={{ opacity: togglingDieta ? 0.5 : 1 }}>
                 <div className="w-12 h-7 rounded-full transition-colors duration-200"
-                  style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'oklch(0.30 0 0)' }}>
+                  style={{ background: dietaAbilitata ? 'oklch(0.65 0.18 150)' : 'var(--c-30)' }}>
                   <div className="absolute top-0.5 w-6 h-6 rounded-full shadow-md transition-transform duration-200"
                     style={{
-                      background: 'oklch(0.97 0 0)',
+                      background: 'var(--c-97)',
                       transform: dietaAbilitata ? 'translateX(1.25rem)' : 'translateX(0.125rem)',
                     }} />
                 </div>
@@ -1104,26 +1104,26 @@ export default function AnalyticsPage() {
               <div className="flex-1 p-5 space-y-4 overflow-y-auto">
                 {showFormInt ? (
                   <div className="rounded-2xl p-4 space-y-3"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.65 0.15 300 / 30%)' }}>
-                    <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Prescrivi integratore</p>
+                    style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.15 300 / 30%)' }}>
+                    <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Prescrivi integratore</p>
                     <input type="text" value={intNome} onChange={e => setIntNome(e.target.value)}
                       placeholder="es. Creatina, Vitamina D, Omega 3..."
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }} />
                     <div className="grid grid-cols-2 gap-2">
                       <input type="number" value={intQuantita} onChange={e => setIntQuantita(e.target.value)}
                         placeholder="Dose (es. 5)"
                         className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }} />
                       <select value={intUnita} onChange={e => setIntUnita(e.target.value)}
                         className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                        style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)', colorScheme: 'dark' }}>
+                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', colorScheme: 'dark' }}>
                         {['g', 'mg', 'ml', 'capsule', 'compresse', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
                       </select>
                     </div>
                     <select value={intMomento} onChange={e => setIntMomento(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: intMomento ? 'oklch(0.97 0 0)' : 'oklch(0.45 0 0)', colorScheme: 'dark' }}>
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: intMomento ? 'var(--c-97)' : 'var(--c-45)', colorScheme: 'dark' }}>
                       <option value="">Momento assunzione...</option>
                       {['Mattina', 'Pre-workout', 'Post-workout', 'Con i pasti', 'Prima di dormire', 'A digiuno', 'Sera'].map(m => (
                         <option key={m} value={m}>{m}</option>
@@ -1132,7 +1132,7 @@ export default function AnalyticsPage() {
                     <input type="text" value={intNote} onChange={e => setIntNote(e.target.value)}
                       placeholder="Note opzionali (es. con acqua abbondante)"
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }} />
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }} />
                     <div className="flex gap-2">
                       <button onClick={async () => {
                         if (!intNome.trim() || !clienteSelezionato) return
@@ -1154,12 +1154,12 @@ export default function AnalyticsPage() {
                         setShowFormInt(false); setSavingInt(false)
                       }} disabled={savingInt || !intNome.trim()}
                         className="flex-1 py-2.5 rounded-xl text-sm font-bold"
-                        style={{ background: 'oklch(0.65 0.15 300)', color: 'oklch(0.97 0 0)', opacity: savingInt ? 0.6 : 1 }}>
+                        style={{ background: 'oklch(0.65 0.15 300)', color: 'var(--c-97)', opacity: savingInt ? 0.6 : 1 }}>
                         {savingInt ? 'Salvataggio...' : '+ Prescrivi'}
                       </button>
                       <button onClick={() => setShowFormInt(false)}
                         className="px-4 py-2.5 rounded-xl text-sm font-medium"
-                        style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+                        style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
                         Annulla
                       </button>
                     </div>
@@ -1174,23 +1174,23 @@ export default function AnalyticsPage() {
 
                 {pianoIntegratori.length === 0 && !showFormInt ? (
                   <div className="rounded-2xl py-10 text-center"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     <p className="text-2xl mb-2">💊</p>
-                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>Nessun integratore prescritto</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--c-60)' }}>Nessun integratore prescritto</p>
                   </div>
                 ) : (
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     {pianoIntegratori.map((int: any, i: number) => (
                       <div key={int.id} className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderBottom: i < pianoIntegratori.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                        style={{ borderBottom: i < pianoIntegratori.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
                           style={{ background: 'oklch(0.65 0.15 300 / 15%)', color: 'oklch(0.65 0.15 300)' }}>
                           💊
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>{int.nome}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="text-sm font-semibold" style={{ color: 'var(--c-97)' }}>{int.nome}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                             {int.quantita && `${int.quantita} ${int.unita}`}
                             {int.momento && ` · ${int.momento}`}
                             {int.note && ` · ${int.note}`}
@@ -1228,7 +1228,7 @@ export default function AnalyticsPage() {
                               <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'oklch(0.60 0.15 200)' }}>
                                 📊 Stima TDEE da anamnesi
                               </p>
-                              <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+                              <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
                                 Basata su età, altezza, peso ({ultimoPeso} kg) e stile di vita dichiarato
                               </p>
                             </div>
@@ -1240,10 +1240,10 @@ export default function AnalyticsPage() {
                               { label: 'Surplus', kcal: tdee + 300, desc: '+300 kcal', color: 'oklch(0.70 0.19 46)' },
                             ].map(s => (
                               <div key={s.label} className="rounded-xl p-2.5 text-center"
-                                style={{ background: 'oklch(0.18 0 0)' }}>
+                                style={{ background: 'var(--c-18)' }}>
                                 <p className="text-base font-black tabular-nums" style={{ color: s.color }}>{s.kcal}</p>
-                                <p className="text-xs font-semibold mt-0.5" style={{ color: 'oklch(0.70 0 0)' }}>{s.label}</p>
-                                <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{s.desc}</p>
+                                <p className="text-xs font-semibold mt-0.5" style={{ color: 'var(--c-70)' }}>{s.label}</p>
+                                <p className="text-xs" style={{ color: 'var(--c-40)' }}>{s.desc}</p>
                               </div>
                             ))}
                           </div>
@@ -1284,15 +1284,15 @@ export default function AnalyticsPage() {
 
                             return (
                               <div className="space-y-1.5 pt-1">
-                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.40 0 0)' }}>
+                                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--c-40)' }}>
                                   Fattori dall&apos;anamnesi
                                 </p>
                                 {fattori.map((f, i) => (
                                   <div key={i} className="flex items-start gap-2 px-2.5 py-2 rounded-lg text-xs"
                                     style={{
-                                      background: f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 10%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
-                                      border: `1px solid ${f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 25%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 25%)' : 'oklch(1 0 0 / 6%)'}`,
-                                      color: f.tipo === 'warning' ? 'oklch(0.80 0.12 46)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150)' : 'oklch(0.60 0 0)',
+                                      background: f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 10%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 10%)' : 'var(--c-22)',
+                                      border: `1px solid ${f.tipo === 'warning' ? 'oklch(0.65 0.22 27 / 25%)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150 / 25%)' : 'var(--c-w6)'}`,
+                                      color: f.tipo === 'warning' ? 'oklch(0.80 0.12 46)' : f.tipo === 'boost' ? 'oklch(0.65 0.18 150)' : 'var(--c-60)',
                                     }}>
                                     <span className="flex-shrink-0">{f.tipo === 'warning' ? '⚠️' : f.tipo === 'boost' ? '↑' : 'ℹ️'}</span>
                                     {f.label}
@@ -1301,7 +1301,7 @@ export default function AnalyticsPage() {
                               </div>
                             )
                           })()}
-                          <p className="text-xs" style={{ color: 'oklch(0.38 0 0)' }}>
+                          <p className="text-xs" style={{ color: 'var(--c-38)' }}>
                             ⚠️ Stima indicativa (formula Mifflin-St Jeor{anamnesICliente?.sesso ? `, ${anamnesICliente.sesso === 'M' ? 'uomo' : 'donna'}` : ', sesso non specificato'}). Usa come punto di partenza, aggiusta in base ai check-in.
                           </p>
                         </div>
@@ -1311,7 +1311,7 @@ export default function AnalyticsPage() {
                     <CarbCyclingForm clienteId={clienteSelezionato!.id} />
                     {storicoNutrizioneCliente.length > 0 && (
                       <div className="px-5 pb-5 space-y-3">
-                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.40 0 0)' }}>
+                        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-40)' }}>
                           Ultimi 7 giorni
                         </p>
                         {storicoNutrizioneCliente.map(g => {
@@ -1319,9 +1319,9 @@ export default function AnalyticsPage() {
                           const ok = macroTargetCliente ? g.calorie >= macroTargetCliente.calorie * 0.85 && g.calorie <= macroTargetCliente.calorie * 1.15 : null
                           return (
                             <div key={g.data} className="rounded-2xl p-4 space-y-2"
-                              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                               <div className="flex items-center justify-between">
-                                <p className="text-sm font-bold capitalize" style={{ color: 'oklch(0.85 0 0)' }}>{label}</p>
+                                <p className="text-sm font-bold capitalize" style={{ color: 'var(--c-85)' }}>{label}</p>
                                 <div className="flex items-center gap-2">
                                   {ok !== null && (
                                     <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
@@ -1338,7 +1338,7 @@ export default function AnalyticsPage() {
                                 </div>
                               </div>
                               {macroTargetCliente && (
-                                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
                                   <div className="h-full rounded-full"
                                     style={{ width: `${Math.min(100, macroTargetCliente.calorie > 0 ? Math.round((g.calorie / macroTargetCliente.calorie) * 100) : 0)}%`, background: 'oklch(0.70 0.19 46)' }} />
                                 </div>
@@ -1349,9 +1349,9 @@ export default function AnalyticsPage() {
                                   { label: 'Carb', val: g.carboidrati_g, tgt: macroTargetCliente?.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
                                   { label: 'Grassi', val: g.grassi_g, tgt: macroTargetCliente?.grassi_g, color: 'oklch(0.65 0.18 150)' },
                                 ].map(m => (
-                                  <div key={m.label} className="rounded-xl p-2" style={{ background: 'oklch(0.22 0 0)' }}>
+                                  <div key={m.label} className="rounded-xl p-2" style={{ background: 'var(--c-22)' }}>
                                     <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{Math.round(m.val)}g</p>
-                                    <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
+                                    <p className="text-xs" style={{ color: 'var(--c-40)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
                                   </div>
                                 ))}
                               </div>
@@ -1362,14 +1362,14 @@ export default function AnalyticsPage() {
                     )}
                     {storicoNutrizioneCliente.length === 0 && (
                       <div className="px-5 pb-5 rounded-2xl py-8 text-center">
-                        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessun dato nutrizionale negli ultimi 7 giorni</p>
+                        <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun dato nutrizionale negli ultimi 7 giorni</p>
                       </div>
                     )}
                   </>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
                     <p className="text-3xl">🥗</p>
-                    <p className="text-sm font-semibold" style={{ color: 'oklch(0.60 0 0)' }}>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--c-60)' }}>
                       Abilita il piano dieta per impostare i macro di questo cliente
                     </p>
                   </div>
@@ -1389,19 +1389,19 @@ export default function AnalyticsPage() {
                     { label: 'Schede attive', value: clienteSelezionato?.schede_attive ?? 0, color: 'oklch(0.70 0.19 46)' },
                   ].map(s => (
                     <div key={s.label} className="rounded-2xl p-3 text-center"
-                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                       <p className="text-2xl font-black" style={{ color: s.color }}>{s.value}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{s.label}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{s.label}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Schede assegnate */}
                 <div className="rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                   <div className="px-4 py-3 flex items-center justify-between"
-                    style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📋 Schede assegnate</p>
+                    style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                    <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>📋 Schede assegnate</p>
                     <button onClick={apriAssegnaFlow}
                       className="text-xs font-bold px-3 py-1.5 rounded-lg"
                       style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
@@ -1409,19 +1409,19 @@ export default function AnalyticsPage() {
                     </button>
                   </div>
                   {assegnazioniCliente.length === 0 ? (
-                    <p className="px-4 py-3 text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda assegnata</p>
+                    <p className="px-4 py-3 text-sm" style={{ color: 'var(--c-45)' }}>Nessuna scheda assegnata</p>
                   ) : assegnazioniCliente.map((a: any, i: number) => (
                     <div key={a.id} className="flex items-center gap-3 px-4 py-3"
-                      style={{ borderBottom: i < assegnazioniCliente.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      style={{ borderBottom: i < assegnazioniCliente.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                       <span className="text-xs px-2 py-0.5 rounded-full"
                         style={{
-                          background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.22 0 0)',
-                          color: a.attiva ? 'oklch(0.65 0.18 150)' : 'oklch(0.45 0 0)',
+                          background: a.attiva ? 'oklch(0.65 0.18 150 / 15%)' : 'var(--c-22)',
+                          color: a.attiva ? 'oklch(0.65 0.18 150)' : 'var(--c-45)',
                         }}>
                         {a.attiva ? 'Attiva' : 'Inattiva'}
                       </span>
-                      <p className="text-sm flex-1" style={{ color: 'oklch(0.85 0 0)' }}>{a.schede?.nome ?? '—'}</p>
-                      <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+                      <p className="text-sm flex-1" style={{ color: 'var(--c-85)' }}>{a.schede?.nome ?? '—'}</p>
+                      <p className="text-xs" style={{ color: 'var(--c-40)' }}>
                         dal {new Date(a.data_inizio).toLocaleDateString('it-IT')}
                       </p>
                     </div>
@@ -1431,11 +1431,11 @@ export default function AnalyticsPage() {
                 {/* Ultimo check-in */}
                 {clienteSelezionato?.ultimo_checkin && (
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     <div className="px-4 py-3 flex items-center justify-between"
-                      style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>❤️ Ultimo check-in</p>
-                      <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                      style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                      <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>❤️ Ultimo check-in</p>
+                      <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                         {new Date(clienteSelezionato.ultimo_checkin.data).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
                       </p>
                     </div>
@@ -1447,12 +1447,12 @@ export default function AnalyticsPage() {
                         { label: 'Motiv.', value: clienteSelezionato.ultimo_checkin.motivazione, warn: clienteSelezionato.ultimo_checkin.motivazione <= 2 },
                       ].map((item, i) => (
                         <div key={item.label} className="p-3 text-center"
-                          style={{ borderRight: i < 3 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+                          style={{ borderRight: i < 3 ? '1px solid var(--c-w6)' : 'none' }}>
                           <p className="text-xl font-black"
-                            style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'oklch(0.97 0 0)' }}>
+                            style={{ color: item.warn ? 'oklch(0.75 0.15 27)' : 'var(--c-97)' }}>
                             {item.value}/5
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{item.label}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{item.label}</p>
                         </div>
                       ))}
                     </div>
@@ -1468,20 +1468,20 @@ export default function AnalyticsPage() {
                     : null
                   return (
                     <div className="rounded-2xl px-4 py-3 flex items-center justify-between"
-                      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                       <div className="flex items-center gap-2">
                         <span>⚖️</span>
                         <div>
-                          <p className="text-xs font-semibold" style={{ color: 'oklch(0.50 0 0)' }}>Peso corporeo</p>
-                          <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{ultimo?.data}</p>
+                          <p className="text-xs font-semibold" style={{ color: 'var(--c-50)' }}>Peso corporeo</p>
+                          <p className="text-xs" style={{ color: 'var(--c-40)' }}>{ultimo?.data}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-black" style={{ color: 'oklch(0.97 0 0)' }}>
+                        <p className="text-lg font-black" style={{ color: 'var(--c-97)' }}>
                           {ultimo?.peso_kg} kg
                         </p>
                         {delta !== null && (
-                          <p className="text-xs" style={{ color: delta > 0 ? 'oklch(0.60 0.15 200)' : delta < 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
+                          <p className="text-xs" style={{ color: delta > 0 ? 'oklch(0.60 0.15 200)' : delta < 0 ? 'oklch(0.65 0.18 150)' : 'var(--c-50)' }}>
                             {delta > 0 ? '+' : ''}{delta} kg
                           </p>
                         )}
@@ -1492,12 +1492,12 @@ export default function AnalyticsPage() {
 
                 {/* Sessioni — ultime 4, non espandibili */}
                 <div className="rounded-2xl overflow-hidden"
-                  style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-                  <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                    <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>🏋️ Ultime sessioni</p>
+                  style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                  <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                    <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>🏋️ Ultime sessioni</p>
                   </div>
                   {sessioniDettaglio.length === 0 ? (
-                    <p className="px-4 py-6 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna sessione ancora</p>
+                    <p className="px-4 py-6 text-sm text-center" style={{ color: 'var(--c-45)' }}>Nessuna sessione ancora</p>
                   ) : sessioniDettaglio.slice(0, 4).map((sessione, i) => {
                     const serieCompletate = sessione.log_serie.filter(s => s.completata).length
                     const serieTotali = sessione.log_serie.length
@@ -1506,7 +1506,7 @@ export default function AnalyticsPage() {
                       .reduce((acc, s) => acc + ((s.peso_kg ?? 0) * (s.ripetizioni ?? 0)), 0)
                     return (
                       <div key={sessione.id} className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderBottom: i < Math.min(sessioniDettaglio.length, 4) - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                        style={{ borderBottom: i < Math.min(sessioniDettaglio.length, 4) - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                           style={{
                             background: sessione.completata ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.75 0.15 27 / 15%)',
@@ -1515,20 +1515,20 @@ export default function AnalyticsPage() {
                           <FontAwesomeIcon icon={sessione.completata ? faCircleCheck : faDumbbell} className="text-xs" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>
+                          <p className="font-bold text-sm truncate" style={{ color: 'var(--c-97)' }}>
                             {(sessione as any).scheda_giorni?.nome ?? 'Allenamento'}
                           </p>
-                          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                          <p className="text-xs" style={{ color: 'var(--c-50)' }}>
                             {new Date(sessione.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })}
                             {formatDurata(sessione.durata_secondi) && ` · ${formatDurata(sessione.durata_secondi)}`}
                           </p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xs font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+                          <p className="text-xs font-bold" style={{ color: 'var(--c-97)' }}>
                             {serieCompletate}/{serieTotali} serie
                           </p>
                           {volumeTotale > 0 && (
-                            <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+                            <p className="text-xs" style={{ color: 'var(--c-50)' }}>
                               {Math.round(volumeTotale).toLocaleString('it-IT')} kg
                             </p>
                           )}
@@ -1541,9 +1541,9 @@ export default function AnalyticsPage() {
                 {/* Note esercizi */}
                 {noteEsercizioCliente.length > 0 && (
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
-                    <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                      <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📝 Note esercizi</p>
+                    style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
+                    <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                      <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>📝 Note esercizi</p>
                     </div>
                     {noteEsercizioCliente.map((n: any, i: number) => {
                       const nomeEse = (n.scheda_esercizi as any)?.esercizi?.nome ?? '—'
@@ -1552,18 +1552,18 @@ export default function AnalyticsPage() {
                         <Link key={n.id}
                           href={`/cliente/allenamento?sessione=${n.sessioni?.id ?? ''}`}
                           className="flex items-start gap-3 px-4 py-3 transition-all hover:bg-white/3"
-                          style={{ borderBottom: i < noteEsercizioCliente.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none', textDecoration: 'none' }}>
+                          style={{ borderBottom: i < noteEsercizioCliente.length - 1 ? '1px solid var(--c-w4)' : 'none', textDecoration: 'none' }}>
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
                             style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.70 0.19 46)', fontSize: 11 }}>
                             📝
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate" style={{ color: 'oklch(0.90 0 0)' }}>{nomeEse}</p>
-                            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'oklch(0.62 0 0)', whiteSpace: 'pre-line' }}>
+                            <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-90)' }}>{nomeEse}</p>
+                            <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--c-62)', whiteSpace: 'pre-line' }}>
                               {n.testo.length > 80 ? n.testo.slice(0, 80) + '…' : n.testo}
                             </p>
                             {dataSessione && (
-                              <p className="text-xs mt-1" style={{ color: 'oklch(0.40 0 0)' }}>
+                              <p className="text-xs mt-1" style={{ color: 'var(--c-40)' }}>
                                 {new Date(dataSessione).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             )}
@@ -1579,7 +1579,7 @@ export default function AnalyticsPage() {
                 <Link
                   href={`/coach/clienti/${clienteSelezionato.id}/analytics`}
                   className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all active:scale-95"
-                  style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.13 0 0)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
+                  style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', boxShadow: '0 10px 30px -10px oklch(0.70 0.19 46 / 0.3)' }}
                 >
                   <FontAwesomeIcon icon={faArrowTrendUp} />
                   ANALYTICS AVANZATE →
@@ -1607,26 +1607,26 @@ export default function AnalyticsPage() {
         style={{ background: 'oklch(0 0 0 / 70%)' }}
         onClick={resetAssegnaFlow}>
         <div className="w-full max-w-md rounded-3xl overflow-hidden"
-          style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}
+          style={{ background: 'var(--c-16)', border: '1px solid var(--c-w10)' }}
           onClick={e => e.stopPropagation()}>
           <div className="px-5 py-4 flex items-center justify-between"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Scegli una scheda</p>
+            style={{ borderBottom: '1px solid var(--c-w8)' }}>
+            <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>Scegli una scheda</p>
             <button onClick={resetAssegnaFlow}
               className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
               <FontAwesomeIcon icon={faXmark} className="text-xs" />
             </button>
           </div>
           <div className="max-h-80 overflow-y-auto">
             {schedeCoach.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-center" style={{ color: 'oklch(0.45 0 0)' }}>Nessuna scheda disponibile</p>
+              <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--c-45)' }}>Nessuna scheda disponibile</p>
             ) : schedeCoach.map((s, i) => (
               <div key={s.id} className="flex items-center"
-                style={{ borderBottom: i < schedeCoach.length - 1 ? '1px solid oklch(1 0 0 / 6%)' : 'none' }}>
+                style={{ borderBottom: i < schedeCoach.length - 1 ? '1px solid var(--c-w6)' : 'none' }}>
                 <button onClick={() => { setSchedaPickata(s); setAssegnaFlow('confirm') }}
                   className="flex-1 text-left px-5 py-3.5 transition-all hover:opacity-80">
-                  <p className="text-sm font-semibold" style={{ color: 'oklch(0.90 0 0)' }}>{s.nome}</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--c-90)' }}>{s.nome}</p>
                 </button>
                 <button onClick={e => { e.stopPropagation(); setSchedaPreview(s) }}
                   className="w-10 h-10 flex items-center justify-center mr-3 rounded-xl flex-shrink-0"
@@ -1647,22 +1647,22 @@ export default function AnalyticsPage() {
         style={{ background: 'oklch(0 0 0 / 70%)' }}
         onClick={resetAssegnaFlow}>
         <div className="w-full max-w-md rounded-3xl overflow-hidden"
-          style={{ background: 'oklch(0.16 0 0)', border: '1px solid oklch(1 0 0 / 10%)' }}
+          style={{ background: 'var(--c-16)', border: '1px solid var(--c-w10)' }}
           onClick={e => e.stopPropagation()}>
           <div className="px-5 py-4 flex items-center justify-between"
-            style={{ borderBottom: '1px solid oklch(1 0 0 / 8%)' }}>
-            <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>Assegna scheda</p>
+            style={{ borderBottom: '1px solid var(--c-w8)' }}>
+            <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>Assegna scheda</p>
             <button onClick={() => setAssegnaFlow('pick')}
               className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+              style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
               <FontAwesomeIcon icon={faXmark} className="text-xs" />
             </button>
           </div>
           <div className="p-5 space-y-4">
             <div className="rounded-2xl px-4 py-3"
-              style={{ background: 'oklch(0.22 0 0)' }}>
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>Scheda selezionata</p>
-              <p className="text-sm font-bold mt-0.5" style={{ color: 'oklch(0.97 0 0)' }}>{schedaPickata.nome}</p>
+              style={{ background: 'var(--c-22)' }}>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>Scheda selezionata</p>
+              <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--c-97)' }}>{schedaPickata.nome}</p>
             </div>
 
             {/* Note anamnesi */}
@@ -1676,7 +1676,7 @@ export default function AnalyticsPage() {
                     📋 Note dal profilo cliente
                   </p>
                   {note.map((n, i) => (
-                    <p key={i} className="text-xs leading-relaxed" style={{ color: 'oklch(0.75 0 0)' }}>
+                    <p key={i} className="text-xs leading-relaxed" style={{ color: 'var(--c-75)' }}>
                       {n.testo}
                     </p>
                   ))}
@@ -1686,26 +1686,26 @@ export default function AnalyticsPage() {
 
             {/* Assegna direttamente */}
             <div className="rounded-2xl p-4 space-y-3"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <div>
-                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Assegna direttamente</p>
-                <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Assegna direttamente</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>
                   La scheda sarà assegnata così com'è. Per personalizzarla usa "Clona e personalizza".
                 </p>
               </div>
               <button onClick={handleAssegnaDirectly} disabled={assegnando}
                 className="w-full py-2.5 rounded-xl text-sm font-bold"
-                style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: assegnando ? 0.6 : 1 }}>
+                style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)', opacity: assegnando ? 0.6 : 1 }}>
                 {assegnando ? 'Assegnazione...' : '✓ Assegna'}
               </button>
             </div>
 
             {/* Clona e personalizza */}
             <div className="rounded-2xl p-4 space-y-3"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid oklch(0.60 0.15 200 / 30%)' }}>
               <div>
-                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Clona e personalizza</p>
-                <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Clona e personalizza</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>
                   Crea una copia della scheda e modificala prima di assegnarla. L'originale resterà intatta.
                 </p>
               </div>
@@ -1733,16 +1733,16 @@ export default function AnalyticsPage() {
         />
         {/* Barra fissa in basso per assegnare */}
         <div className="fixed bottom-0 left-0 right-0 z-[70] p-4"
-          style={{ background: 'oklch(0.13 0 0)', borderTop: '1px solid oklch(1 0 0 / 10%)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
+          style={{ background: 'var(--c-13)', borderTop: '1px solid var(--c-w10)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}>
           <div className="max-w-2xl mx-auto flex gap-3">
             <button onClick={resetAssegnaFlow}
               className="px-4 py-3 rounded-xl text-sm font-semibold"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
               Annulla
             </button>
             <button onClick={handleAssegnaDopoEditor} disabled={assegnando}
               className="flex-1 py-3 rounded-xl text-sm font-bold"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)', opacity: assegnando ? 0.6 : 1 }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)', opacity: assegnando ? 0.6 : 1 }}>
               {assegnando ? 'Assegnazione...' : `✓ Assegna "${schedaClonata.nome}"`}
             </button>
           </div>
@@ -1755,25 +1755,25 @@ export default function AnalyticsPage() {
         style={{ background: 'oklch(0 0 0 / 70%)' }}
         onClick={() => setSchedaPreview(null)}>
         <div className="w-full max-w-md h-full overflow-y-auto flex flex-col"
-          style={{ background: 'oklch(0.13 0 0)', borderLeft: '1px solid oklch(1 0 0 / 8%)' }}
+          style={{ background: 'var(--c-13)', borderLeft: '1px solid var(--c-w8)' }}
           onClick={e => e.stopPropagation()}>
           <div className="sticky top-0 z-10 flex items-center gap-3 px-5 py-4"
-            style={{ background: 'oklch(0.13 0 0)', borderBottom: '1px solid oklch(1 0 0 / 8%)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+            style={{ background: 'var(--c-13)', borderBottom: '1px solid var(--c-w8)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
             <button onClick={() => setSchedaPreview(null)}
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faXmark} />
             </button>
             <div>
-              <p className="font-black text-base" style={{ color: 'oklch(0.97 0 0)' }}>{schedaPreview.nome}</p>
-              <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>👁 Anteprima — sola lettura</p>
+              <p className="font-black text-base" style={{ color: 'var(--c-97)' }}>{schedaPreview.nome}</p>
+              <p className="text-xs" style={{ color: 'var(--c-50)' }}>👁 Anteprima — sola lettura</p>
             </div>
           </div>
           <SchedaPreviewContent schedaId={schedaPreview.id} />
-          <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid oklch(1 0 0 / 8%)' }}>
+          <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid var(--c-w8)' }}>
             <button onClick={() => { setSchedaPickata(schedaPreview); setSchedaPreview(null); setAssegnaFlow('confirm') }}
               className="w-full py-3 rounded-xl text-sm font-bold"
-              style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
               Seleziona questa scheda →
             </button>
           </div>

@@ -46,19 +46,19 @@ export default function AndamentoPeso({ clienteId }: Props) {
 
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+      style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
       <div className="px-5 py-4 flex items-center justify-between"
-        style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ borderBottom: '1px solid var(--c-w6)' }}>
         <div>
-          <h2 className="font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Andamento peso</h2>
-          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+          <h2 className="font-bold" style={{ color: 'var(--c-97)' }}>Andamento peso</h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
             {showAll ? 'Storico completo' : 'Ultimi 90 giorni'}
           </p>
         </div>
         {!showAll && (
           <button onClick={() => setShowAll(true)}
             className="text-xs px-3 py-1.5 rounded-xl"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0.15 200)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            style={{ background: 'var(--c-22)', color: 'oklch(0.60 0.15 200)', border: '1px solid var(--c-w8)' }}>
             Mostra tutto
           </button>
         )}
@@ -68,35 +68,35 @@ export default function AndamentoPeso({ clienteId }: Props) {
         {loading ? (
           <BynariLoader file="blue" size={80} />
         ) : dati.length < 2 ? (
-          <p className="text-sm text-center py-8" style={{ color: 'oklch(0.45 0 0)' }}>
+          <p className="text-sm text-center py-8" style={{ color: 'var(--c-45)' }}>
             {dati.length === 0 ? 'Nessuna misurazione disponibile' : 'Servono almeno 2 misurazioni per il grafico'}
           </p>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="rounded-xl p-3" style={{ background: 'oklch(0.22 0 0)' }}>
-                <p className="text-xs mb-1" style={{ color: 'oklch(0.50 0 0)' }}>Peso attuale</p>
-                <p className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>
-                  {ultimoValore} <span className="text-sm font-normal" style={{ color: 'oklch(0.50 0 0)' }}>kg</span>
+              <div className="rounded-xl p-3" style={{ background: 'var(--c-22)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>Peso attuale</p>
+                <p className="text-xl font-black" style={{ color: 'var(--c-97)' }}>
+                  {ultimoValore} <span className="text-sm font-normal" style={{ color: 'var(--c-50)' }}>kg</span>
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   {dati[dati.length - 1].data}
                 </p>
               </div>
-              <div className="rounded-xl p-3" style={{ background: 'oklch(0.22 0 0)' }}>
-                <p className="text-xs mb-1" style={{ color: 'oklch(0.50 0 0)' }}>Variazione</p>
+              <div className="rounded-xl p-3" style={{ background: 'var(--c-22)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>Variazione</p>
                 <p className="text-xl font-black"
-                  style={{ color: delta === null ? 'oklch(0.55 0 0)' : delta === 0 ? 'oklch(0.55 0 0)' : delta > 0 ? 'oklch(0.60 0.15 200)' : 'oklch(0.65 0.18 150)' }}>
-                  {delta === null ? '—' : delta > 0 ? `+${delta}` : delta} <span className="text-sm font-normal" style={{ color: 'oklch(0.50 0 0)' }}>kg</span>
+                  style={{ color: delta === null ? 'var(--c-55)' : delta === 0 ? 'var(--c-55)' : delta > 0 ? 'oklch(0.60 0.15 200)' : 'oklch(0.65 0.18 150)' }}>
+                  {delta === null ? '—' : delta > 0 ? `+${delta}` : delta} <span className="text-sm font-normal" style={{ color: 'var(--c-50)' }}>kg</span>
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>nel periodo</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>nel periodo</p>
               </div>
-              <div className="rounded-xl p-3" style={{ background: 'oklch(0.22 0 0)' }}>
-                <p className="text-xs mb-1" style={{ color: 'oklch(0.50 0 0)' }}>Media</p>
-                <p className="text-xl font-black" style={{ color: 'oklch(0.97 0 0)' }}>
-                  {mediaValore} <span className="text-sm font-normal" style={{ color: 'oklch(0.50 0 0)' }}>kg</span>
+              <div className="rounded-xl p-3" style={{ background: 'var(--c-22)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>Media</p>
+                <p className="text-xl font-black" style={{ color: 'var(--c-97)' }}>
+                  {mediaValore} <span className="text-sm font-normal" style={{ color: 'var(--c-50)' }}>kg</span>
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   {dati.length} misurazioni
                 </p>
               </div>
@@ -106,20 +106,20 @@ export default function AndamentoPeso({ clienteId }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dati} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
                   <XAxis dataKey="data"
-                    tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }}
+                    tick={{ fontSize: 10, fill: 'var(--c-45)' }}
                     tickLine={false} axisLine={false}
                     tickFormatter={v => v.slice(5)} />
                   <YAxis
-                    tick={{ fontSize: 10, fill: 'oklch(0.45 0 0)' }}
+                    tick={{ fontSize: 10, fill: 'var(--c-45)' }}
                     tickLine={false} axisLine={false}
                     domain={['auto', 'auto']} />
                   {mediaValore && (
-                    <ReferenceLine y={mediaValore} stroke="oklch(0.50 0 0)"
+                    <ReferenceLine y={mediaValore} stroke="var(--c-50)"
                       strokeDasharray="4 3" strokeWidth={0.8} />
                   )}
                   <Tooltip
-                    contentStyle={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', borderRadius: 8, fontSize: 12 }}
-                    labelStyle={{ color: 'oklch(0.70 0 0)' }}
+                    contentStyle={{ background: 'var(--c-22)', border: '1px solid var(--c-w10)', borderRadius: 8, fontSize: 12 }}
+                    labelStyle={{ color: 'var(--c-70)' }}
                     itemStyle={{ color: 'oklch(0.70 0.19 46)' }}
                     formatter={(v: any) => [`${v} kg`, 'Peso']}
                   />

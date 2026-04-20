@@ -13,19 +13,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile?.role !== 'admin') redirect('/login')
 
   return (
-    <div style={{ background: 'oklch(0.11 0 0)', minHeight: '100vh', color: 'oklch(0.97 0 0)', fontFamily: 'Syne, Inter, sans-serif' }}>
+    <div style={{ background: 'var(--c-11)', minHeight: '100vh', color: 'var(--c-97)', fontFamily: 'Syne, Inter, sans-serif' }}>
       <div className="flex items-center justify-between px-6 border-b"
-        style={{ borderColor: 'oklch(1 0 0 / 8%)', background: 'oklch(0.13 0 0)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
+        style={{ borderColor: 'var(--c-w8)', background: 'var(--c-13)', paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: '1rem' }}>
         <div className="flex items-center gap-3">
           <Image src="/logo/Bynari_WO1.png" alt="Bynari" width={110} height={22} style={{ height: '22px', width: 'auto' }} />
           <span className="text-xs font-black px-2 py-1 rounded-lg"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
             ADMIN
           </span>
         </div>
         <a href="/api/auth/signout"
           className="text-xs font-medium px-3 py-1.5 rounded-lg"
-          style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.55 0 0)' }}>
+          style={{ background: 'var(--c-22)', color: 'var(--c-55)' }}>
           Esci
         </a>
       </div>

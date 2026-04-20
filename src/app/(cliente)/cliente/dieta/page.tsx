@@ -369,8 +369,8 @@ export default function DietaPage() {
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>Nutrizione</h1>
-        <p className="text-sm mt-1" style={{ color: 'oklch(0.50 0 0)' }}>
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Nutrizione</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
@@ -378,16 +378,16 @@ export default function DietaPage() {
       {/* Macro summary */}
       {target ? (
         <div className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
           {/* Calorie */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Calorie</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Calorie</p>
               <p className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
                 {Math.round(totali.calorie)} / {calorieEffettive ?? target.calorie} kcal
               </p>
             </div>
-            <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+            <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
               <div className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${perc(totali.calorie, calorieEffettive ?? target.calorie)}%`, background: 'oklch(0.70 0.19 46)' }} />
             </div>
@@ -400,26 +400,26 @@ export default function DietaPage() {
               { label: 'Grassi', val: totali.grassi_g, target: target.grassi_g, color: 'oklch(0.65 0.18 150)' },
             ].map(m => (
               <div key={m.label} className="rounded-xl p-3 space-y-2"
-                style={{ background: 'oklch(0.22 0 0)' }}>
+                style={{ background: 'var(--c-22)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs" style={{ color: 'oklch(0.55 0 0)' }}>{m.label}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-55)' }}>{m.label}</p>
                   <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>
                     {Math.round(m.val)}g
                   </p>
                 </div>
-                <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'oklch(0.30 0 0)' }}>
+                <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-30)' }}>
                   <div className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${perc(m.val, m.target)}%`, background: m.color }} />
                 </div>
-                <p className="text-xs text-right" style={{ color: 'oklch(0.40 0 0)' }}>/ {m.target}g</p>
+                <p className="text-xs text-right" style={{ color: 'var(--c-40)' }}>/ {m.target}g</p>
               </div>
             ))}
           </div>
         </div>
       ) : (
         <div className="rounded-2xl p-5 text-center"
-          style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-          <p className="text-sm" style={{ color: 'oklch(0.50 0 0)' }}>
+          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+          <p className="text-sm" style={{ color: 'var(--c-50)' }}>
             Il tuo coach non ha ancora impostato i tuoi macro target
           </p>
         </div>
@@ -432,7 +432,7 @@ export default function DietaPage() {
           <span className="text-xl flex-shrink-0">⚠️</span>
           <div>
             <p className="text-sm font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>Carb cycling attivo</p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.55 0 0)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-55)' }}>
               Completa il check-in di oggi (alleni/riposo) per applicare i carbo corretti
             </p>
           </div>
@@ -452,7 +452,7 @@ export default function DietaPage() {
               style={{ color: dayType === 'training' ? 'oklch(0.70 0.19 46)' : 'oklch(0.60 0.15 200)' }}>
               {dayType === 'training' ? 'HIGH CARB — Giorno allenamento' : 'LOW CARB — Giorno recupero'}
             </p>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
               Target calorie adattato: {calorieEffettive} kcal · {carbEffettivi}g carbo
             </p>
           </div>
@@ -513,10 +513,10 @@ export default function DietaPage() {
 
         return (
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>📋 Piano pasti di oggi</p>
-              <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+            <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+              <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>📋 Piano pasti di oggi</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                 {pastiSaltati.size > 0 ? `${pastiSaltati.size} pasto/i saltato/i — macro redistribuiti` : 'Tocca "Salta" su un pasto per redistribuire i macro'}
               </p>
             </div>
@@ -530,12 +530,12 @@ export default function DietaPage() {
               return (
                 <div key={i} className="px-4 py-3 space-y-2"
                   style={{
-                    borderBottom: i < pastiConfig.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none',
+                    borderBottom: i < pastiConfig.length - 1 ? '1px solid var(--c-w4)' : 'none',
                     opacity: saltato ? 0.45 : 1,
                   }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold" style={{ color: saltato ? 'oklch(0.45 0 0)' : 'oklch(0.97 0 0)' }}>
+                      <span className="text-sm font-bold" style={{ color: saltato ? 'var(--c-45)' : 'var(--c-97)' }}>
                         {pasto.nome}
                       </span>
                       {completato && (
@@ -546,7 +546,7 @@ export default function DietaPage() {
                       )}
                       {saltato && (
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: 'oklch(0.30 0 0)', color: 'oklch(0.50 0 0)' }}>
+                          style={{ background: 'var(--c-30)', color: 'var(--c-50)' }}>
                           Saltato
                         </span>
                       )}
@@ -557,8 +557,8 @@ export default function DietaPage() {
                           onClick={() => apriCopiaPasto(pasto.nome)}
                           className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
                           style={{
-                            background: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                            color: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                            background: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                            color: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
                           }}>
                           <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
                         </button>
@@ -588,11 +588,11 @@ export default function DietaPage() {
                         { label: 'Grassi', target: macro.grassi, fatto: Math.round(loggato.grassi), color: 'oklch(0.65 0.18 150)' },
                       ].map(m => (
                         <div key={m.label} className="rounded-xl p-2 text-center"
-                          style={{ background: 'oklch(0.22 0 0)' }}>
+                          style={{ background: 'var(--c-22)' }}>
                           <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>
                             {m.fatto > 0 ? `${m.fatto}/` : ''}{m.target}
                           </p>
-                          <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}</p>
+                          <p className="text-xs" style={{ color: 'var(--c-40)' }}>{m.label}</p>
                         </div>
                       ))}
                     </div>
@@ -600,8 +600,8 @@ export default function DietaPage() {
 
                   {/* Storico pasto — pannello inline */}
                   {!saltato && copiaPastoAperto === pasto.nome && (
-                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid oklch(0.60 0.15 200 / 20%)', background: 'oklch(0.16 0 0)' }}>
-                      <p className="text-xs font-semibold px-3 py-2" style={{ color: 'oklch(0.60 0.15 200)', borderBottom: '1px solid oklch(1 0 0 / 5%)' }}>
+                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid oklch(0.60 0.15 200 / 20%)', background: 'var(--c-16)' }}>
+                      <p className="text-xs font-semibold px-3 py-2" style={{ color: 'oklch(0.60 0.15 200)', borderBottom: '1px solid var(--c-w5)' }}>
                         Copia {pasto.nome} da...
                       </p>
                       {loadingStoricoPerPasto ? (
@@ -614,7 +614,7 @@ export default function DietaPage() {
                         }
                         const giorni = Array.from(perGiorno.entries()).slice(0, 7)
                         if (giorni.length === 0) return (
-                          <p className="text-xs text-center py-4" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="text-xs text-center py-4" style={{ color: 'var(--c-45)' }}>
                             Nessuno storico per questo pasto
                           </p>
                         )
@@ -624,10 +624,10 @@ export default function DietaPage() {
                           return (
                             <button key={d} onClick={() => handleCopiaPasto(items)} disabled={copiando}
                               className="w-full text-left px-3 py-2.5 flex items-center justify-between gap-2 transition-all hover:opacity-80"
-                              style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                              style={{ borderBottom: '1px solid var(--c-w4)' }}>
                               <div className="min-w-0">
-                                <p className="text-xs font-bold" style={{ color: 'oklch(0.85 0 0)' }}>{formatDataStorico(d)}</p>
-                                <p className="text-xs truncate mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>
+                                <p className="text-xs font-bold" style={{ color: 'var(--c-85)' }}>{formatDataStorico(d)}</p>
+                                <p className="text-xs truncate mt-0.5" style={{ color: 'var(--c-42)' }}>
                                   {preview}{items.length > 3 ? ` +${items.length - 3}` : ''}
                                 </p>
                               </div>
@@ -646,13 +646,13 @@ export default function DietaPage() {
 
             {rimanente.kcal > 50 && pastiAttivi.length > 0 && (
               <div className="px-4 py-3 space-y-3"
-                style={{ borderTop: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.16 0 0)' }}>
+                style={{ borderTop: '1px solid var(--c-w6)', background: 'var(--c-16)' }}>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>
                       Rimanente: {Math.round(rimanente.kcal)} kcal
                     </p>
-                    <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>
+                    <p className="text-xs" style={{ color: 'var(--c-45)' }}>
                       In quanti pasti vuoi distribuirle?
                     </p>
                   </div>
@@ -661,8 +661,8 @@ export default function DietaPage() {
                       <button key={n} onClick={() => setRedistribuisciSu(redistribuisciSu === n ? null : n)}
                         className="w-8 h-8 rounded-xl text-sm font-bold transition-all"
                         style={{
-                          background: redistribuisciSu === n ? 'oklch(0.75 0.18 80)' : 'oklch(0.25 0 0)',
-                          color: redistribuisciSu === n ? 'oklch(0.13 0 0)' : 'oklch(0.55 0 0)',
+                          background: redistribuisciSu === n ? 'oklch(0.75 0.18 80)' : 'var(--c-25)',
+                          color: redistribuisciSu === n ? 'var(--c-13)' : 'var(--c-55)',
                         }}>
                         {n}
                       </button>
@@ -678,9 +678,9 @@ export default function DietaPage() {
                       { label: 'Grassi', val: Math.round(rimanente.grassi / redistribuisciSu), color: 'oklch(0.65 0.18 150)' },
                     ].map(m => (
                       <div key={m.label} className="rounded-xl p-2 text-center"
-                        style={{ background: 'oklch(0.20 0 0)', border: '1px solid oklch(0.75 0.18 80 / 20%)' }}>
+                        style={{ background: 'var(--c-20)', border: '1px solid oklch(0.75 0.18 80 / 20%)' }}>
                         <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{m.val}</p>
-                        <p className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}</p>
+                        <p className="text-xs" style={{ color: 'var(--c-40)' }}>{m.label}</p>
                       </div>
                     ))}
                   </div>
@@ -692,7 +692,7 @@ export default function DietaPage() {
       })()}
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'oklch(0.18 0 0)' }}>
+      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
         {[
           { id: 'dieta', label: '🥗 Dieta', icon: faLeaf },
           { id: 'integratori', label: '💊 Integratori', icon: faPills },
@@ -701,7 +701,7 @@ export default function DietaPage() {
             className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === t.id ? 'oklch(0.13 0 0)' : 'oklch(0.50 0 0)',
+              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
             }}>
             {t.label}
           </button>
@@ -716,23 +716,23 @@ export default function DietaPage() {
           {!copiaGiornataAperta ? (
             <button onClick={apriCopiaGiornata}
               className="w-full py-2.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.55 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', color: 'var(--c-55)', border: '1px solid var(--c-w6)' }}>
               <FontAwesomeIcon icon={faCopy} className="text-xs" /> Copia giornata precedente
             </button>
           ) : (
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Copia giornata da...</p>
+            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Copia giornata da...</p>
                 <button onClick={() => setCopiaGiornataAperta(false)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.50 0 0)' }}>
+                  style={{ background: 'var(--c-25)', color: 'var(--c-50)' }}>
                   <FontAwesomeIcon icon={faXmark} className="text-xs" />
                 </button>
               </div>
               {loadingGiornate ? (
                 <BynariLoader file="blue" size={80} />
               ) : storicoGiornate.length === 0 ? (
-                <p className="text-sm text-center py-6" style={{ color: 'oklch(0.45 0 0)' }}>Nessun giorno precedente trovato</p>
+                <p className="text-sm text-center py-6" style={{ color: 'var(--c-45)' }}>Nessun giorno precedente trovato</p>
               ) : (
                 <div>
                   {storicoGiornate.map(({ data: d, items }) => {
@@ -741,10 +741,10 @@ export default function DietaPage() {
                     return (
                       <button key={d} onClick={() => handleCopiaGiornata(items)} disabled={copiando}
                         className="w-full text-left px-4 py-3 flex items-center justify-between transition-all hover:opacity-80"
-                        style={{ borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                        style={{ borderBottom: '1px solid var(--c-w4)' }}>
                         <div>
-                          <p className="text-sm font-bold" style={{ color: 'oklch(0.90 0 0)' }}>{formatDataStorico(d)}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="text-sm font-bold" style={{ color: 'var(--c-90)' }}>{formatDataStorico(d)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                             {nomiPasti.length > 0 ? nomiPasti.join(' · ') : `${items.length} alimenti`}
                           </p>
                         </div>
@@ -762,12 +762,12 @@ export default function DietaPage() {
           {/* Form aggiungi alimento */}
           {showForm ? (
             <div className="rounded-2xl p-5 space-y-4"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
               <div className="flex items-center justify-between">
-                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Aggiungi alimento</p>
+                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>Aggiungi alimento</p>
                 <button onClick={() => { setShowForm(false); setSelectedFood(null); setSearchQuery(''); setSearchResults([]) }}
                   className="w-8 h-8 rounded-full flex items-center justify-center"
-                  style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                  style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                   <FontAwesomeIcon icon={faXmark} className="text-xs" />
                 </button>
               </div>
@@ -779,28 +779,28 @@ export default function DietaPage() {
                       onKeyDown={e => e.key === 'Enter' && searchFood()}
                       placeholder="Cerca alimento (es. pollo, riso, banana)..."
                       className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                       onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                      onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                      onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
                     <button onClick={searchFood} disabled={searching}
                       className="px-4 py-3 rounded-xl text-sm font-bold flex-shrink-0"
-                      style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                      style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
                       {searching ? '...' : <FontAwesomeIcon icon={faSearch} />}
                     </button>
                   </div>
 
                   {searchResults.length > 0 && (
                     <div className="rounded-xl overflow-hidden"
-                      style={{ border: '1px solid oklch(1 0 0 / 8%)' }}>
+                      style={{ border: '1px solid var(--c-w8)' }}>
                       {searchResults.map((r, i) => (
                         <button key={i} onClick={() => setSelectedFood(r)}
                           className="w-full text-left px-4 py-3 transition-all hover:opacity-80"
                           style={{
-                            background: i % 2 === 0 ? 'oklch(0.20 0 0)' : 'oklch(0.18 0 0)',
-                            borderBottom: i < searchResults.length - 1 ? '1px solid oklch(1 0 0 / 5%)' : 'none',
+                            background: i % 2 === 0 ? 'var(--c-20)' : 'var(--c-18)',
+                            borderBottom: i < searchResults.length - 1 ? '1px solid var(--c-w5)' : 'none',
                           }}>
-                          <p className="text-sm font-medium" style={{ color: 'oklch(0.90 0 0)' }}>{r.product_name}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="text-sm font-medium" style={{ color: 'var(--c-90)' }}>{r.product_name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                             {Math.round(r.nutriments['energy-kcal_100g'] ?? 0)} kcal · {Math.round(r.nutriments.proteins_100g ?? 0)}g prot · {Math.round(r.nutriments.carbohydrates_100g ?? 0)}g carb · {Math.round(r.nutriments.fat_100g ?? 0)}g grassi — per 100g
                           </p>
                         </button>
@@ -809,7 +809,7 @@ export default function DietaPage() {
                   )}
 
                   {searchResults.length === 0 && !searching && searchQuery && (
-                    <p className="text-sm text-center py-4" style={{ color: 'oklch(0.45 0 0)' }}>
+                    <p className="text-sm text-center py-4" style={{ color: 'var(--c-45)' }}>
                       Nessun risultato. Prova un termine diverso.
                     </p>
                   )}
@@ -819,26 +819,26 @@ export default function DietaPage() {
                   {/* Alimento selezionato */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold"
-                      style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'oklch(0.97 0 0)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
+                      style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'var(--c-97)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
                       {selectedFood.product_name}
                     </div>
                     <button onClick={() => setSelectedFood(null)}
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>
+                      style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                       <FontAwesomeIcon icon={faXmark} className="text-xs" />
                     </button>
                   </div>
 
                   {/* Quantità */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                    <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
                       Quantità (grammi)
                     </label>
                     <input type="number" value={quantita} onChange={e => setQuantita(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl text-sm outline-none text-center font-bold"
-                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                       onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                      onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                      onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
                   </div>
 
                   {/* Preview valori */}
@@ -853,9 +853,9 @@ export default function DietaPage() {
                           { label: 'Grassi', val: v.grassi_g, color: 'oklch(0.65 0.18 150)' },
                         ].map(x => (
                           <div key={x.label} className="rounded-xl p-2.5 text-center"
-                            style={{ background: 'oklch(0.22 0 0)' }}>
+                            style={{ background: 'var(--c-22)' }}>
                             <p className="text-lg font-black" style={{ color: x.color }}>{x.val}</p>
-                            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{x.label}</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{x.label}</p>
                           </div>
                         ))}
                       </div>
@@ -864,7 +864,7 @@ export default function DietaPage() {
 
                   {/* Assegna a pasto */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                    <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
                       Aggiungi a
                     </label>
 
@@ -879,13 +879,13 @@ export default function DietaPage() {
                                 onClick={() => { setGruppoNome(isSelected ? '' : p.nome); setGruppoEsistente('') }}
                                 className="px-3 py-2.5 rounded-xl text-left transition-all"
                                 style={{
-                                  background: isSelected ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.22 0 0)',
-                                  border: `1px solid ${isSelected ? 'oklch(0.70 0.19 46 / 50%)' : 'oklch(1 0 0 / 6%)'}`,
+                                  background: isSelected ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+                                  border: `1px solid ${isSelected ? 'oklch(0.70 0.19 46 / 50%)' : 'var(--c-w6)'}`,
                                 }}>
-                                <p className="text-sm font-bold" style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'oklch(0.90 0 0)' }}>
+                                <p className="text-sm font-bold" style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'var(--c-90)' }}>
                                   {p.nome}
                                 </p>
-                                <p className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{p.percentuale}% delle kcal</p>
+                                <p className="text-xs" style={{ color: 'var(--c-45)' }}>{p.percentuale}% delle kcal</p>
                               </button>
                             )
                           })}
@@ -894,11 +894,11 @@ export default function DietaPage() {
                             onClick={() => { setGruppoNome(''); setGruppoEsistente('') }}
                             className="px-3 py-2.5 rounded-xl text-left transition-all"
                             style={{
-                              background: gruppoNome === '' && gruppoEsistente === '' ? 'oklch(0.25 0 0)' : 'oklch(0.20 0 0)',
-                              border: '1px solid oklch(1 0 0 / 4%)',
+                              background: gruppoNome === '' && gruppoEsistente === '' ? 'var(--c-25)' : 'var(--c-20)',
+                              border: '1px solid var(--c-w4)',
                             }}>
-                            <p className="text-sm font-bold" style={{ color: 'oklch(0.55 0 0)' }}>Fuori dai pasti</p>
-                            <p className="text-xs" style={{ color: 'oklch(0.38 0 0)' }}>Conta nel totale giornaliero</p>
+                            <p className="text-sm font-bold" style={{ color: 'var(--c-55)' }}>Fuori dai pasti</p>
+                            <p className="text-xs" style={{ color: 'var(--c-38)' }}>Conta nel totale giornaliero</p>
                           </button>
                         </div>
                         {/* Eventuali gruppi loggati oggi non nei pasti del coach */}
@@ -911,8 +911,8 @@ export default function DietaPage() {
                                   onClick={() => { setGruppoNome(gruppoNome === g ? '' : g); setGruppoEsistente('') }}
                                   className="px-2.5 py-1 rounded-full text-xs font-semibold"
                                   style={{
-                                    background: gruppoNome === g ? 'oklch(0.60 0.15 200 / 15%)' : 'oklch(0.22 0 0)',
-                                    color: gruppoNome === g ? 'oklch(0.60 0.15 200)' : 'oklch(0.45 0 0)',
+                                    background: gruppoNome === g ? 'oklch(0.60 0.15 200 / 15%)' : 'var(--c-22)',
+                                    color: gruppoNome === g ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
                                   }}>
                                   {g}
                                 </button>
@@ -929,8 +929,8 @@ export default function DietaPage() {
                               <button key={g} onClick={() => { setGruppoEsistente(g === gruppoEsistente ? '' : g); setGruppoNome('') }}
                                 className="px-3 py-1.5 rounded-full text-xs font-semibold"
                                 style={{
-                                  background: gruppoEsistente === g ? 'oklch(0.60 0.15 200 / 20%)' : 'oklch(0.22 0 0)',
-                                  color: gruppoEsistente === g ? 'oklch(0.60 0.15 200)' : 'oklch(0.50 0 0)',
+                                  background: gruppoEsistente === g ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
+                                  color: gruppoEsistente === g ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
                                 }}>
                                 {g}
                               </button>
@@ -941,16 +941,16 @@ export default function DietaPage() {
                           onChange={e => { setGruppoNome(e.target.value); setGruppoEsistente('') }}
                           placeholder="Pasto (es. Pranzo, Post workout...)"
                           className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                          style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                           onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                          onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+                          onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
                       </>
                     )}
                   </div>
 
                   <button onClick={handleSaveAlimento} disabled={saving}
                     className="w-full py-3 rounded-xl text-sm font-bold"
-                    style={{ background: 'oklch(0.70 0.19 46)', color: 'oklch(0.11 0 0)' }}>
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
                     {saving ? 'Salvataggio...' : '+ Aggiungi al diario'}
                   </button>
                 </div>
@@ -969,10 +969,10 @@ export default function DietaPage() {
             <BynariLoader file="blue" size={80} />
           ) : pastiRaggruppati.length === 0 ? (
             <div className="rounded-2xl py-12 text-center"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <p className="text-3xl mb-2">🥗</p>
-              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Nessun alimento registrato oggi</p>
-              <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>Inizia aggiungendo il tuo primo alimento</p>
+              <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>Nessun alimento registrato oggi</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>Inizia aggiungendo il tuo primo alimento</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -985,31 +985,31 @@ export default function DietaPage() {
 
                 return (
                   <div key={gruppo.key} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                     {gruppo.label && (
                       <div className="flex items-center justify-between px-4 py-3 cursor-pointer"
-                        style={{ borderBottom: isCollapsed ? 'none' : '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.15 0 0)' }}
+                        style={{ borderBottom: isCollapsed ? 'none' : '1px solid var(--c-w6)', background: 'var(--c-15)' }}
                         onClick={() => setCollapsedGroups(prev => {
                           const n = new Set(prev)
                           n.has(gruppo.key) ? n.delete(gruppo.key) : n.add(gruppo.key)
                           return n
                         })}>
                         <div>
-                          <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>{gruppo.label}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{gruppo.label}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                             {Math.round(totGruppo.calorie)} kcal · {Math.round(totGruppo.proteine_g)}p · {Math.round(totGruppo.carboidrati_g)}c · {Math.round(totGruppo.grassi_g)}g
                           </p>
                         </div>
                         <FontAwesomeIcon icon={isCollapsed ? faChevronDown : faChevronUp}
-                          className="text-xs" style={{ color: 'oklch(0.45 0 0)' }} />
+                          className="text-xs" style={{ color: 'var(--c-45)' }} />
                       </div>
                     )}
                     {!isCollapsed && gruppo.items.map((p, i) => (
                       <div key={p.id} className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderBottom: i < gruppo.items.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                        style={{ borderBottom: i < gruppo.items.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: 'oklch(0.90 0 0)' }}>{p.alimento_nome}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                          <p className="text-sm font-medium truncate" style={{ color: 'var(--c-90)' }}>{p.alimento_nome}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                             {p.quantita_g}g · {Math.round(p.calorie)} kcal · {Math.round(p.proteine_g)}p
                           </p>
                         </div>
@@ -1031,7 +1031,7 @@ export default function DietaPage() {
       {/* STORICO */}
       {tab === 'dieta' && !loading && storico.length > 0 && (
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: 'oklch(0.40 0 0)' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest px-1" style={{ color: 'var(--c-40)' }}>
             Storico
           </p>
 
@@ -1042,9 +1042,9 @@ export default function DietaPage() {
             const ok = target ? g.calorie >= target.calorie * 0.85 && g.calorie <= target.calorie * 1.15 : null
             return (
               <div key={g.data} className="rounded-2xl p-4 space-y-3"
-                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold capitalize" style={{ color: 'oklch(0.85 0 0)' }}>{label}</p>
+                  <p className="text-sm font-bold capitalize" style={{ color: 'var(--c-85)' }}>{label}</p>
                   <div className="flex items-center gap-2">
                     {ok !== null && (
                       <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
@@ -1061,7 +1061,7 @@ export default function DietaPage() {
                   </div>
                 </div>
                 {target && (
-                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
                     <div className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, target.calorie > 0 ? Math.round((g.calorie / target.calorie) * 100) : 0)}%`, background: 'oklch(0.70 0.19 46)' }} />
                   </div>
@@ -1072,9 +1072,9 @@ export default function DietaPage() {
                     { label: 'Carboidrati', val: g.carboidrati_g, color: 'oklch(0.70 0.19 46)', tgt: target?.carboidrati_g },
                     { label: 'Grassi', val: g.grassi_g, color: 'oklch(0.65 0.18 150)', tgt: target?.grassi_g },
                   ].map(m => (
-                    <div key={m.label} className="rounded-xl p-2.5" style={{ background: 'oklch(0.22 0 0)' }}>
+                    <div key={m.label} className="rounded-xl p-2.5" style={{ background: 'var(--c-22)' }}>
                       <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{Math.round(m.val)}g</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.40 0 0)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-40)' }}>{m.label}{m.tgt ? ` / ${m.tgt}g` : ''}</p>
                     </div>
                   ))}
                 </div>
@@ -1086,18 +1086,18 @@ export default function DietaPage() {
           {storico.length > 7 && (
             <>
               <div className="rounded-2xl overflow-hidden"
-                style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
                 {(storicoEsteso ? storico.slice(7) : storico.slice(7, 14)).map((g, i, arr) => {
                   const data = new Date(g.data + 'T00:00:00')
                   const label = data.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
                   const ok = target ? g.calorie >= target.calorie * 0.85 && g.calorie <= target.calorie * 1.15 : null
                   return (
                     <div key={g.data} className="flex items-center gap-3 px-4 py-3"
-                      style={{ borderBottom: i < arr.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                      style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                       <div className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ background: ok === null ? 'oklch(0.35 0 0)' : ok ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }} />
-                      <p className="text-sm capitalize flex-1" style={{ color: 'oklch(0.70 0 0)' }}>{label}</p>
-                      <p className="text-sm font-bold tabular-nums" style={{ color: 'oklch(0.60 0 0)' }}>
+                        style={{ background: ok === null ? 'var(--c-35)' : ok ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }} />
+                      <p className="text-sm capitalize flex-1" style={{ color: 'var(--c-70)' }}>{label}</p>
+                      <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--c-60)' }}>
                         {Math.round(g.calorie)} kcal
                       </p>
                     </div>
@@ -1108,7 +1108,7 @@ export default function DietaPage() {
               {storico.length > 14 && (
                 <button onClick={() => setStoricoEsteso(p => !p)}
                   className="w-full py-3 rounded-2xl text-sm font-semibold"
-                  style={{ background: 'oklch(0.18 0 0)', color: 'oklch(0.50 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+                  style={{ background: 'var(--c-18)', color: 'var(--c-50)', border: '1px solid var(--c-w6)' }}>
                   {storicoEsteso ? 'Mostra meno' : `Mostra altri ${storico.length - 14} giorni`}
                 </button>
               )}
@@ -1122,21 +1122,21 @@ export default function DietaPage() {
         <div className="space-y-3">
           {pianoInt.length === 0 ? (
             <div className="rounded-2xl py-12 text-center"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
               <p className="text-3xl mb-2">💊</p>
-              <p className="font-semibold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>
                 Nessun integratore prescritto
               </p>
-              <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>
+              <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>
                 Il tuo coach non ha ancora prescritto integratori
               </p>
             </div>
           ) : (
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <div className="px-4 py-3" style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
-                <p className="font-bold text-sm" style={{ color: 'oklch(0.97 0 0)' }}>Piano integratori</p>
-                <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
+                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>Piano integratori</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                   {checkinInt.filter(c => c.preso).length} / {pianoInt.length} presi oggi
                 </p>
               </div>
@@ -1162,21 +1162,21 @@ export default function DietaPage() {
 
                 return (
                   <div key={int.id} className="flex items-center gap-3 px-4 py-3"
-                    style={{ borderBottom: i < pianoInt.length - 1 ? '1px solid oklch(1 0 0 / 4%)' : 'none' }}>
+                    style={{ borderBottom: i < pianoInt.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
                     <button onClick={togglePreso}
                       className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
                       style={{
                         background: preso ? 'oklch(0.65 0.18 150)' : 'transparent',
-                        border: `2px solid ${preso ? 'oklch(0.65 0.18 150)' : 'oklch(0.35 0 0)'}`,
+                        border: `2px solid ${preso ? 'oklch(0.65 0.18 150)' : 'var(--c-35)'}`,
                       }}>
-                      {preso && <span className="text-xs font-black" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>}
+                      {preso && <span className="text-xs font-black" style={{ color: 'var(--c-13)' }}>✓</span>}
                     </button>
                     <div className="flex-1 min-w-0" style={{ opacity: preso ? 0.5 : 1 }}>
                       <p className="text-sm font-semibold"
-                        style={{ color: 'oklch(0.97 0 0)', textDecoration: preso ? 'line-through' : 'none' }}>
+                        style={{ color: 'var(--c-97)', textDecoration: preso ? 'line-through' : 'none' }}>
                         {int.nome}
                       </p>
-                      <p className="text-xs mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
                         {int.quantita && `${int.quantita} ${int.unita}`}
                         {int.momento && ` · ${int.momento}`}
                         {int.note && ` · ${int.note}`}

@@ -970,10 +970,10 @@ export default function AllenamentoPage() {
       <div className="flex items-center justify-center min-h-64 p-4">
         <div className="text-center space-y-3">
           <p className="text-4xl"><FontAwesomeIcon icon={faDumbbell} /></p>
-          <p className="font-semibold" style={{ color: 'oklch(0.97 0 0)' }}>Seleziona un giorno</p>
+          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Seleziona un giorno</p>
           <button onClick={() => router.push('/cliente/dashboard')}
             className="px-5 py-2.5 rounded-xl text-sm font-semibold"
-            style={{ background: 'oklch(0.60 0.15 200)', color: 'oklch(0.13 0 0)' }}>
+            style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-13)' }}>
             ← Dashboard
           </button>
         </div>
@@ -989,10 +989,10 @@ export default function AllenamentoPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={() => router.push(backUrl)}
-            className="text-sm hover:opacity-70" style={{ color: 'oklch(0.50 0 0)' }}>←</button>
+            className="text-sm hover:opacity-70" style={{ color: 'var(--c-50)' }}>←</button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight" style={{ color: 'oklch(0.97 0 0)' }}>
+              <h1 className="text-2xl lg:text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
                 {giornoNome}
               </h1>
               {isViewMode && (
@@ -1002,7 +1002,7 @@ export default function AllenamentoPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs mt-0.5" style={{ color: 'oklch(0.50 0 0)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
               {sessioneData
                 ? new Date(sessioneData).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })
                 : new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -1026,12 +1026,12 @@ export default function AllenamentoPage() {
 
       {/* Progress bar */}
       <div className="rounded-2xl p-4 space-y-2"
-        style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium" style={{ color: 'oklch(0.60 0 0)' }}>Progresso</p>
-          <p className="text-xs font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{serieCompletate}/{serieTotali} · {progressoPerc}%</p>
+          <p className="text-xs font-medium" style={{ color: 'var(--c-60)' }}>Progresso</p>
+          <p className="text-xs font-bold" style={{ color: 'var(--c-97)' }}>{serieCompletate}/{serieTotali} · {progressoPerc}%</p>
         </div>
-        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'oklch(0.25 0 0)' }}>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
           <div className="h-full rounded-full transition-all duration-500"
             style={{ width: `${progressoPerc}%`, background: 'oklch(0.60 0.15 200)' }} />
         </div>
@@ -1042,18 +1042,18 @@ export default function AllenamentoPage() {
         <div className="fixed bottom-6 left-4 right-4 z-50 max-w-2xl mx-auto"
           style={{ filter: 'drop-shadow(0 8px 24px oklch(0 0 0 / 50%))' }}>
           <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
-            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(0.70 0.19 46 / 40%)' }}>
+            style={{ background: 'var(--c-22)', border: '1px solid oklch(0.70 0.19 46 / 40%)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
                 {suggerimento.eseNome}
               </p>
-              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>
+              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>
                 {suggerimento.messaggio}
               </p>
             </div>
             <button onClick={() => setSuggerimento(null)}
               className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
-              style={{ background: 'oklch(0.30 0 0)', color: 'oklch(0.60 0 0)' }}>
+              style={{ background: 'var(--c-30)', color: 'var(--c-60)' }}>
               <FontAwesomeIcon icon={faXmark} className="text-xs" />
             </button>
           </div>
@@ -1065,12 +1065,12 @@ export default function AllenamentoPage() {
         <div className="fixed left-0 right-0 z-40 px-4"
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}>
           <div className="max-w-2xl mx-auto rounded-2xl px-5 py-3 flex items-center gap-3"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(0.60 0.15 200 / 50%)', boxShadow: '0 8px 32px oklch(0 0 0 / 60%)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid oklch(0.60 0.15 200 / 50%)', boxShadow: '0 8px 32px oklch(0 0 0 / 60%)' }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base font-bold"
               style={{ background: 'oklch(0.60 0.15 200 / 15%)', color: 'oklch(0.60 0.15 200)' }}>→</div>
             <div>
               <p className="text-xs font-semibold" style={{ color: 'oklch(0.60 0.15 200)' }}>Prossimo nel gruppo</p>
-              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>{supersetNext}</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>{supersetNext}</p>
             </div>
           </div>
         </div>
@@ -1082,7 +1082,7 @@ export default function AllenamentoPage() {
           style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}>
           <div className="max-w-2xl mx-auto rounded-2xl px-5 py-3 flex items-center justify-between"
             style={{
-              background: 'oklch(0.18 0 0)',
+              background: 'var(--c-18)',
               border: '1px solid oklch(0.70 0.19 46 / 50%)',
               boxShadow: '0 8px 32px oklch(0 0 0 / 60%)',
             }}>
@@ -1093,7 +1093,7 @@ export default function AllenamentoPage() {
               </div>
               <div>
                 <p className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>Recupero</p>
-                <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>Prossima serie tra...</p>
+                <p className="text-xs" style={{ color: 'var(--c-50)' }}>Prossima serie tra...</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -1102,7 +1102,7 @@ export default function AllenamentoPage() {
               </div>
               <button onClick={() => { setTimerAttivo(false); cancelTimerPush(); cancelLocalNotification() }}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}>
+                style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
                 Salta
               </button>
             </div>
@@ -1120,7 +1120,7 @@ export default function AllenamentoPage() {
             <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.65 0.18 150)' }}>
               Warmup generale
             </p>
-            <p className="text-sm whitespace-pre-line" style={{ color: 'oklch(0.75 0 0)', lineHeight: 1.6 }}>
+            <p className="text-sm whitespace-pre-line" style={{ color: 'var(--c-75)', lineHeight: 1.6 }}>
               {warmupNote}
             </p>
           </div>
@@ -1155,8 +1155,8 @@ export default function AllenamentoPage() {
               )}
             <div className="rounded-2xl overflow-hidden"
               style={{
-                background: 'oklch(0.18 0 0)',
-                border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : isGrouped && tipoInfo ? `${tipoInfo.color}30` : 'oklch(1 0 0 / 6%)'}`,
+                background: 'var(--c-18)',
+                border: `1px solid ${tutteCompletate ? 'oklch(0.65 0.18 150 / 30%)' : isGrouped && tipoInfo ? `${tipoInfo.color}30` : 'var(--c-w6)'}`,
                 borderLeft: isGrouped && tipoInfo ? `3px solid ${tipoInfo.color}` : undefined,
                 marginBottom: isGrouped && !isLastInGroup ? '2px' : undefined,
               }}>
@@ -1169,43 +1169,43 @@ export default function AllenamentoPage() {
                 >
                   <div
                     className="w-full max-w-2xl rounded-t-3xl p-6 space-y-4"
-                    style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w8)' }}
                     onClick={e => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FontAwesomeIcon icon={faNoteSticky} style={{ color: 'oklch(0.70 0.19 46)' }} />
-                        <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Note — {ese.esercizi.nome}</p>
+                        <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Note — {ese.esercizi.nome}</p>
                       </div>
                       <button
                         onClick={() => setNoteAperta(null)}
                         className="w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.60 0 0)' }}
+                        style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}
                       >
                         <FontAwesomeIcon icon={faXmark} />
                       </button>
                     </div>
                     {ese.esercizi.descrizione && (
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'oklch(0.45 0 0)' }}>Descrizione esercizio</p>
-                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.esercizi.descrizione}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-45)' }}>Descrizione esercizio</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--c-72)' }}>{ese.esercizi.descrizione}</p>
                       </div>
                     )}
                     {ese.note && (
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'oklch(0.45 0 0)' }}>Note del coach</p>
-                        <p className="text-sm leading-relaxed" style={{ color: 'oklch(0.72 0 0)' }}>{ese.note}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--c-45)' }}>Note del coach</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--c-72)' }}>{ese.note}</p>
                       </div>
                     )}
                     <div className="flex justify-center pt-1">
-                      <div className="w-10 h-1 rounded-full" style={{ background: 'oklch(0.30 0 0)' }} />
+                      <div className="w-10 h-1 rounded-full" style={{ background: 'var(--c-30)' }} />
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="px-4 py-3 flex items-center justify-between"
-                style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)' }}>
+                style={{ borderBottom: '1px solid var(--c-w6)' }}>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
                     style={{
@@ -1215,14 +1215,14 @@ export default function AllenamentoPage() {
                     {tutteCompletate ? '✓' : eseIndex + 1}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-sm truncate" style={{ color: 'oklch(0.97 0 0)' }}>{ese.esercizi.nome}</p>
+                    <p className="font-bold text-sm truncate" style={{ color: 'var(--c-97)' }}>{ese.esercizi.nome}</p>
                     {ese.note && (
                       <p className="text-xs mt-0.5 leading-snug" style={{ color: 'oklch(0.70 0.19 46)', whiteSpace: 'pre-line' }}>
                         📝 {ese.note}
                       </p>
                     )}
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ese.esercizi.tipo_input === 'timer_unilaterale' ? 's/lato' : ' reps'} · {ese.recupero_secondi}s rec.</span>
+                      <span className="text-xs" style={{ color: 'var(--c-50)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ese.esercizi.tipo_input === 'timer_unilaterale' ? 's/lato' : ' reps'} · {ese.recupero_secondi}s rec.</span>
                       {ese.peso_consigliato_kg != null && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
                           style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}>
@@ -1268,9 +1268,9 @@ export default function AllenamentoPage() {
                       onClick={() => setNoteAperta(noteAperta === ese.id ? null : ese.id)}
                       className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
                       style={{
-                        background: noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                        color: noteAperta === ese.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
-                        border: `1px solid ${noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+                        background: noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                        color: noteAperta === ese.id ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
+                        border: `1px solid ${noteAperta === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'var(--c-w8)'}`,
                       }}
                       title="Visualizza note del coach"
                     >
@@ -1282,23 +1282,23 @@ export default function AllenamentoPage() {
                       onClick={() => setNoteApertaEse(noteApertaEse === ese.id ? null : ese.id)}
                       className="relative w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90"
                       style={{
-                        background: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'oklch(0.22 0 0)',
-                        color: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46)' : 'oklch(0.50 0 0)',
-                        border: `1px solid ${noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'oklch(1 0 0 / 8%)'}`,
+                        background: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 20%)' : 'var(--c-22)',
+                        color: noteApertaEse === ese.id ? 'oklch(0.70 0.19 46)' : 'var(--c-50)',
+                        border: `1px solid ${noteApertaEse === ese.id ? 'oklch(0.70 0.19 46 / 40%)' : 'var(--c-w8)'}`,
                       }}
                       title="La tua nota"
                     >
                       <FontAwesomeIcon icon={faPencil} style={{ fontSize: 11 }} />
                       {noteCliente[ese.id] && (
                         <span className="absolute top-0 right-0 w-2 h-2 rounded-full"
-                          style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid oklch(0.18 0 0)' }} />
+                          style={{ background: 'oklch(0.70 0.19 46)', border: '1.5px solid var(--c-18)' }} />
                       )}
                     </button>
                   )}
                   {ese.esercizi.video_url && (
                     <a href={ese.esercizi.video_url} target="_blank" rel="noopener noreferrer"
                       className="text-xs px-2 py-1 rounded-lg"
-                      style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)' }}>▶</a>
+                      style={{ background: 'var(--c-22)', color: 'var(--c-60)' }}>▶</a>
                   )}
                 </div>
               </div>
@@ -1306,9 +1306,9 @@ export default function AllenamentoPage() {
               {/* Nota cliente — anteprima collassata */}
               {noteCliente[ese.id] && noteApertaEse !== ese.id && (
                 <div className="px-4 py-2 flex items-center gap-2"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
+                  style={{ borderBottom: '1px solid var(--c-w5)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
                   <span style={{ fontSize: 10, color: 'oklch(0.70 0.19 46)' }}>📝</span>
-                  <p className="text-xs truncate flex-1" style={{ color: 'oklch(0.65 0 0)' }}>
+                  <p className="text-xs truncate flex-1" style={{ color: 'var(--c-65)' }}>
                     {noteCliente[ese.id].testo.length > 50
                       ? noteCliente[ese.id].testo.slice(0, 50) + '…'
                       : noteCliente[ese.id].testo}
@@ -1319,14 +1319,14 @@ export default function AllenamentoPage() {
               {/* Nota cliente — textarea inline */}
               {noteApertaEse === ese.id && !isViewMode && (
                 <div className="px-4 py-3 space-y-2.5"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 6%)', background: 'oklch(0.70 0.19 46 / 4%)' }}>
+                  style={{ borderBottom: '1px solid var(--c-w6)', background: 'oklch(0.70 0.19 46 / 4%)' }}>
                   <textarea
                     value={noteBozza[ese.id] ?? ''}
                     onChange={e => setNoteBozza(prev => ({ ...prev, [ese.id]: e.target.value }))}
                     placeholder="Scrivi una nota su questo esercizio..."
                     rows={3}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                    style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
                   />
                   <div className="flex gap-2">
                     <button
@@ -1360,29 +1360,29 @@ export default function AllenamentoPage() {
               {/* Nota cliente — visibile in view mode */}
               {isViewMode && noteCliente[ese.id] && (
                 <div className="px-4 py-2.5 flex items-start gap-2"
-                  style={{ borderBottom: '1px solid oklch(1 0 0 / 5%)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
+                  style={{ borderBottom: '1px solid var(--c-w5)', background: 'oklch(0.70 0.19 46 / 5%)' }}>
                   <span style={{ fontSize: 12, flexShrink: 0, marginTop: 1 }}>📝</span>
-                  <p className="text-xs leading-snug" style={{ color: 'oklch(0.72 0 0)', whiteSpace: 'pre-line' }}>
+                  <p className="text-xs leading-snug" style={{ color: 'var(--c-72)', whiteSpace: 'pre-line' }}>
                     {noteCliente[ese.id].testo}
                   </p>
                 </div>
               )}
 
-              <div className="divide-y" style={{ borderColor: 'oklch(1 0 0 / 4%)' }}>
+              <div className="divide-y" style={{ borderColor: 'var(--c-w4)' }}>
                 {/* Warmup specifico serie */}
                 {!isViewMode && (ese.warmup_serie ?? []).length > 0 && (
                   <>
                     {(ese.warmup_serie ?? []).map((w, wi) => (
                       <div key={`w${wi}`} className="px-4 py-2.5 flex items-center gap-3"
-                        style={{ background: 'oklch(0.65 0.18 150 / 4%)', borderBottom: '1px solid oklch(1 0 0 / 4%)' }}>
+                        style={{ background: 'oklch(0.65 0.18 150 / 4%)', borderBottom: '1px solid var(--c-w4)' }}>
                         <span className="text-xs font-bold w-16 flex-shrink-0"
                           style={{ color: 'oklch(0.65 0.18 150)' }}>
                           W{wi + 1}
                         </span>
-                        <span className="text-sm font-black" style={{ color: 'oklch(0.70 0 0)' }}>
+                        <span className="text-sm font-black" style={{ color: 'var(--c-70)' }}>
                           {w.peso ? `${w.peso} kg` : 'Barra'} × {w.reps} reps
                         </span>
-                        <span className="text-xs ml-auto" style={{ color: 'oklch(0.40 0 0)' }}>warmup</span>
+                        <span className="text-xs ml-auto" style={{ color: 'var(--c-40)' }}>warmup</span>
                       </div>
                     ))}
                     <div className="px-4 py-1.5 flex items-center gap-2"
@@ -1403,7 +1403,7 @@ export default function AllenamentoPage() {
                       style={{ background: serie.completata ? 'oklch(0.65 0.18 150 / 5%)' : 'transparent' }}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold" style={{ color: 'oklch(0.50 0 0)' }}>Serie {serieIndex + 1}</span>
+                          <span className="text-xs font-bold" style={{ color: 'var(--c-50)' }}>Serie {serieIndex + 1}</span>
                           {/* Dropset: peso scalato */}
                           {ese.tipo === 'dropset' && ese.drop_percentage && serieIndex > 0 && !serie.completata && (() => {
                             const primaSerieLog = eseLog?.serie[0]
@@ -1426,7 +1426,7 @@ export default function AllenamentoPage() {
                           )}
                         </div>
                         {confronto && !isViewMode && (
-                          <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
+                          <span className="text-xs" style={{ color: 'var(--c-40)' }}>
                             {ese.esercizi.tipo_input === 'reps_unilaterale'
                               ? `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.reps_sx ?? '—'}sx / ${confronto.reps_dx ?? '—'}dx`
                               : ese.esercizi.tipo_input === 'timer_unilaterale'
@@ -1439,26 +1439,26 @@ export default function AllenamentoPage() {
                       {/* ── Input adattivo al tipo_input ── */}
                       {(() => {
                         const tipoInput = ese.esercizi.tipo_input ?? 'reps'
-                        const inputBg = serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)'
-                        const inputBorder = `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(1 0 0 / 8%)'}`
-                        const inputStyle = { background: inputBg, border: inputBorder, color: 'oklch(0.97 0 0)' }
+                        const inputBg = serie.completata ? 'oklch(0.65 0.18 150 / 10%)' : 'var(--c-22)'
+                        const inputBorder = `1px solid ${serie.completata ? 'oklch(0.65 0.18 150 / 30%)' : 'var(--c-w8)'}`
+                        const inputStyle = { background: inputBg, border: inputBorder, color: 'var(--c-97)' }
                         const checkBtn = (
                           <div className="flex flex-col items-center gap-1">
                             <label className="text-xs mb-1 block opacity-0">✓</label>
                             <button onClick={() => !isViewMode && toggleSerie(ese, serieIndex)}
                               className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                               style={{
-                                background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
-                                border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                background: serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-25)',
+                                border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-w15)'}`,
                                 cursor: isViewMode ? 'default' : 'pointer',
                               }}>
                               {serie.completata
-                                ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                                : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                ? <span className="text-lg font-bold" style={{ color: 'var(--c-13)' }}>✓</span>
+                                : <span className="text-lg" style={{ color: 'var(--c-35)' }}>○</span>}
                             </button>
                             {miglioramento === 'up' && <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>▲</span>}
                             {miglioramento === 'down' && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
-                            {miglioramento === 'equal' && <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>＝</span>}
+                            {miglioramento === 'equal' && <span className="text-xs" style={{ color: 'var(--c-45)' }}>＝</span>}
                           </div>
                         )
 
@@ -1503,7 +1503,7 @@ export default function AllenamentoPage() {
                           return (
                             <div className="flex items-center gap-3">
                               <div style={{ width: '30%' }}>
-                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.40 0 0)' }}>Zavorra (kg)</label>
+                                <label className="text-xs mb-1 block" style={{ color: 'var(--c-40)' }}>Zavorra (kg)</label>
                                 <input type="number" inputMode="decimal" value={serie.peso_kg}
                                   onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
                                   placeholder="—" readOnly={isViewMode}
@@ -1511,7 +1511,7 @@ export default function AllenamentoPage() {
                                   style={inputStyle} />
                               </div>
                               <div className="flex-1 flex flex-col items-center gap-1">
-                                <label className="text-xs mb-1 block self-start" style={{ color: 'oklch(0.50 0 0)' }}>
+                                <label className="text-xs mb-1 block self-start" style={{ color: 'var(--c-50)' }}>
                                   {serie.completata ? (serie.durata_secondi && serie.durata_secondi !== '0' ? `${serie.durata_secondi}s` : '—') : isPre ? `VIA tra ${eseTimerState?.secondi}s` : isRun ? `${eseTimerState?.secondi}s` : `Obiettivo: ${durataTarget}s`}
                                 </label>
                                 {serie.completata ? (
@@ -1609,7 +1609,7 @@ export default function AllenamentoPage() {
                             return (
                               <div className="flex items-center gap-2">
                                 <div className="flex-1">
-                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Zavorra (kg)</label>
+                                  <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>Zavorra (kg)</label>
                                   <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold" style={inputStyle}>
                                     {serie.peso_kg || '—'}
                                   </div>
@@ -1639,7 +1639,7 @@ export default function AllenamentoPage() {
                               <div className="flex items-end gap-2">
                                 {/* Zavorra */}
                                 <div style={{ width: '22%' }}>
-                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.40 0 0)' }}>kg</label>
+                                  <label className="text-xs mb-1 block" style={{ color: 'var(--c-40)' }}>kg</label>
                                   <input type="number" inputMode="decimal" value={serie.peso_kg}
                                     onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
                                     placeholder="—" readOnly={isViewMode}
@@ -1701,7 +1701,7 @@ export default function AllenamentoPage() {
                                     </div>
                                   ) : (
                                     <div className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold"
-                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.35 0 0)' }}>
+                                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-35)' }}>
                                       —
                                     </div>
                                   )}
@@ -1714,13 +1714,13 @@ export default function AllenamentoPage() {
                                     disabled={ts.fase !== 'done' || isViewMode}
                                     className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                                     style={{
-                                      background: ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
-                                      border: `2px solid ${ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      background: ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'var(--c-25)',
+                                      border: `2px solid ${ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'var(--c-w15)'}`,
                                       cursor: ts.fase === 'done' && !isViewMode ? 'pointer' : 'default',
                                     }}>
                                     {ts.fase === 'done'
-                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                      ? <span className="text-lg font-bold" style={{ color: 'var(--c-13)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'var(--c-35)' }}>○</span>}
                                   </button>
                                 </div>
                               </div>
@@ -1732,16 +1732,16 @@ export default function AllenamentoPage() {
                           return (
                             <div className="flex items-center gap-2">
                               <div className="flex-1">
-                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                                <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>Peso (kg)</label>
                                 <input type="number" inputMode="decimal" value={serie.peso_kg}
                                   onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
                                   placeholder="0" readOnly={isViewMode}
                                   className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                                   style={inputStyle} />
                               </div>
-                              <span className="text-sm" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
+                              <span className="text-sm" style={{ color: 'var(--c-35)' }}>×</span>
                               <div className="flex-1">
-                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>SX</label>
+                                <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>SX</label>
                                 <input type="number" inputMode="numeric" value={serie.reps_sx}
                                   onChange={e => updateLog(ese.id, serieIndex, 'reps_sx', e.target.value)}
                                   placeholder="0" readOnly={isViewMode}
@@ -1749,7 +1749,7 @@ export default function AllenamentoPage() {
                                   style={inputStyle} />
                               </div>
                               <div className="flex-1">
-                                <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>DX</label>
+                                <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>DX</label>
                                 <input type="number" inputMode="numeric" value={serie.reps_dx}
                                   onChange={e => updateLog(ese.id, serieIndex, 'reps_dx', e.target.value)}
                                   placeholder="0" readOnly={isViewMode}
@@ -1817,7 +1817,7 @@ export default function AllenamentoPage() {
                                   )}
                                 </div>
                                 <div style={{ width: '30%' }}>
-                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps fatte</label>
+                                  <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>Reps fatte</label>
                                   <input type="number" inputMode="numeric" value={serie.ripetizioni}
                                     onChange={e => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
                                     placeholder="0" readOnly={isViewMode || !!serie.completata}
@@ -1829,13 +1829,13 @@ export default function AllenamentoPage() {
                                   <button onClick={handleAmrapDone} disabled={!!serie.completata || isViewMode}
                                     className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                                     style={{
-                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
-                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-25)',
+                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-w15)'}`,
                                       cursor: isViewMode || serie.completata ? 'default' : 'pointer',
                                     }}>
                                     {serie.completata
-                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                      ? <span className="text-lg font-bold" style={{ color: 'var(--c-13)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'var(--c-35)' }}>○</span>}
                                   </button>
                                 </div>
                               </div>
@@ -1944,13 +1944,13 @@ export default function AllenamentoPage() {
                                   <button onClick={handleEmomDone} disabled={!!serie.completata || isViewMode}
                                     className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
                                     style={{
-                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
-                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      background: serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-25)',
+                                      border: `2px solid ${serie.completata ? 'oklch(0.65 0.18 150)' : 'var(--c-w15)'}`,
                                       cursor: isViewMode || serie.completata ? 'default' : 'pointer',
                                     }}>
                                     {serie.completata
-                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
-                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                      ? <span className="text-lg font-bold" style={{ color: 'var(--c-13)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'var(--c-35)' }}>○</span>}
                                   </button>
                                 </div>
                               </div>
@@ -2082,19 +2082,19 @@ export default function AllenamentoPage() {
                               {!isIdle && !isCompleted && (
                                 <div className="px-4 py-4 rounded-xl text-center space-y-1"
                                   style={{
-                                    background: isWork ? 'oklch(0.70 0.15 0 / 15%)' : isRest ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
-                                    border: isWork ? '1px solid oklch(0.70 0.15 0 / 40%)' : isRest ? '1px solid oklch(0.65 0.18 150 / 30%)' : '1px solid oklch(1 0 0 / 10%)',
+                                    background: isWork ? 'oklch(0.70 0.15 0 / 15%)' : isRest ? 'oklch(0.65 0.18 150 / 10%)' : 'var(--c-22)',
+                                    border: isWork ? '1px solid oklch(0.70 0.15 0 / 40%)' : isRest ? '1px solid oklch(0.65 0.18 150 / 30%)' : '1px solid var(--c-w10)',
                                   }}>
                                   <div className="text-xs font-bold uppercase tracking-widest"
-                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
+                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'var(--c-50)' }}>
                                     {isWork ? 'LAVORA!' : isRest ? 'RIPOSA' : isPartnerWorking ? `${partnerEse?.esercizi.nome ?? 'Partner'} — LAVORA!` : ''}
                                   </div>
                                   <div className="text-4xl font-black tabular-nums"
-                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'oklch(0.55 0 0)' }}>
+                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'var(--c-55)' }}>
                                     {ts.secondi}
                                   </div>
                                   <div className="text-xs font-semibold"
-                                    style={{ color: 'oklch(0.50 0 0)' }}>
+                                    style={{ color: 'var(--c-50)' }}>
                                     Round {ts.currentRound}/{totalRounds}
                                   </div>
                                 </div>
@@ -2153,16 +2153,16 @@ export default function AllenamentoPage() {
                         return (
                           <div className="flex items-center gap-3">
                             <div className="flex-1">
-                              <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Peso (kg)</label>
+                              <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>Peso (kg)</label>
                               <input type="number" inputMode="decimal" value={serie.peso_kg}
                                 onChange={(e) => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
                                 placeholder="0" readOnly={isViewMode}
                                 className="w-full px-3 py-3 rounded-xl text-base text-center outline-none font-bold"
                                 style={inputStyle} />
                             </div>
-                            <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>×</span>
+                            <span className="text-lg" style={{ color: 'var(--c-35)' }}>×</span>
                             <div className="flex-1">
-                              <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Reps</label>
+                              <label className="text-xs mb-1 block" style={{ color: 'var(--c-50)' }}>Reps</label>
                               <input type="number" inputMode="numeric" value={serie.ripetizioni}
                                 onChange={(e) => updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value)}
                                 placeholder="0" readOnly={isViewMode}
@@ -2230,17 +2230,17 @@ export default function AllenamentoPage() {
           style={{ background: 'oklch(0 0 0 / 50%)' }}
           onClick={() => setRpeRirPicker(null)}>
           <div className="w-full max-w-2xl rounded-t-3xl p-6 space-y-5"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w8)' }}
             onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-bold" style={{ color: 'oklch(0.97 0 0)' }}>Intensità serie {rpeRirPicker.serieIndex + 1}</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Intensità serie {rpeRirPicker.serieIndex + 1}</p>
               <button onClick={() => setRpeRirPicker(null)}
                 className="text-xs px-3 py-1.5 rounded-lg"
-                style={{ background: 'oklch(0.25 0 0)', color: 'oklch(0.55 0 0)' }}>Salta</button>
+                style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>Salta</button>
             </div>
             {richiede_rpe && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
                   RPE — quanto è stato difficile?
                 </p>
                 <div className="grid grid-cols-5 gap-2">
@@ -2250,9 +2250,9 @@ export default function AllenamentoPage() {
                       <button key={v} onClick={() => updateLog(rpeRirPicker.eseId, rpeRirPicker.serieIndex, 'rpe', String(v))}
                         className="py-3 rounded-xl font-bold text-sm transition-all"
                         style={{
-                          background: sel ? 'oklch(0.70 0.19 46)' : 'oklch(0.22 0 0)',
-                          color: sel ? 'oklch(0.13 0 0)' : 'oklch(0.60 0 0)',
-                          border: sel ? 'none' : '1px solid oklch(1 0 0 / 8%)',
+                          background: sel ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                          color: sel ? 'var(--c-13)' : 'var(--c-60)',
+                          border: sel ? 'none' : '1px solid var(--c-w8)',
                         }}>
                         {v}
                       </button>
@@ -2263,7 +2263,7 @@ export default function AllenamentoPage() {
             )}
             {richiede_rir && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+                <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
                   RIR — reps rimaste nel serbatoio?
                 </p>
                 <div className="grid grid-cols-4 gap-2">
@@ -2273,9 +2273,9 @@ export default function AllenamentoPage() {
                       <button key={v} onClick={() => updateLog(rpeRirPicker.eseId, rpeRirPicker.serieIndex, 'rir', v)}
                         className="py-3 rounded-xl font-bold text-sm transition-all"
                         style={{
-                          background: sel ? 'oklch(0.60 0.15 200)' : 'oklch(0.22 0 0)',
-                          color: sel ? 'oklch(0.13 0 0)' : 'oklch(0.60 0 0)',
-                          border: sel ? 'none' : '1px solid oklch(1 0 0 / 8%)',
+                          background: sel ? 'oklch(0.60 0.15 200)' : 'var(--c-22)',
+                          color: sel ? 'var(--c-13)' : 'var(--c-60)',
+                          border: sel ? 'none' : '1px solid var(--c-w8)',
                         }}>
                         {v}
                       </button>
@@ -2286,7 +2286,7 @@ export default function AllenamentoPage() {
             )}
             <button onClick={() => setRpeRirPicker(null)}
               className="w-full py-3 rounded-xl font-bold text-sm"
-              style={{ background: 'oklch(0.65 0.18 150)', color: 'oklch(0.13 0 0)' }}>
+              style={{ background: 'oklch(0.65 0.18 150)', color: 'var(--c-13)' }}>
               Conferma
             </button>
           </div>
@@ -2299,8 +2299,8 @@ export default function AllenamentoPage() {
           <button onClick={handleCompleta} disabled={saving || progressoPerc < 100}
             className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-95"
             style={{
-              background: progressoPerc === 100 ? 'oklch(0.65 0.18 150)' : 'oklch(0.22 0 0)',
-              color: progressoPerc === 100 ? 'oklch(0.13 0 0)' : 'oklch(0.40 0 0)',
+              background: progressoPerc === 100 ? 'oklch(0.65 0.18 150)' : 'var(--c-22)',
+              color: progressoPerc === 100 ? 'var(--c-13)' : 'var(--c-40)',
               cursor: progressoPerc < 100 ? 'not-allowed' : 'pointer',
             }}>
             {saving ? 'Salvataggio...' : progressoPerc === 100 ? <><FontAwesomeIcon icon={faTrophy} /> Completa allenamento</> : `${progressoPerc}% — continua!`}
@@ -2316,7 +2316,7 @@ export default function AllenamentoPage() {
               style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)' }}>
               <p className="text-4xl mb-2"><FontAwesomeIcon icon={faTrophy} /></p>
               <p className="text-xl font-black" style={{ color: 'oklch(0.65 0.18 150)' }}>Completato!</p>
-              <p className="text-sm mt-1" style={{ color: 'oklch(0.55 0 0)' }}>
+              <p className="text-sm mt-1" style={{ color: 'var(--c-55)' }}>
                 {formatDurata(durataSecondi)} · {Math.round(volumeTotale).toLocaleString('it-IT')} kg volume · {serieCompletate} serie
               </p>
             </div>
@@ -2325,16 +2325,16 @@ export default function AllenamentoPage() {
           {/* Riepilogo in modalità archivio */}
           {isViewMode && (
             <div className="rounded-2xl p-5"
-              style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'oklch(0.45 0 0)' }}>Riepilogo</p>
+              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--c-45)' }}>Riepilogo</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
+                <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-22)' }}>
                   <p className="text-2xl font-black" style={{ color: 'oklch(0.60 0.15 200)' }}>{Math.round(volumeTotale).toLocaleString('it-IT')}</p>
-                  <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>kg volume</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>kg volume</p>
                 </div>
-                <div className="rounded-xl p-3 text-center" style={{ background: 'oklch(0.22 0 0)' }}>
+                <div className="rounded-xl p-3 text-center" style={{ background: 'var(--c-22)' }}>
                   <p className="text-2xl font-black" style={{ color: 'oklch(0.70 0.19 46)' }}>{serieCompletate}</p>
-                  <p className="text-xs mt-1" style={{ color: 'oklch(0.45 0 0)' }}>serie</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>serie</p>
                 </div>
               </div>
             </div>
@@ -2342,8 +2342,8 @@ export default function AllenamentoPage() {
 
           {/* Share overlay — sempre disponibile quando completato */}
           <div className="rounded-2xl p-5 space-y-4"
-            style={{ background: 'oklch(0.18 0 0)', border: '1px solid oklch(1 0 0 / 6%)' }}>
-            <p className="text-sm font-bold text-center" style={{ color: 'oklch(0.97 0 0)' }}>
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+            <p className="text-sm font-bold text-center" style={{ color: 'var(--c-97)' }}>
               Condividi il tuo allenamento
             </p>
             <ShareOverlay
@@ -2358,7 +2358,7 @@ export default function AllenamentoPage() {
 
           <button onClick={() => router.push(backUrl)}
             className="w-full py-3 rounded-2xl text-sm font-semibold transition-all"
-            style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.60 0 0)', border: '1px solid oklch(1 0 0 / 8%)' }}>
+            style={{ background: 'var(--c-22)', color: 'var(--c-60)', border: '1px solid var(--c-w8)' }}>
             ← {isViewMode ? 'Torna ai progressi' : 'Torna alla dashboard'}
           </button>
         </div>
