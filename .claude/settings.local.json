@@ -8,7 +8,17 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(cmd:*)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(grep -E \"\\\\.\\(sql|ts|js\\)$\")",
+      "Bash(xargs cat *)",
+      "PowerShell(Get-Command *)",
+      "Bash(curl -L \"https://fonts.gstatic.com/s/syne/v22/8vIS7w4qzmVxsWxjBZRjr0FKM_04uQ.woff2\" -o \"C:\\\\Users\\\\a\\\\Documents\\\\GitHub\\\\MyGymPlan\\\\public\\\\fonts\\\\Syne-Bold.woff2\")",
+      "Bash(curl -L \"https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2\" -o \"C:\\\\Users\\\\a\\\\Documents\\\\GitHub\\\\MyGymPlan\\\\public\\\\fonts\\\\Inter-Regular.woff2\")",
+      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\a\\\\Desktop\\\\csv\\\\openfoodfacts_it.csv\"\\).Length / 1MB; Get-Content \"C:\\\\Users\\\\a\\\\Desktop\\\\csv\\\\openfoodfacts_it.csv\" -TotalCount 3 | ForEach-Object { $_ })",
+      "PowerShell(python -c \"import pandas; print\\('pandas', pandas.__version__\\)\" 2>&1)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(python -c \"import supabase; print\\('supabase ok', supabase.__version__\\)\" 2>&1)"
     ]
   }
 }
