@@ -106,6 +106,7 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     volumeNum: fmtVolumeNum(volume),
     durata,
     serie,
+    tema,
     esercizi: esercizi.length,
     highlights,
     coachName: coachNameFinal,
