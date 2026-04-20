@@ -795,9 +795,20 @@ export default function AllenamentoPage() {
     const log = { ...logs[ese.id]?.serie[serieIndex], ...overrides }
     if (!log) return
     const nuovoStato = !log.completata
+
+    // Auto-fill empty fields with confronto values when completing a set
+    if (nuovoStato) {
+      const c = getConfronto(ese.id, serieIndex)
+      const tipoInput = ese.esercizi.tipo_input ?? 'reps'
+      if (!log.peso_kg && c?.peso_kg) log.peso_kg = String(c.peso_kg)
+      if (tipoInput === 'reps' && !log.ripetizioni && c?.ripetizioni) log.ripetizioni = String(c.ripetizioni)
+      if ((tipoInput === 'reps_unilaterale' || tipoInput === 'timer_unilaterale') && !log.reps_sx && c?.reps_sx) log.reps_sx = String(c.reps_sx)
+      if ((tipoInput === 'reps_unilaterale' || tipoInput === 'timer_unilaterale') && !log.reps_dx && c?.reps_dx) log.reps_dx = String(c.reps_dx)
+    }
+
     setLogs(prev => ({
       ...prev,
-      [ese.id]: { ...prev[ese.id], serie: prev[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, completata: nuovoStato } : s) }
+      [ese.id]: { ...prev[ese.id], serie: prev[ese.id].serie.map((s, i) => i === serieIndex ? { ...s, ...log, completata: nuovoStato } : s) }
     }))
 
     // ── Timer parte SUBITO, prima di qualsiasi chiamata di rete ──
@@ -1477,6 +1488,15 @@ export default function AllenamentoPage() {
                           </div>
                           {miglioramento === 'up' && <span style={{ fontSize: 10, color: 'var(--success)', flexShrink: 0 }}>▲</span>}
                           {miglioramento === 'down' && <span style={{ fontSize: 10, color: 'var(--danger-text)', flexShrink: 0 }}>▼</span>}
+                          <button
+                            onClick={() => toggleSerie(ese, serieIndex)}
+                            style={{
+                              flexShrink: 0, width: 28, height: 28, borderRadius: 8,
+                              background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 30%)',
+                              color: 'var(--c-55)', fontSize: 13, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}
+                            title="Modifica serie">✎</button>
                         </div>
                       )
                     }
