@@ -508,7 +508,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       )}
 
       {/* ── Serie / Reps|Durata / Recupero ── */}
-      {(() => {
+      {form.tipo !== 'tabata' && (() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
         const isTimer = tipoInput === 'timer'
         const isUnilaterale = tipoInput === 'reps_unilaterale'
@@ -558,6 +558,21 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
           </div>
         )
       })()}
+
+      {/* ── Tabata: solo recupero tra cicli ── */}
+      {form.tipo === 'tabata' && (
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
+            Recupero dopo tabata (s)
+          </label>
+          <input type="number" value={form.recupero} onChange={e => set('recupero', e.target.value)}
+            placeholder="90"
+            className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-center font-bold"
+            style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.97 0 0)' }}
+            onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+            onBlur={e => e.target.style.borderColor = 'oklch(1 0 0 / 8%)'} />
+        </div>
+      )}
 
       {/* ── Peso consigliato & TUT ── */}
       <div className="grid grid-cols-2 gap-3">
@@ -666,7 +681,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       )}
 
       {/* ── Progressione ── */}
-      {(() => {
+      {form.tipo !== 'tabata' && (() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
         const opzioni = tipoInput === 'timer'
           ? [
@@ -1063,8 +1078,8 @@ export default function SchedaEditorModal({
       giorno_id: giornoId,
       esercizio_id: f.esercizio_id,
       alternativa_esercizio_id: f.alternativa_id || null,
-      serie: f.tipo === 'max_reps' ? 1 : f.tipo === 'emom' ? (parseInt(f.emom_rounds) || 1) : (parseInt(f.serie) || 3),
-      ripetizioni: f.tipo === 'max_reps' ? 'MAX' : f.tipo === 'emom' ? `${parseInt(f.emom_reps_per_minuto) || 6}r/min` : (f.ripetizioni.trim() || (f.progressione_tipo === 'durata' ? '30' : '8-12')),
+      serie: f.tipo === 'max_reps' ? 1 : f.tipo === 'emom' ? (parseInt(f.emom_rounds) || 1) : f.tipo === 'tabata' ? 1 : (parseInt(f.serie) || 3),
+      ripetizioni: f.tipo === 'max_reps' ? 'MAX' : f.tipo === 'emom' ? `${parseInt(f.emom_reps_per_minuto) || 6}r/min` : f.tipo === 'tabata' ? 'Tabata' : (f.ripetizioni.trim() || (f.progressione_tipo === 'durata' ? '30' : '8-12')),
       recupero_secondi: parseInt(f.recupero) || 90,
       note: f.note.trim() || null,
       ordine,
@@ -1793,7 +1808,7 @@ export default function SchedaEditorModal({
                                     <option value="tabata">Tabata</option>
                                   </select>
                                   {/* Serie */}
-                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && (
+                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && editForm.tipo !== 'tabata' && (
                                   <input type="number" min="1" max="20"
                                     value={editForm.serie}
                                     onChange={e => setEditForm(f => ({ ...f, serie: e.target.value }))}
@@ -1801,7 +1816,7 @@ export default function SchedaEditorModal({
                                     style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
                                   )}
                                   {/* Reps */}
-                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && (
+                                  {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && editForm.tipo !== 'tabata' && (
                                   <input type="text"
                                     value={editForm.ripetizioni}
                                     onChange={e => setEditForm(f => ({ ...f, ripetizioni: e.target.value }))}
@@ -2139,7 +2154,7 @@ export default function SchedaEditorModal({
                             <option value="tabata">Tabata</option>
                           </select>
                           {/* Serie */}
-                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && (
+                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && p.form.tipo !== 'tabata' && (
                           <input type="number" min="1" max="20"
                             value={p.form.serie}
                             onChange={e => setPendingEsercizi(prev => prev.map(x =>
@@ -2149,7 +2164,7 @@ export default function SchedaEditorModal({
                             style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
                           )}
                           {/* Reps */}
-                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && (
+                          {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && p.form.tipo !== 'tabata' && (
                           <input type="text"
                             value={p.form.ripetizioni}
                             onChange={e => setPendingEsercizi(prev => prev.map(x =>
