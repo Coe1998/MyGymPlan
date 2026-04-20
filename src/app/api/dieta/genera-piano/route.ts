@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       .from('alimenti')
       .select('id, product_name, brands, pnns_groups_1, energy_kcal_100g, proteins_100g, carbs_100g, fat_100g, fiber_100g, meal_slots')
       .ilike('meal_slots', `%${slot}%`)
-      .not('energy_kcal_100g', 'is', null)
+      .gt('energy_kcal_100g', 5)
       .not('proteins_100g', 'is', null)
       .not('carbs_100g', 'is', null)
       .not('fat_100g', 'is', null)

@@ -1,7 +1,7 @@
 /**
- * Greedy nutritional solver — v2
- * Ogni alimento copre una FRAZIONE fissa del target del pasto
- * (non il residuo cumulativo, che causava porzioni esplose).
+ * Greedy nutritional solver — v3
+ * - Selezione food con scoring contestuale (colazione preferisce yogurt, non grana padano)
+ * - Calibration pass: scala le porzioni per avvicinarsi al target kcal
  */
 
 export interface FoodItem {
@@ -47,78 +47,92 @@ export interface MacroAlert {
   message: string
 }
 
+type FoodCategory = 'protein' | 'carb' | 'fat' | 'veggie' | 'fruit' | 'dairy' | 'mixed'
+type MealType = 'colazione' | 'spuntino' | 'pranzo' | 'cena'
+
 // ── Classificazione ──────────────────────────────────────────────────────────
 
-type FoodCategory = 'protein' | 'carb' | 'fat' | 'veggie' | 'fruit' | 'dairy' | 'mixed'
-
 export function classifyFood(f: FoodItem): FoodCategory {
-  const prot  = f.proteins_100g   ?? 0
-  const carbs = f.carbs_100g      ?? 0
-  const fat   = f.fat_100g        ?? 0
+  const prot  = f.proteins_100g    ?? 0
+  const carbs = f.carbs_100g       ?? 0
+  const fat   = f.fat_100g         ?? 0
   const kcal  = f.energy_kcal_100g ?? 1
-  const fiber = f.fiber_100g      ?? 0
-  const pnns  = (f.pnns_groups_1  ?? '').toLowerCase()
+  const fiber = f.fiber_100g       ?? 0
+  const pnns  = (f.pnns_groups_1   ?? '').toLowerCase()
   const name  = f.product_name.toLowerCase()
 
-  // Latticini
+  // Latticini liquidi/freschi
   if (pnns.includes('milk') || pnns.includes('dairy') ||
       name.includes('yogurt') || name.includes('latte') || name.includes('ricotta') ||
-      name.includes('kefir')  || name.includes('skyr')  || name.includes('fiocchi di latte')) {
+      name.includes('kefir')  || name.includes('skyr')  || name.includes('fiocchi di latte') ||
+      name.includes('quark')) {
     return 'dairy'
   }
-
-  // Grassi da cucina
-  if (pnns.includes('fat') || name.includes('olio') || name.includes('oil') ||
-      name.includes('burro') || name.includes('butter') || name.includes('ghee')) {
+  // Oli e grassi
+  if (pnns.includes('fat') || name.includes('olio') || name.includes(' oil') ||
+      name.includes('burro') || name.includes('butter') || name.includes('ghee') ||
+      name.includes('margarina')) {
     return 'fat'
   }
-
-  // Verdure (fresca, bassa kcal)
+  // Verdure fresche (bassa kcal)
   if (kcal < 55 && fiber >= 0.8 && carbs < 12 && prot < 6) return 'veggie'
-
-  // Frutta fresca (bassa kcal, alta acqua)
-  if (kcal < 80 && carbs >= 5 && fat < 1 && prot < 3 &&
+  // Frutta fresca
+  if (kcal < 80 && carbs >= 5 && fat < 2 && prot < 4 &&
       (pnns.includes('fruit') || pnns.includes('vegetable'))) return 'fruit'
-
-  // Proteine animali/vegetali (soglia 10g per catturare pesce, uova, legumi)
-  if (prot >= 10 && prot / kcal >= 0.06) return 'protein'
-
+  // Proteine (soglia abbassata a 10g per catturare uova, pesce, legumi)
+  if (prot >= 10 && prot / kcal >= 0.05) return 'protein'
   // Carboidrati complessi
   if (carbs >= 30 && prot < 15 && fat < 10) return 'carb'
-
   // Grassi alti
   if (fat >= 20 && prot < 10) return 'fat'
-
   return 'mixed'
 }
 
-// ── Porzioni: ogni categoria copre una % fissa del target ────────────────────
-
-const FRACTIONS: Record<FoodCategory, Partial<Record<keyof MacroTarget, number>>> = {
-  protein: { protein_g: 0.65 },   // proteina copre 65% del target proteico
-  dairy:   { protein_g: 0.35 },   // latticino copre 35%
-  carb:    { carbs_g:   0.70 },   // carboidrato copre 70% dei carbs
-  fat:     { fat_g:     0.55 },   // grasso copre 55% dei grassi
-  veggie:  {},                     // porzione fissa
-  fruit:   {},                     // porzione fissa
-  mixed:   { kcal:      0.20 },   // mixed: 20% delle kcal
-}
+// ── Limiti porzione per categoria ────────────────────────────────────────────
 
 const PORTIONS: Record<FoodCategory, [number, number]> = {
   protein: [80,  180],
-  dairy:   [100, 250],
-  carb:    [50,  130],
-  fat:     [5,   25],
-  veggie:  [100, 250],
+  dairy:   [80,  250],
+  carb:    [50,  120],
+  fat:     [5,   20],
+  veggie:  [100, 200],
   fruit:   [100, 180],
   mixed:   [60,  150],
 }
 
-function portion(food: FoodItem, grams: number): Portion {
+// ── Grams base (prima del calibration pass) ───────────────────────────────────
+
+function calcBaseGrams(food: FoodItem, cat: FoodCategory, target: MacroTarget): number {
+  const [minG, maxG] = PORTIONS[cat]
+  let grams = 100
+
+  if ((cat === 'protein') && food.proteins_100g > 0) {
+    // copre il 60% del target proteico del pasto
+    grams = Math.round((target.protein_g * 0.60 / food.proteins_100g) * 100)
+  } else if (cat === 'dairy' && food.proteins_100g > 2) {
+    // copre il 30% del target proteico
+    grams = Math.round((target.protein_g * 0.30 / food.proteins_100g) * 100)
+  } else if (cat === 'carb' && food.carbs_100g > 0) {
+    // copre il 65% dei carb target
+    grams = Math.round((target.carbs_g * 0.65 / food.carbs_100g) * 100)
+  } else if (cat === 'fat' && food.energy_kcal_100g > 0) {
+    // copre il 10% delle kcal del pasto
+    grams = Math.round((target.kcal * 0.10 / food.energy_kcal_100g) * 100)
+  } else if (cat === 'veggie') {
+    grams = 150
+  } else if (cat === 'fruit') {
+    grams = 130
+  } else if (food.energy_kcal_100g > 0) {
+    grams = Math.round((target.kcal * 0.20 / food.energy_kcal_100g) * 100)
+  }
+
+  return Math.max(minG, Math.min(maxG, grams))
+}
+
+function makePortion(food: FoodItem, grams: number): Portion {
   const f = grams / 100
   return {
-    food,
-    grams,
+    food, grams,
     kcal:      Math.round(food.energy_kcal_100g * f),
     protein_g: Math.round(food.proteins_100g    * f * 10) / 10,
     carbs_g:   Math.round(food.carbs_100g       * f * 10) / 10,
@@ -126,75 +140,106 @@ function portion(food: FoodItem, grams: number): Portion {
   }
 }
 
-function calcGrams(food: FoodItem, cat: FoodCategory, target: MacroTarget): number {
-  const [minG, maxG] = PORTIONS[cat]
-  const frac = FRACTIONS[cat]
-  let grams = 100
-
-  if (cat === 'protein' && food.proteins_100g > 0 && frac.protein_g) {
-    grams = Math.round((target.protein_g * frac.protein_g / food.proteins_100g) * 100)
-  } else if (cat === 'dairy') {
-    if (food.proteins_100g > 4 && frac.protein_g) {
-      grams = Math.round((target.protein_g * frac.protein_g / food.proteins_100g) * 100)
-    } else if (food.energy_kcal_100g > 0) {
-      grams = Math.round((target.kcal * 0.15 / food.energy_kcal_100g) * 100)
-    }
-  } else if (cat === 'carb' && food.carbs_100g > 0 && frac.carbs_g) {
-    grams = Math.round((target.carbs_g * frac.carbs_g / food.carbs_100g) * 100)
-  } else if (cat === 'fat' && food.fat_100g > 0) {
-    // per i grassi usiamo le kcal: fat copre il 15% delle kcal del pasto
-    grams = Math.round((target.kcal * 0.12 / food.energy_kcal_100g) * 100)
-  } else if (cat === 'veggie') {
-    grams = 150
-  } else if (cat === 'fruit') {
-    grams = 130
-  } else if (food.energy_kcal_100g > 0 && frac.kcal) {
-    grams = Math.round((target.kcal * frac.kcal / food.energy_kcal_100g) * 100)
-  }
-
-  return Math.max(minG, Math.min(maxG, grams))
+function sumMacros(portions: Portion[]): MacroTarget {
+  return portions.reduce(
+    (acc, p) => ({ kcal: acc.kcal + p.kcal, protein_g: acc.protein_g + p.protein_g, carbs_g: acc.carbs_g + p.carbs_g, fat_g: acc.fat_g + p.fat_g }),
+    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
+  )
 }
 
-// ── Selezione migliori candidati per categoria ───────────────────────────────
+// ── Scoring per selezione contestuale ────────────────────────────────────────
 
-function bestInCategory(
+function scoreFood(f: FoodItem, cat: FoodCategory, mealType: MealType): number {
+  const name = f.product_name.toLowerCase()
+  let score = 0
+
+  if (cat === 'dairy') {
+    if (mealType === 'colazione' || mealType === 'spuntino') {
+      // Preferisci yogurt/kefir/ricotta
+      if (name.includes('yogurt') || name.includes('skyr') || name.includes('kefir') ||
+          name.includes('ricotta') || name.includes('fiocchi') || name.includes('quark')) score += 20
+      // Penalizza formaggi stagionati a colazione
+      if (name.includes('grana') || name.includes('parmigian') || name.includes('pecorino') ||
+          name.includes('gorgonzola') || name.includes('asiago') || name.includes('emmental') ||
+          name.includes('gouda') || name.includes('cheddar') || name.includes('brie') ||
+          name.includes('formaggio') || f.fat_100g > 20) score -= 25
+    }
+  }
+
+  if (cat === 'fruit') {
+    // Penalizza frutta secca/disidratata
+    if (name.includes('secca') || name.includes('secco') || name.includes('dried') ||
+        name.includes('disidrat') || name.includes('candita') || (f.carbs_100g ?? 0) > 50) score -= 20
+    // Preferisci frutta fresca
+    if ((f.carbs_100g ?? 0) < 20 && (f.energy_kcal_100g ?? 0) < 70) score += 10
+  }
+
+  if (cat === 'protein') {
+    if (mealType === 'pranzo' || mealType === 'cena') {
+      // Preferisci proteine lean (pollo, pesce, uova)
+      if (name.includes('petto') || name.includes('filetto') || name.includes('breast') ||
+          name.includes('tonno') || name.includes('salmone') || name.includes('merluzzo') ||
+          name.includes('albume') || name.includes('uova') || name.includes('egg')) score += 10
+      // Penalizza processed meat
+      if (name.includes('wurstel') || name.includes('impanato') || name.includes('nugget') ||
+          name.includes('salami') || name.includes('mortadella')) score -= 15
+    }
+  }
+
+  if (cat === 'carb') {
+    // Preferisci carb con buon profilo nutrizionale
+    if (name.includes('integrale') || name.includes('whole') || name.includes('avena') ||
+        name.includes('quinoa') || name.includes('farro')) score += 5
+    // Penalizza carb industriali per colazione
+    if (mealType === 'colazione' && (name.includes('corn flake') || name.includes('cereali') ||
+        name.includes('muesli'))) score += 8
+  }
+
+  return score
+}
+
+// ── Selezione migliore per categoria ─────────────────────────────────────────
+
+function pickBest(
   foods: FoodItem[],
   cat: FoodCategory,
+  mealType: MealType,
   usedIds: Set<string>,
 ): FoodItem | null {
-  const candidates = foods.filter(f => classifyFood(f) === cat && !usedIds.has(f.id))
+  const candidates = foods.filter(f =>
+    classifyFood(f) === cat &&
+    !usedIds.has(f.id) &&
+    (f.energy_kcal_100g ?? 0) > 5  // esclude dati sporchi
+  )
   if (!candidates.length) return null
 
+  // Score base per categoria + score contestuale
+  return candidates
+    .map(f => ({ f, s: scoreFood(f, cat, mealType) + baseScore(f, cat) }))
+    .sort((a, b) => b.s - a.s)
+    // Aggiunge un po' di varietà: scegli randomicamente tra i top-5
+    .slice(0, 5)
+    [Math.floor(Math.random() * Math.min(candidates.length, 5))]
+    .f
+}
+
+function baseScore(f: FoodItem, cat: FoodCategory): number {
   switch (cat) {
-    case 'protein':
-      return candidates.sort((a, b) =>
-        (b.proteins_100g / (b.energy_kcal_100g || 1)) - (a.proteins_100g / (a.energy_kcal_100g || 1))
-      )[0]
-    case 'dairy':
-      return candidates.sort((a, b) => b.proteins_100g - a.proteins_100g)[0]
-    case 'carb':
-      // preferisci carboidrati complessi (alto amido, basso zucchero)
-      return candidates.sort((a, b) =>
-        (b.carbs_100g / (b.energy_kcal_100g || 1)) - (a.carbs_100g / (a.energy_kcal_100g || 1))
-      )[0]
-    case 'fat':
-      return candidates.sort((a, b) => b.fat_100g - a.fat_100g)[0]
-    case 'veggie':
-    case 'fruit':
-      // aggiungi varietà: non sempre la stessa verdura/frutta
-      return candidates[Math.floor(Math.random() * Math.min(candidates.length, 8))]
-    default:
-      return candidates[0]
+    case 'protein': return f.proteins_100g / (f.energy_kcal_100g || 1) * 100
+    case 'dairy':   return f.proteins_100g
+    case 'carb':    return f.carbs_100g / (f.energy_kcal_100g || 1) * 100
+    case 'fat':     return -(f.energy_kcal_100g || 0) // preferisci grassi meno calorici
+    default:        return 0
   }
 }
 
-// ── Ordine di selezione per tipo pasto ────────────────────────────────────────
+// ── Ordine categorie per pasto ────────────────────────────────────────────────
 
-const MEAL_ORDER: Record<string, FoodCategory[]> = {
-  colazione:  ['dairy', 'carb', 'fruit', 'protein'],
-  spuntino:   ['fruit', 'dairy', 'mixed'],
-  pranzo:     ['protein', 'carb', 'veggie', 'fat'],
-  cena:       ['protein', 'carb', 'veggie', 'fat'],
+const MEAL_ORDER: Record<MealType, FoodCategory[]> = {
+  colazione: ['dairy', 'carb', 'fruit', 'protein'],
+  spuntino:  ['fruit', 'dairy', 'mixed'],
+  pranzo:    ['protein', 'carb', 'veggie', 'fat'],
+  cena:      ['protein', 'carb', 'veggie', 'fat'],
 }
 
 // ── Solver principale ────────────────────────────────────────────────────────
@@ -205,44 +250,48 @@ export function solveMeal(
   mealName: string,
   usedIds: Set<string> = new Set(),
 ): MealResult {
-  const mealType = mealName.toLowerCase().includes('colazione') ? 'colazione'
+  const mealType: MealType = mealName.toLowerCase().includes('colazione') ? 'colazione'
     : mealName.toLowerCase().includes('spuntino') || mealName.toLowerCase().includes('merenda') ? 'spuntino'
-    : mealName.toLowerCase().includes('pranzo') ? 'pranzo'
-    : 'cena'
+    : mealName.toLowerCase().includes('pranzo') ? 'pranzo' : 'cena'
 
-  const order = MEAL_ORDER[mealType] ?? MEAL_ORDER['pranzo']
-
-  const portions: Portion[] = []
+  const order = MEAL_ORDER[mealType]
   const localUsed = new Set(usedIds)
+  let portions: Portion[] = []
 
+  // 1. Selezione greedy
   for (const cat of order) {
     if (portions.length >= 4) break
-    const food = bestInCategory(foods, cat, localUsed)
+    const food = pickBest(foods, cat, mealType, localUsed)
     if (!food) continue
-    const grams = calcGrams(food, cat, target)
-    portions.push(portion(food, grams))
+    const grams = calcBaseGrams(food, cat, target)
+    portions.push(makePortion(food, grams))
     localUsed.add(food.id)
   }
 
-  // Se il pasto ha troppo poco (es. colazione senza carboidrati), aggiungi un mixed
-  if (portions.length < 2) {
-    const fallback = foods.find(f => !localUsed.has(f.id))
-    if (fallback) {
-      const grams = Math.max(80, Math.min(150, Math.round((target.kcal * 0.25 / (fallback.energy_kcal_100g || 100)) * 100)))
-      portions.push(portion(fallback, grams))
+  // Fallback se pasto vuoto
+  if (portions.length === 0) {
+    const fallback = foods.find(f => !localUsed.has(f.id) && (f.energy_kcal_100g ?? 0) > 20)
+    if (fallback) portions.push(makePortion(fallback, 100))
+  }
+
+  // 2. Calibration pass: scala le porzioni per avvicinarsi al target kcal
+  if (portions.length > 0) {
+    const totalKcal = sumMacros(portions).kcal
+    if (totalKcal > 0 && target.kcal > 0) {
+      const scale = target.kcal / totalKcal
+      // Applica solo se lo scarto è > 15%
+      if (Math.abs(scale - 1) > 0.15) {
+        const clampedScale = Math.max(0.4, Math.min(2.0, scale))
+        portions = portions.map(p => {
+          const [minG, maxG] = PORTIONS[classifyFood(p.food)]
+          const newGrams = Math.max(minG, Math.min(maxG, Math.round(p.grams * clampedScale)))
+          return makePortion(p.food, newGrams)
+        })
+      }
     }
   }
 
-  const achieved: MacroTarget = portions.reduce(
-    (acc, p) => ({
-      kcal:      acc.kcal      + p.kcal,
-      protein_g: acc.protein_g + p.protein_g,
-      carbs_g:   acc.carbs_g   + p.carbs_g,
-      fat_g:     acc.fat_g     + p.fat_g,
-    }),
-    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
-  )
-
+  const achieved = sumMacros(portions)
   const kcalErrorPct = target.kcal > 0
     ? Math.round(Math.abs(achieved.kcal - target.kcal) / target.kcal * 100)
     : 0
@@ -250,7 +299,7 @@ export function solveMeal(
   return { meal_name: mealName, target, portions, achieved, kcal_error_pct: kcalErrorPct, alerts: [] }
 }
 
-// ── Alert per il frigo ────────────────────────────────────────────────────────
+// ── Dal frigo ─────────────────────────────────────────────────────────────────
 
 export function solveFridge(
   foods: FoodItem[],
@@ -266,27 +315,25 @@ export function solveFridge(
   if (!cats.has('fat') && target.fat_g > 10)
     alerts.push({ type: 'missing_fat', message: 'Nessuna fonte di grassi — aggiungi olio, frutta secca o avocado.' })
 
-  // Calcola porzioni per tutti gli alimenti disponibili
-  const portions: Portion[] = foods.map(f => {
+  let portions: Portion[] = foods.map(f => {
     const cat = classifyFood(f)
-    const grams = calcGrams(f, cat, target)
-    return portion(f, grams)
+    const grams = calcBaseGrams(f, cat, target)
+    return makePortion(f, grams)
   })
 
-  const achieved: MacroTarget = portions.reduce(
-    (acc, p) => ({
-      kcal:      acc.kcal      + p.kcal,
-      protein_g: acc.protein_g + p.protein_g,
-      carbs_g:   acc.carbs_g   + p.carbs_g,
-      fat_g:     acc.fat_g     + p.fat_g,
-    }),
-    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }
-  )
+  // Calibration
+  const total = sumMacros(portions).kcal
+  if (total > 0 && target.kcal > 0 && Math.abs(total - target.kcal) / target.kcal > 0.15) {
+    const scale = Math.max(0.4, Math.min(2.0, target.kcal / total))
+    portions = portions.map(p => {
+      const [minG, maxG] = PORTIONS[classifyFood(p.food)]
+      return makePortion(p.food, Math.max(minG, Math.min(maxG, Math.round(p.grams * scale))))
+    })
+  }
 
-  return { portions, achieved, alerts }
+  return { portions, achieved: sumMacros(portions), alerts }
 }
 
-// backward compat
 export function checkFridgeAlerts(foods: FoodItem[], target: MacroTarget): MacroAlert[] {
   return solveFridge(foods, target).alerts
 }
