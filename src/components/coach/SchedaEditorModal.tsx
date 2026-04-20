@@ -27,6 +27,9 @@ interface SchedaEsercizio {
   emom_durata_minuti: number | null
   emom_rounds: number | null
   max_reps_target: number | null
+  tabata_work_secondi: number | null
+  tabata_rest_secondi: number | null
+  tabata_rounds: number | null
 }
 
 interface Giorno { id: string; nome: string; ordine: number; warmup_note: string | null; scheda_esercizi: SchedaEsercizio[] }
@@ -46,6 +49,9 @@ interface EsForm {
   emom_durata_minuti: string
   emom_rounds: string
   max_reps_target: string
+  tabata_work_secondi: string
+  tabata_rest_secondi: string
+  tabata_rounds: string
 }
 
 const EMPTY: EsForm = {
@@ -60,6 +66,7 @@ const EMPTY: EsForm = {
   amrap_minuti: '10', emom_reps_per_minuto: '6',
   emom_durata_minuti: '6', emom_rounds: '4',
   max_reps_target: '30',
+  tabata_work_secondi: '20', tabata_rest_secondi: '10', tabata_rounds: '8',
 }
 
 const TIPI = [
@@ -73,6 +80,7 @@ const TIPI = [
   { id: 'emom', label: 'EMOM', color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 18%)' },
   { id: 'max_reps', label: 'Max+Total', color: 'oklch(0.75 0.15 60)', bg: 'oklch(0.75 0.15 60 / 18%)' },
   { id: 'jump_set', label: 'Jump Set', color: 'oklch(0.65 0.20 280)', bg: 'oklch(0.65 0.20 280 / 18%)' },
+  { id: 'tabata', label: 'Tabata', color: 'oklch(0.70 0.15 0)', bg: 'oklch(0.70 0.15 0 / 18%)' },
 ]
 
 const getTipoInfo = (tipo: string) => TIPI.find(t => t.id === tipo) ?? TIPI[0]
@@ -461,6 +469,44 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         </div>
       )}
 
+      {/* ── Tabata specifics ── */}
+      {form.tipo === 'tabata' && (
+        <div className="p-3 rounded-xl space-y-2" style={{ background: 'oklch(0.70 0.15 0 / 6%)', border: '1px solid oklch(0.70 0.15 0 / 20%)' }}>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Lavoro (sec)</label>
+              <input type="number" min="1" value={form.tabata_work_secondi} onChange={e => set('tabata_work_secondi', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (sec)</label>
+              <input type="number" min="1" value={form.tabata_rest_secondi} onChange={e => set('tabata_rest_secondi', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
+              <input type="number" min="1" value={form.tabata_rounds} onChange={e => set('tabata_rounds', e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-sm outline-none text-center font-bold"
+                style={{ background: 'oklch(0.22 0 0)', color: 'oklch(0.97 0 0)' }} />
+            </div>
+          </div>
+          <p className="text-xs font-medium" style={{ color: 'oklch(0.70 0.15 0)' }}>
+            {(() => {
+              const w = parseInt(form.tabata_work_secondi) || 20
+              const r = parseInt(form.tabata_rest_secondi) || 10
+              const rounds = parseInt(form.tabata_rounds) || 8
+              const tot = rounds * (w + r)
+              return `Totale: ${tot}s = ${(tot / 60).toFixed(1)} min`
+            })()}
+          </p>
+          <p className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>
+            Se abbinato a un altro esercizio Tabata nello stesso gruppo, si alternano automaticamente
+          </p>
+        </div>
+      )}
+
       {/* ── Serie / Reps|Durata / Recupero ── */}
       {(() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
@@ -830,6 +876,7 @@ export default function SchedaEditorModal({
             prepara_secondi, progressione_tipo, warmup_serie,
             peso_consigliato_kg, tut,
             amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
+            tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
             esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, tipo_input ),
             alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
           )
@@ -1013,6 +1060,9 @@ export default function SchedaEditorModal({
       emom_durata_minuti: f.tipo === 'emom' ? (parseInt(f.emom_durata_minuti) || null) : null,
       emom_rounds: f.tipo === 'emom' ? (parseInt(f.emom_rounds) || null) : null,
       max_reps_target: f.tipo === 'max_reps' ? (parseInt(f.max_reps_target) || null) : null,
+      tabata_work_secondi: f.tipo === 'tabata' ? (parseInt(f.tabata_work_secondi) || null) : null,
+      tabata_rest_secondi: f.tipo === 'tabata' ? (parseInt(f.tabata_rest_secondi) || null) : null,
+      tabata_rounds: f.tipo === 'tabata' ? (parseInt(f.tabata_rounds) || null) : null,
     }
   }
 
@@ -1576,6 +1626,11 @@ export default function SchedaEditorModal({
                                       target {ese.max_reps_target} reps
                                     </span>
                                   )}
+                                  {ese.tipo === 'tabata' && ese.tabata_work_secondi && (
+                                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.70 0.15 0 / 10%)', color: 'oklch(0.70 0.15 0)' }}>
+                                      {ese.tabata_work_secondi}s/{ese.tabata_rest_secondi}s × {ese.tabata_rounds}
+                                    </span>
+                                  )}
                                   {ese.peso_consigliato_kg != null && (
                                     <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'oklch(0.60 0.15 200 / 10%)', color: 'oklch(0.60 0.15 200)' }}>
                                       ~{ese.peso_consigliato_kg}kg
@@ -1628,6 +1683,9 @@ export default function SchedaEditorModal({
                                       emom_durata_minuti: ese.emom_durata_minuti != null ? String(ese.emom_durata_minuti) : '6',
                                       emom_rounds: ese.emom_rounds != null ? String(ese.emom_rounds) : '4',
                                       max_reps_target: ese.max_reps_target != null ? String(ese.max_reps_target) : '30',
+                                      tabata_work_secondi: ese.tabata_work_secondi != null ? String(ese.tabata_work_secondi) : '20',
+                                      tabata_rest_secondi: ese.tabata_rest_secondi != null ? String(ese.tabata_rest_secondi) : '10',
+                                      tabata_rounds: ese.tabata_rounds != null ? String(ese.tabata_rounds) : '8',
                                     })
                                   }}
                                   className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -1706,6 +1764,7 @@ export default function SchedaEditorModal({
                                     <option value="emom">EMOM</option>
                                     <option value="max_reps">Max+Total</option>
                                     <option value="jump_set">Jump Set</option>
+                                    <option value="tabata">Tabata</option>
                                   </select>
                                   {/* Serie */}
                                   {editForm.tipo !== 'max_reps' && editForm.tipo !== 'emom' && (
@@ -1829,6 +1888,34 @@ export default function SchedaEditorModal({
                                             <option value="doppia">Doppia</option>
                                           </select>
                                         </div>
+                                      )}
+                                      {editForm.tipo === 'tabata' && (
+                                        <>
+                                          <div className="space-y-1">
+                                            <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Lavoro (s)</label>
+                                            <input type="number" min="1"
+                                              value={editForm.tabata_work_secondi}
+                                              onChange={e => setEditForm(f => ({ ...f, tabata_work_secondi: e.target.value }))}
+                                              className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          </div>
+                                          <div className="space-y-1">
+                                            <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (s)</label>
+                                            <input type="number" min="1"
+                                              value={editForm.tabata_rest_secondi}
+                                              onChange={e => setEditForm(f => ({ ...f, tabata_rest_secondi: e.target.value }))}
+                                              className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          </div>
+                                          <div className="space-y-1">
+                                            <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
+                                            <input type="number" min="1"
+                                              value={editForm.tabata_rounds}
+                                              onChange={e => setEditForm(f => ({ ...f, tabata_rounds: e.target.value }))}
+                                              className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                              style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                          </div>
+                                        </>
                                       )}
                                     </div>
                                     <div className="space-y-1">
@@ -2023,6 +2110,7 @@ export default function SchedaEditorModal({
                             <option value="amrap">AMRAP</option>
                             <option value="emom">EMOM</option>
                             <option value="max_reps">Max+Total</option>
+                            <option value="tabata">Tabata</option>
                           </select>
                           {/* Serie */}
                           {p.form.tipo !== 'max_reps' && p.form.tipo !== 'emom' && (
@@ -2173,6 +2261,41 @@ export default function SchedaEditorModal({
                                     <option value="doppia">Doppia</option>
                                   </select>
                                 </div>
+                              )}
+                              {/* Tabata */}
+                              {p.form.tipo === 'tabata' && (
+                                <>
+                                  <div className="space-y-1">
+                                    <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Lavoro (s)</label>
+                                    <input type="number" min="1"
+                                      value={p.form.tabata_work_secondi}
+                                      onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_work_secondi: e.target.value } } : x
+                                      ))}
+                                      className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Riposo (s)</label>
+                                    <input type="number" min="1"
+                                      value={p.form.tabata_rest_secondi}
+                                      onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_rest_secondi: e.target.value } } : x
+                                      ))}
+                                      className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <label className="text-xs" style={{ color: 'oklch(0.70 0.15 0)' }}>Round</label>
+                                    <input type="number" min="1"
+                                      value={p.form.tabata_rounds}
+                                      onChange={e => setPendingEsercizi(prev => prev.map(x =>
+                                        x.tempId === p.tempId ? { ...x, form: { ...x.form, tabata_rounds: e.target.value } } : x
+                                      ))}
+                                      className="w-full text-xs rounded-lg outline-none px-2 py-1.5 text-center"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 10%)', color: 'oklch(0.97 0 0)' }} />
+                                  </div>
+                                </>
                               )}
                             </div>
                             {/* Note */}

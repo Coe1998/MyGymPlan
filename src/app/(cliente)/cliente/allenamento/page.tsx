@@ -33,6 +33,9 @@ interface SchedaEsercizio {
   emom_durata_minuti: number | null
   emom_rounds: number | null
   max_reps_target: number | null
+  tabata_work_secondi: number | null
+  tabata_rest_secondi: number | null
+  tabata_rounds: number | null
 }
 
 interface LogSerie {
@@ -96,6 +99,9 @@ export default function AllenamentoPage() {
     emomDurata: number; emomRounds: number; recuperoSecondi: number
   } | null>(null)
   const emomAutoCompleteRef = useRef<{ eseId: string; serieIndex: number } | null>(null)
+  const [tabataState, setTabataState] = useState<Record<string, { fase: 'idle' | 'work' | 'rest' | 'completed'; currentRound: number; secondi: number; partnerEseId: string | null; isPartnerTurn: boolean }>>({})
+  const tabataRef = useRef<NodeJS.Timeout | null>(null)
+  const tabataActiveRef = useRef<string | null>(null)
   const eseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
@@ -195,6 +201,7 @@ export default function AllenamentoPage() {
     emom:       { color: 'oklch(0.65 0.18 180)', bg: 'oklch(0.65 0.18 180 / 15%)', label: 'EMOM' },
     max_reps:   { color: 'oklch(0.75 0.15 60)',  bg: 'oklch(0.75 0.15 60 / 15%)',  label: 'Max+Total' },
     jump_set:   { color: 'oklch(0.65 0.20 280)', bg: 'oklch(0.65 0.20 280 / 15%)', label: 'Jump Set' },
+    tabata:     { color: 'oklch(0.70 0.15 0)',   bg: 'oklch(0.70 0.15 0 / 15%)',   label: 'Tabata' },
   }
 
   const fetchGiorno = useCallback(async () => {
@@ -235,6 +242,7 @@ export default function AllenamentoPage() {
           tipo, gruppo_id, drop_count, drop_percentage, rest_pause_secondi, piramidale_direzione, alternativa_esercizio_id,
           prepara_secondi, progressione_tipo, warmup_serie,
           peso_consigliato_kg, tut, amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
+          tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
           esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, video_url, descrizione, tipo_input )
         )`)
         .eq('id', sessione.giorno_id)
@@ -561,6 +569,22 @@ export default function AllenamentoPage() {
         })
     }
   }, [logs, esercizi, isViewMode, completata, loading, sessioneId])
+
+  // ── Tabata completion handler ────────────────────────────────────
+  useEffect(() => {
+    if (isViewMode) return
+    for (const ese of esercizi) {
+      if (ese.tipo !== 'tabata') continue
+      const ts = tabataState[ese.id]
+      if (!ts || ts.fase !== 'completed') continue
+      // Mark first incomplete serie as complete
+      const eseLog = logs[ese.id]
+      if (!eseLog) continue
+      const firstIncomplete = eseLog.serie.findIndex(s => !s.completata)
+      if (firstIncomplete === -1) continue
+      toggleSerie(ese, firstIncomplete)
+    }
+  }, [tabataState]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Progressive overload suggestion ─────────────────────────────
   const calcolaSuggerimento = (ese: SchedaEsercizio): { messaggio: string; eseNome: string } | null => {
@@ -1202,6 +1226,12 @@ export default function AllenamentoPage() {
                           {ese.piramidale_direzione === 'ascendente' ? '↑' : '↓'} Piramidale
                         </span>
                       )}
+                      {ese.tipo === 'tabata' && ese.tabata_work_secondi && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                          style={{ background: 'oklch(0.70 0.15 0 / 15%)', color: 'oklch(0.70 0.15 0)' }}>
+                          {ese.tabata_work_secondi}s/{ese.tabata_rest_secondi}s × {ese.tabata_rounds}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1708,6 +1738,163 @@ export default function AllenamentoPage() {
                                   </button>
                                 </div>
                               </div>
+                            </div>
+                          )
+                        }
+
+                        // Tabata logger
+                        if (ese.tipo === 'tabata') {
+                          const workSec = ese.tabata_work_secondi ?? 20
+                          const restSec = ese.tabata_rest_secondi ?? 10
+                          const totalRounds = ese.tabata_rounds ?? 8
+                          const ts = tabataState[ese.id] ?? { fase: 'idle' as const, currentRound: 1, secondi: 0, partnerEseId: null, isPartnerTurn: false }
+                          const partnerEse = ese.gruppo_id
+                            ? esercizi.find(e => e.id !== ese.id && e.gruppo_id === ese.gruppo_id && e.tipo === 'tabata') ?? null
+                            : null
+
+                          const handleTabataStart = () => {
+                            if (serie.completata || isViewMode) return
+                            if (tabataRef.current) { clearInterval(tabataRef.current); tabataRef.current = null }
+                            tabataActiveRef.current = ese.id
+                            feedbackLocale()
+                            const initState: typeof tabataState = {
+                              ...tabataState,
+                              [ese.id]: { fase: 'work', currentRound: 1, secondi: workSec, partnerEseId: partnerEse?.id ?? null, isPartnerTurn: false },
+                            }
+                            if (partnerEse) {
+                              initState[partnerEse.id] = { fase: 'work', currentRound: 1, secondi: workSec, partnerEseId: ese.id, isPartnerTurn: true }
+                            }
+                            setTabataState(initState)
+                            tabataRef.current = setInterval(() => {
+                              setTabataState(prev => {
+                                const activeId = tabataActiveRef.current
+                                if (!activeId) return prev
+                                const cur = prev[activeId]
+                                if (!cur || cur.fase === 'idle' || cur.fase === 'completed') return prev
+                                const partnerId = cur.partnerEseId
+                                if (cur.secondi > 1) {
+                                  const next = { ...prev, [activeId]: { ...cur, secondi: cur.secondi - 1 } }
+                                  if (partnerId && prev[partnerId]) next[partnerId] = { ...prev[partnerId], secondi: cur.secondi - 1 }
+                                  return next
+                                }
+                                // secondi hits 0
+                                if (cur.fase === 'work') {
+                                  feedbackLocale()
+                                  const next = { ...prev, [activeId]: { ...cur, fase: 'rest' as const, secondi: restSec } }
+                                  if (partnerId && prev[partnerId]) next[partnerId] = { ...prev[partnerId], fase: 'rest' as const, secondi: restSec }
+                                  return next
+                                }
+                                if (cur.fase === 'rest') {
+                                  if (partnerId && prev[partnerId]) {
+                                    const partner = prev[partnerId]
+                                    const partnerWasWaiting = partner.isPartnerTurn
+                                    if (partnerWasWaiting) {
+                                      // A just rested → B's turn to work
+                                      feedbackLocale()
+                                      tabataActiveRef.current = partnerId
+                                      return {
+                                        ...prev,
+                                        [activeId]: { ...cur, fase: 'work' as const, isPartnerTurn: true, secondi: workSec },
+                                        [partnerId]: { ...partner, fase: 'work' as const, isPartnerTurn: false, secondi: workSec },
+                                      }
+                                    } else {
+                                      // B just rested → round complete, back to A
+                                      feedbackLocale()
+                                      const nextRound = cur.currentRound + 1
+                                      if (nextRound > totalRounds) {
+                                        clearInterval(tabataRef.current!)
+                                        tabataRef.current = null
+                                        tabataActiveRef.current = null
+                                        return {
+                                          ...prev,
+                                          [activeId]: { ...cur, fase: 'completed' as const, secondi: 0 },
+                                          [partnerId]: { ...partner, fase: 'completed' as const, secondi: 0 },
+                                        }
+                                      }
+                                      tabataActiveRef.current = partnerId
+                                      return {
+                                        ...prev,
+                                        [activeId]: { ...cur, fase: 'work' as const, isPartnerTurn: true, secondi: workSec, currentRound: nextRound },
+                                        [partnerId]: { ...partner, fase: 'work' as const, isPartnerTurn: false, secondi: workSec, currentRound: nextRound },
+                                      }
+                                    }
+                                  } else {
+                                    // Single exercise rest complete
+                                    feedbackLocale()
+                                    const nextRound = cur.currentRound + 1
+                                    if (nextRound > totalRounds) {
+                                      clearInterval(tabataRef.current!)
+                                      tabataRef.current = null
+                                      tabataActiveRef.current = null
+                                      return { ...prev, [activeId]: { ...cur, fase: 'completed' as const, secondi: 0 } }
+                                    }
+                                    return { ...prev, [activeId]: { ...cur, fase: 'work' as const, currentRound: nextRound, secondi: workSec } }
+                                  }
+                                }
+                                return prev
+                              })
+                            }, 1000)
+                          }
+
+                          if (serie.completata) {
+                            return (
+                              <div className="px-4 py-3 rounded-xl text-sm font-bold text-center"
+                                style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)' }}>
+                                ✓ Tabata completato!
+                              </div>
+                            )
+                          }
+
+                          const isCompleted = ts.fase === 'completed'
+                          const isWork = ts.fase === 'work' && !ts.isPartnerTurn
+                          const isRest = ts.fase === 'rest'
+                          const isPartnerWorking = ts.fase === 'work' && ts.isPartnerTurn
+                          const isIdle = ts.fase === 'idle'
+
+                          return (
+                            <div className="space-y-2">
+                              {/* Partner info */}
+                              {partnerEse && (
+                                <div className="text-xs px-2 py-1 rounded-lg"
+                                  style={{ background: 'oklch(0.70 0.15 0 / 8%)', color: 'oklch(0.60 0.15 0)' }}>
+                                  Con: {partnerEse.esercizi.nome}
+                                </div>
+                              )}
+                              {/* Timer display */}
+                              {!isIdle && !isCompleted && (
+                                <div className="px-4 py-4 rounded-xl text-center space-y-1"
+                                  style={{
+                                    background: isWork ? 'oklch(0.70 0.15 0 / 15%)' : isRest ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.22 0 0)',
+                                    border: isWork ? '1px solid oklch(0.70 0.15 0 / 40%)' : isRest ? '1px solid oklch(0.65 0.18 150 / 30%)' : '1px solid oklch(1 0 0 / 10%)',
+                                  }}>
+                                  <div className="text-xs font-bold uppercase tracking-widest"
+                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'oklch(0.50 0 0)' }}>
+                                    {isWork ? 'LAVORA!' : isRest ? 'RIPOSA' : isPartnerWorking ? `${partnerEse?.esercizi.nome ?? 'Partner'} — LAVORA!` : ''}
+                                  </div>
+                                  <div className="text-4xl font-black tabular-nums"
+                                    style={{ color: isWork ? 'oklch(0.70 0.15 0)' : isRest ? 'oklch(0.65 0.18 150)' : 'oklch(0.55 0 0)' }}>
+                                    {ts.secondi}
+                                  </div>
+                                  <div className="text-xs font-semibold"
+                                    style={{ color: 'oklch(0.50 0 0)' }}>
+                                    Round {ts.currentRound}/{totalRounds}
+                                  </div>
+                                </div>
+                              )}
+                              {isCompleted && (
+                                <div className="px-4 py-3 rounded-xl text-sm font-bold text-center"
+                                  style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)' }}>
+                                  ✓ Tabata completato!
+                                </div>
+                              )}
+                              {/* Start button */}
+                              {isIdle && (
+                                <button onClick={handleTabataStart}
+                                  className="w-full px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+                                  style={{ background: 'oklch(0.70 0.15 0 / 15%)', border: '1px solid oklch(0.70 0.15 0 / 40%)', color: 'oklch(0.70 0.15 0)' }}>
+                                  ▶ Start Tabata — {workSec}s/{restSec}s × {totalRounds}
+                                </button>
+                              )}
                             </div>
                           )
                         }
