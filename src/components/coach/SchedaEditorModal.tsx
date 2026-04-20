@@ -876,7 +876,6 @@ export default function SchedaEditorModal({
             prepara_secondi, progressione_tipo, warmup_serie,
             peso_consigliato_kg, tut,
             amrap_minuti, emom_reps_per_minuto, emom_durata_minuti, emom_rounds, max_reps_target,
-            tabata_work_secondi, tabata_rest_secondi, tabata_rounds,
             esercizi!scheda_esercizi_esercizio_id_fkey ( id, nome, muscoli, tipo_input ),
             alternativa_esercizi:esercizi!scheda_esercizi_alternativa_esercizio_id_fkey ( id, nome )
           )
@@ -893,7 +892,32 @@ export default function SchedaEditorModal({
         .single(),
     ])
 
+    if (giorniRes.error) {
+      console.error('[SchedaEditor] fetchAll error:', giorniRes.error.message)
+      setLoading(false)
+      return
+    }
     const giorniData = (giorniRes.data as any) ?? []
+    // Best-effort: merge tabata fields (requires migration to be run)
+    const eseIds: string[] = giorniData.flatMap((g: any) =>
+      (g.scheda_esercizi ?? []).filter((e: any) => e.tipo === 'tabata').map((e: any) => e.id)
+    )
+    if (eseIds.length > 0) {
+      try {
+        const { data: tabataData } = await supabase
+          .from('scheda_esercizi')
+          .select('id, tabata_work_secondi, tabata_rest_secondi, tabata_rounds')
+          .in('id', eseIds)
+        if (tabataData && tabataData.length > 0) {
+          const tabataMap = Object.fromEntries(tabataData.map((r: any) => [r.id, r]))
+          for (const g of giorniData) {
+            for (const e of (g.scheda_esercizi ?? [])) {
+              if (tabataMap[e.id]) Object.assign(e, tabataMap[e.id])
+            }
+          }
+        }
+      } catch {}
+    }
     setGiorni(giorniData)
     setEsercizi(eserciziRes.data ?? [])
     if (schedaRes.data) {
@@ -1060,9 +1084,11 @@ export default function SchedaEditorModal({
       emom_durata_minuti: f.tipo === 'emom' ? (parseInt(f.emom_durata_minuti) || null) : null,
       emom_rounds: f.tipo === 'emom' ? (parseInt(f.emom_rounds) || null) : null,
       max_reps_target: f.tipo === 'max_reps' ? (parseInt(f.max_reps_target) || null) : null,
-      tabata_work_secondi: f.tipo === 'tabata' ? (parseInt(f.tabata_work_secondi) || null) : null,
-      tabata_rest_secondi: f.tipo === 'tabata' ? (parseInt(f.tabata_rest_secondi) || null) : null,
-      tabata_rounds: f.tipo === 'tabata' ? (parseInt(f.tabata_rounds) || null) : null,
+      ...(f.tipo === 'tabata' ? {
+        tabata_work_secondi: parseInt(f.tabata_work_secondi) || 20,
+        tabata_rest_secondi: parseInt(f.tabata_rest_secondi) || 10,
+        tabata_rounds: parseInt(f.tabata_rounds) || 8,
+      } : {}),
     }
   }
 
