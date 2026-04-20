@@ -6,7 +6,7 @@ import { getCardTheme } from '../theme'
 export default function BrutalistCard({
   heroTitle, eyebrow, volumeNum, durata, serie, esercizi, highlights, coachName, shortId, tema,
 }: ShareCardInputProps) {
-  const accent = 'oklch(0.78 0.20 50)'
+  const accent = '#f4923c'
   const t = getCardTheme(tema)
   const now = new Date()
   const dotDate = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getFullYear()).slice(2)}`

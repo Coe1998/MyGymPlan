@@ -6,7 +6,7 @@ import { getCardTheme } from '../theme'
 export default function RingCard({
   heroTitle, eyebrow, volumeNum, durata, serie, esercizi, highlights, coachName, dateExtended, tema,
 }: ShareCardInputProps) {
-  const accent = 'oklch(0.78 0.20 50)'
+  const accent = '#f4923c'
   const t = getCardTheme(tema)
   const gradId = useId().replace(/:/g, '')
   const CIRCUMFERENCE = 534
@@ -33,7 +33,7 @@ export default function RingCard({
           <circle cx="100" cy="100" r="85" fill="none" stroke={t.ringTrack} strokeWidth="14" />
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="oklch(0.82 0.17 85)" />
+              <stop offset="0%" stopColor="#d4ac3a" />
               <stop offset="100%" stopColor="rgba(235,140,60,1)" />
             </linearGradient>
           </defs>

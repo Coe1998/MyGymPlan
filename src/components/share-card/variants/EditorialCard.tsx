@@ -20,7 +20,7 @@ export interface ShareCardInputProps {
 export default function EditorialCard({
   heroTitle, eyebrow, volumeNum, durata, serie, highlights, coachName, tema,
 }: ShareCardInputProps) {
-  const accent = 'oklch(0.78 0.20 50)'
+  const accent = '#f4923c'
   const t = getCardTheme(tema)
 
   return (

@@ -6,7 +6,7 @@ import { getCardTheme } from '../theme'
 export default function GlassCard({
   heroTitle, eyebrow, volumeNum, durata, serie, esercizi, highlights, coachName, tema,
 }: ShareCardInputProps) {
-  const accent = 'oklch(0.78 0.20 50)'
+  const accent = '#f4923c'
   const t = getCardTheme(tema)
 
   return (
