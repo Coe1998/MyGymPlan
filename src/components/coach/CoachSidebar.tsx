@@ -138,36 +138,38 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
         </div>
       </aside>
 
-      {/* BOTTOM NAV — solo mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
+      {/* BOTTOM NAV — solo mobile (5 slot, CTA centrale flottante) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2"
         style={{
-          background: 'var(--c-16)',
+          background: 'oklch(0.13 0 0 / 88%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid var(--c-w8)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingTop: 10,
+          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
         }}>
 
-        {/* Dashboard */}
-        {navItemsMobile.slice(0, 1).map((item) => {
-          const isActive = pathname === item.href
+        {/* 1 — Dashboard */}
+        {(() => {
+          const isActive = pathname === '/coach/analytics'
           return (
-            <Link key={item.href} href={item.href}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1"
-              style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
-              <FontAwesomeIcon icon={item.icon} className="text-xl"
+            <Link href="/coach/analytics"
+              className="flex flex-col items-center gap-0.5 flex-1 py-1 rounded-xl transition-all"
+              style={{ minHeight: 44 }}>
+              <FontAwesomeIcon icon={faChartBar} className="text-xl"
                 style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
               <span className="text-xs font-medium"
-                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
-                {item.label}
-              </span>
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>Dashboard</span>
             </Link>
           )
-        })}
+        })()}
 
-        {/* Clienti popup */}
+        {/* 2 — Clienti popup */}
         <div className="relative flex-1 flex justify-center">
-          <button onClick={() => { setClientiOpen(p => !p); setAllenamentoOpen(false); setMenuOpen(false) }}
-            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
-           style={{ background: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || pathname.startsWith('/coach/checkin') || clientiOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+          <button
+            onClick={() => { setClientiOpen(p => !p); setAllenamentoOpen(false); setMenuOpen(false) }}
+            className="flex flex-col items-center gap-0.5 w-full py-1 rounded-xl transition-all"
+            style={{ minHeight: 44 }}>
             <FontAwesomeIcon icon={faUsers} className="text-xl"
               style={{ color: (pathname.startsWith('/coach/clienti') || pathname.startsWith('/coach/appuntamenti') || pathname.startsWith('/coach/checkin') || clientiOpen) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
             <span className="text-xs font-medium"
@@ -178,123 +180,99 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
           {clientiOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setClientiOpen(false)} />
-              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-48"
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-48"
                 style={{ background: 'var(--c-22)', border: '1px solid var(--c-w12)' }}>
                 <Link href="/coach/clienti" onClick={() => setClientiOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
                   style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
-                  <FontAwesomeIcon icon={faUsers} className="w-4" />
-                  Gestione clienti
+                  <FontAwesomeIcon icon={faUsers} className="w-4" /> Gestione clienti
                 </Link>
                 <Link href="/coach/appuntamenti" onClick={() => setClientiOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
                   style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
-                  <FontAwesomeIcon icon={faCalendarDays} className="w-4" />
-                  Appuntamenti
+                  <FontAwesomeIcon icon={faCalendarDays} className="w-4" /> Appuntamenti
                 </Link>
                 <Link href="/coach/checkin" onClick={() => setClientiOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
                   style={{ color: 'var(--c-80)' }}>
-                  <FontAwesomeIcon icon={faCircleCheck} className="w-4" />
-                  Check-in
+                  <FontAwesomeIcon icon={faCircleCheck} className="w-4" /> Check-in
                 </Link>
               </div>
             </>
           )}
         </div>
 
-        {/* Allenamento popup */}
+        {/* 3 — CTA centrale arancione flottante */}
+        <div className="flex-1 flex justify-center items-center" style={{ minHeight: 44 }}>
+          <Link href="/coach/clienti"
+            className="flex items-center justify-center rounded-2xl"
+            style={{
+              width: 48, height: 48,
+              background: 'oklch(0.70 0.19 46)',
+              color: 'var(--c-13)',
+              fontSize: 18,
+              boxShadow: '0 8px 20px -6px oklch(0.70 0.19 46 / 55%)',
+            }}
+            aria-label="Aggiungi cliente">
+            <FontAwesomeIcon icon={faUsers} style={{ fontSize: 16 }} />
+          </Link>
+        </div>
+
+        {/* 4 — Allenamento popup */}
         <div className="relative flex-1 flex justify-center">
-          <button onClick={() => { setAllenamentoOpen(p => !p); setMenuOpen(false) }}
-            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
-            style={{ background: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
+          <button
+            onClick={() => { setAllenamentoOpen(p => !p); setMenuOpen(false); setClientiOpen(false) }}
+            className="flex flex-col items-center gap-0.5 w-full py-1 rounded-xl transition-all"
+            style={{ minHeight: 44 }}>
             <FontAwesomeIcon icon={faLayerGroup} className="text-xl"
-              style={{ color: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
+              style={{ color: (pathname === '/coach/schede' || pathname.startsWith('/coach/schede') || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
             <span className="text-xs font-medium"
-              style={{ color: (pathname === '/coach/schede' || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
-              Allenamento
+              style={{ color: (pathname === '/coach/schede' || pathname.startsWith('/coach/schede') || pathname === '/coach/esercizi' || allenamentoOpen) ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
+              Schede
             </span>
           </button>
           {allenamentoOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setAllenamentoOpen(false)} />
-              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
                 style={{ background: 'var(--c-22)', border: '1px solid var(--c-w12)' }}>
                 <Link href="/coach/schede" onClick={() => setAllenamentoOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
                   style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
-                  <FontAwesomeIcon icon={faClipboardList} className="w-4" />
-                  Schede
+                  <FontAwesomeIcon icon={faClipboardList} className="w-4" /> Schede
                 </Link>
                 <Link href="/coach/esercizi" onClick={() => setAllenamentoOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
                   style={{ color: 'var(--c-80)' }}>
-                  <FontAwesomeIcon icon={faDumbbell} className="w-4" />
-                  Esercizi
+                  <FontAwesomeIcon icon={faDumbbell} className="w-4" /> Esercizi
                 </Link>
               </div>
             </>
           )}
         </div>
 
-        {/* Chat */}
-        {navItemsMobile.slice(2).map((item) => {
-		  const isActive = pathname === item.href
-		  return (
-			<Link key={item.href} href={item.href}
-			  className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all flex-1 relative"
-			  style={{ background: isActive ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
-			  <div className="relative">
-				<FontAwesomeIcon icon={item.icon} className="text-xl"
-				  style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
-				{item.href === '/coach/chat' && unreadClienti > 0 && (
-				  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-xs font-black"
-					style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)', fontSize: 9 }}>
-					{unreadClienti}
-				  </span>
-				)}
-			  </div>
-			  <span className="text-xs font-medium"
-				style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
-				{item.label}
-			  </span>
-			</Link>
-		  )
-		})}
-
-        {/* Altro popup */}
-        <div className="relative flex-1 flex justify-center">
-          <button onClick={() => { setMenuOpen(p => !p); setAllenamentoOpen(false) }}
-            className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all w-full"
-            style={{ background: menuOpen ? 'oklch(0.70 0.19 46 / 15%)' : 'transparent' }}>
-            <FontAwesomeIcon icon={faEllipsisVertical} className="text-xl"
-              style={{ color: menuOpen ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
-            <span className="text-xs font-medium"
-              style={{ color: menuOpen ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>
-              Altro
-            </span>
-          </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="absolute bottom-14 right-0 z-50 rounded-2xl overflow-hidden shadow-xl min-w-44"
-                style={{ background: 'var(--c-22)', border: '1px solid var(--c-w12)' }}>
-                <Link href="/coach/impostazioni" onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
-                  <FontAwesomeIcon icon={faGear} className="w-4" />
-                  Impostazioni
-                </Link>
-                <button onClick={() => { setMenuOpen(false); handleLogout() }}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all hover:bg-white/5"
-                  style={{ color: 'oklch(0.65 0.18 27)' }}>
-                  <FontAwesomeIcon icon={faRightFromBracket} className="w-4" />
-                  Esci
-                </button>
+        {/* 5 — Chat con badge unread */}
+        {(() => {
+          const isActive = pathname === '/coach/chat'
+          return (
+            <Link href="/coach/chat"
+              className="flex flex-col items-center gap-0.5 flex-1 py-1 rounded-xl transition-all relative"
+              style={{ minHeight: 44 }}>
+              <div className="relative">
+                <FontAwesomeIcon icon={faComments} className="text-xl"
+                  style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }} />
+                {unreadClienti > 0 && (
+                  <span className="absolute -top-1 -right-2 w-4 h-4 rounded-full flex items-center justify-center"
+                    style={{ background: 'oklch(0.65 0.22 27)', color: 'white', fontSize: 9, fontWeight: 700 }}>
+                    {unreadClienti}
+                  </span>
+                )}
               </div>
-            </>
-          )}
-        </div>
+              <span className="text-xs font-medium"
+                style={{ color: isActive ? 'oklch(0.70 0.19 46)' : 'var(--c-45)' }}>Chat</span>
+            </Link>
+          )
+        })()}
       </nav>
     </>
   )

@@ -100,20 +100,31 @@ export default function ImpostazioniPage() {
   if (loading) return <BynariLoader file="blue" size={80} />
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      {/* Header */}
-      <div>
-        <button onClick={() => router.push(dashboardUrl)}
-          className="text-sm mb-4 inline-block hover:opacity-70" style={{ color: 'var(--c-50)' }}>
-          ← Dashboard
-        </button>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
+    <div className="max-w-2xl" style={{ paddingBottom: 100 }}>
+      {/* ── Header mobile ── */}
+      <div className="lg:hidden" style={{ padding: '16px 20px 20px' }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700 }}>ACCOUNT</p>
+        <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--c-97)', lineHeight: 1.1, marginTop: 2 }}>
           Impostazioni
         </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
+      </div>
+
+      {/* ── Header desktop ── */}
+      <div className="hidden lg:block" style={{ marginBottom: 28 }}>
+        <button onClick={() => router.push(dashboardUrl)}
+          style={{ fontSize: 12.5, color: 'var(--c-50)', marginBottom: 12, display: 'block' }}>
+          ← Dashboard
+        </button>
+        <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700, marginBottom: 4 }}>ACCOUNT</p>
+        <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 32, letterSpacing: '-0.02em', color: 'var(--c-97)' }}>
+          Impostazioni
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--c-50)', marginTop: 2 }}>
           Gestisci il tuo profilo e la sicurezza dell'account
         </p>
       </div>
+
+      <div style={{ padding: '0 20px' }} className="lg:p-0 space-y-6">
 
       {/* ── Profilo ── */}
       <div className="rounded-2xl p-6 space-y-5"
@@ -355,6 +366,7 @@ export default function ImpostazioniPage() {
           </div>
         </div>
       )}
+      </div>{/* end padding wrapper */}
     </div>
   )
 }

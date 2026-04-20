@@ -54,6 +54,7 @@ export default function AppuntamentiPage() {
   const [weekOffset, setWeekOffset] = useState(0)
   const [showForm, setShowForm] = useState(false)
   const [tooltip, setTooltip] = useState<string | null>(null)
+  const [view, setView] = useState<'settimana' | 'lista'>('lista')
 
   // Form
   const [fCliente, setFCliente] = useState('')
@@ -154,30 +155,83 @@ export default function AppuntamentiPage() {
   } as const
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Appuntamenti</h1>
+    <div className="max-w-5xl" style={{ paddingBottom: 100 }}>
+      {/* ── Header mobile ── */}
+      <div className="lg:hidden" style={{ padding: '16px 20px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <div>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700 }}>CALENDARIO</p>
+            <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--c-97)', lineHeight: 1.1 }}>
+              Appuntamenti
+            </h1>
+          </div>
           <button
             onClick={() => setShowForm(p => !p)}
-            className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-all active:scale-95"
-            style={{ background: showForm ? 'var(--c-22)' : 'oklch(0.70 0.19 46)', color: showForm ? 'var(--c-55)' : 'var(--c-11)' }}>
+            aria-label="Nuovo appuntamento"
+            style={{
+              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+              background: showForm ? 'var(--c-22)' : 'oklch(0.70 0.19 46)',
+              color: showForm ? 'var(--c-55)' : 'var(--c-13)', fontSize: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
             <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
-            {showForm ? 'Chiudi' : 'Nuovo'}
           </button>
         </div>
-        <div className="flex items-center justify-between mt-1">
-          <p className="text-sm" style={{ color: 'var(--c-50)' }}>{futuri.length} programmati</p>
+        <p style={{ fontSize: 12.5, color: 'var(--c-50)', marginBottom: 14 }}>{futuri.length} programmati</p>
+
+        {/* Toggle view mobile */}
+        <div style={{ display: 'inline-flex', background: 'var(--c-14)', borderRadius: 10, padding: 3, gap: 2 }}>
+          {(['lista', 'settimana'] as const).map(v => (
+            <button key={v} onClick={() => setView(v)} style={{
+              padding: '6px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+              background: view === v ? 'var(--c-22)' : 'transparent',
+              color: view === v ? 'var(--c-97)' : 'var(--c-55)',
+              textTransform: 'capitalize',
+            }}>
+              {v === 'lista' ? 'Lista' : 'Settimana'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Header desktop ── */}
+      <div className="hidden lg:flex" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700, marginBottom: 4 }}>CALENDARIO</p>
+          <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 32, letterSpacing: '-0.02em', color: 'var(--c-97)' }}>
+            Appuntamenti
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--c-50)', marginTop: 2 }}>{futuri.length} programmati</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          {/* Toggle desktop */}
+          <div style={{ display: 'inline-flex', background: 'var(--c-14)', borderRadius: 10, padding: 3, gap: 2 }}>
+            {(['lista', 'settimana'] as const).map(v => (
+              <button key={v} onClick={() => setView(v)} style={{
+                padding: '7px 16px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                background: view === v ? 'var(--c-22)' : 'transparent',
+                color: view === v ? 'var(--c-97)' : 'var(--c-55)',
+                textTransform: 'capitalize',
+              }}>
+                {v === 'lista' ? 'Lista' : 'Settimana'}
+              </button>
+            ))}
+          </div>
           <button
             onClick={() => setShowForm(p => !p)}
-            className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all active:scale-95"
-            style={{ background: showForm ? 'var(--c-22)' : 'oklch(0.70 0.19 46)', color: showForm ? 'var(--c-55)' : 'var(--c-11)' }}>
+            style={{
+              height: 44, padding: '0 18px', borderRadius: 12, fontSize: 13.5, fontWeight: 600,
+              background: showForm ? 'var(--c-22)' : 'oklch(0.70 0.19 46)',
+              color: showForm ? 'var(--c-55)' : 'var(--c-13)',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
             <FontAwesomeIcon icon={faPlus} style={{ transform: showForm ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }} />
             {showForm ? 'Chiudi' : 'Nuovo'}
           </button>
         </div>
       </div>
+
+      <div style={{ padding: '0 20px' }} className="lg:p-0 space-y-4 lg:space-y-6">
 
       {/* Form nuovo appuntamento */}
       {showForm && (
@@ -259,7 +313,97 @@ export default function AppuntamentiPage() {
         </div>
       )}
 
-      {/* Calendario settimanale */}
+      {/* ── Vista lista ── */}
+      {view === 'lista' && (
+        <div style={{
+          borderRadius: 16, overflow: 'hidden',
+          background: 'var(--c-18)', border: '1px solid var(--c-w6)',
+        }}>
+          <div style={{ padding: '13px 16px', borderBottom: '1px solid var(--c-w6)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-97)', flex: 1 }}>Prossimi appuntamenti</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
+              {futuri.length}
+            </span>
+          </div>
+          {loading ? (
+            <div style={{ padding: '32px 0', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: 'var(--c-45)' }}>Caricamento…</p>
+            </div>
+          ) : futuri.length === 0 ? (
+            <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 36, color: 'var(--c-30)', marginBottom: 12 }}>
+                <FontAwesomeIcon icon={faCalendarDays} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--c-97)', marginBottom: 6 }}>Nessun appuntamento</p>
+              <p style={{ fontSize: 13, color: 'var(--c-45)' }}>Usa il + per aggiungerne uno</p>
+            </div>
+          ) : (
+            futuri.map((a, i) => {
+              const d = new Date(a.data_ora)
+              const isOggi = d.toDateString() === today.toDateString()
+              const colors = TIPO_COLOR[a.tipo] ?? TIPO_COLOR.videocall
+              const tipoIcon = a.tipo === 'videocall' ? faVideo : a.tipo === 'chiamata' ? faPhone : faPerson
+              return (
+                <div key={a.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '13px 16px',
+                  borderBottom: i < futuri.length - 1 ? '1px solid var(--c-w4)' : 'none',
+                }}>
+                  {/* Data pill */}
+                  <div style={{
+                    width: 46, flexShrink: 0, textAlign: 'center',
+                    padding: '7px 4px', borderRadius: 12,
+                    background: isOggi ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
+                    border: isOggi ? 'none' : '1px solid var(--c-w8)',
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isOggi ? 'oklch(0.95 0.05 46)' : 'var(--c-45)', lineHeight: 1 }}>
+                      {d.toLocaleDateString('it-IT', { month: 'short' })}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-syne)', fontSize: 20, fontWeight: 700, color: isOggi ? 'white' : 'var(--c-90)', lineHeight: 1.1 }}>
+                      {d.getDate()}
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--c-97)', marginBottom: 3 }}>
+                      {a.profiles?.full_name ?? '—'}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, color: 'var(--c-55)' }}>
+                        {d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} · {a.durata_minuti}min
+                      </span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+                        background: colors.bg, color: colors.text,
+                        display: 'flex', alignItems: 'center', gap: 4,
+                      }}>
+                        <FontAwesomeIcon icon={tipoIcon} style={{ fontSize: 9 }} />
+                        {a.tipo}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Azioni */}
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <button onClick={() => handleStato(a.id, 'completato')} aria-label="Segna come fatto"
+                      style={{ width: 32, height: 32, borderRadius: 8, background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                      <FontAwesomeIcon icon={faCheck} />
+                    </button>
+                    <button onClick={() => handleStato(a.id, 'annullato')} aria-label="Annulla appuntamento"
+                      style={{ width: 32, height: 32, borderRadius: 8, background: 'oklch(0.65 0.22 27 / 15%)', color: 'oklch(0.75 0.15 27)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                      <FontAwesomeIcon icon={faXmark} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
+
+      {/* ── Vista settimana ── */}
+      {view === 'settimana' && (
       <div>
         <div className="flex items-center gap-3 mb-3">
           <button onClick={() => setWeekOffset(p => p - 1)}
@@ -436,6 +580,9 @@ export default function AppuntamentiPage() {
           </div>
         </div>
       </div>
+      )}
+
+      </div>{/* end padding wrapper */}
     </div>
   )
 }

@@ -10,7 +10,13 @@ import {
   faFaceTired, faFaceFrown, faFaceMeh, faFaceSmile, faFaceGrinStars,
   faArrowTrendUp, faArrowTrendDown, faMinus, faCalendarDays,
   faXmark, faChevronDown, faChevronUp, faArrowLeft, faHand, faEye,
+  faPlus,
 } from '@fortawesome/free-solid-svg-icons'
+import KpiCard from '@/components/ui/KpiCard'
+import AlertBanner from '@/components/ui/AlertBanner'
+import SectionHeader from '@/components/ui/SectionHeader'
+import ClientListRow from '@/components/ui/ClientListRow'
+import SortDropdown from '@/components/ui/SortDropdown'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Link from 'next/link'
@@ -668,337 +674,352 @@ export default function AnalyticsPage() {
     { label: 'Sessioni totali', value: totaleSessioni, icon: faDumbbell, color: 'oklch(0.65 0.15 300)' },
   ]
 
+  const SORT_OPTIONS = [
+    { id: 'alert' as const,          label: 'Priorità alert' },
+    { id: 'ultima_attivita' as const, label: 'Ultima attività' },
+    { id: 'piu_recenti' as const,    label: 'Più recenti' },
+    { id: 'piu_vecchi' as const,     label: 'Più vecchi' },
+    { id: 'nome' as const,           label: 'A→Z Nome' },
+  ]
+
   return (
     <>
-    <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div className="space-y-5 max-w-5xl">
+
+      {/* ── HEADER MOBILE ── */}
+      <div className="lg:hidden flex items-center justify-between pt-1 pb-1">
         <div>
-          <p className="text-sm font-medium mb-1" style={{ color: 'oklch(0.70 0.19 46)' }}>
-            Dashboard <FontAwesomeIcon icon={faHand} />
+          <div style={{ fontSize: 11, color: 'var(--c-50)', fontWeight: 500 }}>Buongiorno</div>
+          <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 18, color: 'var(--c-97)' }}>
+            Dashboard
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <a href="/coach/clienti"
+            className="flex items-center justify-center rounded-xl"
+            style={{ width: 38, height: 38, background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: 14 }}
+            aria-label="Aggiungi cliente">
+            <FontAwesomeIcon icon={faPlus} />
+          </a>
+        </div>
+      </div>
+
+      {/* ── HEADER DESKTOP ── */}
+      <div className="hidden lg:flex items-start justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--c-50)' }}>
+            Dashboard
           </p>
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>
-            I tuoi clienti
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)', fontFamily: 'var(--font-syne)' }}>
+            {!loading && clientiConAlert.length > 0
+              ? <><span>{clientiConAlert.length} {clientiConAlert.length === 1 ? 'cliente richiede' : 'clienti richiedono'} </span><span style={{ color: 'oklch(0.78 0.14 27)' }}>attenzione</span></>
+              : clientiStats.length > 0
+              ? <><span>Tutto </span><span style={{ color: 'oklch(0.65 0.18 150)' }}>sotto controllo</span></>
+              : 'I tuoi clienti'
+            }
           </h1>
-          <div className="flex items-center gap-4 mt-1">
+          <div className="flex items-center gap-3 mt-1.5">
             {[
-              { label: 'Totali', value: totaleClienti, color: 'var(--c-50)' },
-              { label: 'Nuovi', value: clientiNuovi, color: 'oklch(0.70 0.19 46)' },
+              { label: 'Totali', value: totaleClienti, color: 'var(--c-60)' },
+              { label: 'Nuovi 7gg', value: clientiNuovi, color: 'oklch(0.70 0.19 46)' },
               { label: 'Attivi', value: clientiAttivi, color: 'oklch(0.65 0.18 150)' },
             ].map((s, i) => (
-              <div key={s.label} className="flex items-center gap-2">
-                {i > 0 && <span style={{ color: 'var(--c-30)' }}>·</span>}
+              <div key={s.label} className="flex items-center gap-1.5">
+                {i > 0 && <span style={{ color: 'var(--c-25)' }}>·</span>}
                 <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
-                <span className="text-sm" style={{ color: 'var(--c-45)' }}>{s.label}</span>
+                <span className="text-sm" style={{ color: 'var(--c-40)' }}>{s.label}</span>
               </div>
             ))}
           </div>
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <a href="/coach/schede"
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)' }}>
+            className="px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)', minHeight: 44, display: 'flex', alignItems: 'center' }}>
             + Scheda
           </a>
           <a href="/coach/clienti"
-            className="px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
+            className="px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', minHeight: 44, display: 'flex', alignItems: 'center' }}>
             + Cliente
           </a>
         </div>
       </div>
 
-      {/* Alert banner — solo se ci sono alert */}
-      {!loading && clientiConAlert.length > 0 && (
-        <div className="rounded-2xl p-4 flex items-start gap-3"
-          style={{ background: 'oklch(0.65 0.22 27 / 10%)', border: '1px solid oklch(0.65 0.22 27 / 30%)' }}>
-          <FontAwesomeIcon icon={faTriangleExclamation} className="text-xl flex-shrink-0" />
-          <div>
-            <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0.10 46)' }}>
-              {clientiConAlert.length} {clientiConAlert.length === 1 ? 'cliente richiede' : 'clienti richiedono'} attenzione
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--c-60)' }}>
-              {clientiConAlert.map(c => c.full_name).join(', ')}
-            </p>
+      {/* ── HERO MOBILE: eyebrow + titolo stato ── */}
+      {!loading && (
+        <div className="lg:hidden">
+          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700, marginBottom: 6 }}>
+            Oggi
           </div>
-        </div>
-      )}
-
-      {/* Stats overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {overviewStats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl p-4 space-y-2"
-            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-            <div className="flex items-center justify-between">
-              <p className="text-xs" style={{ color: 'var(--c-50)' }}>{stat.label}</p>
-              <FontAwesomeIcon icon={stat.icon} />
-            </div>
-            <p className="text-3xl lg:text-4xl font-black" style={{ color: stat.color }}>{stat.value}</p>
-          </div>
-        ))}
-      </div>
-      {/* Prossimi appuntamenti */}
-      {prossimiCheckin.length > 0 && (
-        <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'var(--c-18)', border: '1px solid oklch(0.60 0.15 200 / 20%)' }}>
-          <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--c-w6)' }}>
-            <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
-              <FontAwesomeIcon icon={faCalendarDays} className="mr-2" style={{ color: 'oklch(0.60 0.15 200)' }} />
-              Prossimi appuntamenti
-            </p>
-            <Link href="/coach/appuntamenti" className="text-xs font-medium" style={{ color: 'oklch(0.60 0.15 200)' }}>
-              Tutti →
-            </Link>
-          </div>
-          {prossimiCheckin.map((a: any, i: number) => {
-            const dataOra = new Date(a.data_ora)
-            const oggi = new Date(); oggi.setHours(0,0,0,0)
-            const domani = new Date(oggi); domani.setDate(domani.getDate() + 1)
-            const gg = dataOra < domani
-              ? `Oggi ${dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`
-              : dataOra < new Date(domani.getTime() + 86400000)
-              ? `Domani ${dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`
-              : dataOra.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
-            return (
-              <Link key={a.id} href={`/coach/appuntamenti`}
-                className="flex items-center gap-3 px-5 py-3 transition-all hover:bg-white/3"
-                style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'oklch(0.60 0.15 200)' }} />
-                <p className="flex-1 text-sm font-semibold truncate" style={{ color: 'var(--c-85)' }}>
-                  {(a as any).profiles?.full_name ?? 'Cliente'}
-                </p>
-                <p className="text-xs flex-shrink-0" style={{ color: 'var(--c-50)' }}>{gg} · {a.durata_minuti}min</p>
-              </Link>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Prossimi check-in mensili */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 20%)' }}>
-        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--c-w6)' }}>
-          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
-            <FontAwesomeIcon icon={faClipboardList} className="mr-2" style={{ color: 'oklch(0.70 0.19 46)' }} />
-            Prossimi check-in
-          </p>
-          <Link href="/coach/checkin" className="text-xs font-medium" style={{ color: 'oklch(0.70 0.19 46)' }}>
-            Tutti →
-          </Link>
-        </div>
-        <div className="px-5 py-4 text-center">
-          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun check-in programmato</p>
-          <Link href="/coach/checkin"
-            className="inline-block mt-2 text-xs font-semibold"
-            style={{ color: 'oklch(0.70 0.19 46)' }}>
-            + Programma il primo →
-          </Link>
-        </div>
-      </div>
-      
-      {/* Tabs */}
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
-        {[
-          { id: 'overview' as VistaTab, label: 'Attività', icon: faChartBar },
-          { id: 'attivita' as VistaTab, label: 'Alert', icon: faTriangleExclamation, badge: clientiConAlert.length },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all relative"
-            style={{
-              background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
-            }}>
-            <FontAwesomeIcon icon={t.icon} />
-            <span className="hidden sm:inline">{t.label}</span>
-            {t.badge && t.badge > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
-                style={{ background: 'oklch(0.65 0.22 27)', color: 'white' }}>
-                {t.badge}
-              </span>
+          <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 24, letterSpacing: '-0.02em', color: 'var(--c-97)', lineHeight: 1.15 }}>
+            {clientiConAlert.length > 0 ? (
+              <>{clientiConAlert.length} {clientiConAlert.length === 1 ? 'cliente' : 'clienti'}<br />
+                <span style={{ color: 'oklch(0.78 0.14 27)' }}>richiede attenzione</span>
+              </>
+            ) : clientiStats.length > 0 ? (
+              <>Tutto<br /><span style={{ color: 'oklch(0.65 0.18 150)' }}>sotto controllo</span></>
+            ) : (
+              'Nessun cliente'
             )}
-          </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── ALERT BANNER ── */}
+      {!loading && clientiConAlert.length > 0 && (
+        <AlertBanner
+          count={clientiConAlert.length}
+          nomi={clientiConAlert.map(c => c.full_name ?? '')}
+          onClick={() => setTab('attivita')}
+        />
+      )}
+
+      {/* ── KPI GRID: 2×2 mobile, 4 col desktop ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        {overviewStats.map((stat) => (
+          <KpiCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            variant="compact-mobile"
+          />
         ))}
       </div>
 
+      {/* ── PROSSIMI APPUNTAMENTI ── */}
+      {prossimiCheckin.length > 0 && (
+        <div>
+          <SectionHeader label="Prossimi" href="/coach/appuntamenti" />
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+            {prossimiCheckin.map((a: any, i: number) => {
+              const dataOra = new Date(a.data_ora)
+              const oggi2 = new Date(); oggi2.setHours(0,0,0,0)
+              const domani2 = new Date(oggi2); domani2.setDate(domani2.getDate() + 1)
+              const isOggi = dataOra < domani2
+              const orario = dataOra.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
+              const giorno = isOggi ? 'Oggi' : dataOra < new Date(domani2.getTime() + 86400000)
+                ? 'Domani'
+                : dataOra.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+              return (
+                <Link key={a.id} href="/coach/appuntamenti"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-white/3 transition-colors"
+                  style={{ borderBottom: i < prossimiCheckin.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
+                  {/* Pill data */}
+                  <div style={{
+                    width: 44, borderRadius: 10, flexShrink: 0,
+                    background: isOggi ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
+                    color: isOggi ? 'oklch(0.70 0.19 46)' : 'var(--c-60)',
+                    padding: '5px 0', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{giorno}</div>
+                    <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 13, lineHeight: 1.2, marginTop: 1 }}>{orario}</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--c-97)' }}>
+                      {(a as any).profiles?.full_name ?? 'Cliente'}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>{a.tipo} · {a.durata_minuti}min</p>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── LISTA CLIENTI ── */}
       {loading ? (
         <div className="py-16 text-center">
-          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento analytics...</p>
+          <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento...</p>
         </div>
       ) : clientiStats.length === 0 ? (
         <div className="rounded-2xl py-16 text-center space-y-3"
           style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-          <p className="text-5xl"><FontAwesomeIcon icon={faChartBar} /></p>
+          <FontAwesomeIcon icon={faUsers} className="text-4xl" style={{ color: 'var(--c-35)' }} />
           <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Nessun cliente ancora</p>
           <p className="text-sm" style={{ color: 'var(--c-45)' }}>Aggiungi clienti per vedere le analytics</p>
+          <a href="/coach/clienti"
+            className="inline-block mt-1 px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
+            + Aggiungi cliente
+          </a>
         </div>
       ) : (
         <>
-          {/* TAB: ATTIVITÀ */}
+          {/* Tabs Attività / Alert */}
+          <div className="flex gap-1.5 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
+            {[
+              { id: 'overview' as VistaTab, label: 'Attività', icon: faChartBar },
+              { id: 'attivita' as VistaTab, label: 'Alert', icon: faTriangleExclamation, badge: clientiConAlert.length },
+            ].map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all relative"
+                style={{ minHeight: 40, background: tab === t.id ? 'var(--c-22)' : 'transparent', color: tab === t.id ? 'var(--c-97)' : 'var(--c-50)' }}>
+                <FontAwesomeIcon icon={t.icon} style={{ fontSize: 13 }} />
+                {t.label}
+                {t.badge && t.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
+                    style={{ background: 'oklch(0.65 0.22 27)', color: 'white' }}>
+                    {t.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* TAB: ATTIVITÀ — lista clienti */}
           {tab === 'overview' && (
-            <>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold" style={{ color: 'var(--c-45)' }}>Ordina:</span>
-              {([
-                { id: 'alert', label: '⚠ Alert' },
-                { id: 'ultima_attivita', label: '🕐 Ultima attività' },
-                { id: 'piu_recenti', label: '🆕 Più recenti' },
-                { id: 'piu_vecchi', label: '📅 Più vecchi' },
-                { id: 'nome', label: 'A→Z Nome' },
-              ] as const).map(o => (
-                <button key={o.id} onClick={() => setOrdinamento(o.id)}
-                  className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
-                  style={{
-                    background: ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'var(--c-22)',
-                    color: ordinamento === o.id ? 'var(--c-13)' : 'var(--c-50)',
-                    border: `1px solid ${ordinamento === o.id ? 'oklch(0.70 0.19 46)' : 'var(--c-w8)'}`,
-                  }}>
-                  {o.label}
-                </button>
-              ))}
-            </div>
-            <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-              {/* Header colonne */}
-              <div className="px-5 py-3 grid grid-cols-12 gap-2 hidden lg:grid"
-                style={{ background: 'var(--c-15)', borderBottom: '1px solid var(--c-w6)' }}>
-                {['Cliente', 'Schede', 'Sessioni', 'Ultima sessione', 'Stato'].map((h, i) => (
-                  <p key={h} className={`text-xs font-semibold uppercase tracking-wider ${i === 0 ? 'col-span-4' : i === 3 ? 'col-span-2 text-center' : 'col-span-2 text-center'}`}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <SectionHeader label="I tuoi clienti" className="mb-0" />
+                <SortDropdown
+                  options={SORT_OPTIONS}
+                  value={ordinamento}
+                  onChange={setOrdinamento}
+                />
+              </div>
+
+              {/* Desktop: header colonne */}
+              <div className="hidden lg:grid lg:grid-cols-12 px-4 py-2 mb-1 gap-2"
+                style={{ background: 'var(--c-16)', borderRadius: '12px 12px 0 0', border: '1px solid var(--c-w6)', borderBottom: 'none' }}>
+                {[['Cliente', 'col-span-4'], ['Schede', 'col-span-2 text-center'], ['Sessioni', 'col-span-2 text-center'], ['Ultima sessione', 'col-span-2 text-center'], ['Stato', 'col-span-2 text-center']].map(([h, cls]) => (
+                  <p key={h} className={`text-xs font-bold uppercase tracking-wider ${cls}`}
                     style={{ color: 'var(--c-40)' }}>{h}</p>
                 ))}
               </div>
 
-              {clientiOrdinati.map((c, i) => {
-                const stato = getStatoCliente(c.giorni_inattivo, c.totale_sessioni)
-                return (
-                  <div key={c.id}
-                    onClick={() => apriCliente(c)}
-                    className="px-5 py-4 lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center flex flex-col gap-2 cursor-pointer transition-colors hover:opacity-80"
-                    style={{ borderBottom: i < clientiOrdinati.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
-                    {/* Cliente */}
-                    <div className="lg:col-span-4 flex items-center gap-3">
-                      <div className="relative flex-shrink-0">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-                          style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                          {c.full_name?.charAt(0).toUpperCase()}
+              {/* Lista */}
+              <div className="rounded-2xl lg:rounded-t-none overflow-hidden"
+                style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+                {clientiOrdinati.map((c, i) => {
+                  const stato = getStatoCliente(c.giorni_inattivo, c.totale_sessioni)
+                  return (
+                    <div key={c.id}>
+                      {/* Mobile row */}
+                      <div className="lg:hidden">
+                        <ClientListRow
+                          nome={c.full_name ?? '—'}
+                          initiale={c.full_name?.charAt(0).toUpperCase() ?? '?'}
+                          stato={stato.label}
+                          alertLabel={c.alert[0]?.label}
+                          sessioni={c.totale_sessioni}
+                          giorniInattivo={c.giorni_inattivo}
+                          isNuovo={isNuovo(c)}
+                          hasAlert={c.alert.length > 0}
+                          onClick={() => apriCliente(c)}
+                          isLast={i === clientiOrdinati.length - 1}
+                        />
+                      </div>
+                      {/* Desktop row */}
+                      <div
+                        onClick={() => apriCliente(c)}
+                        className="hidden lg:grid lg:grid-cols-12 lg:gap-2 lg:items-center px-4 py-3.5 cursor-pointer transition-colors hover:bg-white/3"
+                        style={{ borderBottom: i < clientiOrdinati.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
+                        <div className="col-span-4 flex items-center gap-3">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                              style={{ background: c.alert.length > 0 ? 'oklch(0.65 0.22 27 / 18%)' : 'oklch(0.70 0.19 46 / 15%)', color: c.alert.length > 0 ? 'oklch(0.78 0.14 27)' : 'oklch(0.70 0.19 46)' }}>
+                              {c.full_name?.charAt(0).toUpperCase()}
+                            </div>
+                            {isNuovo(c) && (
+                              <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded leading-tight"
+                                style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>NEW</span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
+                            {c.alert.length > 0 && (
+                              <p className="text-xs" style={{ color: 'oklch(0.78 0.14 27)' }}>
+                                <FontAwesomeIcon icon={faTriangleExclamation} className="mr-1" style={{ fontSize: 9 }} />
+                                {c.alert.length} alert
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        {isNuovo(c) && (
-                          <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
-                            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>
-                            NEW
-                          </span>
-                        )}
+                        <div className="col-span-2 text-center">
+                          <p className="text-sm font-semibold" style={{ color: c.schede_attive > 0 ? 'oklch(0.65 0.18 150)' : 'var(--c-40)' }}>{c.schede_attive}</p>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <p className="text-sm font-semibold" style={{ color: 'var(--c-97)' }}>{c.totale_sessioni}</p>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          {c.ultima_sessione
+                            ? <p className="text-sm" style={{ color: 'var(--c-80)' }}>{c.giorni_inattivo === 0 ? 'Oggi' : c.giorni_inattivo === 1 ? 'Ieri' : `${c.giorni_inattivo}gg fa`}</p>
+                            : <p className="text-sm" style={{ color: 'var(--c-35)' }}>—</p>}
+                        </div>
+                        <div className="col-span-2 flex justify-center">
+                          <span className="text-xs font-medium px-3 py-1.5 rounded-full"
+                            style={{ background: stato.bg, color: stato.color }}>{stato.label}</span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
-                        {c.alert.length > 0 && (
-                          <p className="text-xs" style={{ color: 'oklch(0.75 0.15 27)' }}>
-                            <FontAwesomeIcon icon={faTriangleExclamation} /> {c.alert.length} alert
-                          </p>
-                        )}
-                      </div>
                     </div>
-
-                    {/* Mobile: stats inline */}
-                    <div className="lg:hidden flex items-center gap-4 flex-wrap">
-                      <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: stato.bg, color: stato.color }}>
-                        {stato.label}
-                      </span>
-                      <span className="text-xs" style={{ color: 'var(--c-50)' }}>
-                        {c.totale_sessioni} sessioni
-                      </span>
-                      {c.ultima_sessione && (
-                        <span className="text-xs" style={{ color: 'var(--c-50)' }}>
-                          {c.giorni_inattivo === 0 ? 'Oggi' : c.giorni_inattivo === 1 ? 'Ieri' : `${c.giorni_inattivo}gg fa`}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Desktop: colonne */}
-                    <div className="lg:col-span-2 text-center hidden lg:block">
-                      <p className="text-sm font-semibold" style={{ color: c.schede_attive > 0 ? 'oklch(0.65 0.18 150)' : 'var(--c-45)' }}>
-                        {c.schede_attive}
-                      </p>
-                    </div>
-                    <div className="lg:col-span-2 text-center hidden lg:block">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--c-97)' }}>{c.totale_sessioni}</p>
-                    </div>
-                    <div className="lg:col-span-2 text-center hidden lg:block">
-                      {c.ultima_sessione ? (
-                        <p className="text-sm" style={{ color: 'var(--c-97)' }}>
-                          {c.giorni_inattivo === 0 ? 'Oggi' : c.giorni_inattivo === 1 ? 'Ieri' : `${c.giorni_inattivo}gg fa`}
-                        </p>
-                      ) : (
-                        <p className="text-sm" style={{ color: 'var(--c-40)' }}>—</p>
-                      )}
-                    </div>
-                    <div className="lg:col-span-2 lg:flex lg:justify-center hidden lg:block">
-                      <span className="text-xs font-medium px-3 py-1.5 rounded-full"
-                        style={{ background: stato.bg, color: stato.color }}>
-                        {stato.label}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
-            </>
           )}
 
-          {/* TAB: ALERT */}
+          {/* TAB: ALERT — dettaglio per cliente */}
           {tab === 'attivita' && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {clientiConAlert.length === 0 ? (
                 <div className="rounded-2xl py-16 text-center space-y-3"
                   style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-                  <p className="text-5xl"><FontAwesomeIcon icon={faCircleCheck} /></p>
+                  <FontAwesomeIcon icon={faCircleCheck} className="text-4xl" style={{ color: 'oklch(0.65 0.18 150)' }} />
                   <p className="font-semibold" style={{ color: 'var(--c-97)' }}>Tutto ok!</p>
                   <p className="text-sm" style={{ color: 'var(--c-45)' }}>Nessun cliente richiede attenzione</p>
                 </div>
               ) : (
                 <>
                   <p className="text-sm" style={{ color: 'var(--c-50)' }}>
-                    Clienti che potrebbero aver bisogno di supporto o contatto
+                    Clienti che potrebbero aver bisogno di supporto
                   </p>
                   {clientiConAlert.map((c) => (
-                    <div key={c.id} className="rounded-2xl p-5 space-y-3"
-                      style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 25%)' }}>
+                    <div key={c.id} className="rounded-2xl p-4 space-y-3"
+                      style={{ background: 'var(--c-18)', border: '1px solid oklch(0.65 0.22 27 / 22%)' }}>
                       <div className="flex items-center gap-3">
                         <div className="relative flex-shrink-0">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
-                            style={{ background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.15 27)' }}>
+                            style={{ background: 'oklch(0.65 0.22 27 / 18%)', color: 'oklch(0.78 0.14 27)' }}>
                             {c.full_name?.charAt(0).toUpperCase()}
                           </div>
                           {isNuovo(c) && (
-                            <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded-full leading-tight"
-                              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>
-                              NEW
-                            </span>
+                            <span className="absolute -top-1 -right-1 text-xs font-black px-1 rounded leading-tight"
+                              style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: '0.6rem' }}>NEW</span>
                           )}
                         </div>
-                        <div>
-                          <p className="font-semibold" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold" style={{ color: 'var(--c-97)' }}>{c.full_name}</p>
                           <p className="text-xs" style={{ color: 'var(--c-45)' }}>
-                            {c.totale_sessioni} sessioni totali
+                            {c.totale_sessioni} sessioni
                             {c.ultima_sessione && ` · ultima ${c.giorni_inattivo === 0 ? 'oggi' : c.giorni_inattivo === 1 ? 'ieri' : `${c.giorni_inattivo}gg fa`}`}
                           </p>
                         </div>
+                        <button onClick={() => apriCliente(c)}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold"
+                          style={{ background: 'var(--c-22)', color: 'var(--c-70)', border: '1px solid var(--c-w8)', minHeight: 44, display: 'flex', alignItems: 'center' }}>
+                          Apri →
+                        </button>
                       </div>
-
-                      {/* Alert list con popover dettaglio */}
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {c.alert.map((a, i) => {
                           const isRed = a.label.includes('Inattivo') || a.label.includes('mai allenato') || a.label.includes('incompleta') || a.label.includes('saltato') || a.label.includes('Calo volume')
                           const isOrange = a.label.includes('Stress') || a.label.includes('negativi') || a.label.includes('anomala')
                           const bg = isRed ? 'oklch(0.65 0.22 27 / 18%)' : isOrange ? 'oklch(0.70 0.19 46 / 18%)' : 'oklch(0.75 0.15 80 / 18%)'
-                          const color = isRed ? 'oklch(0.75 0.15 27)' : isOrange ? 'oklch(0.75 0.14 46)' : 'oklch(0.80 0.12 80)'
+                          const color = isRed ? 'oklch(0.78 0.14 27)' : isOrange ? 'oklch(0.75 0.14 46)' : 'oklch(0.80 0.12 80)'
                           const isOpen = alertAperto?.clienteId === c.id && alertAperto?.idx === i
                           return (
                             <div key={i} className="relative">
                               <button
                                 onClick={() => setAlertAperto(isOpen ? null : { clienteId: c.id, idx: i })}
-                                className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
-                                style={{ background: bg, color, outline: isOpen ? `2px solid ${color}` : 'none', outlineOffset: 1 }}>
-                                <FontAwesomeIcon icon={faTriangleExclamation} /> {a.label}
+                                className="text-xs px-3 py-1.5 rounded-full font-medium"
+                                style={{ background: bg, color, outline: isOpen ? `1.5px solid ${color}` : 'none', outlineOffset: 1 }}>
+                                <FontAwesomeIcon icon={faTriangleExclamation} className="mr-1" style={{ fontSize: 9 }} />
+                                {a.label}
                               </button>
                               {isOpen && (
                                 <div className="absolute bottom-full left-0 mb-2 z-50 w-64 rounded-2xl px-4 py-3 text-xs"

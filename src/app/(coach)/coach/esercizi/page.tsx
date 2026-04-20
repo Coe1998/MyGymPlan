@@ -186,23 +186,58 @@ export default function EserciziPage() {
   const haAltri = filtered.length > visibili
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div className="max-w-5xl" style={{ paddingBottom: 100 }}>
+
+      {/* ── Header mobile ── */}
+      <div className="lg:hidden" style={{ padding: '16px 20px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700 }}>LIBRERIA</p>
+            <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--c-97)', lineHeight: 1.1 }}>
+              Esercizi
+            </h1>
+            <p style={{ fontSize: 12, color: 'var(--c-50)', marginTop: 3 }}>
+              {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
+            </p>
+          </div>
+          {!showForm && (
+            <button
+              onClick={() => { setShowForm(true); setEditingId(null); setForm(EMPTY_FORM) }}
+              aria-label="Nuovo esercizio"
+              style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', fontSize: 16,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+              +
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Header desktop ── */}
+      <div className="hidden lg:flex items-start justify-between" style={{ marginBottom: 24 }}>
         <div>
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Esercizi</h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--c-50)' }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700, marginBottom: 4 }}>LIBRERIA</p>
+          <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 32, letterSpacing: '-0.02em', color: 'var(--c-97)' }}>
+            Esercizi
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--c-50)', marginTop: 2 }}>
             {esercizi.filter(e => !e.is_global).length} tuoi · {esercizi.filter(e => e.is_global).length} globali
           </p>
         </div>
         {!showForm && (
           <button onClick={() => { setShowForm(true); setEditingId(null); setForm(EMPTY_FORM) }}
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
+            style={{
+              height: 44, padding: '0 20px', borderRadius: 12, fontSize: 13.5, fontWeight: 600,
+              background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)', flexShrink: 0,
+            }}>
             + Nuovo esercizio
           </button>
         )}
       </div>
+
+      <div style={{ padding: '0 20px' }} className="lg:p-0 space-y-4 lg:space-y-6">
 
       {/* Form creazione/modifica */}
       {showForm && (
@@ -619,6 +654,7 @@ export default function EserciziPage() {
           </>
         )}
       </div>
+      </div>{/* end padding wrapper */}
     </div>
   )
 }

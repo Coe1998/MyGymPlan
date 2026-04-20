@@ -106,22 +106,48 @@ export default function SchedePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="max-w-5xl" style={{ paddingBottom: 100 }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-3xl lg:text-4xl font-black tracking-tight truncate" style={{ color: 'var(--c-97)' }}>
+      {/* ── Header mobile ── */}
+      <div className="lg:hidden" style={{ padding: '16px 20px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700 }}>PROGRAMMI</p>
+            <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--c-97)', lineHeight: 1.1 }}>
+              Schede
+            </h1>
+          </div>
+          <button onClick={handleNuovaScheda} aria-label="Nuova scheda"
+            style={{
+              width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+              background: creatingNuova ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
+              color: 'var(--c-13)', fontSize: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+            {creatingNuova ? '…' : '+'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Header desktop ── */}
+      <div className="hidden lg:flex items-center justify-between gap-3" style={{ marginBottom: 24 }}>
+        <div>
+          <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--c-50)', fontWeight: 700, marginBottom: 4 }}>PROGRAMMI</p>
+          <h1 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: 32, letterSpacing: '-0.02em', color: 'var(--c-97)' }}>
             Schede
           </h1>
-          <p className="mt-0.5 text-sm" style={{ color: 'var(--c-50)' }}>Crea e gestisci le schede</p>
         </div>
-        <button onClick={() => handleNuovaScheda()}
-          className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 whitespace-nowrap"
-          style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-13)' }}>
-          {creatingNuova ? '...' : '+ Nuova'}
+        <button onClick={handleNuovaScheda}
+          style={{
+            height: 44, padding: '0 20px', borderRadius: 12, fontSize: 13.5, fontWeight: 600,
+            background: creatingNuova ? 'oklch(0.40 0.10 46)' : 'oklch(0.70 0.19 46)',
+            color: 'var(--c-13)', flexShrink: 0,
+          }}>
+          {creatingNuova ? 'Creazione…' : '+ Nuova scheda'}
         </button>
       </div>
+
+      <div style={{ padding: '0 20px' }} className="lg:p-0 space-y-4 lg:space-y-6">
 
       {/* Lista */}
       <div className="rounded-2xl overflow-hidden"
@@ -227,6 +253,7 @@ export default function SchedePage() {
           onClose={() => { setNuovaSchedaId(null); fetchSchede() }}
         />
       )}
+      </div>{/* end padding wrapper */}
     </div>
   )
 }
