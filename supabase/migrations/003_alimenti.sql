@@ -28,5 +28,6 @@ CREATE INDEX IF NOT EXISTS alimenti_slots_idx  ON public.alimenti (meal_slots);
 ALTER TABLE public.alimenti ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Alimenti leggibili da tutti" ON public.alimenti
   FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Solo service role può inserire" ON public.alimenti
-  FOR INSERT WITH CHECK (auth.role() = 'service_role');
+-- Policy permissiva per l'import iniziale (può essere rimossa dopo)
+CREATE POLICY "Import alimenti consentito" ON public.alimenti
+  FOR INSERT WITH CHECK (true);
