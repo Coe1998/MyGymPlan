@@ -2,39 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { solveMeal, classifyFood, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
 
-// Filtri PNNS per tipo pasto — evita frutta secca a colazione, ecc.
-const PNNS_WHITELIST: Record<string, string[]> = {
-  colazione: [
-    'milk and dairy products',
-    'cereals and potatoes',
-    'fish meat eggs',
-    'fruits and vegetables',  // frutta fresca OK, ma filtrata dal classifier
-  ],
-  spuntino: [
-    'fruits and vegetables',
-    'milk and dairy products',
-    'nuts and seeds',
-    'cereals and potatoes',
-  ],
-  pranzo: [
-    'fish meat eggs',
-    'cereals and potatoes',
-    'fruits and vegetables',
-    'fat and sauces',
-    'legumes',
-    'milk and dairy products',
-    'unknown',
-  ],
-  cena: [
-    'fish meat eggs',
-    'cereals and potatoes',
-    'fruits and vegetables',
-    'fat and sauces',
-    'legumes',
-    'milk and dairy products',
-    'unknown',
-  ],
-}
 
 const SLOT_MAP: Record<string, string> = {
   'colazione':             'colazione',
@@ -103,7 +70,6 @@ export async function POST(req: NextRequest) {
 
   for (const pasto of pastiConfig) {
     const slot = SLOT_MAP[pasto.nome.toLowerCase()] ?? 'pranzo'
-    const pnnsList = PNNS_WHITELIST[slot] ?? PNNS_WHITELIST['pranzo']
 
     const mealTarget: MacroTarget = pasto.macro_custom
       ? {
@@ -119,18 +85,22 @@ export async function POST(req: NextRequest) {
           fat_g:     daily.fat_g     * pasto.percentuale / 100,
         }
 
-    // Query alimenti: per slot + pnns whitelist + escludi già usati
-    let { data: foods } = await supabase
+    // Query alimenti per slot — senza filtro PNNS (case mismatch), filtriamo dopo
+    const usedArr = [...usedIds]
+    let query = supabase
       .from('alimenti')
       .select('id, product_name, brands, pnns_groups_1, energy_kcal_100g, proteins_100g, carbs_100g, fat_100g, fiber_100g, meal_slots')
       .ilike('meal_slots', `%${slot}%`)
-      .in('pnns_groups_1', pnnsList)
       .not('energy_kcal_100g', 'is', null)
       .not('proteins_100g', 'is', null)
       .not('carbs_100g', 'is', null)
       .not('fat_100g', 'is', null)
-      .not('id', 'in', `(${[...usedIds].join(',') || "'00000000-0000-0000-0000-000000000000'"})`)
-      .limit(400)
+
+    if (usedArr.length > 0) {
+      query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
+    }
+
+    let { data: foods } = await query.limit(400)
 
     let filtered = (foods ?? []) as FoodItem[]
 
