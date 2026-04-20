@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMoon, faSun, faDownload } from '@fortawesome/free-solid-svg-icons'
-import html2canvas from 'html2canvas'
+import { toPng } from 'html-to-image'
 import { fmtVolumeNum, fmtDate, fmtDateExtended } from '@/lib/format/workout'
 import EditorialCard from '@/components/share-card/variants/EditorialCard'
 import BrutalistCard from '@/components/share-card/variants/BrutalistCard'
@@ -124,35 +124,33 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     setDownloading(true)
     try {
       await document.fonts.ready
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        backgroundColor: null,
-        useCORS: true,
-        logging: false,
+      const dataUrl = await toPng(el, {
+        pixelRatio: 3,
         width: 360,
         height: 640,
+        skipAutoScale: true,
+        cacheBust: true,
+        style: { visibility: 'visible' },
       })
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setDownloading(false); return }
-        const file = new File([blob], `bynari-${heroTitle.toLowerCase()}.png`, { type: 'image/png' })
-        if (navigator.canShare?.({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Bynari Workout' }) }
-          catch { fallbackDownload(canvas) }
-        } else {
-          fallbackDownload(canvas)
-        }
-        setDownloading(false)
-      }, 'image/png')
+      const blob = await (await fetch(dataUrl)).blob()
+      const file = new File([blob], `bynari-${heroTitle.toLowerCase()}.png`, { type: 'image/png' })
+      if (navigator.canShare?.({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'Bynari Workout' }) }
+        catch { fallbackDownload(dataUrl) }
+      } else {
+        fallbackDownload(dataUrl)
+      }
     } catch (e) {
       console.error('Export failed', e)
+    } finally {
       setDownloading(false)
     }
   }
 
-  const fallbackDownload = (canvas: HTMLCanvasElement) => {
+  const fallbackDownload = (dataUrl: string) => {
     const a = document.createElement('a')
     a.download = `bynari-${heroTitle.toLowerCase()}.png`
-    a.href = canvas.toDataURL('image/png')
+    a.href = dataUrl
     a.click()
   }
 
