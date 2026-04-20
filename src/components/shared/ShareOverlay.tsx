@@ -126,17 +126,24 @@ export default function ShareOverlay({ giornoNome, volume, serie, durata, eserci
     try {
       await document.fonts.ready
       const target = previewInnerRef.current ?? el
-      const dataUrl = await toPng(target, {
-        pixelRatio: 3,
-        width: 360,
-        height: 640,
-        skipFonts: true,
-        cacheBust: true,
-        onclone: (_doc, cloned) => {
-          cloned.style.transform = 'none'
-          cloned.style.transformOrigin = 'initial'
-        },
-      })
+      // Temporarily remove the preview scale so the full 360×640 is captured
+      const prevTransform = target.style.transform
+      const prevOrigin = target.style.transformOrigin
+      target.style.transform = 'none'
+      target.style.transformOrigin = 'initial'
+      let dataUrl: string
+      try {
+        dataUrl = await toPng(target, {
+          pixelRatio: 3,
+          width: 360,
+          height: 640,
+          skipFonts: true,
+          cacheBust: true,
+        })
+      } finally {
+        target.style.transform = prevTransform
+        target.style.transformOrigin = prevOrigin
+      }
       const blob = await (await fetch(dataUrl)).blob()
       const file = new File([blob], `bynari-${heroTitle.toLowerCase()}.png`, { type: 'image/png' })
       if (navigator.canShare?.({ files: [file] })) {
