@@ -25,7 +25,7 @@ interface SchedaEsercizio {
   prepara_secondi: number | null
   progressione_tipo: string
   warmup_serie: { peso: string; reps: string }[]
-  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' }
+  esercizi: { id: string; nome: string; muscoli: string[] | null; video_url: string | null; descrizione: string | null; tipo_input: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
   peso_consigliato_kg: number | null
   tut: string | null
   amrap_minuti: number | null
@@ -103,6 +103,8 @@ export default function AllenamentoPage() {
   const tabataRef = useRef<NodeJS.Timeout | null>(null)
   const tabataActiveRef = useRef<string | null>(null)
   const tabataInitiatorRef = useRef<string | null>(null)
+  const [timerUniState, setTimerUniState] = useState<Record<string, { fase: 'idle' | 'sx_run' | 'sx_done' | 'dx_run' | 'done'; sx: number; dx: number }>>({})
+  const timerUniRef = useRef<NodeJS.Timeout | null>(null)
   const eseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const durataRef = useRef<NodeJS.Timeout | null>(null)
   const hasAutoCompleted = useRef(false)
@@ -613,6 +615,29 @@ export default function AllenamentoPage() {
       return { min: v, max: v }
     }
 
+    // ── TIMER UNILATERALE: progressione durata per lato ──────────
+    if (tipoInput === 'timer_unilaterale') {
+      const targetSec = parseInt(ese.ripetizioni) || 30
+      const getLatoDebole = (s: UltimaSessioneSerie) => {
+        const sx = s.reps_sx ?? 0; const dx = s.reps_dx ?? 0
+        if (sx === 0 && dx === 0) return 0
+        if (sx === 0) return dx
+        if (dx === 0) return sx
+        return Math.min(sx, dx)
+      }
+      const tutteAlTarget = ultimeSerie.every(s => getLatoDebole(s) >= targetSec)
+      const alcuneSottoTarget = ultimeSerie.some(s => getLatoDebole(s) < targetSec * 0.8)
+      if (tutteAlTarget) {
+        const nuovaDurata = targetSec + (targetSec >= 60 ? 10 : 5)
+        return { messaggio: `⏱ Obiettivo raggiunto! Punta a ${nuovaDurata}s per lato`, eseNome: nome }
+      } else if (alcuneSottoTarget) {
+        return { messaggio: `⏱ Consolida ${targetSec}s per lato prima di salire`, eseNome: nome }
+      } else {
+        const mediaEffettiva = Math.round(ultimeSerie.reduce((a, s) => a + getLatoDebole(s), 0) / ultimeSerie.length)
+        return { messaggio: `⏱ Media ${mediaEffettiva}s per lato — mantieni e completa tutte le serie`, eseNome: nome }
+      }
+    }
+
     // ── TIMER: progressione durata ───────────────────────────────
     if (tipoInput === 'timer' || progTipo === 'durata') {
       const targetSec = parseInt(ese.ripetizioni) || 30
@@ -816,8 +841,8 @@ export default function AllenamentoPage() {
       sessione_id: sessioneId, scheda_esercizio_id: ese.id, numero_serie: serieIndex + 1,
       peso_kg: parseFloat(log.peso_kg) || null,
       ripetizioni: tipoInput === 'reps' ? (parseInt(log.ripetizioni) || null) : null,
-      reps_sx: tipoInput === 'reps_unilaterale' ? (parseInt(log.reps_sx) || null) : null,
-      reps_dx: tipoInput === 'reps_unilaterale' ? (parseInt(log.reps_dx) || null) : null,
+      reps_sx: (tipoInput === 'reps_unilaterale' || tipoInput === 'timer_unilaterale') ? (parseInt(log.reps_sx) || null) : null,
+      reps_dx: (tipoInput === 'reps_unilaterale' || tipoInput === 'timer_unilaterale') ? (parseInt(log.reps_dx) || null) : null,
       durata_secondi: tipoInput === 'timer' ? (parseInt(log.durata_secondi) || null) : null,
       rpe: log.rpe ? parseFloat(log.rpe) : null,
       rir: log.rir ? parseInt(log.rir) : null,
@@ -1197,7 +1222,7 @@ export default function AllenamentoPage() {
                       </p>
                     )}
                     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ' reps'} · {ese.recupero_secondi}s rec.</span>
+                      <span className="text-xs" style={{ color: 'oklch(0.50 0 0)' }}>{ese.serie} × {ese.ripetizioni}{ese.esercizi.tipo_input === 'timer' ? 's' : ese.esercizi.tipo_input === 'timer_unilaterale' ? 's/lato' : ' reps'} · {ese.recupero_secondi}s rec.</span>
                       {ese.peso_consigliato_kg != null && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
                           style={{ background: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' }}>
@@ -1404,6 +1429,8 @@ export default function AllenamentoPage() {
                           <span className="text-xs" style={{ color: 'oklch(0.40 0 0)' }}>
                             {ese.esercizi.tipo_input === 'reps_unilaterale'
                               ? `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.reps_sx ?? '—'}sx / ${confronto.reps_dx ?? '—'}dx`
+                              : ese.esercizi.tipo_input === 'timer_unilaterale'
+                              ? `Ultima: ${confronto.reps_sx ?? '—'}s sx / ${confronto.reps_dx ?? '—'}s dx`
                               : `Ultima: ${confronto.peso_kg ?? '—'}kg × ${confronto.ripetizioni ?? '—'}`}
                           </span>
                         )}
@@ -1510,6 +1537,193 @@ export default function AllenamentoPage() {
                                 )}
                               </div>
                               {checkBtn}
+                            </div>
+                          )
+                        }
+
+                        if (tipoInput === 'timer_unilaterale') {
+                          const durataTarget = parseInt(ese.ripetizioni) || 30
+                          const stateKey = `${ese.id}-${serieIndex}`
+                          const ts = timerUniState[stateKey] ?? { fase: 'idle' as const, sx: 0, dx: 0 }
+                          const hasPre = (ese.prepara_secondi ?? 0) > 0
+
+                          const handleStartSx = () => {
+                            if (serie.completata || isViewMode) return
+                            if (timerUniRef.current) clearInterval(timerUniRef.current)
+                            if (hasPre) {
+                              setTimerUniState(prev => ({ ...prev, [stateKey]: { fase: 'sx_run', sx: -(ese.prepara_secondi!), dx: 0 } }))
+                            } else {
+                              setTimerUniState(prev => ({ ...prev, [stateKey]: { fase: 'sx_run', sx: 0, dx: 0 } }))
+                            }
+                            timerUniRef.current = setInterval(() => {
+                              setTimerUniState(prev => {
+                                const cur = prev[stateKey]
+                                if (!cur || cur.fase !== 'sx_run') { clearInterval(timerUniRef.current!); return prev }
+                                return { ...prev, [stateKey]: { ...cur, sx: cur.sx + 1 } }
+                              })
+                            }, 1000)
+                          }
+
+                          const handleStopSx = () => {
+                            if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                            const sxVal = Math.max(0, ts.sx)
+                            updateLog(ese.id, serieIndex, 'reps_sx', String(sxVal))
+                            setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'sx_done', sx: sxVal } }))
+                          }
+
+                          const handleStartDx = () => {
+                            if (timerUniRef.current) clearInterval(timerUniRef.current)
+                            if (hasPre) {
+                              setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'dx_run', dx: -(ese.prepara_secondi!) } }))
+                            } else {
+                              setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'dx_run', dx: 0 } }))
+                            }
+                            timerUniRef.current = setInterval(() => {
+                              setTimerUniState(prev => {
+                                const cur = prev[stateKey]
+                                if (!cur || cur.fase !== 'dx_run') { clearInterval(timerUniRef.current!); return prev }
+                                return { ...prev, [stateKey]: { ...cur, dx: cur.dx + 1 } }
+                              })
+                            }, 1000)
+                          }
+
+                          const handleStopDx = () => {
+                            if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                            const dxVal = Math.max(0, ts.dx)
+                            updateLog(ese.id, serieIndex, 'reps_sx', String(ts.sx))
+                            updateLog(ese.id, serieIndex, 'reps_dx', String(dxVal))
+                            setTimerUniState(prev => ({ ...prev, [stateKey]: { ...prev[stateKey], fase: 'done', dx: dxVal } }))
+                          }
+
+                          const handleDoneUni = () => {
+                            if (timerUniRef.current) { clearInterval(timerUniRef.current); timerUniRef.current = null }
+                            toggleSerie(ese, serieIndex, { reps_sx: String(ts.sx), reps_dx: String(ts.dx) })
+                          }
+
+                          const isSxRunning = ts.fase === 'sx_run'
+                          const isSxPre = isSxRunning && ts.sx < 0
+                          const isDxRunning = ts.fase === 'dx_run'
+                          const isDxPre = isDxRunning && ts.dx < 0
+
+                          if (serie.completata) {
+                            return (
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.50 0 0)' }}>Zavorra (kg)</label>
+                                  <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold" style={inputStyle}>
+                                    {serie.peso_kg || '—'}
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.75 0.15 100)' }}>SX</label>
+                                  <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold" style={inputStyle}>
+                                    {serie.reps_sx ? `${serie.reps_sx}s` : '—'}
+                                  </div>
+                                </div>
+                                <div className="flex-1">
+                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.75 0.15 100)' }}>DX</label>
+                                  <div className="w-full px-3 py-3 rounded-xl text-base text-center font-bold" style={inputStyle}>
+                                    {serie.reps_dx ? `${serie.reps_dx}s` : '—'}
+                                  </div>
+                                </div>
+                                {checkBtn}
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <div className="space-y-2">
+                              <div className="text-xs text-center font-semibold" style={{ color: 'oklch(0.75 0.15 100)' }}>
+                                Obiettivo: {durataTarget}s per lato
+                              </div>
+                              <div className="flex items-end gap-2">
+                                {/* Zavorra */}
+                                <div style={{ width: '22%' }}>
+                                  <label className="text-xs mb-1 block" style={{ color: 'oklch(0.40 0 0)' }}>kg</label>
+                                  <input type="number" inputMode="decimal" value={serie.peso_kg}
+                                    onChange={e => updateLog(ese.id, serieIndex, 'peso_kg', e.target.value)}
+                                    placeholder="—" readOnly={isViewMode}
+                                    className="w-full px-2 py-3 rounded-xl text-base text-center outline-none font-bold"
+                                    style={inputStyle} />
+                                </div>
+                                {/* SX */}
+                                <div className="flex-1">
+                                  <label className="text-xs mb-1 block font-bold" style={{ color: 'oklch(0.75 0.15 100)' }}>
+                                    SX {ts.fase !== 'idle' && ts.sx > 0 ? `${ts.sx}s` : ''}
+                                  </label>
+                                  {ts.fase === 'idle' || ts.fase === 'sx_run' || ts.fase === 'sx_done' ? (
+                                    ts.fase === 'sx_run' ? (
+                                      <button onClick={handleStopSx}
+                                        className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold transition-all active:scale-95"
+                                        style={{ background: 'oklch(0.65 0.22 27 / 20%)', border: '2px solid oklch(0.65 0.22 27 / 50%)', color: 'oklch(0.75 0.15 27)' }}>
+                                        {isSxPre ? `via tra ${-ts.sx}s` : `stop ${ts.sx}s`}
+                                      </button>
+                                    ) : ts.fase === 'sx_done' ? (
+                                      <div className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold"
+                                        style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)' }}>
+                                        ✓ {ts.sx}s
+                                      </div>
+                                    ) : (
+                                      <button onClick={handleStartSx}
+                                        className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold transition-all active:scale-95"
+                                        style={{ background: 'oklch(0.75 0.15 100 / 15%)', border: '1px solid oklch(0.75 0.15 100 / 40%)', color: 'oklch(0.75 0.15 100)' }}>
+                                        ▶ SX
+                                      </button>
+                                    )
+                                  ) : (
+                                    <div className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold"
+                                      style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)' }}>
+                                      ✓ {ts.sx}s
+                                    </div>
+                                  )}
+                                </div>
+                                {/* DX */}
+                                <div className="flex-1">
+                                  <label className="text-xs mb-1 block font-bold" style={{ color: 'oklch(0.75 0.15 100)' }}>
+                                    DX {ts.fase === 'dx_run' || ts.fase === 'done' ? `${Math.max(0, ts.dx)}s` : ''}
+                                  </label>
+                                  {ts.fase === 'sx_done' ? (
+                                    <button onClick={handleStartDx}
+                                      className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold transition-all active:scale-95"
+                                      style={{ background: 'oklch(0.75 0.15 100 / 15%)', border: '1px solid oklch(0.75 0.15 100 / 40%)', color: 'oklch(0.75 0.15 100)' }}>
+                                      ▶ DX
+                                    </button>
+                                  ) : ts.fase === 'dx_run' ? (
+                                    <button onClick={handleStopDx}
+                                      className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold transition-all active:scale-95"
+                                      style={{ background: 'oklch(0.65 0.22 27 / 20%)', border: '2px solid oklch(0.65 0.22 27 / 50%)', color: 'oklch(0.75 0.15 27)' }}>
+                                      {isDxPre ? `via tra ${-ts.dx}s` : `stop ${ts.dx}s`}
+                                    </button>
+                                  ) : ts.fase === 'done' ? (
+                                    <div className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold"
+                                      style={{ background: 'oklch(0.65 0.18 150 / 10%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'oklch(0.65 0.18 150)' }}>
+                                      ✓ {ts.dx}s
+                                    </div>
+                                  ) : (
+                                    <div className="w-full px-2 py-3 rounded-xl text-sm text-center font-bold"
+                                      style={{ background: 'oklch(0.22 0 0)', border: '1px solid oklch(1 0 0 / 8%)', color: 'oklch(0.35 0 0)' }}>
+                                      —
+                                    </div>
+                                  )}
+                                </div>
+                                {/* Check */}
+                                <div className="flex flex-col items-center gap-1">
+                                  <label className="text-xs mb-1 block opacity-0">✓</label>
+                                  <button
+                                    onClick={handleDoneUni}
+                                    disabled={ts.fase !== 'done' || isViewMode}
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95"
+                                    style={{
+                                      background: ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'oklch(0.25 0 0)',
+                                      border: `2px solid ${ts.fase === 'done' ? 'oklch(0.65 0.18 150)' : 'oklch(1 0 0 / 15%)'}`,
+                                      cursor: ts.fase === 'done' && !isViewMode ? 'pointer' : 'default',
+                                    }}>
+                                    {ts.fase === 'done'
+                                      ? <span className="text-lg font-bold" style={{ color: 'oklch(0.13 0 0)' }}>✓</span>
+                                      : <span className="text-lg" style={{ color: 'oklch(0.35 0 0)' }}>○</span>}
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )
                         }

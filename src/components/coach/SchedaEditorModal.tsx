@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark, faPlus, faTrash, faCheck, faPen } from '@fortawesome/free-solid-svg-icons'
 
-interface Esercizio { id: string; nome: string; muscoli: string[] | null; tipo_input?: 'reps' | 'reps_unilaterale' | 'timer' }
+interface Esercizio { id: string; nome: string; muscoli: string[] | null; tipo_input?: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' }
 
 interface SchedaEsercizio {
   id: string; esercizio_id: string; serie: number; ripetizioni: string
@@ -148,7 +148,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
 
   const selectEsercizio = (id: string) => {
     const ese = esercizi.find(e => e.id === id)
-    const isTimer = ese?.tipo_input === 'timer'
+    const isTimer = ese?.tipo_input === 'timer' || ese?.tipo_input === 'timer_unilaterale'
     onChange({
       ...form,
       esercizio_id: id,
@@ -193,10 +193,11 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         {!form.esercizio_id && (
           <div className="flex gap-1.5 mb-2">
             {[
-              { id: '' as const, label: 'Tutti i tipi' },
+              { id: '' as const, label: 'Tutti' },
               { id: 'reps' as const, label: 'Reps' },
-              { id: 'reps_unilaterale' as const, label: 'Unilaterale' },
+              { id: 'reps_unilaterale' as const, label: 'Unilat.' },
               { id: 'timer' as const, label: 'Timer' },
+              { id: 'timer_unilaterale' as const, label: 'Timer Unilat.' },
             ].map(f => (
               <button key={f.id} onClick={() => setFiltroTipoInput(f.id)}
                 className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
@@ -510,8 +511,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       {/* ── Serie / Reps|Durata / Recupero ── */}
       {form.tipo !== 'tabata' && (() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
-        const isTimer = tipoInput === 'timer'
+        const isTimer = tipoInput === 'timer' || tipoInput === 'timer_unilaterale'
         const isUnilaterale = tipoInput === 'reps_unilaterale'
+        const isTimerUni = tipoInput === 'timer_unilaterale'
         const isMaxReps = form.tipo === 'max_reps'
         const isEmom = form.tipo === 'emom'
         // Max+Total / EMOM: only show recupero
@@ -521,9 +523,9 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
               { key: 'serie' as keyof EsForm, label: 'Serie', ph: '3', hint: null },
               {
                 key: 'ripetizioni' as keyof EsForm,
-                label: isTimer ? 'Durata (sec)' : isUnilaterale ? 'Reps (per lato)' : 'Reps',
+                label: isTimerUni ? 'Durata per lato (sec)' : isTimer ? 'Durata (sec)' : isUnilaterale ? 'Reps (per lato)' : 'Reps',
                 ph: isTimer ? '30' : '8-12',
-                hint: isTimer ? 'secondi per serie' : isUnilaterale ? 'sx e dx separati nel logger' : null,
+                hint: isTimerUni ? 'secondi per lato (SX e DX separati nel logger)' : isTimer ? 'secondi per serie' : isUnilaterale ? 'sx e dx separati nel logger' : null,
               },
               { key: 'recupero' as keyof EsForm, label: 'Rec. (s)', ph: '90', hint: null },
             ]
@@ -683,7 +685,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
       {/* ── Progressione ── */}
       {form.tipo !== 'tabata' && (() => {
         const tipoInput = esercizi.find(e => e.id === form.esercizio_id)?.tipo_input ?? 'reps'
-        const opzioni = tipoInput === 'timer'
+        const opzioni = tipoInput === 'timer' || tipoInput === 'timer_unilaterale'
           ? [
               { id: 'durata', label: '+ Durata', sub: 'aumenta i secondi' },
               { id: 'serie',  label: '+ Serie',  sub: 'aggiungi una serie' },
@@ -723,8 +725,8 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
         )
       })()}
 
-      {/* ── Pre-countdown (solo per esercizi timer) ── */}
-      {esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer' && (
+      {/* ── Pre-countdown (solo per esercizi timer / timer_unilaterale) ── */}
+      {(esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer' || esercizi.find(e => e.id === form.esercizio_id)?.tipo_input === 'timer_unilaterale') && (
         <div className="space-y-1.5">
           <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.50 0 0)' }}>
             Pre-countdown preparazione

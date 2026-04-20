@@ -12,7 +12,7 @@ interface Esercizio {
   descrizione: string | null
   video_url: string | null
   muscoli: string[] | null
-  tipo_input: 'reps' | 'reps_unilaterale' | 'timer'
+  tipo_input: 'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale'
   created_at: string
   is_global: boolean
   coach_id: string | null
@@ -25,9 +25,10 @@ const MUSCOLI_DISPONIBILI = [
 ]
 
 const TIPO_INPUT_OPTIONS: { value: Esercizio['tipo_input']; label: string; sub: string }[] = [
-  { value: 'reps',            label: 'Reps',         sub: 'es. 3 × 8-12' },
-  { value: 'reps_unilaterale', label: 'Unilaterale', sub: 'sx / dx separati' },
-  { value: 'timer',           label: 'Timer',        sub: 'es. planche 30 sec' },
+  { value: 'reps',               label: 'Reps',              sub: 'es. 3 × 8-12' },
+  { value: 'reps_unilaterale',   label: 'Unilaterale',       sub: 'sx / dx separati' },
+  { value: 'timer',              label: 'Timer',             sub: 'es. planche 30 sec' },
+  { value: 'timer_unilaterale',  label: 'Timer Unilaterale', sub: 'es. L-sit 20s SX/DX' },
 ]
 
 const EMPTY_FORM = {
@@ -39,9 +40,10 @@ const EMPTY_FORM = {
 }
 
 const TIPO_INPUT_BADGE: Record<Esercizio['tipo_input'], { label: string; bg: string; color: string }> = {
-  reps:             { label: 'reps',        bg: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' },
-  reps_unilaterale: { label: 'unilaterale', bg: 'oklch(0.65 0.18 290 / 12%)', color: 'oklch(0.65 0.18 290)' },
-  timer:            { label: 'timer',       bg: 'oklch(0.70 0.19 46 / 12%)',  color: 'oklch(0.70 0.19 46)' },
+  reps:              { label: 'reps',           bg: 'oklch(0.60 0.15 200 / 12%)', color: 'oklch(0.60 0.15 200)' },
+  reps_unilaterale:  { label: 'unilaterale',    bg: 'oklch(0.65 0.18 290 / 12%)', color: 'oklch(0.65 0.18 290)' },
+  timer:             { label: 'timer',          bg: 'oklch(0.70 0.19 46 / 12%)',  color: 'oklch(0.70 0.19 46)' },
+  timer_unilaterale: { label: 'timer unilat.',  bg: 'oklch(0.75 0.15 100 / 12%)', color: 'oklch(0.75 0.15 100)' },
 }
 
 const PAGE_SIZE = 10
@@ -193,7 +195,7 @@ export default function EserciziPage() {
             <label className="text-sm font-medium" style={{ color: 'oklch(0.80 0 0)' }}>
               Tipo di input nel logger
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {TIPO_INPUT_OPTIONS.map(opt => {
                 const selected = form.tipo_input === opt.value
                 return (
@@ -216,7 +218,7 @@ export default function EserciziPage() {
                 )
               })}
             </div>
-            {form.tipo_input === 'timer' && (
+            {(form.tipo_input === 'timer' || form.tipo_input === 'timer_unilaterale') && (
               <p className="text-xs px-3 py-2 rounded-lg" style={{ background: 'oklch(0.70 0.19 46 / 8%)', color: 'oklch(0.60 0.10 46)' }}>
                 Il pre-countdown di preparazione si configura nella scheda, non sull'esercizio.
               </p>
@@ -224,6 +226,11 @@ export default function EserciziPage() {
             {form.tipo_input === 'reps_unilaterale' && (
               <p className="text-xs px-3 py-2 rounded-lg" style={{ background: 'oklch(0.65 0.18 290 / 8%)', color: 'oklch(0.60 0.10 290)' }}>
                 Il logger mostrerà due campi separati per arto sinistro e destro.
+              </p>
+            )}
+            {form.tipo_input === 'timer_unilaterale' && (
+              <p className="text-xs px-3 py-2 rounded-lg" style={{ background: 'oklch(0.75 0.15 100 / 8%)', color: 'oklch(0.65 0.12 100)' }}>
+                Il logger mostrerà due timer separati (SX e DX). La durata configurata è l'obiettivo per lato.
               </p>
             )}
           </div>

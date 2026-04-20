@@ -103,7 +103,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
 
       for (const log of (logs ?? []) as any[]) {
         const ese = log.scheda_esercizi?.esercizi
-        if (!ese || ese.tipo_input === 'timer') continue
+        if (!ese || ese.tipo_input === 'timer' || ese.tipo_input === 'timer_unilaterale') continue
         const eseId = ese.id
         const nome = ese.nome
         const peso = parseFloat(log.peso_kg) || 0
@@ -163,7 +163,7 @@ export default function ReportGenerator({ clienteId, nomeCliente, periodo, kpi, 
           .eq('completata', true)
         for (const log of (logsPrec ?? []) as any[]) {
           const ese = log.scheda_esercizi?.esercizi
-          if (!ese || ese.tipo_input === 'timer') continue
+          if (!ese || ese.tipo_input === 'timer' || ese.tipo_input === 'timer_unilaterale') continue
           const muscoli: string[] = ese.muscoli ?? []
           const vol = (parseFloat(log.peso_kg) || 0) * (parseInt(log.ripetizioni) || 0)
           for (const m of muscoli) muscoloVolumePrec.set(m, (muscoloVolumePrec.get(m) ?? 0) + vol)

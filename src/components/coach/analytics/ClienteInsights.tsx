@@ -202,7 +202,7 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
 
       for (const log of logs) {
         const ese = log.scheda_esercizi?.esercizi
-        if (!ese || ese.tipo_input === 'timer') continue
+        if (!ese || ese.tipo_input === 'timer' || ese.tipo_input === 'timer_unilaterale') continue
         const peso_kg = parseFloat(log.peso_kg)
         const reps = parseInt(log.ripetizioni)
         if (!peso_kg || !reps || reps > 30) continue

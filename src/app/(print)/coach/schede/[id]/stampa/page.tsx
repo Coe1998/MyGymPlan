@@ -395,7 +395,7 @@ export default async function StampaSchedaPage({ params }: { params: Promise<{ i
                           </td>
                           <td style={{ fontWeight: 700, fontSize: 14 }}>{ese.serie}</td>
                           <td style={{ fontWeight: 700, fontSize: 14 }}>
-                            {ese.esercizi?.tipo_input === 'timer' ? `${ese.ripetizioni}s` : ese.ripetizioni}
+                            {ese.esercizi?.tipo_input === 'timer' ? `${ese.ripetizioni}s` : ese.esercizi?.tipo_input === 'timer_unilaterale' ? `${ese.ripetizioni}s/lato` : ese.ripetizioni}
                           </td>
                           <td style={{ color: '#6b7280' }}>{formatRecupero(ese.recupero_secondi)}</td>
                           {(scheda.richiede_rpe || scheda.richiede_rir) && (
@@ -409,7 +409,7 @@ export default async function StampaSchedaPage({ params }: { params: Promise<{ i
                                   <span className="log-box" style={{ flex: 1, minHeight: 18 }} />
                                   <span>kg</span>
                                   <span className="log-box" style={{ flex: 1, minHeight: 18 }} />
-                                  <span>{ese.esercizi?.tipo_input === 'timer' ? 's' : 'reps'}</span>
+                                  <span>{ese.esercizi?.tipo_input === 'timer' ? 's' : ese.esercizi?.tipo_input === 'timer_unilaterale' ? 's/lato' : 'reps'}</span>
                                 </div>
                               ))}
                             </div>
