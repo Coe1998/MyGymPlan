@@ -1741,10 +1741,10 @@ export default function SchedaEditorModal({
                               </div>
                             </div>
                           ) : (
-                            // Edit form — mobile: EsercizioForm, desktop: riga inline
+                            // Edit form — mobile: EsercizioForm, desktop: riga inline (se useDesktopEditor)
                             <>
-                              {/* MOBILE */}
-                              <div className="lg:hidden">
+                              {/* MOBILE o desktop in modalità mobile */}
+                              <div className={useDesktopEditor ? 'lg:hidden' : 'block'}>
                                 <EsercizioForm
                                   form={editForm}
                                   onChange={setEditForm}
@@ -1756,8 +1756,8 @@ export default function SchedaEditorModal({
                                 />
                               </div>
 
-                              {/* DESKTOP: riga inline */}
-                              <div className="hidden lg:block px-2 py-2 space-y-1">
+                              {/* DESKTOP: riga inline — solo se useDesktopEditor attivo */}
+                              <div className={useDesktopEditor ? 'hidden lg:block px-2 py-2 space-y-1' : 'hidden'}>
                                 {/* Riga base */}
                                 <div className="grid gap-2 px-2 py-1.5 rounded-xl items-center"
                                   style={{
