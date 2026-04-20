@@ -98,7 +98,7 @@ function EsercizioForm({ form, onChange, esercizi, gruppi, onSave, onCancel, sav
   const [searchP, setSearchP] = useState('')
   const [searchA, setSearchA] = useState('')
   const [filtroMuscolo, setFiltroMuscolo] = useState('')
-  const [filtroTipoInput, setFiltroTipoInput] = useState<'reps' | 'reps_unilaterale' | 'timer' | ''>('')
+  const [filtroTipoInput, setFiltroTipoInput] = useState<'reps' | 'reps_unilaterale' | 'timer' | 'timer_unilaterale' | ''>('')
   const [showAlt, setShowAlt] = useState(!!form.alternativa_id)
   const [showCreaEse, setShowCreaEse] = useState(false)
   const [nuovoNome, setNuovoNome] = useState('')
