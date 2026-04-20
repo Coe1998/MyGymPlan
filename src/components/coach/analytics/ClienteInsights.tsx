@@ -372,65 +372,54 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
     compute()
   }, [clienteId, obiettivo, frequenzaDichiarata, supabase])
 
-  const categoriaLabel: Record<string, string> = {
-    aderenza: 'Aderenza',
-    forza: 'Forza',
-    volume: 'Volume',
-    benessere: 'Benessere',
-    peso: 'Peso',
-    nutrizione: 'Nutrizione',
-  }
-
-  const tipoStyle: Record<string, { bg: string; border: string; color: string; dot: string }> = {
-    warning: { bg: 'oklch(0.65 0.22 27 / 10%)', border: 'oklch(0.65 0.22 27 / 25%)', color: 'oklch(0.80 0.12 46)', dot: 'oklch(0.75 0.18 27)' },
-    info: { bg: 'oklch(0.60 0.15 200 / 10%)', border: 'oklch(0.60 0.15 200 / 25%)', color: 'var(--c-75)', dot: 'oklch(0.60 0.15 200)' },
-    tip: { bg: 'oklch(0.65 0.18 150 / 10%)', border: 'oklch(0.65 0.18 150 / 25%)', color: 'var(--c-75)', dot: 'oklch(0.65 0.18 150)' },
+  const tipoStyle: Record<string, { bg: string; border: string; dot: string; titleColor: string }> = {
+    warning: { bg: 'rgba(229,72,77,0.09)',    border: 'rgba(229,72,77,0.22)',    dot: '#e5484d', titleColor: '#ffb4b4' },
+    info:    { bg: 'rgba(100,160,240,0.07)',  border: 'rgba(100,160,240,0.2)',   dot: '#6ba6ff', titleColor: '#cfe0ff' },
+    tip:     { bg: 'rgba(48,164,108,0.07)',   border: 'rgba(48,164,108,0.22)',   dot: '#30a46c', titleColor: '#b4e5c9' },
   }
 
   if (loading) return (
-    <div className="py-6 text-center text-sm" style={{ color: 'var(--c-45)' }}>
+    <div style={{ padding: '24px 0', textAlign: 'center', fontSize: 13, color: 'var(--c-45)' }}>
       Analisi in corso...
     </div>
   )
 
-  if (insights.length === 0) return (
-    <div className="py-6 text-center text-sm" style={{ color: 'var(--c-45)' }}>
-      ✓ Nessuna anomalia rilevata negli ultimi 90 giorni
-    </div>
-  )
-
-  const perCategoria = insights.reduce((acc, ins) => {
-    if (!acc[ins.categoria]) acc[ins.categoria] = []
-    acc[ins.categoria].push(ins)
-    return acc
-  }, {} as Record<string, Insight[]>)
-
   return (
-    <div className="space-y-4">
-      {Object.entries(perCategoria).map(([cat, items]) => (
-        <div key={cat}>
-          <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--c-40)' }}>
-            {categoriaLabel[cat] ?? cat}
-          </p>
-          <div className="space-y-2">
-            {items.map((ins, i) => {
-              const s = tipoStyle[ins.tipo]
-              return (
-                <div key={i} className="px-4 py-3 rounded-xl"
-                  style={{ background: s.bg, border: `1px solid ${s.border}` }}>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: s.dot }} />
-                    <div>
-                      <p className="text-sm font-bold" style={{ color: s.color }}>{ins.titolo}</p>
-                      <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--c-60)' }}>{ins.testo}</p>
-                    </div>
+    <div>
+      {/* Section header con counter */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ fontSize: 11, color: 'var(--c-50)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>
+          Insights automatici
+        </div>
+        {insights.length > 0 && (
+          <span style={{ fontSize: 10, color: 'var(--c-35)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            {insights.length} attivi
+          </span>
+        )}
+      </div>
+
+      {insights.length === 0 ? (
+        <div style={{ padding: '16px 0', fontSize: 13, color: 'var(--c-45)' }}>
+          ✓ Nessuna anomalia rilevata negli ultimi 90 giorni
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {insights.map((ins, i) => {
+            const s = tipoStyle[ins.tipo]
+            return (
+              <div key={i} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: '13px 14px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: 999, background: s.dot, marginTop: 7, flexShrink: 0 }} />
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: s.titleColor, letterSpacing: -0.2, margin: 0 }}>{ins.titolo}</p>
+                    <p style={{ fontSize: 12.5, color: 'var(--c-70)', marginTop: 3, lineHeight: 1.5, margin: '3px 0 0' }}>{ins.testo}</p>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              </div>
+            )
+          })}
         </div>
-      ))}
+      )}
     </div>
   )
 }

@@ -188,7 +188,7 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
         </div>
       </div>
 
-      <div className="p-5">
+      <div style={{ padding: 14 }}>
         {loading ? (
           <div className="py-10 text-center">
             <p className="text-sm" style={{ color: 'var(--c-45)' }}>Caricamento dati...</p>
@@ -205,9 +205,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   onClick={() => { setMuscoloFiltro(null); setShowAll(false) }}
                   className="text-xs px-3 py-1 rounded-full font-medium transition-all"
                   style={{
-                    background: muscoloFiltro === null ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
-                    color: muscoloFiltro === null ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
-                    border: muscoloFiltro === null ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
+                    background: muscoloFiltro === null ? 'rgba(245,124,31,0.14)' : 'transparent',
+                    color: muscoloFiltro === null ? '#f57c1f' : 'var(--c-70)',
+                    border: muscoloFiltro === null ? '1px solid rgba(245,124,31,0.35)' : '1px solid var(--c-w6)',
                   }}>
                   Tutti
                 </button>
@@ -216,9 +216,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                     onClick={() => { setMuscoloFiltro(m === muscoloFiltro ? null : m); setShowAll(false) }}
                     className="text-xs px-3 py-1 rounded-full font-medium transition-all capitalize"
                     style={{
-                      background: muscoloFiltro === m ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
-                      color: muscoloFiltro === m ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
-                      border: muscoloFiltro === m ? '1px solid oklch(0.60 0.15 200 / 40%)' : '1px solid var(--c-w8)',
+                      background: muscoloFiltro === m ? 'rgba(245,124,31,0.14)' : 'transparent',
+                      color: muscoloFiltro === m ? '#f57c1f' : 'var(--c-70)',
+                      border: muscoloFiltro === m ? '1px solid rgba(245,124,31,0.35)' : '1px solid var(--c-w6)',
                     }}>
                     {m}
                   </button>
@@ -274,9 +274,9 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                   ].map(k => (
                     <div key={k.label} className="rounded-xl p-3"
                       style={{ background: 'var(--c-22)' }}>
-                      <p className="text-xs mb-1" style={{ color: 'var(--c-50)' }}>{k.label}</p>
-                      <p className="text-xl font-black" style={{ color: 'var(--c-97)' }}>{k.val}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{k.sub}</p>
+                      <p style={{ fontSize: 10, color: 'var(--c-50)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600, marginBottom: 4 }}>{k.label}</p>
+                      <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--c-97)', letterSpacing: -0.3, lineHeight: 1.1 }}>{k.val}</p>
+                      <p style={{ fontSize: 10.5, color: 'var(--c-35)', marginTop: 2 }}>{k.sub}</p>
                     </div>
                   ))}
                 </div>
@@ -304,8 +304,8 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                           return [`${Math.round(val).toLocaleString('it-IT')} ${isTimer ? 's' : 'kg'}`, 'Volume']
                         }}
                       />
-                      <Bar yAxisId="vol" dataKey="volume" fill="oklch(0.60 0.15 200)"
-                        fillOpacity={0.35} radius={[3, 3, 0, 0]} />
+                      <Bar yAxisId="vol" dataKey="volume" fill="rgba(255,255,255,0.08)"
+                        fillOpacity={1} radius={[3, 3, 0, 0]} />
                       <Line yAxisId="e1rm" type="monotone" dataKey="e1rm"
                         stroke="oklch(0.70 0.19 46)" strokeWidth={2.5}
                         dot={{ r: 3, fill: 'oklch(0.70 0.19 46)', strokeWidth: 0 }}
@@ -317,11 +317,11 @@ export default function ProgressioneEsercizi({ clienteId, assegnazioni }: Props)
                 {eff && (
                   <div className="mt-4 px-4 py-3 rounded-xl"
                     style={{
-                      background: eff.score >= 0 ? 'oklch(0.65 0.18 150 / 10%)' : 'oklch(0.65 0.22 27 / 10%)',
-                      border: `1px solid ${eff.score >= 0 ? 'oklch(0.65 0.18 150 / 30%)' : 'oklch(0.65 0.22 27 / 30%)'}`,
+                      background: eff.score >= 0 ? 'rgba(48,164,108,0.08)' : 'rgba(229,72,77,0.09)',
+                      border: `1px solid ${eff.score >= 0 ? 'rgba(48,164,108,0.22)' : 'rgba(229,72,77,0.22)'}`,
                     }}>
                     <p className="text-xs font-semibold mb-0.5"
-                      style={{ color: eff.score >= 0 ? 'oklch(0.65 0.18 150)' : 'oklch(0.75 0.15 27)' }}>
+                      style={{ color: eff.score >= 0 ? '#b4e5c9' : '#ffb4b4' }}>
                       {eff.score >= 0 ? 'Progressione efficiente' : 'Progressione in calo'}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--c-60)' }}>
