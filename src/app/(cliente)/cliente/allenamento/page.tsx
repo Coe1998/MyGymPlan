@@ -83,6 +83,7 @@ export default function AllenamentoPage() {
   const [completata, setCompletata] = useState(false)
   const [timerAttivo, setTimerAttivo] = useState(false)
   const [timerSecondi, setTimerSecondi] = useState(0)
+  const [timerDurataIniziale, setTimerDurataIniziale] = useState(0)
   const [durataSecondi, setDurataSecondi] = useState(0)
   const [durataSessioneDB, setDurataSessioneDB] = useState<number | null>(null)
   const [coachNome, setCoachNome] = useState<string | null>(null)
@@ -138,6 +139,28 @@ export default function AllenamentoPage() {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
       osc.start(ctx.currentTime)
       osc.stop(ctx.currentTime + 0.6)
+    } catch {}
+  }
+
+  function playTick() {
+    try {
+      const c = new AudioContext()
+      const osc = c.createOscillator(); const g = c.createGain()
+      osc.type = 'square'; osc.frequency.value = 800
+      osc.connect(g); g.connect(c.destination)
+      g.gain.setValueAtTime(0.1, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.04)
+      osc.start(c.currentTime); osc.stop(c.currentTime + 0.05)
+    } catch {}
+  }
+
+  function playTickUrgent() {
+    try {
+      const c = new AudioContext()
+      const osc = c.createOscillator(); const g = c.createGain()
+      osc.type = 'square'; osc.frequency.value = 600
+      osc.connect(g); g.connect(c.destination)
+      g.gain.setValueAtTime(0.2, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06)
+      osc.start(c.currentTime); osc.stop(c.currentTime + 0.07)
     } catch {}
   }
 
@@ -441,6 +464,7 @@ export default function AllenamentoPage() {
       if (remaining > 0) {
         timerEndRef.current = endTs
         setTimerSecondi(remaining)
+        setTimerDurataIniziale(remaining)
         setTimerAttivo(true)
       } else {
         localStorage.removeItem('bynari_timer_end')
@@ -491,7 +515,11 @@ export default function AllenamentoPage() {
         cancelLocalNotification()
         feedbackLocale()   // beep + vibrazione immediati
       } else {
-        setTimerSecondi(remaining)
+        setTimerSecondi(prev => {
+          if (remaining <= 4 && remaining > 0 && remaining !== prev) playTickUrgent()
+          else if (remaining % 15 === 0 && remaining > 0 && remaining !== prev) playTick()
+          return remaining
+        })
       }
     }, 500)
     return () => clearInterval(interval)
@@ -839,6 +867,7 @@ export default function AllenamentoPage() {
         timerEndRef.current = endTs
         localStorage.setItem('bynari_timer_end', endTs.toString())
         setTimerSecondi(ese.recupero_secondi)
+        setTimerDurataIniziale(ese.recupero_secondi)
         setTimerAttivo(true)
         scheduleLocalNotification(ese.recupero_secondi)
         scheduleTimerPush(endTs)
@@ -1092,39 +1121,87 @@ export default function AllenamentoPage() {
         </div>
       )}
 
-      {/* Timer recupero — fisso in basso, solo in modalità live */}
-      {timerAttivo && !isViewMode && (
-        <div className="fixed left-0 right-0 z-40 px-4"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}>
-          <div className="max-w-2xl mx-auto rounded-2xl px-5 py-3 flex items-center justify-between"
-            style={{
-              background: 'var(--c-18)',
-              border: '1px solid oklch(0.70 0.19 46 / 50%)',
-              boxShadow: '0 8px 32px oklch(0 0 0 / 60%)',
-            }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'oklch(0.70 0.19 46 / 15%)', color: 'oklch(0.70 0.19 46)' }}>
-                <FontAwesomeIcon icon={faStopwatch} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: 'oklch(0.70 0.19 46)' }}>Recupero</p>
-                <p className="text-xs" style={{ color: 'var(--c-50)' }}>Prossima serie tra...</p>
+      {/* Timer recupero — overlay full-screen, solo in modalità live */}
+      {timerAttivo && !isViewMode && (() => {
+        const dur = timerDurataIniziale || timerSecondi
+        const pct = dur > 0 ? (timerSecondi / dur) * 100 : 0
+        const r = 100
+        const circumference = 2 * Math.PI * r
+        const offset = circumference * (1 - pct / 100)
+        const urgent = timerSecondi <= 5 && timerSecondi > 0
+        const mins = Math.floor(timerSecondi / 60)
+        const secs = timerSecondi % 60
+        const timeStr = mins > 0 ? `${mins}:${String(secs).padStart(2, '0')}` : String(secs)
+        const skipTimer = () => { setTimerAttivo(false); cancelTimerPush(); cancelLocalNotification() }
+        return (
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'oklch(0.11 0 0 / 92%)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            zIndex: 50, padding: 24,
+            animation: 'fadeIn 0.25s',
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--c-55)', letterSpacing: '0.2em', marginBottom: 20 }}>
+              RECUPERO
+            </div>
+            <div style={{ position: 'relative', width: 220, height: 220, animation: urgent ? 'shake 0.3s infinite' : 'none' }}>
+              <svg width="220" height="220" viewBox="0 0 220 220" style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx="110" cy="110" r={r} stroke="var(--c-20)" strokeWidth="8" fill="none"/>
+                <circle cx="110" cy="110" r={r}
+                  stroke={urgent ? 'var(--danger, oklch(0.65 0.22 27))' : 'var(--accent)'}
+                  strokeWidth="10" fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  style={{
+                    transition: 'stroke-dashoffset 1s linear, stroke 0.3s',
+                    filter: `drop-shadow(0 0 12px ${urgent ? 'var(--danger, oklch(0.65 0.22 27))' : 'var(--accent)'})`,
+                  }}
+                />
+              </svg>
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{
+                  fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 68,
+                  color: urgent ? 'var(--danger, oklch(0.65 0.22 27))' : 'var(--c-97)',
+                  lineHeight: 1, fontVariantNumeric: 'tabular-nums',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {timeStr}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--c-55)', marginTop: 6 }}>
+                  {timerSecondi > 0 ? 'secondi' : 'Pronto!'}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-2xl font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                {Math.floor(timerSecondi / 60).toString().padStart(2, '0')}:{(timerSecondi % 60).toString().padStart(2, '0')}
+            <div style={{ marginTop: 36, textAlign: 'center', maxWidth: 280 }}>
+              <div style={{ fontSize: 13, color: 'var(--c-80)', fontWeight: 500, lineHeight: 1.4 }}>
+                {timerSecondi > 30 ? 'Respira. Visualizza la prossima serie.' :
+                 timerSecondi > 10 ? 'Preparati. Ancora pochi secondi.' :
+                 timerSecondi > 0 ? 'Posizione. Vai!' : 'Andiamo!'}
               </div>
-              <button onClick={() => { setTimerAttivo(false); cancelTimerPush(); cancelLocalNotification() }}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ background: 'var(--c-25)', color: 'var(--c-60)' }}>
-                Salta
-              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 32 }}>
+              <button onClick={() => setTimerSecondi(s => Math.max(0, s - 15))} style={{
+                padding: '10px 16px', borderRadius: 10,
+                background: 'var(--c-20)', color: 'var(--c-80)',
+                fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}>−15s</button>
+              <button onClick={skipTimer} style={{
+                padding: '10px 20px', borderRadius: 10,
+                background: 'var(--accent)', color: 'var(--c-13)',
+                fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+              }}>Salta recupero →</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
 
       {/* Warmup generale */}
@@ -1990,6 +2067,7 @@ export default function AllenamentoPage() {
                                   timerEndRef.current = endTs
                                   localStorage.setItem('bynari_timer_end', endTs.toString())
                                   setTimerSecondi(ese.recupero_secondi)
+                                  setTimerDurataIniziale(ese.recupero_secondi)
                                   setTimerAttivo(true)
                                   scheduleLocalNotification(ese.recupero_secondi)
                                   scheduleTimerPush(endTs)
