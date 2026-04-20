@@ -17,6 +17,7 @@ const buildNavItems = (dietaAbilitata: boolean) => [
   { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
   ...(dietaAbilitata ? [{ href: '/cliente/dieta', label: 'Dieta', icon: faUtensils }] : []),
   { href: '/cliente/chat', label: 'Chat', icon: faComments },
+  { href: '/cliente/impostazioni', label: 'Profilo', icon: faGear },
 ]
 
 // Tutte le voci (desktop sidebar)

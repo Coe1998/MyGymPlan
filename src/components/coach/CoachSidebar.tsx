@@ -243,8 +243,13 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
                 </Link>
                 <Link href="/coach/esercizi" onClick={() => setAllenamentoOpen(false)}
                   className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
-                  style={{ color: 'var(--c-80)' }}>
+                  style={{ color: 'var(--c-80)', borderBottom: '1px solid var(--c-w8)' }}>
                   <FontAwesomeIcon icon={faDumbbell} className="w-4" /> Esercizi
+                </Link>
+                <Link href="/coach/impostazioni" onClick={() => setAllenamentoOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 text-sm font-medium hover:bg-white/5"
+                  style={{ color: 'var(--c-80)' }}>
+                  <FontAwesomeIcon icon={faGear} className="w-4" /> Impostazioni
                 </Link>
               </div>
             </>

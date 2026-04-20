@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUser, faEnvelope, faLock, faTrash,
-  faCheck, faTriangleExclamation, faXmark,
+  faCheck, faTriangleExclamation, faXmark, faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons'
 import ThemeToggle from '@/components/shared/ThemeToggle'
 
@@ -89,6 +89,12 @@ export default function ImpostazioniPage() {
       setDeleting(false)
       alert('Errore durante la cancellazione. Riprova.')
     }
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
   }
 
   const dashboardUrl = role === 'coach'
@@ -270,6 +276,20 @@ export default function ImpostazioniPage() {
         </div>
         <ThemeToggle />
       </div>
+
+      {/* ── Logout ── */}
+      <button onClick={handleLogout}
+        className="w-full rounded-2xl p-4 flex items-center gap-3 transition-all active:scale-95"
+        style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.75 0.15 27)' }}>
+          <FontAwesomeIcon icon={faRightFromBracket} />
+        </div>
+        <div className="text-left">
+          <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Esci</p>
+          <p className="text-xs" style={{ color: 'var(--c-50)' }}>Disconnettiti dall'account</p>
+        </div>
+      </button>
 
       {/* ── Zona pericolo ── */}
       <div className="rounded-2xl p-6 space-y-4"

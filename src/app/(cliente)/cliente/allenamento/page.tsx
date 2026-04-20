@@ -1063,28 +1063,7 @@ export default function AllenamentoPage() {
         </div>
       </div>
 
-      {/* Notifica suggerimento progressive overload */}
-      {suggerimento && !isViewMode && (
-        <div className="fixed bottom-6 left-4 right-4 z-50 max-w-2xl mx-auto"
-          style={{ filter: 'drop-shadow(0 8px 24px oklch(0 0 0 / 50%))' }}>
-          <div className="rounded-2xl px-5 py-4 flex items-center gap-4"
-            style={{ background: 'var(--c-22)', border: '1px solid oklch(0.70 0.19 46 / 40%)' }}>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                {suggerimento.eseNome}
-              </p>
-              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>
-                {suggerimento.messaggio}
-              </p>
-            </div>
-            <button onClick={() => setSuggerimento(null)}
-              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
-              style={{ background: 'var(--c-30)', color: 'var(--c-60)' }}>
-              <FontAwesomeIcon icon={faXmark} className="text-xs" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* suggerimento: now rendered inline inside each exercise card — removed floating overlay */}
 
       {/* Superset → prossimo esercizio indicator */}
       {supersetNext && !isViewMode && (
@@ -1338,6 +1317,23 @@ export default function AllenamentoPage() {
                   <p className="text-xs font-semibold leading-snug" style={{ color: 'oklch(0.80 0.15 46)', whiteSpace: 'pre-line' }}>
                     <span style={{ fontWeight: 800, color: 'var(--accent)' }}>Coach:</span> {ese.note}
                   </p>
+                </div>
+              )}
+
+              {/* Suggerimento progressione — inline banner per questo esercizio */}
+              {suggerimento && suggerimento.eseNome === ese.esercizi.nome && !isViewMode && (
+                <div className="flex items-center gap-2 px-4 py-2.5"
+                  style={{ background: 'oklch(0.82 0.17 85 / 10%)', borderBottom: '1px solid oklch(0.82 0.17 85 / 25%)' }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>🏆</span>
+                  <p className="text-xs font-semibold leading-snug flex-1" style={{ color: 'oklch(0.88 0.14 85)' }}>
+                    {suggerimento.messaggio}
+                  </p>
+                  <button
+                    onClick={() => setSuggerimento(null)}
+                    className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ background: 'oklch(0.82 0.17 85 / 20%)', color: 'oklch(0.82 0.17 85)' }}>
+                    <FontAwesomeIcon icon={faXmark} style={{ fontSize: 9 }} />
+                  </button>
                 </div>
               )}
 
