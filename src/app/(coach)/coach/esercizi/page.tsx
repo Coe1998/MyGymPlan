@@ -73,13 +73,31 @@ export default function EserciziPage() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { data } = await supabase
+
+    // Fetch esercizi personali (sempre tutti, tipicamente pochi)
+    const { data: miei } = await supabase
       .from('esercizi')
       .select('*')
-      .or('is_global.eq.true,coach_id.eq.' + user.id)
-      .order('is_global', { ascending: false })
+      .eq('coach_id', user.id)
       .order('nome', { ascending: true })
-    setEsercizi(data ?? [])
+
+    // Fetch globali con paginazione (max 5000 totali)
+    const globali: Esercizio[] = []
+    const BATCH = 1000
+    for (let from = 0; ; from += BATCH) {
+      const { data: page } = await supabase
+        .from('esercizi')
+        .select('*')
+        .eq('is_global', true)
+        .order('nome', { ascending: true })
+        .range(from, from + BATCH - 1)
+      if (!page || page.length === 0) break
+      globali.push(...page)
+      if (page.length < BATCH) break
+    }
+
+    // Miei prima, globali dopo
+    setEsercizi([...(miei ?? []), ...globali])
     setLoading(false)
   }
 
