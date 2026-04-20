@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { solveMeal, checkFridgeAlerts, FoodItem, MacroTarget } from '@/lib/dieta/solver'
+import { solveFridge, FoodItem, MacroTarget } from '@/lib/dieta/solver'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -39,17 +39,18 @@ export async function POST(req: NextRequest) {
 
   const selectedFoods = (foods ?? []) as FoodItem[]
 
-  // 3. Alert macro mancanti
-  const alerts = checkFridgeAlerts(selectedFoods, dailyTarget)
+  // 3. Calcola porzioni + alert
+  const { portions, achieved, alerts } = solveFridge(selectedFoods, dailyTarget)
 
-  // 4. Calcola porzioni per l'intera giornata (un unico "pasto" = giornata)
-  const result = solveMeal(selectedFoods, dailyTarget, 'Giornata')
+  const kcalErrorPct = dailyTarget.kcal > 0
+    ? Math.round(Math.abs(achieved.kcal - dailyTarget.kcal) / dailyTarget.kcal * 100)
+    : 0
 
   return NextResponse.json({
-    portions: result.portions,
-    achieved: result.achieved,
-    target:   dailyTarget,
+    portions,
+    achieved,
+    target: dailyTarget,
     alerts,
-    kcal_error_pct: result.kcal_error_pct,
+    kcal_error_pct: kcalErrorPct,
   })
 }

@@ -1,16 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { solveMeal, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
+import { solveMeal, classifyFood, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
 
-const MEAL_SLOT_MAP: Record<string, string> = {
-  'colazione':            'colazione',
-  'spuntino mattina':     'spuntino',
-  'pranzo':               'pranzo',
-  'spuntino pomeriggio':  'spuntino',
-  'spuntino post-pranzo': 'spuntino',
-  'merenda':              'spuntino',
-  'cena':                 'cena',
-  'spuntino':             'spuntino',
+// Filtri PNNS per tipo pasto — evita frutta secca a colazione, ecc.
+const PNNS_WHITELIST: Record<string, string[]> = {
+  colazione: [
+    'milk and dairy products',
+    'cereals and potatoes',
+    'fish meat eggs',
+    'fruits and vegetables',  // frutta fresca OK, ma filtrata dal classifier
+  ],
+  spuntino: [
+    'fruits and vegetables',
+    'milk and dairy products',
+    'nuts and seeds',
+    'cereals and potatoes',
+  ],
+  pranzo: [
+    'fish meat eggs',
+    'cereals and potatoes',
+    'fruits and vegetables',
+    'fat and sauces',
+    'legumes',
+    'milk and dairy products',
+    'unknown',
+  ],
+  cena: [
+    'fish meat eggs',
+    'cereals and potatoes',
+    'fruits and vegetables',
+    'fat and sauces',
+    'legumes',
+    'milk and dairy products',
+    'unknown',
+  ],
+}
+
+const SLOT_MAP: Record<string, string> = {
+  'colazione':             'colazione',
+  'spuntino mattina':      'spuntino',
+  'pranzo':                'pranzo',
+  'spuntino pomeriggio':   'spuntino',
+  'spuntino post-pranzo':  'spuntino',
+  'merenda':               'spuntino',
+  'cena':                  'cena',
+  'spuntino':              'spuntino',
 }
 
 export async function POST(req: NextRequest) {
@@ -21,7 +55,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const clienteId: string = body.clienteId ?? user.id
 
-  // 1. Macro target + pasti_config
+  // 1. Target macro
   const { data: targetRow } = await supabase
     .from('macro_target')
     .select('calorie, proteine_g, carboidrati_g, grassi_g, pasti_config, carb_cycling_enabled, carbs_training, carbs_rest')
@@ -30,88 +64,100 @@ export async function POST(req: NextRequest) {
 
   if (!targetRow) return NextResponse.json({ error: 'Nessun piano nutrizionale impostato' }, { status: 400 })
 
-  // 2. Allergie / intolleranze dall'anamnesi
+  // 2. Allergie
   const { data: anam } = await supabase
     .from('anamnesi')
     .select('intolleranze')
     .eq('cliente_id', clienteId)
     .maybeSingle()
 
-  const intolleranzeRaw = (anam?.intolleranze ?? '') as string
-  const allergens: string[] = intolleranzeRaw
-    .toLowerCase()
-    .split(/[,;\n]+/)
-    .map(s => s.trim())
-    .filter(Boolean)
+  const allergens: string[] = ((anam?.intolleranze ?? '') as string)
+    .toLowerCase().split(/[,;\n]+/).map(s => s.trim()).filter(Boolean)
 
-  // 3. Carb cycling: usa carboidrati effettivi se abilitato
-  const carbEffettivi = targetRow.carb_cycling_enabled && body.dayType === 'training' && targetRow.carbs_training
+  // 3. Carb cycling
+  const carbEff = targetRow.carb_cycling_enabled && body.dayType === 'training' && targetRow.carbs_training
     ? targetRow.carbs_training
     : targetRow.carb_cycling_enabled && body.dayType === 'rest' && targetRow.carbs_rest
     ? targetRow.carbs_rest
     : targetRow.carboidrati_g
 
-  const dailyTarget: MacroTarget = {
+  const daily: MacroTarget = {
     kcal:      targetRow.calorie,
     protein_g: targetRow.proteine_g,
-    carbs_g:   carbEffettivi,
+    carbs_g:   carbEff,
     fat_g:     targetRow.grassi_g,
   }
 
-  // 4. Struttura pasti
+  // 4. Pasti config
   type PastoConfig = { nome: string; percentuale: number; macro_custom?: boolean; prot_pct?: number; carb_pct?: number; grassi_pct?: number }
   const pastiConfig: PastoConfig[] = targetRow.pasti_config ?? [
     { nome: 'Colazione', percentuale: 25 },
-    { nome: 'Pranzo', percentuale: 35 },
-    { nome: 'Cena', percentuale: 30 },
-    { nome: 'Spuntino', percentuale: 10 },
+    { nome: 'Pranzo',    percentuale: 35 },
+    { nome: 'Cena',      percentuale: 30 },
+    { nome: 'Spuntino',  percentuale: 10 },
   ]
 
-  // 5. Per ogni pasto, interroga il DB e risolvi
+  // 5. Risolvi ogni pasto — accumula usedIds per varietà
   const results: MealResult[] = []
+  const usedIds = new Set<string>()
 
   for (const pasto of pastiConfig) {
-    const slotKey = pasto.nome.toLowerCase()
-    const slot = MEAL_SLOT_MAP[slotKey] ?? 'pranzo'
+    const slot = SLOT_MAP[pasto.nome.toLowerCase()] ?? 'pranzo'
+    const pnnsList = PNNS_WHITELIST[slot] ?? PNNS_WHITELIST['pranzo']
 
     const mealTarget: MacroTarget = pasto.macro_custom
       ? {
-          kcal:      dailyTarget.kcal      * (pasto.percentuale / 100),
-          protein_g: dailyTarget.protein_g * ((pasto.prot_pct    ?? 33) / 100),
-          carbs_g:   dailyTarget.carbs_g   * ((pasto.carb_pct    ?? 34) / 100),
-          fat_g:     dailyTarget.fat_g     * ((pasto.grassi_pct  ?? 33) / 100),
+          kcal:      daily.kcal      * pasto.percentuale / 100,
+          protein_g: daily.protein_g * ((pasto.prot_pct   ?? 33) / 100),
+          carbs_g:   daily.carbs_g   * ((pasto.carb_pct   ?? 34) / 100),
+          fat_g:     daily.fat_g     * ((pasto.grassi_pct ?? 33) / 100),
         }
       : {
-          kcal:      dailyTarget.kcal      * pasto.percentuale / 100,
-          protein_g: dailyTarget.protein_g * pasto.percentuale / 100,
-          carbs_g:   dailyTarget.carbs_g   * pasto.percentuale / 100,
-          fat_g:     dailyTarget.fat_g     * pasto.percentuale / 100,
+          kcal:      daily.kcal      * pasto.percentuale / 100,
+          protein_g: daily.protein_g * pasto.percentuale / 100,
+          carbs_g:   daily.carbs_g   * pasto.percentuale / 100,
+          fat_g:     daily.fat_g     * pasto.percentuale / 100,
         }
 
-    // Carica alimenti per questo slot
-    let q = supabase
+    // Query alimenti: per slot + pnns whitelist + escludi già usati
+    let { data: foods } = await supabase
       .from('alimenti')
       .select('id, product_name, brands, pnns_groups_1, energy_kcal_100g, proteins_100g, carbs_100g, fat_100g, fiber_100g, meal_slots')
       .ilike('meal_slots', `%${slot}%`)
+      .in('pnns_groups_1', pnnsList)
       .not('energy_kcal_100g', 'is', null)
       .not('proteins_100g', 'is', null)
       .not('carbs_100g', 'is', null)
       .not('fat_100g', 'is', null)
-      .limit(300)
+      .not('id', 'in', `(${[...usedIds].join(',') || "'00000000-0000-0000-0000-000000000000'"})`)
+      .limit(400)
 
-    const { data: foods } = await q
     let filtered = (foods ?? []) as FoodItem[]
 
-    // Escludi allergeni
+    // Esclude allergie
     if (allergens.length > 0) {
       filtered = filtered.filter(f => {
-        const text = `${f.product_name} ${f.pnns_groups_1 ?? ''}`.toLowerCase()
-        return !allergens.some(a => text.includes(a))
+        const txt = `${f.product_name} ${f.pnns_groups_1 ?? ''}`.toLowerCase()
+        return !allergens.some(a => txt.includes(a))
       })
     }
 
-    results.push(solveMeal(filtered, mealTarget, pasto.nome))
+    // Esclude carni processate/fritti per colazione
+    if (slot === 'colazione') {
+      filtered = filtered.filter(f => {
+        const name = f.product_name.toLowerCase()
+        return !name.includes('wurstel') && !name.includes('salami') &&
+               !name.includes('nugget') && !name.includes('impanato')
+      })
+    }
+
+    const result = solveMeal(filtered, mealTarget, pasto.nome, usedIds)
+
+    // Aggiunge gli ID usati in questo pasto al set globale
+    for (const p of result.portions) usedIds.add(p.food.id)
+
+    results.push(result)
   }
 
-  return NextResponse.json({ piano: results, target: dailyTarget })
+  return NextResponse.json({ piano: results, target: daily })
 }
