@@ -98,7 +98,7 @@ const FRACTIONS: Record<FoodCategory, Partial<Record<keyof MacroTarget, number>>
   protein: { protein_g: 0.65 },   // proteina copre 65% del target proteico
   dairy:   { protein_g: 0.35 },   // latticino copre 35%
   carb:    { carbs_g:   0.70 },   // carboidrato copre 70% dei carbs
-  fat:     { fat_100g:  0.55 },   // grasso copre 55% dei grassi
+  fat:     { fat_g:     0.55 },   // grasso copre 55% dei grassi
   veggie:  {},                     // porzione fissa
   fruit:   {},                     // porzione fissa
   mixed:   { kcal:      0.20 },   // mixed: 20% delle kcal
