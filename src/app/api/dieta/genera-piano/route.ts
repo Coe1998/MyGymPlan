@@ -253,6 +253,21 @@ export async function POST(req: NextRequest) {
       filtered = filtered.filter(f => !isFruitPuree(f.product_name))
     }
 
+    // Esclude cereali da colazione (fiocchi, crispies, muesli, granola) da pranzo e cena
+    if (slot === 'pranzo' || slot === 'cena') {
+      filtered = filtered.filter(f => {
+        const name = f.product_name.toLowerCase()
+        return !name.includes('crispies') && !name.includes('crispi') &&
+               !name.includes('corn flake') && !name.includes('cornflake') &&
+               !name.includes('muesli') && !name.includes('müsli') &&
+               !name.includes('granola') && !name.includes('frosties') &&
+               !name.includes('fiocchi di riso') && !name.includes('fiocchi di mais') &&
+               !name.includes('fiocchi di grano') && !name.includes('rice krispies') &&
+               !(name.includes('cereali') && (name.includes('cacao') || name.includes('cioccolato') ||
+                 name.includes('miele') || name.includes('caramello')))
+      })
+    }
+
     // Esclude carni processate, fritti e frutta secca/disidratata per colazione
     if (slot === 'colazione') {
       filtered = filtered.filter(f => {
