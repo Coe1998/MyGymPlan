@@ -215,25 +215,27 @@ export async function POST(req: NextRequest) {
           fat_g:     daily.fat_g     * pasto.percentuale / 100,
         }
 
-    // Query alimenti per slot — senza filtro PNNS (case mismatch), filtriamo dopo
+    // Costruisce la query base — factory per evitare mutazione dell'oggetto
     const usedArr = [...usedIds]
-    let query = supabase
-      .from('alimenti')
-      .select('id, product_name, brands, pnns_groups_1, energy_kcal_100g, proteins_100g, carbs_100g, fat_100g, fiber_100g, meal_slots')
-      .ilike('meal_slots', `%${slot}%`)
-      .gt('energy_kcal_100g', 5)
-      .not('proteins_100g', 'is', null)
-      .not('carbs_100g', 'is', null)
-      .not('fat_100g', 'is', null)
-
-    if (usedArr.length > 0) {
-      query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
+    const buildQuery = () => {
+      let q = supabase
+        .from('alimenti')
+        .select('id, product_name, brands, pnns_groups_1, energy_kcal_100g, proteins_100g, carbs_100g, fat_100g, fiber_100g, meal_slots')
+        .ilike('meal_slots', `%${slot}%`)
+        .gt('energy_kcal_100g', 5)
+        .not('proteins_100g', 'is', null)
+        .not('carbs_100g', 'is', null)
+        .not('fat_100g', 'is', null)
+      if (usedArr.length > 0) {
+        q = q.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
+      }
+      return q
     }
 
-    // Supabase limita a 1000 righe per request — due query in parallelo
+    // Due istanze separate per superare il limite 1000 righe di Supabase
     const [{ data: batch1 }, { data: batch2 }] = await Promise.all([
-      query.range(0, 999),
-      query.range(1000, 1499),
+      buildQuery().range(0, 999),
+      buildQuery().range(1000, 1499),
     ])
     const merged = [...(batch1 ?? []), ...(batch2 ?? [])]
     const shuffled = merged.sort(() => Math.random() - 0.5)
