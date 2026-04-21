@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { solveMeal, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
 
+// Condimenti, aromi, additivi e ingredienti tecnici da escludere come portata
+const CONDIMENT_KEYWORDS = [
+  // Aromatici e condimenti
+  'aglio', 'cipolla', 'scalogno', 'porro', 'erba cipollina',
+  'peperoncino', 'zenzero', 'curcuma', 'cannella', 'noce moscata',
+  'origano', 'basilico', 'rosmarino', 'timo', 'salvia', 'menta',
+  'prezzemolo', 'coriandolo', 'aneto', 'dragoncello', 'alloro',
+  // Gelificanti e additivi tecnici
+  'agar-agar', 'agar agar', 'gelatina', 'pectina', 'carragenina',
+  'gomma xantana', 'gomma guar', 'amido di mais', 'amido modificato',
+  // Lieviti e agenti lievitanti
+  'lievito istantaneo', 'bicarbonato di sodio', 'cremor tartaro',
+  // Aceti e salse concentrate
+  'aceto di', 'salsa di soia', 'worcestershire', 'tabasco',
+  // Estratti e aromi
+  'estratto di vaniglia', 'aroma naturale', 'aroma artificiale',
+  // Sale e spezie pure
+  'sale fino', 'sale grosso', 'pepe nero', 'pepe bianco', 'paprika',
+]
+
+function isCondimentOrAdditive(productName: string): boolean {
+  const lower = productName.toLowerCase()
+  return CONDIMENT_KEYWORDS.some(w => lower.includes(w))
+}
+
 // Parole distintamente francesi che non compaiono nei nomi italiani/inglesi
 const FRENCH_WORDS = [
   'grillées', 'grillée', 'grillés', 'grillé',
@@ -137,6 +162,9 @@ export async function POST(req: NextRequest) {
 
     // Esclude prodotti con nome francese (OpenFoodFacts è internazionale)
     filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
+
+    // Esclude condimenti, aromi e additivi tecnici
+    filtered = filtered.filter(f => !isCondimentOrAdditive(f.product_name))
 
     // Esclude carni processate/fritti per colazione
     if (slot === 'colazione') {
