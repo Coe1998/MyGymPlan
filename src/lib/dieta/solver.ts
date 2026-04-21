@@ -83,12 +83,15 @@ export function classifyFood(f: FoodItem): FoodCategory {
     return prot >= 12 ? 'mixed' : 'carb'
   }
 
-  // Oli e grassi
-  if (pnns.includes('fat') || name.includes('olio') || name.includes(' oil') ||
-      name.includes('burro') || name.includes('butter') || name.includes('ghee') ||
-      name.includes('margarina')) {
-    return 'fat'
-  }
+  // Oli e grassi puri — escludi prodotti proteici conservati in olio
+  // (es. "acciughe in olio", "tonno in olio" hanno prot alta e vanno in 'protein')
+  const isPureOilOrFat = pnns.includes('fat') ||
+    name.includes('burro') || name.includes('butter') ||
+    name.includes('ghee') || name.includes('margarina') ||
+    name.includes('avocado') ||
+    // "olio" o "oil" nel nome SOLO se il prodotto è povero di proteine
+    ((name.includes('olio') || name.includes(' oil')) && prot < 5)
+  if (isPureOilOrFat) return 'fat'
 
   // Latticini liquidi/freschi — SOLO prodotti che sono principalmente latticini
   if (pnns.includes('milk') || pnns.includes('dairy') ||
@@ -126,7 +129,7 @@ const PORTIONS: Record<FoodCategory, [number, number]> = {
   protein: [80,  200],
   dairy:   [80,  250],
   carb:    [50,  150],
-  fat:     [5,   25],
+  fat:     [5,   80],   // 80g per avocado; calcBaseGrams darà ~9g agli oli puri
   veggie:  [100, 250],
   fruit:   [100, 200],
   mixed:   [60,  180],
