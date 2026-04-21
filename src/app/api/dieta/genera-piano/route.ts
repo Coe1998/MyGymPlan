@@ -48,6 +48,7 @@ const FRUIT_PUREE_KEYWORDS = [
   'polpa di', 'polpa frutta', '100% frutta', '100% polpa',
   'nettare di', 'succo di frutta', 'succo e polpa',
   'frullato di', 'smoothie', 'purea di frutta', 'passata di frutta',
+  'succo e polpa', 'succo & polpa',
 ]
 
 function isFruitPuree(productName: string): boolean {
@@ -229,18 +230,13 @@ export async function POST(req: NextRequest) {
       query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
     }
 
-    // Fetch con offset random per campionare parti diverse del DB ad ogni chiamata
-    // (senza ORDER BY il DB ritorna sempre gli stessi N record iniziali)
-    const randomOffset = Math.floor(Math.random() * 15000)
-    const [{ data: foods1 }, { data: foods2 }] = await Promise.all([
-      query.range(randomOffset, randomOffset + 499),
-      query.range(0, 299),  // include sempre anche i primi per completezza
-    ])
-    const merged = [...(foods1 ?? []), ...(foods2 ?? [])]
-    // Deduplica per id e mischia
-    const seen = new Set<string>()
-    const shuffled = merged.filter(f => seen.has(f.id) ? false : (seen.add(f.id), true))
-                           .sort(() => Math.random() - 0.5)
+    // ORDER BY id (UUID v4 = distribuito 0-f) + range random:
+    // ogni chiamata colpisce una "lettera" diversa dell'alfabeto UUID
+    const randomOffset = Math.floor(Math.random() * 28000)
+    const { data: foods } = await query
+      .order('id')
+      .range(randomOffset, randomOffset + 699)
+    const shuffled = (foods ?? []).sort(() => Math.random() - 0.5)
     let filtered = shuffled as FoodItem[]
 
     // Esclude allergie
@@ -282,6 +278,16 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Esclude prodotti il cui nome è solo il brand (es. "Afeltra" brand "AFELTRA")
+    filtered = filtered.filter(f => {
+      const name = f.product_name.toLowerCase().trim()
+      const brand = (f.brands ?? '').toLowerCase().trim()
+      // Nome troppo corto (<4 char) o coincide col brand → scarta
+      if (name.length < 4) return false
+      if (brand && name === brand) return false
+      return true
+    })
+
     // Esclude formati di pasta da minestrina da pranzo e cena
     if (slot === 'pranzo' || slot === 'cena') {
       filtered = filtered.filter(f => {
@@ -297,13 +303,14 @@ export async function POST(req: NextRequest) {
       filtered = filtered.filter(f => {
         const name = f.product_name.toLowerCase()
         return !name.includes('crispies') && !name.includes('crispi') &&
+               !name.includes('flakes') && !name.includes('flake') &&
                !name.includes('corn flake') && !name.includes('cornflake') &&
                !name.includes('muesli') && !name.includes('müsli') &&
                !name.includes('granola') && !name.includes('frosties') &&
                !name.includes('fiocchi di riso') && !name.includes('fiocchi di mais') &&
                !name.includes('fiocchi di grano') && !name.includes('rice krispies') &&
                !(name.includes('cereali') && (name.includes('cacao') || name.includes('cioccolato') ||
-                 name.includes('miele') || name.includes('caramello')))
+                 name.includes('miele') || name.includes('caramello') || name.includes('frutti')))
       })
     }
 
