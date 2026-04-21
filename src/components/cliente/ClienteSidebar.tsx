@@ -120,7 +120,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
   return (
     <>
       {/* SIDEBAR — solo desktop */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col"
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col"
         style={{ background: 'var(--c-16)', borderRight: '1px solid var(--c-w6)' }}>
         {/* Logo */}
         <div className="p-6" style={{ borderBottom: '1px solid var(--c-w6)' }}>
@@ -208,14 +208,14 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
       </aside>
 
       {/* BOTTOM NAV — solo mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50"
+      <nav className="lg:hidden flex fixed bottom-0 left-0 right-0 z-50"
         style={{
           height: 'calc(64px + env(safe-area-inset-bottom))',
           background: 'oklch(0.13 0 0 / 92%)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid var(--c-w6)',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-around',
+          alignItems: 'flex-start', justifyContent: 'space-around',
           padding: '8px 8px 0',
         }}>
         {navItems.map((item) => {

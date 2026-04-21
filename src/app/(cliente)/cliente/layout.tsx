@@ -40,7 +40,7 @@ export default async function ClienteLayout({
       {!checkinOggi && <CheckinGate />}
       {/* Desktop: margin per sidebar. Mobile: padding bottom per bottom nav */}
       <main
-        className="md:ml-64 pb-24 md:pb-8"
+        className="lg:ml-64 pb-24 lg:pb-8"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}
       >
         <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
