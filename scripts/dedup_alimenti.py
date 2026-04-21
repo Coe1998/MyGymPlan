@@ -5,8 +5,11 @@ Uso:
   python3 scripts/dedup_alimenti.py --delete # esegue i DELETE dopo conferma
 """
 
-import sys, re, json, urllib.request, urllib.parse
+import sys, re, json, urllib.request, urllib.parse, io
 from collections import defaultdict
+
+# Forza UTF-8 su Windows per evitare errori cp1252
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 SUPABASE_URL = "https://dcwchgzxuzfywkxsadjp.supabase.co"
 SERVICE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs"
@@ -153,12 +156,13 @@ def main():
         print("Riesegui con --delete per applicare le eliminazioni.")
         return
 
-    # Conferma
-    print()
-    confirm = input(f"Confermi l'eliminazione di {len(to_delete)} record? [digita 'SI' per procedere]: ")
-    if confirm.strip() != "SI":
-        print("Annullato.")
-        return
+    # Conferma (bypassabile con --yes)
+    if "--yes" not in sys.argv:
+        print()
+        confirm = input(f"Confermi l'eliminazione di {len(to_delete)} record? [digita 'SI' per procedere]: ")
+        if confirm.strip() != "SI":
+            print("Annullato.")
+            return
 
     # Delete a batch di 100 (limite URL)
     print("\nElimino...")
