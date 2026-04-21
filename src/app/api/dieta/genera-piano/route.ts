@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { solveMeal, classifyFood, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
+import { solveMeal, FoodItem, MacroTarget, MealResult } from '@/lib/dieta/solver'
 
+// Parole distintamente francesi che non compaiono nei nomi italiani/inglesi
+const FRENCH_WORDS = [
+  'grillées', 'grillée', 'grillés', 'grillé',
+  'tranchées', 'tranchée', 'tranches',
+  'légumes', 'légume',
+  'pulpe', 'poire', 'pomme de terre', 'pommes de terre',
+  'haricots', 'épinards', 'courgettes', 'aubergines',
+  'lentilles', 'carottes', 'oignons', 'champignons',
+  'poulet', 'bœuf', 'porc', 'veau', 'agneau',
+  'saumon', 'thon', 'crevettes', 'moules',
+  'fromage', 'crème', 'beurre', 'lait entier',
+  'sans sucres ajoutés', 'sans gluten',
+  ' pour ', ' avec ', ' aux ', ' sur ',
+  'morceaux', 'émincé', 'émincée',
+  'cuisiné', 'cuisinée', 'cuisinés',
+  'nature', // solo se abbinato ad altri segnali, ma "au naturel" è già preso
+  'au naturel', 'à l\'huile', 'à la',
+]
+
+function isFrenchProduct(productName: string): boolean {
+  const lower = productName.toLowerCase()
+  return FRENCH_WORDS.some(w => lower.includes(w))
+}
 
 const SLOT_MAP: Record<string, string> = {
   'colazione':             'colazione',
@@ -111,6 +134,9 @@ export async function POST(req: NextRequest) {
         return !allergens.some(a => txt.includes(a))
       })
     }
+
+    // Esclude prodotti con nome francese (OpenFoodFacts è internazionale)
+    filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
 
     // Esclude carni processate/fritti per colazione
     if (slot === 'colazione') {
