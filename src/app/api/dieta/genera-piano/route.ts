@@ -230,9 +230,13 @@ export async function POST(req: NextRequest) {
       query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
     }
 
-    // DB ora ha ~1100 record curati — fetch tutto e shuffle lato client
-    const { data: foods } = await query.limit(1500)
-    const shuffled = (foods ?? []).sort(() => Math.random() - 0.5)
+    // Supabase limita a 1000 righe per request — due query in parallelo
+    const [{ data: batch1 }, { data: batch2 }] = await Promise.all([
+      query.range(0, 999),
+      query.range(1000, 1499),
+    ])
+    const merged = [...(batch1 ?? []), ...(batch2 ?? [])]
+    const shuffled = merged.sort(() => Math.random() - 0.5)
     let filtered = shuffled as FoodItem[]
 
     // Esclude allergie
