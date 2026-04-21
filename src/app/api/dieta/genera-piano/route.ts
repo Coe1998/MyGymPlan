@@ -209,6 +209,9 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Esclude prodotti il cui nome inizia con un numero (es. "8 Fiori", "72 fette biscottate")
+    filtered = filtered.filter(f => !/^\d/.test(f.product_name.trim()))
+
     // Esclude prodotti con nome inglese o francese (OpenFoodFacts è internazionale)
     filtered = filtered.filter(f => !isEnglishProduct(f.product_name))
     filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
