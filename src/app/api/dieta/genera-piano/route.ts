@@ -16,6 +16,8 @@ const CONDIMENT_KEYWORDS = [
   'lievito istantaneo', 'bicarbonato di sodio', 'cremor tartaro',
   // Salumi spalmabili e insaccati molto grassi/piccanti
   'nduja', 'lardo', 'strutto', 'guanciale', 'ciccioli',
+  // Oli aromatizzati/infusi — condimenti, non fonte di grassi da piano
+  'agrumolio', 'agrumato', 'olio al tartufo', 'olio al peperoncino',
   // Aceti e salse concentrate
   'aceto di', 'salsa di soia', 'worcestershire', 'tabasco',
   // Estratti e aromi

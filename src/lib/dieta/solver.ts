@@ -218,6 +218,17 @@ function scoreFood(f: FoodItem, cat: FoodCategory, mealType: MealType): number {
         name.includes('muesli'))) score += 8
   }
 
+  if (cat === 'fat') {
+    // Preferisci olio EVO / extravergine
+    if (name.includes('extravergine') || name.includes('extra vergine') ||
+        name.includes('evo') || name.includes('oliva')) score += 20
+    // Penalizza oli di semi (mais, girasole, arachidi, soia, palma)
+    if (name.includes('semi di mais') || name.includes('semi di girasole') ||
+        name.includes('semi di arachid') || name.includes('semi di soia') ||
+        name.includes('di palma') || name.includes('palmisto') ||
+        name.includes('agrumolio') || name.includes('agrumato')) score -= 30
+  }
+
   return score
 }
 
