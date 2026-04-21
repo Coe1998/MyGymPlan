@@ -18,7 +18,19 @@
       "PowerShell(\\(Get-Item \"C:\\\\Users\\\\a\\\\Desktop\\\\csv\\\\openfoodfacts_it.csv\"\\).Length / 1MB; Get-Content \"C:\\\\Users\\\\a\\\\Desktop\\\\csv\\\\openfoodfacts_it.csv\" -TotalCount 3 | ForEach-Object { $_ })",
       "PowerShell(python -c \"import pandas; print\\('pandas', pandas.__version__\\)\" 2>&1)",
       "PowerShell(Test-Path *)",
-      "PowerShell(python -c \"import supabase; print\\('supabase ok', supabase.__version__\\)\" 2>&1)"
+      "PowerShell(python -c \"import supabase; print\\('supabase ok', supabase.__version__\\)\" 2>&1)",
+      "Bash(python3 -c ' *)",
+      "Bash(ls *)",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/esercizi?select=id,nome,muscoli,is_global,gif_url,exercisedb_id&order=nome' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs')",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/esercizi?select=id,nome,muscoli,is_global,gif_url,exercisedb_id&order=nome' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -o C:/Users/cozmin.bejinari/AppData/Local/Temp/esercizi.json)",
+      "Bash(python3 *)",
+      "Bash(node *)",
+      "Bash(cp \"C:/Users/cozmin.bejinari/Downloads/exercisedbpro/exercises2.json\" \"C:/Users/cozmin.bejinari/Documents/GitHub/mygymplan/data/exercisedb/\")",
+      "Bash(cp \"C:/Users/cozmin.bejinari/Downloads/exercisedbpro/bodyParts2.json\" \"C:/Users/cozmin.bejinari/Documents/GitHub/mygymplan/data/exercisedb/\")",
+      "Read(//c/Users/cozmin.bejinari/Downloads/bynari/**)",
+      "Bash(grep -n \"gif-\\\\${ese.id}\\\\|gif_url.*hidden\" /c/Users/cozmin.bejinari/Documents/GitHub/mygymplan/src/app/\\\\\\(cliente\\\\\\)/cliente/allenamento/page.tsx)",
+      "Bash(git stash *)",
+      "Bash(git pull *)"
     ]
   }
 }
