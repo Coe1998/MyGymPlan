@@ -823,7 +823,8 @@ export default function DietaPage() {
       {genPlanOpen && (
         <GenPlanSheet
           onClose={() => setGenPlanOpen(false)}
-          onGenerate={() => setGenPlanOpen(false)}
+          clienteId={userId}
+          dayType={dayType}
         />
       )}
 
