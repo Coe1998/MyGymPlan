@@ -66,7 +66,11 @@ const ENGLISH_WORDS = [
   'creamy chicken', 'crispy chicken', 'juicy',
   // Pattern tipici di app MFP / database anglosassoni
   'homemade ', 'generic ', 'custom ',
-  // Nomi che iniziano con # (ricette numerate da app)
+  // Nomi di frutta/verdura in inglese puro
+  'apricots', 'cherries', 'peaches', 'plums', 'blueberries',
+  'strawberries', 'raspberries', 'blackberries', 'cranberries',
+  'pitted', 'dried apricots', 'dried mango', 'dried cranberr',
+  'green beans', 'brussels sprouts', 'bell pepper',
 ]
 
 function isEnglishProduct(productName: string): boolean {
@@ -74,6 +78,24 @@ function isEnglishProduct(productName: string): boolean {
   // Nomi che iniziano con # seguiti da numero (es. "#19 Paleo Slow Cooker...")
   if (/^#\d+\s/.test(productName.trim())) return true
   return ENGLISH_WORDS.some(w => lower.includes(w))
+}
+
+// Parole spagnole distinctive (OpenFoodFacts ha molti prodotti spagnoli)
+const SPANISH_WORDS = [
+  'alcachofas', 'alcachofa',
+  'judías', 'judias verdes',
+  'garbanzos', 'lentejas',
+  'ternera', 'cerdo asado', 'jamón serrano', 'jamón ibérico',
+  'pimientos', 'tomates cherry',
+  'espinacas', 'zanahorias', 'guisantes',
+  'pollo asado', 'pollo a la',
+  'gambas', 'mejillones', 'almejas',
+  ' con arroz', ' con patatas',
+]
+
+function isSpanishProduct(productName: string): boolean {
+  const lower = productName.toLowerCase()
+  return SPANISH_WORDS.some(w => lower.includes(w))
 }
 
 // Parole distintamente francesi che non compaiono nei nomi italiani/inglesi
@@ -212,9 +234,10 @@ export async function POST(req: NextRequest) {
     // Esclude prodotti il cui nome inizia con un numero (es. "8 Fiori", "72 fette biscottate")
     filtered = filtered.filter(f => !/^\d/.test(f.product_name.trim()))
 
-    // Esclude prodotti con nome inglese o francese (OpenFoodFacts è internazionale)
+    // Esclude prodotti con nome straniero (OpenFoodFacts è internazionale)
     filtered = filtered.filter(f => !isEnglishProduct(f.product_name))
     filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
+    filtered = filtered.filter(f => !isSpanishProduct(f.product_name))
 
     // Esclude condimenti, aromi e additivi tecnici
     filtered = filtered.filter(f => !isCondimentOrAdditive(f.product_name))
@@ -227,12 +250,15 @@ export async function POST(req: NextRequest) {
       filtered = filtered.filter(f => !isFruitPuree(f.product_name))
     }
 
-    // Esclude carni processate/fritti per colazione
+    // Esclude carni processate, fritti e frutta secca/disidratata per colazione
     if (slot === 'colazione') {
       filtered = filtered.filter(f => {
         const name = f.product_name.toLowerCase()
         return !name.includes('wurstel') && !name.includes('salami') &&
-               !name.includes('nugget') && !name.includes('impanato')
+               !name.includes('nugget') && !name.includes('impanato') &&
+               !name.includes('secche') && !name.includes('secco') &&
+               !name.includes('essiccate') && !name.includes('disidratate') &&
+               !name.includes('dried')
       })
     }
 
