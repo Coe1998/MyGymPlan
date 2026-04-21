@@ -51,6 +51,31 @@ function isFruitPuree(productName: string): boolean {
   return FRUIT_PUREE_KEYWORDS.some(w => lower.includes(w))
 }
 
+// Parole distintamente inglesi che non compaiono nei nomi italiani
+const ENGLISH_WORDS = [
+  // Cotture/stili di ricetta anglosassoni
+  'slow cooker', 'slow-cooker', 'air fryer', 'instant pot',
+  'meal prep', 'meal plan', 'macro friendly',
+  'paleo', 'keto friendly', 'whole30',
+  // Piatti anglosassoni
+  'butter chicken', 'chicken curry', 'beef stew', 'chicken stew',
+  'shepherd\'s pie', 'fish and chips', 'mac and cheese',
+  'pulled pork', 'bbq chicken', 'buffalo chicken',
+  'overnight oats', 'protein pancake', 'protein bar recipe',
+  // Aggettivi culinari inglesi non usati in italiano
+  'creamy chicken', 'crispy chicken', 'juicy',
+  // Pattern tipici di app MFP / database anglosassoni
+  'homemade ', 'generic ', 'custom ',
+  // Nomi che iniziano con # (ricette numerate da app)
+]
+
+function isEnglishProduct(productName: string): boolean {
+  const lower = productName.toLowerCase()
+  // Nomi che iniziano con # seguiti da numero (es. "#19 Paleo Slow Cooker...")
+  if (/^#\d+\s/.test(productName.trim())) return true
+  return ENGLISH_WORDS.some(w => lower.includes(w))
+}
+
 // Parole distintamente francesi che non compaiono nei nomi italiani/inglesi
 const FRENCH_WORDS = [
   'grillées', 'grillée', 'grillés', 'grillé',
@@ -184,7 +209,8 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Esclude prodotti con nome francese (OpenFoodFacts è internazionale)
+    // Esclude prodotti con nome inglese o francese (OpenFoodFacts è internazionale)
+    filtered = filtered.filter(f => !isEnglishProduct(f.product_name))
     filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
 
     // Esclude condimenti, aromi e additivi tecnici
