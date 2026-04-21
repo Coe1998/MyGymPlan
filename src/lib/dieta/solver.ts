@@ -104,12 +104,20 @@ export function classifyFood(f: FoodItem): FoodCategory {
     return 'dairy'
   }
 
+  // Frutta fresca — check PRIMA di veggie per evitare che agrumi/frutta
+  // a bassa kcal vengano scambiati per verdure
+  const FRUIT_NAMES = [
+    'arancia', 'mandarino', 'clementina', 'limone', 'pompelmo', 'cedro',
+    'mela', 'pera', 'banana', 'ananas', 'fragola', 'uva', 'pesca', 'nettarina',
+    'albicocca', 'ciliegia', 'kiwi', 'mango', 'papaya', 'melograno', 'fico',
+    'susina', 'prugna', 'melone', 'cocomero', 'anguria', 'lampone', 'mirtillo',
+    'more', 'ribes', 'avocado',
+  ]
+  const isFruitByName = FRUIT_NAMES.some(fn => name.includes(fn))
+  if ((isFruitByName || pnns.includes('fruit')) && kcal < 120 && fat < 5) return 'fruit'
+
   // Verdure fresche (bassa kcal)
   if (kcal < 55 && fiber >= 0.8 && carbs < 12 && prot < 6) return 'veggie'
-
-  // Frutta fresca
-  if (kcal < 80 && carbs >= 5 && fat < 2 && prot < 4 &&
-      (pnns.includes('fruit') || pnns.includes('vegetable'))) return 'fruit'
 
   // Proteine (soglia a 10g per catturare uova, pesce, legumi)
   if (prot >= 10 && prot / kcal >= 0.05) return 'protein'

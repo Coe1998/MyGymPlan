@@ -229,9 +229,18 @@ export async function POST(req: NextRequest) {
       query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
     }
 
-    // Fetch abbondante + shuffle per evitare bias alfabetico
-    let { data: foods } = await query.limit(800)
-    const shuffled = (foods ?? []).sort(() => Math.random() - 0.5)
+    // Fetch con offset random per campionare parti diverse del DB ad ogni chiamata
+    // (senza ORDER BY il DB ritorna sempre gli stessi N record iniziali)
+    const randomOffset = Math.floor(Math.random() * 15000)
+    const [{ data: foods1 }, { data: foods2 }] = await Promise.all([
+      query.range(randomOffset, randomOffset + 499),
+      query.range(0, 299),  // include sempre anche i primi per completezza
+    ])
+    const merged = [...(foods1 ?? []), ...(foods2 ?? [])]
+    // Deduplica per id e mischia
+    const seen = new Set<string>()
+    const shuffled = merged.filter(f => seen.has(f.id) ? false : (seen.add(f.id), true))
+                           .sort(() => Math.random() - 0.5)
     let filtered = shuffled as FoodItem[]
 
     // Esclude allergie
@@ -257,9 +266,20 @@ export async function POST(req: NextRequest) {
     // Esclude baby food e omogeneizzati
     filtered = filtered.filter(f => !isBabyFood(f.product_name, f.brands))
 
-    // Esclude polpe/succhi di frutta da pranzo e cena
+    // Esclude polpe/succhi/frutta fresca da pranzo e cena
     if (slot === 'pranzo' || slot === 'cena') {
       filtered = filtered.filter(f => !isFruitPuree(f.product_name))
+      // Escludi anche frutta intera (classificata come 'fruit' o 'veggie' dolce)
+      const FRUIT_NAMES_ROUTE = [
+        'arancia', 'mandarino', 'clementina', 'limone', 'ananas', 'fragola',
+        'mela ', 'pera ', 'banana', 'kiwi', 'mango', 'uva ', 'pesca ',
+        'albicocca', 'ciliegia', 'melograno', 'melone', 'anguria', 'cocomero',
+        'mirtillo', 'lampone', 'ribes', 'mora ', 'more ',
+      ]
+      filtered = filtered.filter(f => {
+        const name = f.product_name.toLowerCase()
+        return !FRUIT_NAMES_ROUTE.some(fn => name.includes(fn))
+      })
     }
 
     // Esclude formati di pasta da minestrina da pranzo e cena
@@ -295,7 +315,8 @@ export async function POST(req: NextRequest) {
                !name.includes('nugget') && !name.includes('impanato') &&
                !name.includes('secche') && !name.includes('secco') &&
                !name.includes('essiccate') && !name.includes('essicate') &&
-               !name.includes('disidratate') && !name.includes('dried')
+               !name.includes('disidratate') && !name.includes('disidratato') &&
+               !name.includes('disidratata') && !name.includes('dried')
       })
     }
 
