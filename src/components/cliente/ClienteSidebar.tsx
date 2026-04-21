@@ -10,7 +10,7 @@ import { Profile } from '@/types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faDumbbell, faChartLine, faRightFromBracket, faGear, faUtensils, faComments } from '@fortawesome/free-solid-svg-icons'
 
-// Voci nav principali (mobile) — Dieta filtrata se non abilitata
+// Voci nav mobile (bottom bar)
 const buildNavItems = (dietaAbilitata: boolean) => [
   { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
   { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
@@ -20,9 +20,13 @@ const buildNavItems = (dietaAbilitata: boolean) => [
   { href: '/cliente/impostazioni', label: 'Profilo', icon: faGear },
 ]
 
-// Tutte le voci (desktop sidebar)
+// Voci sidebar desktop — "Impostazioni" invece di "Profilo", nessun duplicato
 const buildNavItemsAll = (dietaAbilitata: boolean) => [
-  ...buildNavItems(dietaAbilitata),
+  { href: '/cliente/dashboard', label: 'Home', icon: faHouse },
+  { href: '/cliente/allenamento', label: 'Allena', icon: faDumbbell },
+  { href: '/cliente/progressi', label: 'Progressi', icon: faChartLine },
+  ...(dietaAbilitata ? [{ href: '/cliente/dieta', label: 'Dieta', icon: faUtensils }] : []),
+  { href: '/cliente/chat', label: 'Chat', icon: faComments },
   { href: '/cliente/impostazioni', label: 'Impostazioni', icon: faGear },
 ]
 
@@ -116,7 +120,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
   return (
     <>
       {/* SIDEBAR — solo desktop */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 flex-col"
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col"
         style={{ background: 'var(--c-16)', borderRight: '1px solid var(--c-w6)' }}>
         {/* Logo */}
         <div className="p-6" style={{ borderBottom: '1px solid var(--c-w6)' }}>
@@ -204,7 +208,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
       </aside>
 
       {/* BOTTOM NAV — solo mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50"
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50"
         style={{
           height: 'calc(64px + env(safe-area-inset-bottom))',
           background: 'oklch(0.13 0 0 / 92%)',
