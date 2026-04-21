@@ -230,12 +230,8 @@ export async function POST(req: NextRequest) {
       query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
     }
 
-    // ORDER BY id (UUID v4 = distribuito 0-f) + range random:
-    // ogni chiamata colpisce una "lettera" diversa dell'alfabeto UUID
-    const randomOffset = Math.floor(Math.random() * 28000)
-    const { data: foods } = await query
-      .order('id')
-      .range(randomOffset, randomOffset + 699)
+    // DB ora ha ~1100 record curati — fetch tutto e shuffle lato client
+    const { data: foods } = await query.limit(1500)
     const shuffled = (foods ?? []).sort(() => Math.random() - 0.5)
     let filtered = shuffled as FoodItem[]
 
