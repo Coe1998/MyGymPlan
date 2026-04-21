@@ -27,6 +27,30 @@ function isCondimentOrAdditive(productName: string): boolean {
   return CONDIMENT_KEYWORDS.some(w => lower.includes(w))
 }
 
+// Baby food, omogeneizzati e prodotti per bambini — non adatti ad adulti
+const BABY_FOOD_KEYWORDS = [
+  'plasmon', 'omogeneizzat', 'omogeneizzato', 'homogenized',
+  'pastina', 'per l\'infanzia', 'per bambini', 'baby food',
+  'gerber', 'hipp', 'mellin', 'nipiol', 'blevit',
+]
+
+function isBabyFood(productName: string, brands?: string | null): boolean {
+  const txt = `${productName} ${brands ?? ''}`.toLowerCase()
+  return BABY_FOOD_KEYWORDS.some(w => txt.includes(w))
+}
+
+// Polpe di frutta, succhi, nettari — ok a colazione/spuntino, non a pranzo/cena
+const FRUIT_PUREE_KEYWORDS = [
+  'polpa di', 'polpa frutta', '100% frutta', '100% polpa',
+  'nettare di', 'succo di frutta', 'succo e polpa',
+  'frullato di', 'smoothie', 'purea di frutta', 'passata di frutta',
+]
+
+function isFruitPuree(productName: string): boolean {
+  const lower = productName.toLowerCase()
+  return FRUIT_PUREE_KEYWORDS.some(w => lower.includes(w))
+}
+
 // Parole distintamente francesi che non compaiono nei nomi italiani/inglesi
 const FRENCH_WORDS = [
   'grillées', 'grillée', 'grillés', 'grillé',
@@ -165,6 +189,14 @@ export async function POST(req: NextRequest) {
 
     // Esclude condimenti, aromi e additivi tecnici
     filtered = filtered.filter(f => !isCondimentOrAdditive(f.product_name))
+
+    // Esclude baby food e omogeneizzati
+    filtered = filtered.filter(f => !isBabyFood(f.product_name, f.brands))
+
+    // Esclude polpe/succhi di frutta da pranzo e cena
+    if (slot === 'pranzo' || slot === 'cena') {
+      filtered = filtered.filter(f => !isFruitPuree(f.product_name))
+    }
 
     // Esclude carni processate/fritti per colazione
     if (slot === 'colazione') {
