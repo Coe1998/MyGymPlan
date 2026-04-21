@@ -14,6 +14,8 @@ const CONDIMENT_KEYWORDS = [
   'gomma xantana', 'gomma guar', 'amido di mais', 'amido modificato',
   // Lieviti e agenti lievitanti
   'lievito istantaneo', 'bicarbonato di sodio', 'cremor tartaro',
+  // Salumi spalmabili e insaccati molto grassi/piccanti
+  'nduja', 'lardo', 'strutto', 'guanciale', 'ciccioli',
   // Aceti e salse concentrate
   'aceto di', 'salsa di soia', 'worcestershire', 'tabasco',
   // Estratti e aromi
@@ -231,8 +233,9 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Esclude prodotti il cui nome inizia con un numero (es. "8 Fiori", "72 fette biscottate")
+    // Esclude prodotti il cui nome inizia con un numero o con apostrofo dialettale ('a, 'e, 'o, 'u)
     filtered = filtered.filter(f => !/^\d/.test(f.product_name.trim()))
+    filtered = filtered.filter(f => !/^[''][aeouAEOU]\s/.test(f.product_name.trim()))
 
     // Esclude prodotti con nome straniero (OpenFoodFacts è internazionale)
     filtered = filtered.filter(f => !isEnglishProduct(f.product_name))
