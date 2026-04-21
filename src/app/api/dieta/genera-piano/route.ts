@@ -14,6 +14,8 @@ const CONDIMENT_KEYWORDS = [
   'gomma xantana', 'gomma guar', 'amido di mais', 'amido modificato',
   // Lieviti e agenti lievitanti
   'lievito istantaneo', 'bicarbonato di sodio', 'cremor tartaro',
+  // Condimenti da cucina (piccole quantità, non porzioni)
+  'capperi', 'acciughe sotto sale', 'olive denocciolate',
   // Salumi spalmabili e insaccati molto grassi/piccanti
   'nduja', 'lardo', 'strutto', 'guanciale', 'ciccioli',
   // Oli aromatizzati/infusi — condimenti, non fonte di grassi da piano
