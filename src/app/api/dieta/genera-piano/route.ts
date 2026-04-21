@@ -75,12 +75,18 @@ const ENGLISH_WORDS = [
   'strawberries', 'raspberries', 'blackberries', 'cranberries',
   'pitted', 'dried apricots', 'dried mango', 'dried cranberr',
   'green beans', 'brussels sprouts', 'bell pepper',
+  // Salse e condimenti in inglese
+  'sesame sauce', 'sesame oil', 'soy sauce', 'fish sauce',
+  'hot sauce', 'bbq sauce', 'ranch dressing', 'caesar dressing',
+  'add ', 'serving of',
 ]
 
-function isEnglishProduct(productName: string): boolean {
+function isEnglishProduct(productName: string, brands?: string | null): boolean {
   const lower = productName.toLowerCase()
   // Nomi che iniziano con # seguiti da numero (es. "#19 Paleo Slow Cooker...")
   if (/^#\d+\s/.test(productName.trim())) return true
+  // Brand "unknown" = entry utente da app esterna (MFP, ecc.)
+  if ((brands ?? '').toLowerCase().trim() === 'unknown') return true
   return ENGLISH_WORDS.some(w => lower.includes(w))
 }
 
@@ -240,7 +246,7 @@ export async function POST(req: NextRequest) {
     filtered = filtered.filter(f => !/^[''][aeouAEOU]\s/.test(f.product_name.trim()))
 
     // Esclude prodotti con nome straniero (OpenFoodFacts è internazionale)
-    filtered = filtered.filter(f => !isEnglishProduct(f.product_name))
+    filtered = filtered.filter(f => !isEnglishProduct(f.product_name, f.brands))
     filtered = filtered.filter(f => !isFrenchProduct(f.product_name))
     filtered = filtered.filter(f => !isSpanishProduct(f.product_name))
 
@@ -253,6 +259,16 @@ export async function POST(req: NextRequest) {
     // Esclude polpe/succhi di frutta da pranzo e cena
     if (slot === 'pranzo' || slot === 'cena') {
       filtered = filtered.filter(f => !isFruitPuree(f.product_name))
+    }
+
+    // Esclude formati di pasta da minestrina da pranzo e cena
+    if (slot === 'pranzo' || slot === 'cena') {
+      filtered = filtered.filter(f => {
+        const name = f.product_name.toLowerCase()
+        return !name.includes('acini di pepe') && !name.includes('stelline') &&
+               !name.includes('ditalini') && !name.includes('pastina') &&
+               !name.includes('quadretti') && !name.includes('tempesta')
+      })
     }
 
     // Esclude cereali da colazione (fiocchi, crispies, muesli, granola) da pranzo e cena
@@ -277,8 +293,8 @@ export async function POST(req: NextRequest) {
         return !name.includes('wurstel') && !name.includes('salami') &&
                !name.includes('nugget') && !name.includes('impanato') &&
                !name.includes('secche') && !name.includes('secco') &&
-               !name.includes('essiccate') && !name.includes('disidratate') &&
-               !name.includes('dried')
+               !name.includes('essiccate') && !name.includes('essicate') &&
+               !name.includes('disidratate') && !name.includes('dried')
       })
     }
 
