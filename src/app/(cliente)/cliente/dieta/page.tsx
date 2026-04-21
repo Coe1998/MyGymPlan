@@ -40,10 +40,14 @@ interface PastoLog {
   gruppo_nome: string | null; gruppo_id: string | null; created_at: string; data: string
 }
 
-interface OFFProduct {
-  product_name: string; nutriments: {
-    'energy-kcal_100g'?: number; proteins_100g?: number; carbohydrates_100g?: number; fat_100g?: number
-  }
+interface InternalFood {
+  id: string
+  product_name: string
+  brands?: string | null
+  energy_kcal_100g: number
+  proteins_100g: number
+  carbs_100g: number
+  fat_100g: number
 }
 
 interface GiornoStorico {
@@ -77,16 +81,20 @@ export default function DietaPage() {
     check()
   }, [])
 
-  // Alimento form
+  // Alimento form — nuovo flusso: pasto → ricerca → quantità
   const [showForm, setShowForm] = useState(false)
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null) // null=non scelto, ''=fuori dai pasti
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<OFFProduct[]>([])
+  const [searchResults, setSearchResults] = useState<InternalFood[]>([])
   const [searching, setSearching] = useState(false)
-  const [selectedFood, setSelectedFood] = useState<OFFProduct | null>(null)
+  const [selectedFood, setSelectedFood] = useState<InternalFood | null>(null)
   const [quantita, setQuantita] = useState('100')
-  const [gruppoNome, setGruppoNome] = useState('')
-  const [gruppoEsistente, setGruppoEsistente] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const resetForm = () => {
+    setShowForm(false); setSelectedMeal(null); setSearchQuery('')
+    setSearchResults([]); setSelectedFood(null); setQuantita('100')
+  }
 
   // Piano integratori coach-driven
   const [pianoInt, setPianoInt] = useState<PianoIntegratore[]>([])
@@ -205,41 +213,37 @@ export default function DietaPage() {
   const gruppiEsistenti = Array.from(new Set(pasti.filter(p => p.gruppo_nome).map(p => p.gruppo_nome!))).filter(Boolean)
 
   // Ricerca Open Food Facts
-  const searchFood = async () => {
-    if (!searchQuery.trim()) return
+  const searchFood = async (q: string) => {
+    setSearchQuery(q)
+    if (q.trim().length < 2) { setSearchResults([]); return }
     setSearching(true)
-    setSearchResults([])
     try {
-      const res = await fetch(
-        `https://it.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,nutriments`
-      )
+      const res = await fetch(`/api/dieta/cerca-alimenti?q=${encodeURIComponent(q.trim())}`)
       const data = await res.json()
-      setSearchResults((data.products ?? []).filter((p: any) =>
-        p.product_name && p.nutriments?.['energy-kcal_100g']
-      ).slice(0, 6))
+      setSearchResults(data ?? [])
     } catch { }
     setSearching(false)
   }
 
-  const calcolaValori = (food: OFFProduct, qtg: number) => {
+  const calcolaValori = (food: InternalFood, qtg: number) => {
     const f = qtg / 100
     return {
-      calorie: Math.round((food.nutriments['energy-kcal_100g'] ?? 0) * f * 10) / 10,
-      proteine_g: Math.round((food.nutriments.proteins_100g ?? 0) * f * 10) / 10,
-      carboidrati_g: Math.round((food.nutriments.carbohydrates_100g ?? 0) * f * 10) / 10,
-      grassi_g: Math.round((food.nutriments.fat_100g ?? 0) * f * 10) / 10,
+      calorie: Math.round(food.energy_kcal_100g * f * 10) / 10,
+      proteine_g: Math.round(food.proteins_100g * f * 10) / 10,
+      carboidrati_g: Math.round(food.carbs_100g * f * 10) / 10,
+      grassi_g: Math.round(food.fat_100g * f * 10) / 10,
     }
   }
 
   const handleSaveAlimento = async () => {
-    if (!selectedFood) return
+    if (!selectedFood || selectedMeal === null) return
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const qt = parseFloat(quantita) || 100
     const valori = calcolaValori(selectedFood, qt)
-    const nomeGruppo = gruppoNome.trim() || gruppoEsistente || null
+    const nomeGruppo = selectedMeal || null
     const gId = nomeGruppo
       ? (pasti.find(p => p.gruppo_nome === nomeGruppo)?.gruppo_id ?? crypto.randomUUID())
       : null
@@ -251,10 +255,7 @@ export default function DietaPage() {
       gruppo_nome: nomeGruppo, gruppo_id: gId,
     })
 
-    setSelectedFood(null); setSearchQuery(''); setSearchResults([])
-    setQuantita('100'); setGruppoNome(''); setGruppoEsistente('')
-    setShowForm(false); setSaving(false)
-    fetchAll()
+    resetForm(); setSaving(false); fetchAll()
   }
 
   const handleDeleteAlimento = async (id: string) => {
@@ -771,37 +772,91 @@ export default function DietaPage() {
           {showForm ? (
             <div className="rounded-2xl p-5 space-y-4"
               style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 30%)' }}>
+
+              {/* Header */}
               <div className="flex items-center justify-between">
-                <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>Aggiungi alimento</p>
-                <button onClick={() => { setShowForm(false); setSelectedFood(null); setSearchQuery(''); setSearchResults([]) }}
+                <div className="flex items-center gap-2">
+                  {selectedMeal !== null && (
+                    <button onClick={() => { setSelectedMeal(null); setSelectedFood(null); setSearchQuery(''); setSearchResults([]) }}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs"
+                      style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>←</button>
+                  )}
+                  <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>
+                    {selectedMeal === null ? 'In quale pasto?' : selectedMeal === '' ? 'Fuori dai pasti' : selectedMeal}
+                  </p>
+                </div>
+                <button onClick={resetForm}
                   className="w-8 h-8 rounded-full flex items-center justify-center"
                   style={{ background: 'var(--c-25)', color: 'var(--c-55)' }}>
                   <FontAwesomeIcon icon={faXmark} className="text-xs" />
                 </button>
               </div>
 
-              {!selectedFood ? (
+              {/* Step 1 — Selezione pasto */}
+              {selectedMeal === null && (
+                <div className="space-y-2">
+                  {target?.pasti_config && target.pasti_config.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {target.pasti_config.map(p => (
+                        <button key={p.nome} onClick={() => setSelectedMeal(p.nome)}
+                          className="px-3 py-3 rounded-xl text-left transition-all hover:opacity-80"
+                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w6)' }}>
+                          <p className="text-sm font-bold" style={{ color: 'var(--c-90)' }}>{p.nome}</p>
+                          <p className="text-xs" style={{ color: 'var(--c-45)' }}>{p.percentuale}% delle kcal</p>
+                        </button>
+                      ))}
+                      <button onClick={() => setSelectedMeal('')}
+                        className="px-3 py-3 rounded-xl text-left transition-all hover:opacity-80"
+                        style={{ background: 'var(--c-20)', border: '1px solid var(--c-w4)' }}>
+                        <p className="text-sm font-bold" style={{ color: 'var(--c-55)' }}>Fuori dai pasti</p>
+                        <p className="text-xs" style={{ color: 'var(--c-38)' }}>Conta nel totale</p>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {gruppiEsistenti.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {gruppiEsistenti.map(g => (
+                            <button key={g} onClick={() => setSelectedMeal(g)}
+                              className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                              style={{ background: 'var(--c-22)', color: 'var(--c-50)' }}>{g}</button>
+                          ))}
+                        </div>
+                      )}
+                      <input type="text" placeholder="Nome pasto (es. Pranzo, Post workout...)"
+                        className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
+                        style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
+                        onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+                        onBlur={e => e.target.style.borderColor = 'var(--c-w8)'}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) setSelectedMeal((e.target as HTMLInputElement).value.trim()) }} />
+                      <button onClick={() => setSelectedMeal('')}
+                        className="w-full py-2 rounded-xl text-xs font-semibold"
+                        style={{ background: 'var(--c-20)', color: 'var(--c-45)' }}>Fuori dai pasti</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 2 — Ricerca alimento */}
+              {selectedMeal !== null && !selectedFood && (
                 <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && searchFood()}
-                      placeholder="Cerca alimento (es. pollo, riso, banana)..."
-                      className="flex-1 px-4 py-3 rounded-xl text-sm outline-none"
-                      style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
-                      onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
-                    <button onClick={searchFood} disabled={searching}
-                      className="px-4 py-3 rounded-xl text-sm font-bold flex-shrink-0"
-                      style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)' }}>
-                      {searching ? '...' : <FontAwesomeIcon icon={faSearch} />}
-                    </button>
-                  </div>
+                  <input type="text" value={searchQuery}
+                    onChange={e => searchFood(e.target.value)}
+                    placeholder="Cerca alimento (es. pollo, riso, avena)..."
+                    autoFocus
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                    style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
+                    onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
+
+                  {searching && (
+                    <p className="text-xs text-center py-2" style={{ color: 'var(--c-45)' }}>Ricerca...</p>
+                  )}
 
                   {searchResults.length > 0 && (
-                    <div className="rounded-xl overflow-hidden"
-                      style={{ border: '1px solid var(--c-w8)' }}>
+                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-w8)' }}>
                       {searchResults.map((r, i) => (
-                        <button key={i} onClick={() => setSelectedFood(r)}
+                        <button key={r.id} onClick={() => { setSelectedFood(r); setSearchResults([]) }}
                           className="w-full text-left px-4 py-3 transition-all hover:opacity-80"
                           style={{
                             background: i % 2 === 0 ? 'var(--c-20)' : 'var(--c-18)',
@@ -809,26 +864,29 @@ export default function DietaPage() {
                           }}>
                           <p className="text-sm font-medium" style={{ color: 'var(--c-90)' }}>{r.product_name}</p>
                           <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
-                            {Math.round(r.nutriments['energy-kcal_100g'] ?? 0)} kcal · {Math.round(r.nutriments.proteins_100g ?? 0)}g prot · {Math.round(r.nutriments.carbohydrates_100g ?? 0)}g carb · {Math.round(r.nutriments.fat_100g ?? 0)}g grassi — per 100g
+                            {Math.round(r.energy_kcal_100g)} kcal · {r.proteins_100g}p · {r.carbs_100g}c · {r.fat_100g}f — per 100g
                           </p>
                         </button>
                       ))}
                     </div>
                   )}
 
-                  {searchResults.length === 0 && !searching && searchQuery && (
+                  {searchResults.length === 0 && !searching && searchQuery.length >= 2 && (
                     <p className="text-sm text-center py-4" style={{ color: 'var(--c-45)' }}>
                       Nessun risultato. Prova un termine diverso.
                     </p>
                   )}
                 </div>
-              ) : (
+              )}
+
+              {/* Step 3 — Quantità e salva */}
+              {selectedFood && (
                 <div className="space-y-4">
-                  {/* Alimento selezionato */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold"
                       style={{ background: 'oklch(0.70 0.19 46 / 12%)', color: 'var(--c-97)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
                       {selectedFood.product_name}
+                      {selectedFood.brands && <span className="text-xs font-normal ml-1" style={{ color: 'var(--c-50)' }}>· {selectedFood.brands}</span>}
                     </div>
                     <button onClick={() => setSelectedFood(null)}
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -837,7 +895,6 @@ export default function DietaPage() {
                     </button>
                   </div>
 
-                  {/* Quantità */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
                       Quantità (grammi)
@@ -849,7 +906,6 @@ export default function DietaPage() {
                       onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
                   </div>
 
-                  {/* Preview valori */}
                   {(() => {
                     const v = calcolaValori(selectedFood, parseFloat(quantita) || 0)
                     return (
@@ -860,8 +916,7 @@ export default function DietaPage() {
                           { label: 'Carb', val: v.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
                           { label: 'Grassi', val: v.grassi_g, color: 'oklch(0.65 0.18 150)' },
                         ].map(x => (
-                          <div key={x.label} className="rounded-xl p-2.5 text-center"
-                            style={{ background: 'var(--c-22)' }}>
+                          <div key={x.label} className="rounded-xl p-2.5 text-center" style={{ background: 'var(--c-22)' }}>
                             <p className="text-lg font-black" style={{ color: x.color }}>{x.val}</p>
                             <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>{x.label}</p>
                           </div>
@@ -869,92 +924,6 @@ export default function DietaPage() {
                       </div>
                     )
                   })()}
-
-                  {/* Assegna a pasto */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-50)' }}>
-                      Aggiungi a
-                    </label>
-
-                    {target?.pasti_config && target.pasti_config.length > 0 ? (
-                      <>
-                        {/* Griglia pasti del coach */}
-                        <div className="grid grid-cols-2 gap-2">
-                          {target.pasti_config.map(p => {
-                            const isSelected = gruppoNome === p.nome
-                            return (
-                              <button key={p.nome}
-                                onClick={() => { setGruppoNome(isSelected ? '' : p.nome); setGruppoEsistente('') }}
-                                className="px-3 py-2.5 rounded-xl text-left transition-all"
-                                style={{
-                                  background: isSelected ? 'oklch(0.70 0.19 46 / 15%)' : 'var(--c-22)',
-                                  border: `1px solid ${isSelected ? 'oklch(0.70 0.19 46 / 50%)' : 'var(--c-w6)'}`,
-                                }}>
-                                <p className="text-sm font-bold" style={{ color: isSelected ? 'oklch(0.70 0.19 46)' : 'var(--c-90)' }}>
-                                  {p.nome}
-                                </p>
-                                <p className="text-xs" style={{ color: 'var(--c-45)' }}>{p.percentuale}% delle kcal</p>
-                              </button>
-                            )
-                          })}
-                          {/* Fuori dai pasti */}
-                          <button
-                            onClick={() => { setGruppoNome(''); setGruppoEsistente('') }}
-                            className="px-3 py-2.5 rounded-xl text-left transition-all"
-                            style={{
-                              background: gruppoNome === '' && gruppoEsistente === '' ? 'var(--c-25)' : 'var(--c-20)',
-                              border: '1px solid var(--c-w4)',
-                            }}>
-                            <p className="text-sm font-bold" style={{ color: 'var(--c-55)' }}>Fuori dai pasti</p>
-                            <p className="text-xs" style={{ color: 'var(--c-38)' }}>Conta nel totale giornaliero</p>
-                          </button>
-                        </div>
-                        {/* Eventuali gruppi loggati oggi non nei pasti del coach */}
-                        {gruppiEsistenti.filter(g => !target.pasti_config!.some(p => p.nome === g)).length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {gruppiEsistenti
-                              .filter(g => !target.pasti_config!.some(p => p.nome === g))
-                              .map(g => (
-                                <button key={g}
-                                  onClick={() => { setGruppoNome(gruppoNome === g ? '' : g); setGruppoEsistente('') }}
-                                  className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                                  style={{
-                                    background: gruppoNome === g ? 'oklch(0.60 0.15 200 / 15%)' : 'var(--c-22)',
-                                    color: gruppoNome === g ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
-                                  }}>
-                                  {g}
-                                </button>
-                              ))}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {/* Nessun piano coach: mostra gruppi esistenti + input libero */}
-                        {gruppiEsistenti.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {gruppiEsistenti.map(g => (
-                              <button key={g} onClick={() => { setGruppoEsistente(g === gruppoEsistente ? '' : g); setGruppoNome('') }}
-                                className="px-3 py-1.5 rounded-full text-xs font-semibold"
-                                style={{
-                                  background: gruppoEsistente === g ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
-                                  color: gruppoEsistente === g ? 'oklch(0.60 0.15 200)' : 'var(--c-50)',
-                                }}>
-                                {g}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        <input type="text" value={gruppoNome}
-                          onChange={e => { setGruppoNome(e.target.value); setGruppoEsistente('') }}
-                          placeholder="Pasto (es. Pranzo, Post workout...)"
-                          className="w-full px-4 py-2.5 rounded-xl text-sm outline-none"
-                          style={{ background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)' }}
-                          onFocus={e => e.target.style.borderColor = 'oklch(0.70 0.19 46)'}
-                          onBlur={e => e.target.style.borderColor = 'var(--c-w8)'} />
-                      </>
-                    )}
-                  </div>
 
                   <button onClick={handleSaveAlimento} disabled={saving}
                     className="w-full py-3 rounded-xl text-sm font-bold"
