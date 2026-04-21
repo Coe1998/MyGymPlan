@@ -229,9 +229,10 @@ export async function POST(req: NextRequest) {
       query = query.not('id', 'in', `(${usedArr.map(id => `"${id}"`).join(',')})`)
     }
 
-    let { data: foods } = await query.limit(400)
-
-    let filtered = (foods ?? []) as FoodItem[]
+    // Fetch abbondante + shuffle per evitare bias alfabetico
+    let { data: foods } = await query.limit(800)
+    const shuffled = (foods ?? []).sort(() => Math.random() - 0.5)
+    let filtered = shuffled as FoodItem[]
 
     // Esclude allergie
     if (allergens.length > 0) {
