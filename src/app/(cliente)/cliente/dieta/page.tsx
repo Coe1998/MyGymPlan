@@ -5,8 +5,13 @@ import BynariLoader from '@/components/shared/BynariLoader'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus, faXmark, faSearch, faLeaf, faPills, faChevronDown, faChevronUp, faTrash, faClockRotateLeft, faCopy } from '@fortawesome/free-solid-svg-icons'
-import DietaIntelligente from '@/components/cliente/DietaIntelligente'
+import { faPlus, faXmark, faSearch, faLeaf, faPills, faCopy } from '@fortawesome/free-solid-svg-icons'
+import DietaIntelligenteHero from '@/components/cliente/nutrizione/DietaIntelligenteHero'
+import MacroSummary from '@/components/cliente/nutrizione/MacroSummary'
+import PianoPasti from '@/components/cliente/nutrizione/PianoPasti'
+import DiarioLoggato from '@/components/cliente/nutrizione/DiarioLoggato'
+import FrigoSheet from '@/components/cliente/nutrizione/FrigoSheet'
+import GenPlanSheet from '@/components/cliente/nutrizione/GenPlanSheet'
 
 interface MacroTarget {
   calorie: number
@@ -95,6 +100,10 @@ export default function DietaPage() {
     setShowForm(false); setSelectedMeal(null); setSearchQuery('')
     setSearchResults([]); setSelectedFood(null); setQuantita('100')
   }
+
+  // Sheets
+  const [frigoOpen, setFrigoOpen] = useState(false)
+  const [genPlanOpen, setGenPlanOpen] = useState(false)
 
   // Piano integratori coach-driven
   const [pianoInt, setPianoInt] = useState<PianoIntegratore[]>([])
@@ -369,67 +378,55 @@ export default function DietaPage() {
     }
   }
 
-  return (
-    <div className="space-y-6 max-w-2xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--c-97)' }}>Nutrizione</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
-          {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
-        </p>
-      </div>
+  const calorieEffettiveCalc = calorieEffettive ?? target?.calorie ?? 0
 
-      {/* Macro summary */}
-      {target ? (
-        <div className="rounded-2xl p-5 space-y-4"
-          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-          {/* Calorie */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-sm font-bold" style={{ color: 'var(--c-97)' }}>Calorie</p>
-              <p className="text-sm font-black tabular-nums" style={{ color: 'oklch(0.70 0.19 46)' }}>
-                {Math.round(totali.calorie)} / {calorieEffettive ?? target.calorie} kcal
-              </p>
-            </div>
-            <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--c-25)' }}>
-              <div className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${perc(totali.calorie, calorieEffettive ?? target.calorie)}%`, background: 'oklch(0.70 0.19 46)' }} />
-            </div>
-          </div>
-          {/* Macro bars */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Proteine', val: totali.proteine_g, target: target.proteine_g, color: 'oklch(0.60 0.15 200)' },
-              { label: 'Carboidrati', val: totali.carboidrati_g, target: carbEffettivi ?? target.carboidrati_g, color: 'oklch(0.70 0.19 46)' },
-              { label: 'Grassi', val: totali.grassi_g, target: target.grassi_g, color: 'oklch(0.65 0.18 150)' },
-            ].map(m => (
-              <div key={m.label} className="rounded-xl p-3 space-y-2"
-                style={{ background: 'var(--c-22)' }}>
-                <div className="flex items-center justify-between">
-                  <p className="text-xs" style={{ color: 'var(--c-55)' }}>{m.label}</p>
-                  <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>
-                    {Math.round(m.val)}g
-                  </p>
-                </div>
-                <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--c-30)' }}>
-                  <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${perc(m.val, m.target)}%`, background: m.color }} />
-                </div>
-                <p className="text-xs text-right" style={{ color: 'var(--c-40)' }}>/ {m.target}g</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-2xl p-5 text-center"
-          style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-          <p className="text-sm" style={{ color: 'var(--c-50)' }}>
-            Il tuo coach non ha ancora impostato i tuoi macro target
+  return (
+    <div className="space-y-4 max-w-2xl pb-safe">
+      {/* Header */}
+      <div className="flex items-start justify-between" style={{ padding: '8px 0 4px' }}>
+        <div>
+          <h1 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--c-97)' }}>
+            Nutrizione
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--c-50)' }}>
+            {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
+        {target?.carb_cycling_enabled && dayType && (
+          <div style={{
+            padding: '6px 11px', borderRadius: 999,
+            background: 'oklch(0.70 0.19 46 / 12%)',
+            border: '1px solid oklch(0.70 0.19 46 / 28%)',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <span style={{ fontSize: 13 }}>{dayType === 'training' ? '🔥' : '💧'}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '0.06em', color: 'oklch(0.70 0.19 46)' }}>
+              {dayType === 'training' ? 'HIGH CARB' : 'LOW CARB'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Hero Dieta Intelligente */}
+      <DietaIntelligenteHero
+        kcalResidue={Math.max(0, calorieEffettiveCalc - Math.round(totali.calorie))}
+        onGenPlan={() => setGenPlanOpen(true)}
+        onFrigo={() => setFrigoOpen(true)}
+      />
+
+      {/* MacroSummary */}
+      {target && (
+        <MacroSummary
+          totaleKcal={Math.round(totali.calorie)}
+          calorieEffettive={calorieEffettiveCalc}
+          totaleP={totali.proteine_g} targetP={target.proteine_g}
+          totaleC={totali.carboidrati_g} targetC={carbEffettivi ?? target.carboidrati_g} carbCycling={target.carb_cycling_enabled}
+          totaleG={totali.grassi_g} targetG={target.grassi_g}
+          dayType={dayType}
+        />
       )}
 
-      {/* Banner carb cycling — visibile solo se cycling ON ma day_type mancante */}
+      {/* Warning carb cycling senza check-in */}
       {target?.carb_cycling_enabled && dayType === null && (
         <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
           style={{ background: 'oklch(0.75 0.18 80 / 8%)', border: '1px solid oklch(0.75 0.18 80 / 25%)' }}>
@@ -437,276 +434,54 @@ export default function DietaPage() {
           <div>
             <p className="text-sm font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>Carb cycling attivo</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--c-55)' }}>
-              Completa il check-in di oggi (alleni/riposo) per applicare i carbo corretti
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Badge giorno attivo quando cycling è applicato */}
-      {target?.carb_cycling_enabled && dayType !== null && (
-        <div className="rounded-2xl px-4 py-3 flex items-center gap-3"
-          style={{
-            background: dayType === 'training' ? 'oklch(0.70 0.19 46 / 8%)' : 'oklch(0.60 0.15 200 / 8%)',
-            border: `1px solid ${dayType === 'training' ? 'oklch(0.70 0.19 46 / 25%)' : 'oklch(0.60 0.15 200 / 25%)'}`,
-          }}>
-          <span className="text-xl flex-shrink-0">{dayType === 'training' ? '🔥' : '💧'}</span>
-          <div>
-            <p className="text-sm font-bold"
-              style={{ color: dayType === 'training' ? 'oklch(0.70 0.19 46)' : 'oklch(0.60 0.15 200)' }}>
-              {dayType === 'training' ? 'HIGH CARB — Giorno allenamento' : 'LOW CARB — Giorno recupero'}
-            </p>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--c-50)' }}>
-              Target calorie adattato: {calorieEffettive} kcal · {carbEffettivi}g carbo
+              Completa il check-in di oggi per applicare i carbo corretti
             </p>
           </div>
         </div>
       )}
 
       {/* Piano pasti */}
-      {target?.pasti_config && target.pasti_config.length > 0 && (() => {
-        const pastiConfig = target.pasti_config!
-
-        const pastiAttivi = pastiConfig
-          .map((p, i) => ({ ...p, idx: i }))
-          .filter(p => !pastiSaltati.has(p.idx))
-
-        const percTotaleAttiva = pastiAttivi.reduce((a, p) => a + p.percentuale, 0)
-
-        const getPastoMacro = (idx: number) => {
-          if (pastiSaltati.has(idx)) return null
-          const p = pastiConfig[idx]
-          const percEffettiva = percTotaleAttiva > 0 ? (p.percentuale / percTotaleAttiva) * 100 : 0
-          const kcal = (calorieEffettive ?? target.calorie) * percEffettiva / 100
-
-          if (p.macro_custom && (p.prot_pct != null || p.carb_pct != null || p.grassi_pct != null)) {
-            const pp = p.prot_pct ?? 0
-            const cp = p.carb_pct ?? 0
-            const gp = p.grassi_pct ?? 0
-            return {
-              kcal: Math.round(kcal),
-              prot: Math.round((kcal * pp / 100) / 4),
-              carb: Math.round((kcal * cp / 100) / 4),
-              grassi: Math.round((kcal * gp / 100) / 9),
-            }
-          }
-          return {
-            kcal: Math.round(kcal),
-            prot: Math.round((target.proteine_g) * percEffettiva / 100),
-            carb: Math.round((carbEffettivi ?? target.carboidrati_g) * percEffettiva / 100),
-            grassi: Math.round((target.grassi_g) * percEffettiva / 100),
-          }
-        }
-
-        const getLoggatoPerPasto = (nomePasto: string) => {
-          const itemsPasto = pasti.filter(p => p.gruppo_nome === nomePasto)
-          return itemsPasto.reduce((a, p) => ({
-            kcal: a.kcal + (p.calorie || 0),
-            prot: a.prot + (p.proteine_g || 0),
-            carb: a.carb + (p.carboidrati_g || 0),
-            grassi: a.grassi + (p.grassi_g || 0),
-          }), { kcal: 0, prot: 0, carb: 0, grassi: 0 })
-        }
-
-        const rimanente = {
-          kcal: Math.max(0, (calorieEffettive ?? target.calorie) - totali.calorie),
-          prot: Math.max(0, target.proteine_g - totali.proteine_g),
-          carb: Math.max(0, (carbEffettivi ?? target.carboidrati_g) - totali.carboidrati_g),
-          grassi: Math.max(0, target.grassi_g - totali.grassi_g),
-        }
-
-        return (
-          <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-            <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--c-w6)' }}>
-              <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>📋 Piano pasti di oggi</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
-                {pastiSaltati.size > 0 ? `${pastiSaltati.size} pasto/i saltato/i — macro redistribuiti` : 'Tocca "Salta" su un pasto per redistribuire i macro'}
-              </p>
-            </div>
-
-            {pastiConfig.map((pasto, i) => {
-              const saltato = pastiSaltati.has(i)
-              const macro = getPastoMacro(i)
-              const loggato = getLoggatoPerPasto(pasto.nome)
-              const completato = !saltato && macro && loggato.kcal >= macro.kcal * 0.8
-
-              return (
-                <div key={i} className="px-4 py-3 space-y-2"
-                  style={{
-                    borderBottom: i < pastiConfig.length - 1 ? '1px solid var(--c-w4)' : 'none',
-                    opacity: saltato ? 0.45 : 1,
-                  }}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold" style={{ color: saltato ? 'var(--c-45)' : 'var(--c-97)' }}>
-                        {pasto.nome}
-                      </span>
-                      {completato && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)' }}>
-                          ✓ OK
-                        </span>
-                      )}
-                      {saltato && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                          style={{ background: 'var(--c-30)', color: 'var(--c-50)' }}>
-                          Saltato
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {!saltato && (
-                        <button
-                          onClick={() => apriCopiaPasto(pasto.nome)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                          style={{
-                            background: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200 / 20%)' : 'var(--c-22)',
-                            color: copiaPastoAperto === pasto.nome ? 'oklch(0.60 0.15 200)' : 'var(--c-45)',
-                          }}>
-                          <FontAwesomeIcon icon={faClockRotateLeft} className="text-xs" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setPastiSaltati(prev => {
-                          const n = new Set(prev)
-                          n.has(i) ? n.delete(i) : n.add(i)
-                          return n
-                        })}
-                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition-all"
-                        style={{
-                          background: saltato ? 'oklch(0.70 0.19 46 / 15%)' : 'oklch(0.65 0.22 27 / 12%)',
-                          color: saltato ? 'oklch(0.70 0.19 46)' : 'oklch(0.65 0.22 27)',
-                        }}>
-                        {saltato ? 'Ripristina' : 'Salta'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {!saltato && macro && (
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[
-                        { label: 'Kcal', target: macro.kcal, fatto: Math.round(loggato.kcal), color: 'oklch(0.70 0.19 46)' },
-                        { label: 'Prot', target: macro.prot, fatto: Math.round(loggato.prot), color: 'oklch(0.60 0.15 200)' },
-                        { label: 'Carb', target: macro.carb, fatto: Math.round(loggato.carb), color: 'oklch(0.70 0.19 46)' },
-                        { label: 'Grassi', target: macro.grassi, fatto: Math.round(loggato.grassi), color: 'oklch(0.65 0.18 150)' },
-                      ].map(m => (
-                        <div key={m.label} className="rounded-xl p-2 text-center"
-                          style={{ background: 'var(--c-22)' }}>
-                          <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>
-                            {m.fatto > 0 ? `${m.fatto}/` : ''}{m.target}
-                          </p>
-                          <p className="text-xs" style={{ color: 'var(--c-40)' }}>{m.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Storico pasto — pannello inline */}
-                  {!saltato && copiaPastoAperto === pasto.nome && (
-                    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid oklch(0.60 0.15 200 / 20%)', background: 'var(--c-16)' }}>
-                      <p className="text-xs font-semibold px-3 py-2" style={{ color: 'oklch(0.60 0.15 200)', borderBottom: '1px solid var(--c-w5)' }}>
-                        Copia {pasto.nome} da...
-                      </p>
-                      {loadingStoricoPerPasto ? (
-                        <BynariLoader file="blue" size={60} />
-                      ) : (() => {
-                        const perGiorno = new Map<string, PastoLog[]>()
-                        for (const item of storicoPerPasto) {
-                          if (!perGiorno.has(item.data)) perGiorno.set(item.data, [])
-                          perGiorno.get(item.data)!.push(item)
-                        }
-                        const giorni = Array.from(perGiorno.entries()).slice(0, 7)
-                        if (giorni.length === 0) return (
-                          <p className="text-xs text-center py-4" style={{ color: 'var(--c-45)' }}>
-                            Nessuno storico per questo pasto
-                          </p>
-                        )
-                        return giorni.map(([d, items]) => {
-                          const kcal = Math.round(items.reduce((a, x) => a + (x.calorie || 0), 0))
-                          const preview = items.slice(0, 3).map(x => x.alimento_nome).join(', ')
-                          return (
-                            <button key={d} onClick={() => handleCopiaPasto(items)} disabled={copiando}
-                              className="w-full text-left px-3 py-2.5 flex items-center justify-between gap-2 transition-all hover:opacity-80"
-                              style={{ borderBottom: '1px solid var(--c-w4)' }}>
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold" style={{ color: 'var(--c-85)' }}>{formatDataStorico(d)}</p>
-                                <p className="text-xs truncate mt-0.5" style={{ color: 'var(--c-42)' }}>
-                                  {preview}{items.length > 3 ? ` +${items.length - 3}` : ''}
-                                </p>
-                              </div>
-                              <span className="text-xs font-bold flex-shrink-0" style={{ color: 'oklch(0.60 0.15 200)' }}>
-                                {kcal} kcal →
-                              </span>
-                            </button>
-                          )
-                        })
-                      })()}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-
-            {rimanente.kcal > 50 && pastiAttivi.length > 0 && (
-              <div className="px-4 py-3 space-y-3"
-                style={{ borderTop: '1px solid var(--c-w6)', background: 'var(--c-16)' }}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold" style={{ color: 'oklch(0.75 0.18 80)' }}>
-                      Rimanente: {Math.round(rimanente.kcal)} kcal
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--c-45)' }}>
-                      In quanti pasti vuoi distribuirle?
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    {[1, 2, 3].filter(n => n <= pastiAttivi.length).map(n => (
-                      <button key={n} onClick={() => setRedistribuisciSu(redistribuisciSu === n ? null : n)}
-                        className="w-8 h-8 rounded-xl text-sm font-bold transition-all"
-                        style={{
-                          background: redistribuisciSu === n ? 'oklch(0.75 0.18 80)' : 'var(--c-25)',
-                          color: redistribuisciSu === n ? 'var(--c-13)' : 'var(--c-55)',
-                        }}>
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {redistribuisciSu !== null && (
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[
-                      { label: 'Kcal', val: Math.round(rimanente.kcal / redistribuisciSu), color: 'oklch(0.70 0.19 46)' },
-                      { label: 'Prot', val: Math.round(rimanente.prot / redistribuisciSu), color: 'oklch(0.60 0.15 200)' },
-                      { label: 'Carb', val: Math.round(rimanente.carb / redistribuisciSu), color: 'oklch(0.70 0.19 46)' },
-                      { label: 'Grassi', val: Math.round(rimanente.grassi / redistribuisciSu), color: 'oklch(0.65 0.18 150)' },
-                    ].map(m => (
-                      <div key={m.label} className="rounded-xl p-2 text-center"
-                        style={{ background: 'var(--c-20)', border: '1px solid oklch(0.75 0.18 80 / 20%)' }}>
-                        <p className="text-xs font-bold tabular-nums" style={{ color: m.color }}>{m.val}</p>
-                        <p className="text-xs" style={{ color: 'var(--c-40)' }}>{m.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )
-      })()}
+      {target?.pasti_config && target.pasti_config.length > 0 && (
+        <PianoPasti
+          pastiConfig={target.pasti_config}
+          pasti={pasti}
+          calorieEffettive={calorieEffettiveCalc}
+          targetP={target.proteine_g}
+          targetC={carbEffettivi ?? target.carboidrati_g}
+          targetG={target.grassi_g}
+          pastiSaltati={pastiSaltati}
+          onToggleSalta={i => setPastiSaltati(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n })}
+          redistribuisciSu={redistribuisciSu}
+          onSetRedistr={setRedistribuisciSu}
+          copiaPastoAperto={copiaPastoAperto}
+          onApriStorico={apriCopiaPasto}
+          storicoPerPasto={storicoPerPasto}
+          loadingStorico={loadingStoricoPerPasto}
+          onCopiaPasto={handleCopiaPasto}
+          copiando={copiando}
+          totaleKcal={Math.round(totali.calorie)}
+          totaleP={totali.proteine_g}
+          totaleC={totali.carboidrati_g}
+          totaleG={totali.grassi_g}
+        />
+      )}
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--c-18)' }}>
+      <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'var(--c-16)', border: '1px solid var(--c-w6)' }}>
         {[
-          { id: 'dieta', label: '🥗 Dieta', icon: faLeaf },
-          { id: 'integratori', label: '💊 Integratori', icon: faPills },
+          { id: 'dieta', icon: faLeaf, label: 'Dieta' },
+          { id: 'integratori', icon: faPills, label: 'Integratori' },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            className="flex-1 flex items-center justify-center gap-2 transition-all"
             style={{
-              background: tab === t.id ? 'oklch(0.70 0.19 46)' : 'transparent',
-              color: tab === t.id ? 'var(--c-13)' : 'var(--c-50)',
+              padding: '9px 8px', borderRadius: 10,
+              background: tab === t.id ? 'oklch(1 0 0 / 6%)' : 'transparent',
+              color: tab === t.id ? 'var(--c-97)' : 'var(--c-50)',
+              border: tab === t.id ? '1px solid var(--c-w8)' : '1px solid transparent',
+              fontSize: 12, fontWeight: 700,
             }}>
+            <FontAwesomeIcon icon={t.icon} style={{ fontSize: 11 }} />
             {t.label}
           </button>
         ))}
@@ -716,17 +491,12 @@ export default function DietaPage() {
       {tab === 'dieta' && (
         <div className="space-y-3">
 
-          {/* Dieta intelligente */}
-          {target && userId && (
-            <DietaIntelligente clienteId={userId} dayType={dayType} />
-          )}
-
           {/* Copia giornata intera */}
           {!copiaGiornataAperta ? (
             <button onClick={apriCopiaGiornata}
-              className="w-full py-2.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ background: 'var(--c-18)', color: 'var(--c-55)', border: '1px solid var(--c-w6)' }}>
-              <FontAwesomeIcon icon={faCopy} className="text-xs" /> Copia giornata precedente
+              className="w-full flex items-center justify-center gap-2"
+              style={{ padding: 11, borderRadius: 14, background: 'var(--c-16)', border: '1px solid var(--c-w6)', color: 'var(--c-60)', fontSize: 12.5, fontWeight: 600 }}>
+              <FontAwesomeIcon icon={faCopy} style={{ fontSize: 11 }} /> Copia giornata precedente
             </button>
           ) : (
             <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-18)', border: '1px solid oklch(0.70 0.19 46 / 25%)' }}>
@@ -935,72 +705,21 @@ export default function DietaPage() {
             </div>
           ) : (
             <button onClick={() => setShowForm(true)}
-              className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
-              style={{ background: 'transparent', color: 'oklch(0.70 0.19 46)', border: '2px dashed oklch(0.70 0.19 46 / 30%)' }}>
-              <FontAwesomeIcon icon={faPlus} /> Aggiungi alimento
+              className="w-full flex items-center justify-center gap-2"
+              style={{
+                padding: 13, borderRadius: 14, fontSize: 13, fontWeight: 800, letterSpacing: '0.01em',
+                background: 'oklch(0.70 0.19 46 / 8%)', border: '1.5px dashed oklch(0.70 0.19 46 / 40%)',
+                color: 'oklch(0.70 0.19 46)',
+              }}>
+              <FontAwesomeIcon icon={faPlus} style={{ fontSize: 12 }} /> Aggiungi alimento
             </button>
           )}
 
-          {/* Lista pasti */}
+          {/* Diario loggato */}
           {loading ? (
             <BynariLoader file="blue" size={80} />
-          ) : pastiRaggruppati.length === 0 ? (
-            <div className="rounded-2xl py-12 text-center"
-              style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-              <p className="text-3xl mb-2">🥗</p>
-              <p className="font-semibold text-sm" style={{ color: 'var(--c-97)' }}>Nessun alimento registrato oggi</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--c-45)' }}>Inizia aggiungendo il tuo primo alimento</p>
-            </div>
           ) : (
-            <div className="space-y-2">
-              {pastiRaggruppati.map(gruppo => {
-                const isCollapsed = collapsedGroups.has(gruppo.key)
-                const totGruppo = gruppo.items.reduce((a, p) => ({
-                  calorie: a.calorie + p.calorie, proteine_g: a.proteine_g + p.proteine_g,
-                  carboidrati_g: a.carboidrati_g + p.carboidrati_g, grassi_g: a.grassi_g + p.grassi_g,
-                }), { calorie: 0, proteine_g: 0, carboidrati_g: 0, grassi_g: 0 })
-
-                return (
-                  <div key={gruppo.key} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'var(--c-18)', border: '1px solid var(--c-w6)' }}>
-                    {gruppo.label && (
-                      <div className="flex items-center justify-between px-4 py-3 cursor-pointer"
-                        style={{ borderBottom: isCollapsed ? 'none' : '1px solid var(--c-w6)', background: 'var(--c-15)' }}
-                        onClick={() => setCollapsedGroups(prev => {
-                          const n = new Set(prev)
-                          n.has(gruppo.key) ? n.delete(gruppo.key) : n.add(gruppo.key)
-                          return n
-                        })}>
-                        <div>
-                          <p className="font-bold text-sm" style={{ color: 'var(--c-97)' }}>{gruppo.label}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
-                            {Math.round(totGruppo.calorie)} kcal · {Math.round(totGruppo.proteine_g)}p · {Math.round(totGruppo.carboidrati_g)}c · {Math.round(totGruppo.grassi_g)}g
-                          </p>
-                        </div>
-                        <FontAwesomeIcon icon={isCollapsed ? faChevronDown : faChevronUp}
-                          className="text-xs" style={{ color: 'var(--c-45)' }} />
-                      </div>
-                    )}
-                    {!isCollapsed && gruppo.items.map((p, i) => (
-                      <div key={p.id} className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderBottom: i < gruppo.items.length - 1 ? '1px solid var(--c-w4)' : 'none' }}>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: 'var(--c-90)' }}>{p.alimento_nome}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'var(--c-45)' }}>
-                            {p.quantita_g}g · {Math.round(p.calorie)} kcal · {Math.round(p.proteine_g)}p
-                          </p>
-                        </div>
-                        <button onClick={() => handleDeleteAlimento(p.id)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: 'oklch(0.65 0.22 27 / 10%)', color: 'oklch(0.70 0.20 27)' }}>
-                          <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )
-              })}
-            </div>
+            <DiarioLoggato pasti={pasti} onDelete={handleDeleteAlimento} />
           )}
         </div>
       )}
@@ -1092,6 +811,20 @@ export default function DietaPage() {
             </>
           )}
         </div>
+      )}
+
+      {/* Sheets */}
+      {frigoOpen && (
+        <FrigoSheet
+          onClose={() => setFrigoOpen(false)}
+          kcalResidue={Math.max(0, calorieEffettiveCalc - Math.round(totali.calorie))}
+        />
+      )}
+      {genPlanOpen && (
+        <GenPlanSheet
+          onClose={() => setGenPlanOpen(false)}
+          onGenerate={() => setGenPlanOpen(false)}
+        />
       )}
 
       {/* TAB: INTEGRATORI */}
