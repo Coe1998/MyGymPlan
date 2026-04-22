@@ -1,11 +1,13 @@
 /**
- * Import ExerciseDB Pro + link GIF agli esercizi esistenti
+ * Import ExerciseDB Pro (nuovo formato) + link GIF da Supabase Storage
  *
  * Logica:
- *  1. Legge esercizi esistenti dal DB
- *  2. Per ciascuno senza gif_url, cerca il miglior match in ExerciseDB (nome + traduzione)
- *  3. Se match: aggiorna gif_url sull'esercizio esistente (NO duplicati)
- *  4. ExerciseDB senza match: inserisce come nuovi globali
+ *  1. Legge exerciseData_complete.json (formato nuovo: id/name/target/...)
+ *  2. Per esercizi custom esistenti senza gif_url → match per nome (jaccard)
+ *  3. Per esercizi ExerciseDB già presenti → aggiorna gif_url/gif_url_hd/difficulty/category
+ *  4. Esercizi nuovi → inserisce come globali
+ *
+ * Prerequisito: eseguire prima `node scripts/upload-gifs.mjs`
  *
  * Run:  node scripts/import-exercisedb.mjs
  */
@@ -27,9 +29,30 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
   auth: { persistSession: false }
 })
 
-// ─── Dati ExerciseDB ─────────────────────────────────────────────────────────
-const EDB_PATH = resolve(__dir, '../data/exercisedb/exercises2.json')
+// ─── Dati ExerciseDB Pro ─────────────────────────────────────────────────────
+const EDB_PATH = resolve(__dir, '../data/exercisedb/exerciseData_complete.json') // nuovo formato ExerciseDB Pro
 const EDB = JSON.parse(readFileSync(EDB_PATH, 'utf8'))
+
+// URL base Supabase Storage (viene costruito a runtime)
+const STORAGE_BASE = env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/exercise-gifs'
+
+function gifUrl(id, res) { return `${STORAGE_BASE}/${res}/${id}.gif` }
+
+// ─── Risoluzione GIF disponibili (pre-caricata da upload-gifs.mjs) ───────────
+// Lista ricavata dalla directory locale (solo per sapere cosa c'è)
+import { existsSync, readdirSync } from 'fs'
+const GIF_BASE = process.env.GIF_PATH ||
+  'C:/Users/cozmin.bejinari/Downloads/cross-platform-20260422T064002Z-3-002/cross-platform'
+const HAS_360  = new Set(
+  existsSync(GIF_BASE + '/360')
+    ? readdirSync(GIF_BASE + '/360').map(f => f.replace('.gif',''))
+    : []
+)
+const HAS_1080 = new Set(
+  existsSync(GIF_BASE + '/1080')
+    ? readdirSync(GIF_BASE + '/1080').map(f => f.replace('.gif',''))
+    : []
+)
 
 // ─── Mapping muscoli ExerciseDB → italiano ───────────────────────────────────
 const MUSCLE_MAP = {
@@ -41,22 +64,14 @@ const MUSCLE_MAP = {
   'spine': 'Lombari', 'traps': 'Trapezio', 'levator scapulae': 'Trapezio',
 }
 function mapMuscles(target, secondary) {
-  const s = new Set([...target, ...secondary].map(m => MUSCLE_MAP[m]).filter(Boolean))
+  const s = new Set([target, ...secondary].map(m => MUSCLE_MAP[m]).filter(Boolean))
   return s.size ? [...s] : null
 }
 function toTitle(str) {
   return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
-function buildDesc(e) {
-  const parts = []
-  if (e.equipments?.length) parts.push(`Attrezzatura: ${e.equipments.join(', ')}`)
-  if (e.instructions?.length)
-    parts.push(e.instructions.slice(0, 4).map(s => s.replace(/^Step:\d+\s*/, '')).join(' '))
-  return parts.join('\n') || null
-}
 
-// ─── Match manuale (nome esercizio esistente → nome ExerciseDB parziale) ─────
-// Usato per i casi dove il matching automatico fallisce o sbaglia
+// ─── Matching per nome (identico al vecchio script) ──────────────────────────
 const MANUAL_MATCH = {
   'Trazioni alla Sbarra':         'pull-up',
   'Trazioni al petto':            'chest dip on straight bar',
@@ -66,115 +81,59 @@ const MANUAL_MATCH = {
   'Abs crunch':                   'crunch',
   'Plank':                        'weighted front plank',
   'Box Jump':                     'box jump',
-  'Box jump mono':                'box jump',
   'Bulgarian Split Squat':        'barbell split squat',
   'Stacco da Terra':              'barbell deadlift',
   'Squat con Bilanciere':         'barbell squat on knees',
   'Dip alle Parallele':           'chest dip on straight bar',
   'dips':                         'chest dip on straight bar',
-  'dip machine':                  'assisted chest dip kneeling',
-  'curl':                         'barbell curl',
   'RDL':                          'barbell romanian deadlift',
   'Leg curl':                     'lever lying leg curl',
-  'leg curl prono mono':          'lever lying leg curl',
-  'chest supported row':          'barbell bent over row',
-  'rematore uni':                 'dumbbell bent over row',
   'rematore':                     'barbell bent over row',
   'lat machine':                  'cable lat pulldown',
-  'Lat Machine':                  'cable lat pulldown',
-  'pulldown':                     'cable lat pulldown',
   'Erettori':                     'hyperextension',
-  'copenaghen plank':             'weighted front plank',
-  'chest press per petto alto':   'cable incline bench row',
-  'Chest Press Uni':              'lever chest press',
-  'Shoulder Press Uni':           'dumbbell standing overhead press',
   'shoulder press':               'dumbbell standing overhead press',
-  'Spinte manubri':               'dumbbell standing overhead press',
-  'push jerk manubri':            'dumbbell push press',
-  'Read Delt Cavo Uni':           'cable rear delt row',
   'rear delt':                    'barbell rear delt raise',
-  'pullover':                     'dumbbell pullover',
   'Calf raise':                   'standing calf raise',
-  'bike':                         'stationary bike',
-  'L sit press':                  'barbell press sit-up',
-  'half burpee con salto':        'burpee',
-  'Pancake Good Morning':         'barbell good morning',
   'Hack Squat':                   'barbell hack squat',
-  'hack squat':                   'barbell hack squat',
-  'Hspu liberi':                  'handstand push-up',
-  'Hspu parallele':               'handstand push-up',
   'HSPU':                         'handstand push-up',
 }
 
-// ─── Normalizzazione per matching automatico ─────────────────────────────────
 const IT_EN = {
   'panca piana': 'bench press flat', 'panca inclinata': 'bench press incline',
-  'panca declinata': 'bench press decline', 'panca': 'bench',
   'stacco da terra': 'deadlift', 'stacco': 'deadlift',
-  'affondi bulgari': 'bulgarian split squat', 'affondi laterali': 'lateral lunge',
-  'affondi': 'lunge',
-  'trazioni alla sbarra': 'pullup', 'trazioni al petto': 'pullup chest',
-  'trazioni': 'pullup',
-  'alzate laterali': 'lateral raise', 'alzate frontali': 'front raise', 'alzate': 'raise',
-  'alzata': 'raise',
+  'affondi bulgari': 'bulgarian split squat', 'affondi': 'lunge',
+  'trazioni alla sbarra': 'pullup', 'trazioni': 'pullup',
+  'alzate laterali': 'lateral raise', 'alzate frontali': 'front raise',
   'rematore con bilanciere': 'barbell row', 'rematore con manubrio': 'dumbbell row',
   'rematore': 'row',
-  'lento avanti con manubri': 'dumbbell shoulder press', 'lento avanti': 'overhead press',
+  'lento avanti': 'overhead press',
   'calf raise in piedi': 'standing calf raise', 'calf raise seduto': 'seated calf raise',
   'calf raise': 'calf raise',
   'curl con bilanciere': 'barbell curl', 'curl con manubri': 'dumbbell curl',
-  'curl al cavo': 'cable curl', 'curl su panca scott': 'preacher curl',
-  'curl a martello': 'hammer curl', 'curl ez bar': 'ez bar curl',
-  'estensione tricipiti con manubrio': 'dumbbell triceps extension overhead',
-  'estensione tricipiti': 'triceps extension',
-  'estensioni over head': 'overhead triceps extension',
-  'kickback al cavo': 'cable triceps kickback',
-  'push-down al cavo': 'cable pushdown', 'push down': 'pushdown',
-  'tricipiti su panca': 'bench dip triceps',
-  'dip alle parallele': 'parallel bar dip',
+  'curl al cavo': 'cable curl', 'curl a martello': 'hammer curl',
+  'estensione tricipiti': 'triceps extension', 'kickback al cavo': 'cable triceps kickback',
+  'push down': 'pushdown', 'dip alle parallele': 'parallel bar dip',
   'croci con manubri': 'dumbbell fly', 'croci': 'fly',
-  'lat machine': 'lat pulldown', 'pulley basso': 'seated cable row', 'pulley': 'cable row',
-  'squat con bilanciere': 'barbell squat',
-  'leg press calf raise': 'leg press calf raise',
-  'face pull': 'face pull',
-  'alzate con bilanciere shrug': 'barbell shrug',
-  'bilanciere': 'barbell', 'manubri': 'dumbbell', 'manubrio': 'dumbbell',
-  'cavo': 'cable', 'cavi': 'cable', 'macchina': 'machine',
-  'laterali': 'lateral', 'frontali': 'front',
-  'seduto': 'seated', 'piedi': 'standing',
+  'lat machine': 'lat pulldown', 'pulley': 'cable row',
+  'squat con bilanciere': 'barbell squat', 'face pull': 'face pull',
+  'bilanciere': 'barbell', 'manubri': 'dumbbell', 'cavo': 'cable',
+  'laterali': 'lateral', 'frontali': 'front', 'seduto': 'seated',
 }
 
-// Stopwords — NON includiamo "up","down","bar" perché utili (pull-up, push-up...)
 const STOP = new Set(['con','al','alla','alle','di','da','del','della','le','la','lo','il',
   'in','su','per','tra','and','the','a','an','with','at','on','from','to','of','or','by'])
 
 function deaccent(s) {
   return s.replace(/[àáâã]/g,'a').replace(/[èéêë]/g,'e')
-          .replace(/[ìíîï]/g,'i').replace(/[òóôõ]/g,'o')
-          .replace(/[ùúûü]/g,'u')
+          .replace(/[ìíîï]/g,'i').replace(/[òóôõ]/g,'o').replace(/[ùúûü]/g,'u')
 }
-
 function normalize(name) {
-  let s = deaccent(name.toLowerCase())
-    .replace(/[-_]/g, ' ')
-    .replace(/[^a-z0-9 ]/g, '')
-    .replace(/\s+/g, ' ').trim()
-
-  // Applica traduzioni multi-parola (lunghezza decrescente)
-  const keys = Object.keys(IT_EN).sort((a, b) => b.length - a.length)
-  for (const k of keys) {
-    if (s.includes(k)) s = s.replace(k, IT_EN[k])
-  }
-
-  // Cleanup post-traduzione (le traduzioni possono introdurre trattini)
-  s = s.replace(/[-_]/g, ' ').replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
-  return s
+  let s = deaccent(name.toLowerCase()).replace(/[-_]/g,' ').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim()
+  const keys = Object.keys(IT_EN).sort((a,b) => b.length - a.length)
+  for (const k of keys) if (s.includes(k)) s = s.replace(k, IT_EN[k])
+  return s.replace(/[-_]/g,' ').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim()
 }
-
-function tokens(norm) {
-  return norm.split(' ').filter(w => w.length > 1 && !STOP.has(w))
-}
-
+function tokens(norm) { return norm.split(' ').filter(w => w.length > 1 && !STOP.has(w)) }
 function jaccard(a, b) {
   if (!a.length || !b.length) return 0
   const sa = new Set(a), sb = new Set(b)
@@ -185,41 +144,43 @@ function jaccard(a, b) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
-  // 1. Fetch esercizi esistenti (paginato per superare il limite di 1000)
+  console.log(`\nDataset: ${EDB.length} esercizi`)
+  console.log(`GIF 360p: ${HAS_360.size} | GIF 1080p: ${HAS_1080.size}`)
+  console.log(`Storage base: ${STORAGE_BASE}\n`)
+
+  // 1. Fetch esercizi esistenti (paginato)
   const existing = []
-  const PAGE = 1000
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
-      .from('esercizi')
-      .select('id, nome, gif_url, exercisedb_id, is_global')
-      .range(from, from + PAGE - 1)
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await supabase.from('esercizi')
+      .select('id, nome, gif_url, gif_url_hd, exercisedb_id, is_global, difficulty, category')
+      .range(from, from + 999)
     if (error) throw new Error('Fetch fallito: ' + error.message)
     if (!data || data.length === 0) break
     existing.push(...data)
-    if (data.length < PAGE) break
+    if (data.length < 1000) break
   }
-  const fetchErr = null
+  console.log(`DB: ${existing.length} esercizi totali`)
+  console.log(`  Custom: ${existing.filter(e => !e.is_global).length}`)
+  console.log(`  Globali ExerciseDB: ${existing.filter(e => e.is_global).length}\n`)
 
-  console.log(`\nDB: ${existing.length} esercizi totali`)
-  const withGif    = existing.filter(e => e.gif_url)
-  const toMatch    = existing.filter(e => !e.gif_url)
-  console.log(`  Con GIF già: ${withGif.length}`)
-  console.log(`  Da matchare: ${toMatch.length}\n`)
-
-  // 2. Pre-calcola token ExerciseDB
+  // 2. Pre-calcola token EDB (nuovo formato)
   const edbTokens = EDB.map(e => ({
-    ...e,
+    id: e.id,
+    name: e.name,
     norm: normalize(e.name),
     toks: tokens(normalize(e.name)),
+    gif360:  HAS_360.has(e.id)  ? gifUrl(e.id, '360')  : null,
+    gif1080: HAS_1080.has(e.id) ? gifUrl(e.id, '1080') : null,
+    muscoli: mapMuscles(e.target, e.secondaryMuscles || []),
+    descrizione: e.description || null,
+    difficulty: e.difficulty || null,
+    category: e.category || null,
   }))
 
-  // Helper: trova il miglior match EDB dato un testo di ricerca (stringa parziale)
   function findBestByKeyword(keyword) {
-    const kNorm = normalize(keyword)
-    const kToks = tokens(kNorm)
+    const kNorm = normalize(keyword), kToks = tokens(kNorm)
     let bestScore = 0, bestEdb = null
     for (const edb of edbTokens) {
-      // Prima: matching esatto sulla stringa normalizzata
       if (edb.norm.includes(kNorm) || kNorm.includes(edb.norm)) {
         const s = jaccard(kToks, edb.toks)
         if (s > bestScore || (s === bestScore && edb.name.length < (bestEdb?.name?.length ?? 999))) {
@@ -227,7 +188,6 @@ async function main() {
         }
       }
     }
-    // Se non trovato con includes, usa jaccard puro
     if (!bestEdb) {
       for (const edb of edbTokens) {
         const s = jaccard(kToks, edb.toks)
@@ -237,129 +197,159 @@ async function main() {
     return { bestScore, bestEdb }
   }
 
-  // 3. Match ogni esercizio esistente senza GIF
+  // 3. Aggiorna esercizi globali già presenti: aggiorna gif_url_hd + nuovi campi
+  const existingGlobals = existing.filter(e => e.is_global && e.exercisedb_id)
+  const edbById = new Map(edbTokens.map(e => [e.id, e]))
+  const globalUpdates = []
+  for (const ex of existingGlobals) {
+    const edb = edbById.get(ex.exercisedb_id)
+    if (!edb) continue
+    const needsUpdate =
+      ex.gif_url !== edb.gif360 ||
+      ex.gif_url_hd !== edb.gif1080 ||
+      ex.difficulty !== edb.difficulty ||
+      ex.category !== edb.category
+    if (needsUpdate) globalUpdates.push({
+      id: ex.id,
+      gif_url:     edb.gif360,
+      gif_url_hd:  edb.gif1080,
+      difficulty:  edb.difficulty,
+      category:    edb.category,
+    })
+  }
+  console.log(`Globali da aggiornare (gif_url_hd + difficulty/category): ${globalUpdates.length}`)
+
+  // 4. Match esercizi custom senza gif_url
   const SCORE_THRESHOLD = 0.40
-  const matchedEdbIds = new Set()
-  const updates = []
-  const noMatch  = []
+  const toMatch = existing.filter(e => !e.is_global && !e.gif_url)
+  const matchedEdbIds = new Set(existing.map(e => e.exercisedb_id).filter(Boolean))
+  const customUpdates = []
+  const noMatch = []
 
   for (const ex of toMatch) {
-    let gifUrl = null, edbId = null, matchedName = '', finalScore = 0
-
-    // 3a. Prova match manuale prima
-    const manualKey = Object.keys(MANUAL_MATCH).find(k =>
-      ex.nome.toLowerCase() === k.toLowerCase()
-    )
+    let found = null
+    const manualKey = Object.keys(MANUAL_MATCH).find(k => ex.nome.toLowerCase() === k.toLowerCase())
     if (manualKey) {
-      const keyword = MANUAL_MATCH[manualKey]
-      const { bestEdb, bestScore } = findBestByKeyword(keyword)
-      if (bestEdb) {
-        gifUrl = bestEdb.gifUrl; edbId = bestEdb.exerciseId
-        matchedName = bestEdb.name; finalScore = 1.0 // manuale = affidabile
-      }
+      const { bestEdb } = findBestByKeyword(MANUAL_MATCH[manualKey])
+      if (bestEdb) found = { edb: bestEdb, score: 1.0 }
     }
-
-    // 3b. Se non trovato manualmente, usa jaccard automatico
-    if (!gifUrl) {
-      const exNorm = normalize(ex.nome)
-      const exToks = tokens(exNorm)
+    if (!found) {
+      const exToks = tokens(normalize(ex.nome))
       let bestScore = 0, bestEdb = null
       for (const edb of edbTokens) {
         const s = jaccard(exToks, edb.toks)
         if (s > bestScore) { bestScore = s; bestEdb = edb }
       }
-      if (bestScore >= SCORE_THRESHOLD && bestEdb) {
-        gifUrl = bestEdb.gifUrl; edbId = bestEdb.exerciseId
-        matchedName = bestEdb.name; finalScore = bestScore
-      }
+      if (bestScore >= SCORE_THRESHOLD) found = { edb: bestEdb, score: bestScore }
     }
-
-    if (gifUrl) {
-      matchedEdbIds.add(edbId)
-      updates.push({ id: ex.id, nome: ex.nome, gif_url: gifUrl, exercisedb_id: edbId, score: finalScore, matched: matchedName })
+    if (found) {
+      matchedEdbIds.add(found.edb.id)
+      customUpdates.push({
+        id: ex.id, nome: ex.nome,
+        gif_url:    found.edb.gif360 ?? found.edb.gif1080,
+        gif_url_hd: found.edb.gif1080,
+        exercisedb_id: found.edb.id,
+        score: found.score,
+        matched: found.edb.name,
+      })
     } else {
       noMatch.push(ex)
     }
   }
 
-  // 4. Log risultati
-  console.log(`Match trovati: ${updates.length}`)
-  for (const u of updates) {
+  console.log(`Custom da matchare: ${toMatch.length} → match: ${customUpdates.length}`)
+  for (const u of customUpdates) {
     const tag = u.score >= 0.99 ? '[M]' : `[${u.score.toFixed(2)}]`
     console.log(`  ${tag} "${u.nome}" → "${u.matched}"`)
   }
   if (noMatch.length) {
-    console.log(`\nSenza match (${noMatch.length}) — resteranno senza GIF:`)
+    console.log(`\nSenza match (${noMatch.length}):`)
     for (const e of noMatch) console.log(`  - "${e.nome}"`)
   }
-  console.log()
 
-  // 5. Conferma
+  // 5. Nuovi globali da inserire (non ancora in DB)
+  const existingEdbIds = new Set(existing.map(e => e.exercisedb_id).filter(Boolean))
+  const toInsert = edbTokens.filter(e =>
+    !matchedEdbIds.has(e.id) && !existingEdbIds.has(e.id) &&
+    (e.gif360 || e.gif1080)   // solo quelli con almeno una GIF
+  ).map(e => ({
+    nome:          toTitle(e.name),
+    descrizione:   e.descrizione,
+    video_url:     null,
+    gif_url:       e.gif360 ?? e.gif1080,
+    gif_url_hd:    e.gif1080,
+    muscoli:       e.muscoli,
+    tipo_input:    'reps',
+    is_global:     true,
+    coach_id:      null,
+    exercisedb_id: e.id,
+    difficulty:    e.difficulty,
+    category:      e.category,
+  }))
+  console.log(`\nNuovi globali da inserire: ${toInsert.length}`)
+
+  // 6. Conferma
+  console.log()
   const readline = await import('readline')
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-  const answer = await new Promise(r => rl.question(`Procedere con ${updates.length} aggiornamenti + inserimento nuovi globali? (s/N) `, r))
+  const answer = await new Promise(r => rl.question(
+    `Procedere? (${globalUpdates.length} aggiornamenti globali, ${customUpdates.length} match custom, ${toInsert.length} nuovi) (s/N) `, r
+  ))
   rl.close()
   if (answer.toLowerCase() !== 's') { console.log('Annullato.'); return }
 
-  // 6. Aggiorna esercizi esistenti
-  // Se due esercizi puntano allo stesso EDB (es: "lat machine" e "pulldown"),
-  // il secondo non può avere lo stesso exercisedb_id → aggiorna solo gif_url
-  if (updates.length > 0) {
-    console.log('\nAggiorno esercizi esistenti...')
+  // 7. Aggiorna globali esistenti
+  if (globalUpdates.length > 0) {
+    console.log('\nAggiorno globali esistenti...')
     let ok = 0, fail = 0
-    // EDB IDs già assegnati ad altri esercizi nel DB (dalla run precedente)
-    const dbEdbIds = new Set(existing.map(e => e.exercisedb_id).filter(Boolean))
-    const usedEdbIds = new Set()
-    for (const u of updates) {
-      const takenInDb   = dbEdbIds.has(u.exercisedb_id) && !existing.find(e => e.id === u.id && e.exercisedb_id === u.exercisedb_id)
-      const usedNow     = usedEdbIds.has(u.exercisedb_id)
-      usedEdbIds.add(u.exercisedb_id)
-      const payload = (takenInDb || usedNow)
-        ? { gif_url: u.gif_url }                                    // solo gif, no edb_id
-        : { gif_url: u.gif_url, exercisedb_id: u.exercisedb_id }
-      const { error } = await supabase
-        .from('esercizi')
-        .update(payload)
-        .eq('id', u.id)
-      if (error) { console.error(`  ERRORE "${u.nome}": ${error.message}`); fail++ }
-      else ok++
+    for (const u of globalUpdates) {
+      const { error } = await supabase.from('esercizi').update({
+        gif_url: u.gif_url, gif_url_hd: u.gif_url_hd,
+        difficulty: u.difficulty, category: u.category,
+      }).eq('id', u.id)
+      if (error) { console.error(`  ERRORE: ${error.message}`); fail++ } else ok++
     }
     console.log(`  OK: ${ok} | Errori: ${fail}`)
   }
 
-  // 7. Inserisci nuovi ExerciseDB come globali (skip già matchati + già presenti)
-  const existingEdbIds = new Set(existing.map(e => e.exercisedb_id).filter(Boolean))
-  const toInsert = EDB
-    .filter(e => !matchedEdbIds.has(e.exerciseId) && !existingEdbIds.has(e.exerciseId))
-    .map(e => ({
-      nome: toTitle(e.name),
-      descrizione: buildDesc(e),
-      video_url: null,
-      gif_url: e.gifUrl,
-      muscoli: mapMuscles(e.targetMuscles || [], e.secondaryMuscles || []),
-      tipo_input: 'reps',
-      is_global: true,
-      coach_id: null,
-      exercisedb_id: e.exerciseId,
-    }))
-
-  console.log(`\nInserisco ${toInsert.length} nuovi esercizi ExerciseDB...`)
-  const BATCH = 100
-  let inserted = 0, errors = 0
-  for (let i = 0; i < toInsert.length; i += BATCH) {
-    const batch = toInsert.slice(i, i + BATCH)
-    // Insert semplice — exercisedb_id è già filtrato, non ci saranno duplicati
-    const { error } = await supabase.from('esercizi').insert(batch)
-    if (error) { console.error(`Errore batch ${i/BATCH+1}: ${error.message}`); errors += batch.length }
-    else { inserted += batch.length; process.stdout.write(`\r  Inseriti: ${inserted}/${toInsert.length}`) }
+  // 8. Aggiorna custom con match
+  if (customUpdates.length > 0) {
+    console.log('\nAggiorno esercizi custom matchati...')
+    let ok = 0, fail = 0
+    const dbEdbIds = new Set(existing.map(e => e.exercisedb_id).filter(Boolean))
+    const usedNow  = new Set()
+    for (const u of customUpdates) {
+      const alreadyTaken = (dbEdbIds.has(u.exercisedb_id) && !existing.find(e => e.id === u.id && e.exercisedb_id === u.exercisedb_id))
+                        || usedNow.has(u.exercisedb_id)
+      usedNow.add(u.exercisedb_id)
+      const payload = alreadyTaken
+        ? { gif_url: u.gif_url, gif_url_hd: u.gif_url_hd }
+        : { gif_url: u.gif_url, gif_url_hd: u.gif_url_hd, exercisedb_id: u.exercisedb_id }
+      const { error } = await supabase.from('esercizi').update(payload).eq('id', u.id)
+      if (error) { console.error(`  ERRORE "${u.nome}": ${error.message}`); fail++ } else ok++
+    }
+    console.log(`  OK: ${ok} | Errori: ${fail}`)
   }
 
-  console.log('\n')
-  console.log('─────────────────────────────────────────────')
-  console.log('RIEPILOGO FINALE:')
-  console.log(`  Esercizi esistenti aggiornati con GIF: ${updates.length}`)
-  console.log(`  Nuovi esercizi ExerciseDB inseriti:    ${inserted}`)
-  if (errors > 0) console.log(`  Errori inserimento:                    ${errors}`)
+  // 9. Inserisci nuovi globali
+  if (toInsert.length > 0) {
+    console.log(`\nInserisco ${toInsert.length} nuovi esercizi...`)
+    const BATCH = 100
+    let inserted = 0, errors = 0
+    for (let i = 0; i < toInsert.length; i += BATCH) {
+      const { error } = await supabase.from('esercizi').insert(toInsert.slice(i, i + BATCH))
+      if (error) { console.error(`Errore batch: ${error.message}`); errors += Math.min(BATCH, toInsert.length - i) }
+      else { inserted += Math.min(BATCH, toInsert.length - i) }
+      process.stdout.write(`\r  ${inserted}/${toInsert.length}`)
+    }
+    console.log()
+  }
+
+  console.log('\n─────────────────────────────────────────────')
+  console.log('RIEPILOGO:')
+  console.log(`  Globali aggiornati (HD + metadati): ${globalUpdates.length}`)
+  console.log(`  Custom matchati con GIF:            ${customUpdates.length}`)
+  console.log(`  Nuovi esercizi inseriti:            ${toInsert.length}`)
   console.log('─────────────────────────────────────────────')
 }
 
