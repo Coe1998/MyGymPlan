@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp, faChevronDown, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { getTipo, getProgress } from '@/lib/scheda-constants'
 import DesktopInlineForm from './DesktopInlineForm'
 import type { EsForm, Esercizio } from './types'
@@ -113,14 +115,14 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 160ms',
             }}>
-            <i className={`fa-solid fa-chevron-${expanded ? 'up' : 'down'}`} style={{ fontSize: 10 }} />
+            <FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} style={{ fontSize: 10 }} />
           </button>
           <button onClick={onDelete} aria-label="Elimina" style={{
             width: 28, height: 28, borderRadius: 8,
             background: 'oklch(0.65 0.22 27 / 35%)', color: 'oklch(0.85 0.16 27)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <i className="fa-solid fa-trash" style={{ fontSize: 11 }} />
+            <FontAwesomeIcon icon={faTrash} style={{ fontSize: 11 }} />
           </button>
         </div>
       </div>

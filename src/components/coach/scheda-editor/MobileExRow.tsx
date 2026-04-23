@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { getTipo, getProgress } from '@/lib/scheda-constants'
 import KPI from './shared/KPI'
 import MobileConfigSheet from './MobileConfigSheet'
@@ -56,7 +58,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
               background: 'oklch(0.65 0.22 27 / 35%)', color: 'oklch(0.85 0.16 27)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-            <i className="fa-solid fa-trash" style={{ fontSize: 12 }} />
+            <FontAwesomeIcon icon={faTrash} style={{ fontSize: 12 }} />
           </button>
         </div>
 
@@ -112,7 +114,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
               background: 'oklch(0.65 0.22 27 / 35%)', color: 'oklch(0.85 0.16 27)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-            <i className="fa-solid fa-trash" style={{ fontSize: 12 }} />
+            <FontAwesomeIcon icon={faTrash} style={{ fontSize: 12 }} />
           </button>
         </div>
 
