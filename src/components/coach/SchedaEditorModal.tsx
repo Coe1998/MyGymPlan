@@ -230,6 +230,11 @@ export default function SchedaEditorModal({
     setActiveGiorno(data.id)
   }
 
+  const handleRinominaGiorno = async (id: string, nome: string) => {
+    setGiorni(prev => prev.map(g => g.id === id ? { ...g, nome } : g))
+    await supabase.from('scheda_giorni').update({ nome }).eq('id', id)
+  }
+
   const handleDeleteGiorno = async () => {
     if (!activeGiorno || !confirm('Eliminare questo giorno e tutti i suoi esercizi?')) return
     await supabase.from('scheda_giorni').delete().eq('id', activeGiorno)
@@ -390,6 +395,7 @@ export default function SchedaEditorModal({
           activeId={activeGiorno}
           onSelect={setActiveGiorno}
           onAdd={handleAddGiorno}
+          onRinomina={handleRinominaGiorno}
           configurati={configurati}
           inAttesa={inAttesa}
         />
