@@ -117,10 +117,10 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
           </button>
           <button onClick={onDelete} aria-label="Elimina" style={{
             width: 28, height: 28, borderRadius: 8,
-            background: 'oklch(0.65 0.22 27 / 28%)', color: 'oklch(0.82 0.16 27)',
+            background: 'oklch(0.65 0.22 27 / 35%)', color: 'oklch(0.85 0.16 27)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <i className="fa-solid fa-xmark" style={{ fontSize: 10 }} />
+            <i className="fa-solid fa-trash" style={{ fontSize: 11 }} />
           </button>
         </div>
       </div>
