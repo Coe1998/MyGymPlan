@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons'
 import { getTipo, getProgress } from '@/lib/scheda-constants'
 import KPI from './shared/KPI'
 import MobileConfigSheet from './MobileConfigSheet'
@@ -18,10 +18,11 @@ interface Props {
   intensita?: 'rpe' | 'rir' | null
   onConfigura: (form: EsForm) => void
   onDelete: () => void
+  onDrag?: (e: React.PointerEvent<Element>) => void
   onCreaEsercizio: (nome: string, muscoli: string[]) => Promise<Esercizio | null>
 }
 
-export default function MobileExRow({ index, form, isPlaceholder, esercizi, gruppi, intensita, onConfigura, onDelete, onCreaEsercizio }: Props) {
+export default function MobileExRow({ index, form, isPlaceholder, esercizi, gruppi, intensita, onConfigura, onDelete, onDrag, onCreaEsercizio }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const ese = esercizi.find(e => e.id === form.esercizio_id)
@@ -109,6 +110,16 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, grup
               fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em',
             }}>{tipo.label.toUpperCase()}</span>
           </button>
+          {onDrag && (
+            <div
+              onPointerDown={onDrag}
+              style={{
+                cursor: 'grab', color: 'var(--c-40)', padding: '3px 2px',
+                display: 'flex', alignItems: 'center', touchAction: 'none', flexShrink: 0,
+              }}>
+              <FontAwesomeIcon icon={faGripVertical} style={{ fontSize: 14 }} />
+            </div>
+          )}
           <button
             onClick={e => { e.stopPropagation(); onDelete() }}
             aria-label="Rimuovi"

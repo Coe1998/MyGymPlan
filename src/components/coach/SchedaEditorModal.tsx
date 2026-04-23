@@ -472,13 +472,16 @@ export default function SchedaEditorModal({
             {eserciziGiorno.map((ese, i) => {
               const form = eseToForm(ese)
               return mode === 'mobile' ? (
-                <MobileExRow
-                  key={ese.id} index={i + 1} form={form} isPlaceholder={false}
-                  esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
-                  onConfigura={f => handleEditEse(ese.id, f)}
-                  onDelete={() => handleDeleteEse(ese.id)}
-                  onCreaEsercizio={handleCreaEsercizio}
-                />
+                <div key={ese.id} data-eseid={ese.id}>
+                  <MobileExRow
+                    index={i + 1} form={form} isPlaceholder={false}
+                    esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
+                    onConfigura={f => handleEditEse(ese.id, f)}
+                    onDelete={() => handleDeleteEse(ese.id)}
+                    onDrag={e => { const el = (e.currentTarget as HTMLElement).closest('[data-eseid]') as HTMLDivElement | null; if (el) onPointerDownDrag(e, ese.id, el) }}
+                    onCreaEsercizio={handleCreaEsercizio}
+                  />
+                </div>
               ) : (
                 <div key={ese.id} data-eseid={ese.id}>
                   <DesktopExRow
