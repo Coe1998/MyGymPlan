@@ -53,6 +53,7 @@ export default function DesktopInlineForm({ data, esercizi, gruppi, intensita, o
   const setWarmup = (w: { peso: string; reps: string }[]) => set('warmup_serie', JSON.stringify(w))
 
   const isNuovoGruppo = !!local.gruppo_id && !gruppi.some(g => g.id === local.gruppo_id)
+  const nuovaLettera = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[gruppi.length % 26]
 
   return (
     <div style={{
@@ -104,7 +105,7 @@ export default function DesktopInlineForm({ data, esercizi, gruppi, intensita, o
                   color: isNuovoGruppo ? tipo.color : 'var(--c-48)',
                   border: isNuovoGruppo ? `1px solid ${tipo.color}40` : '1px solid transparent',
                 }}>
-                {isNuovoGruppo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}
+                {isNuovoGruppo ? `✓ Gruppo ${nuovaLettera}` : '+ Nuovo gruppo'}
               </button>
               {gruppi.map(g => (
                 <button key={g.id} onClick={() => set('gruppo_id', g.id)} style={{

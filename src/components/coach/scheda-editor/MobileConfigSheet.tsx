@@ -38,6 +38,7 @@ export default function MobileConfigSheet({ index, initial, esercizi, gruppi, in
   const warmup: { peso: string; reps: string }[] = (() => { try { return JSON.parse(local.warmup_serie || '[]') } catch { return [] } })()
   const setWarmup = (w: { peso: string; reps: string }[]) => set('warmup_serie', JSON.stringify(w))
   const isNuovoGruppo = !!local.gruppo_id && !gruppi.some(g => g.id === local.gruppo_id)
+  const nuovaLettera = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[gruppi.length % 26]
 
   const selectedEse = esercizi.find(e => e.id === local.esercizio_id)
   const isTimer = selectedEse?.tipo_input === 'timer' || selectedEse?.tipo_input === 'timer_unilaterale'
@@ -193,7 +194,7 @@ export default function MobileConfigSheet({ index, initial, esercizi, gruppi, in
                     background: isNuovoGruppo ? getTipo(local.tipo).bg : 'var(--c-20)',
                     color: isNuovoGruppo ? getTipo(local.tipo).color : 'var(--c-48)',
                     border: isNuovoGruppo ? `1px solid ${getTipo(local.tipo).color}40` : '1px solid transparent',
-                  }}>{isNuovoGruppo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}</button>
+                  }}>{isNuovoGruppo ? `✓ Gruppo ${nuovaLettera}` : '+ Nuovo gruppo'}</button>
                   {gruppi.map(g => (
                     <button key={g.id} onClick={() => set('gruppo_id', g.id)} style={{
                       padding: '6px 12px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
