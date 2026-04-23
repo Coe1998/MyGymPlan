@@ -26,13 +26,27 @@ export default function DayTabs({ giorni, activeId, onSelect, onAdd, configurati
           {g.nome}
         </button>
       ))}
-      <button onClick={onAdd} aria-label="Aggiungi giorno" style={{
-        width: 34, height: 34, borderRadius: 999, flexShrink: 0,
-        background: 'var(--c-18)', color: 'var(--c-55)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <i className="fa-solid fa-plus" style={{ fontSize: 11 }} />
-      </button>
+      {giorni.length === 0 ? (
+        <button onClick={onAdd} style={{
+          padding: '8px 16px', borderRadius: 999, flexShrink: 0,
+          background: 'oklch(0.70 0.19 46 / 14%)', border: '1.5px dashed oklch(0.70 0.19 46 / 50%)',
+          color: 'var(--accent)', fontSize: 12.5, fontWeight: 800, letterSpacing: '-0.005em',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <i className="fa-solid fa-plus" style={{ fontSize: 11 }} />
+          Aggiungi giorno
+        </button>
+      ) : (
+        <button onClick={onAdd} aria-label="Aggiungi giorno" style={{
+          padding: '8px 12px', borderRadius: 999, flexShrink: 0,
+          background: 'oklch(0.70 0.19 46 / 10%)', border: '1px solid oklch(0.70 0.19 46 / 30%)',
+          color: 'var(--accent)', fontSize: 11.5, fontWeight: 800,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <i className="fa-solid fa-plus" style={{ fontSize: 10 }} />
+          Giorno
+        </button>
+      )}
 
       <div style={{ flex: 1 }} />
       <div style={{ fontSize: 10.5, color: 'var(--c-45)', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
