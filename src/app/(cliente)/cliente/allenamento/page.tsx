@@ -987,13 +987,27 @@ export default function AllenamentoPage() {
   const getConfronto = (eseId: string, serieIndex: number) =>
     ultimaSessione[eseId]?.find(s => s.numero_serie === serieIndex + 1) ?? null
 
-  const getMiglioramento = (eseId: string, serieIndex: number) => {
+  const getMiglioramento = (eseId: string, serieIndex: number): { up: number; down: boolean } | null => {
     const c = getConfronto(eseId, serieIndex)
     const log = logs[eseId]?.serie[serieIndex]
     if (!c || !log?.completata) return null
-    const pa = parseFloat(log.peso_kg), pu = c.peso_kg ?? 0
-    if (!pa || !pu) return null
-    return pa > pu ? 'up' : pa < pu ? 'down' : 'equal'
+
+    const pa = parseFloat(log.peso_kg) || 0
+    const pu = c.peso_kg ?? 0
+    const ra = parseInt(log.ripetizioni) || 0
+    const ru = c.ripetizioni ?? 0
+
+    const hasPeso = pa > 0 && pu > 0
+    const hasReps = ra > 0 && ru > 0
+    if (!hasPeso && !hasReps) return null
+
+    let up = 0
+    let down = false
+    if (hasPeso) { if (pa > pu) up++; else if (pa < pu) down = true }
+    if (hasReps && ra > ru) up++
+
+    if (up === 0 && !down) return null
+    return { up, down }
   }
 
   const backUrl = isViewMode ? '/cliente/progressi' : '/cliente/dashboard'
@@ -1592,8 +1606,12 @@ export default function AllenamentoPage() {
                             {summaryNode}
                             {isPRRow && <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'var(--gold)', color: 'var(--c-13)', flexShrink: 0 }}>PR</span>}
                           </div>
-                          {miglioramento === 'up' && <span style={{ fontSize: 10, color: 'var(--success)', flexShrink: 0 }}>▲</span>}
-                          {miglioramento === 'down' && <span style={{ fontSize: 10, color: 'var(--danger-text)', flexShrink: 0 }}>▼</span>}
+                          {miglioramento && miglioramento.up > 0 && (
+                            <span style={{ fontSize: 10, color: 'var(--success)', flexShrink: 0, letterSpacing: '-1px' }}>
+                              {'▲'.repeat(miglioramento.up)}
+                            </span>
+                          )}
+                          {miglioramento?.down && <span style={{ fontSize: 10, color: 'var(--danger-text)', flexShrink: 0 }}>▼</span>}
                           <button onClick={() => toggleSerie(ese, serieIndex)} style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, background: 'oklch(0.65 0.18 150 / 15%)', border: '1px solid oklch(0.65 0.18 150 / 30%)', color: 'var(--c-55)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Modifica serie">✎</button>
                         </div>
                       )
@@ -1930,9 +1948,13 @@ export default function AllenamentoPage() {
                                 ? <span className="text-lg font-bold" style={{ color: 'var(--c-13)' }}>✓</span>
                                 : <span className="text-lg" style={{ color: 'var(--c-35)' }}>○</span>}
                             </button>
-                            {miglioramento === 'up' && <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)' }}>▲</span>}
-                            {miglioramento === 'down' && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
-                            {miglioramento === 'equal' && <span className="text-xs" style={{ color: 'var(--c-45)' }}>＝</span>}
+                            {miglioramento && miglioramento.up > 0 && (
+                              <span className="text-xs font-bold" style={{ color: 'oklch(0.65 0.18 150)', letterSpacing: '-1px' }}>
+                                {'▲'.repeat(miglioramento.up)}
+                              </span>
+                            )}
+                            {miglioramento?.down && <span className="text-xs font-bold" style={{ color: 'oklch(0.75 0.15 27)' }}>▼</span>}
+                            {miglioramento && miglioramento.up === 0 && !miglioramento.down && <span className="text-xs" style={{ color: 'var(--c-45)' }}>＝</span>}
                           </div>
                         )
 
