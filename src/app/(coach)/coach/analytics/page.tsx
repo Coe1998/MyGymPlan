@@ -20,8 +20,7 @@ import SortDropdown from '@/components/ui/SortDropdown'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Link from 'next/link'
-import MacroTargetForm from '@/components/coach/MacroTargetForm'
-import CarbCyclingForm from '@/components/coach/CarbCyclingForm'
+import NutrizioneModal from '@/components/coach/NutrizioneModal'
 import SchedaEditorModal from '@/components/coach/SchedaEditorModal'
 import AnamnesIDrawer from '@/components/coach/AnamnesIDrawer'
 import { generateNoteAnamnesi, stimaTDEE } from '@/lib/anamnesi-notes'
@@ -152,6 +151,7 @@ export default function AnalyticsPage() {
   const [savingInt, setSavingInt] = useState(false)
   const [dietaAbilitata, setDietaAbilitata] = useState(false)
   const [togglingDieta, setTogglingDieta] = useState(false)
+  const [nutModalAperto, setNutModalAperto] = useState(false)
   const [storicoNutrizioneCliente, setStoricoNutrizioneCliente] = useState<{ data: string; calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number }[]>([])
   const [macroTargetCliente, setMacroTargetCliente] = useState<{ calorie: number; proteine_g: number; carboidrati_g: number; grassi_g: number } | null>(null)
 
@@ -1328,8 +1328,18 @@ export default function AnalyticsPage() {
                         </div>
                       )
                     })()}
-                    <MacroTargetForm clienteId={clienteSelezionato!.id} />
-                    <CarbCyclingForm clienteId={clienteSelezionato!.id} />
+                    <div className="px-5 pb-2">
+                      <button
+                        onClick={() => setNutModalAperto(true)}
+                        style={{
+                          width: '100%', padding: '14px 18px', borderRadius: 14,
+                          background: 'oklch(0.70 0.19 46 / 10%)', border: '1.5px solid oklch(0.70 0.19 46 / 35%)',
+                          color: 'oklch(0.75 0.19 46)', fontSize: 14, fontWeight: 800,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                        }}>
+                        🥗 Gestisci Dieta
+                      </button>
+                    </div>
                     {storicoNutrizioneCliente.length > 0 && (
                       <div className="px-5 pb-5 space-y-3">
                         <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--c-40)' }}>
@@ -1808,6 +1818,16 @@ export default function AnalyticsPage() {
         clienteId={clienteSelezionato.id}
         clienteNome={clienteSelezionato.full_name ?? 'Cliente'}
         onClose={() => setShowAnamnesIDrawer(false)}
+      />
+    )}
+
+    {/* NUTRIZIONE MODAL */}
+    {nutModalAperto && clienteSelezionato && (
+      <NutrizioneModal
+        clienteId={clienteSelezionato.id}
+        clienteNome={clienteSelezionato.full_name ?? 'Cliente'}
+        pesoCurrent={clienteSelezionato.misurazioni?.at(-1)?.peso_kg ?? null}
+        onClose={() => setNutModalAperto(false)}
       />
     )}
 
