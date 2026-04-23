@@ -49,7 +49,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
             aria-label="Rimuovi"
             style={{
               width: 26, height: 26, borderRadius: '50%',
-              background: 'oklch(0.65 0.22 27 / 12%)', color: 'oklch(0.72 0.18 27)',
+              background: 'oklch(0.65 0.22 27 / 28%)', color: 'oklch(0.82 0.16 27)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <i className="fa-solid fa-xmark" style={{ fontSize: 10 }} />
@@ -101,7 +101,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
             aria-label="Rimuovi"
             style={{
               width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-              background: 'var(--c-w4)', color: 'var(--c-45)',
+              background: 'oklch(0.65 0.22 27 / 28%)', color: 'oklch(0.82 0.16 27)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
             <i className="fa-solid fa-xmark" style={{ fontSize: 9 }} />

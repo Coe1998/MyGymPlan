@@ -108,8 +108,8 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
             aria-label={expanded ? 'Chiudi' : 'Espandi'}
             style={{
               width: 28, height: 28, borderRadius: 8,
-              background: expanded ? 'oklch(0.70 0.19 46 / 18%)' : 'var(--c-w4)',
-              color: expanded ? 'var(--accent)' : 'var(--c-55)',
+              background: expanded ? 'oklch(0.70 0.19 46 / 22%)' : 'var(--c-25)',
+              color: expanded ? 'var(--accent)' : 'var(--c-80)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 160ms',
             }}>
@@ -117,7 +117,7 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
           </button>
           <button onClick={onDelete} aria-label="Elimina" style={{
             width: 28, height: 28, borderRadius: 8,
-            background: 'oklch(0.65 0.22 27 / 14%)', color: 'oklch(0.72 0.18 27)',
+            background: 'oklch(0.65 0.22 27 / 28%)', color: 'oklch(0.82 0.16 27)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <i className="fa-solid fa-xmark" style={{ fontSize: 10 }} />
