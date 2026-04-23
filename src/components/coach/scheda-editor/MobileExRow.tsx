@@ -7,18 +7,21 @@ import KPI from './shared/KPI'
 import MobileConfigSheet from './MobileConfigSheet'
 import type { EsForm, Esercizio } from './types'
 
+interface Gruppo { id: string; label: string }
+
 interface Props {
   index: number
   form: EsForm
   isPlaceholder: boolean
   esercizi: Esercizio[]
+  gruppi: Gruppo[]
   intensita?: 'rpe' | 'rir' | null
   onConfigura: (form: EsForm) => void
   onDelete: () => void
   onCreaEsercizio: (nome: string, muscoli: string[]) => Promise<Esercizio | null>
 }
 
-export default function MobileExRow({ index, form, isPlaceholder, esercizi, intensita, onConfigura, onDelete, onCreaEsercizio }: Props) {
+export default function MobileExRow({ index, form, isPlaceholder, esercizi, gruppi, intensita, onConfigura, onDelete, onCreaEsercizio }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const ese = esercizi.find(e => e.id === form.esercizio_id)
@@ -64,7 +67,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
 
         {sheetOpen && (
           <MobileConfigSheet
-            index={index} initial={form} esercizi={esercizi} intensita={intensita}
+            index={index} initial={form} esercizi={esercizi} gruppi={gruppi} intensita={intensita}
             onClose={() => setSheetOpen(false)}
             onSave={d => { onConfigura(d); setSheetOpen(false) }}
             onCreaEsercizio={onCreaEsercizio}
@@ -140,7 +143,7 @@ export default function MobileExRow({ index, form, isPlaceholder, esercizi, inte
 
       {sheetOpen && (
         <MobileConfigSheet
-          index={index} initial={form} esercizi={esercizi} intensita={intensita}
+          index={index} initial={form} esercizi={esercizi} gruppi={gruppi} intensita={intensita}
           onClose={() => setSheetOpen(false)}
           onSave={d => { onConfigura(d); setSheetOpen(false) }}
           onCreaEsercizio={onCreaEsercizio}

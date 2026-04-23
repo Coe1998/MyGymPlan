@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faXmark, faPlus, faCheck, faCircleCheck, faCircle } from '@fortawesome/free-solid-svg-icons'
 import EsercizioPicker from './sections/EsercizioPicker'
 import TipoGrid from './sections/TipoGrid'
 import TipoExtra from './sections/TipoExtra'
@@ -10,16 +12,19 @@ import Section from './shared/Section'
 import { getTipo } from '@/lib/scheda-constants'
 import type { EsForm, Esercizio } from './types'
 
+interface Gruppo { id: string; label: string }
+
 interface Props {
   data: EsForm
   esercizi: Esercizio[]
+  gruppi: Gruppo[]
   intensita?: 'rpe' | 'rir' | null
   onConfigura: (form: EsForm) => void
   onClose: () => void
   onCreaEsercizio: (nome: string, muscoli: string[]) => Promise<Esercizio | null>
 }
 
-export default function DesktopInlineForm({ data, esercizi, intensita, onConfigura, onClose, onCreaEsercizio }: Props) {
+export default function DesktopInlineForm({ data, esercizi, gruppi, intensita, onConfigura, onClose, onCreaEsercizio }: Props) {
   const [local, setLocal] = useState<EsForm>({ ...data })
   const set = (k: keyof EsForm, v: string) => setLocal(p => ({ ...p, [k]: v }))
 
@@ -44,13 +49,18 @@ export default function DesktopInlineForm({ data, esercizi, intensita, onConfigu
     if (newEse) handleSelect(newEse.id)
   }
 
+  const warmup: { peso: string; reps: string }[] = (() => { try { return JSON.parse(local.warmup_serie || '[]') } catch { return [] } })()
+  const setWarmup = (w: { peso: string; reps: string }[]) => set('warmup_serie', JSON.stringify(w))
+
+  const isNuovoGruppo = !!local.gruppo_id && !gruppi.some(g => g.id === local.gruppo_id)
+
   return (
     <div style={{
       padding: 16, borderTop: '1px solid var(--c-w6)',
       background: 'linear-gradient(180deg, oklch(0.13 0 0), oklch(0.12 0 0))',
     }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        {/* ── Colonna sinistra: esercizio + tipo ── */}
+        {/* ── Colonna sinistra ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Section icon="fa-dumbbell" label="ESERCIZIO" active={complete}>
             <EsercizioPicker
@@ -72,9 +82,45 @@ export default function DesktopInlineForm({ data, esercizi, intensita, onConfigu
             </div>
             <TipoExtra tipo={local.tipo} local={local} set={set} />
           </Section>
+
+          {/* Gruppo */}
+          <Section icon="fa-object-group" label="GRUPPO SUPERSET" active={!!local.gruppo_id}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              <button
+                onClick={() => set('gruppo_id', '')}
+                style={{
+                  padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+                  background: !local.gruppo_id ? 'var(--c-30)' : 'var(--c-20)',
+                  color: !local.gruppo_id ? 'var(--c-80)' : 'var(--c-48)',
+                  border: !local.gruppo_id ? '1px solid var(--c-w20)' : '1px solid transparent',
+                }}>
+                Nessun gruppo
+              </button>
+              <button
+                onClick={() => set('gruppo_id', crypto.randomUUID())}
+                style={{
+                  padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+                  background: isNuovoGruppo ? tipo.bg : 'var(--c-20)',
+                  color: isNuovoGruppo ? tipo.color : 'var(--c-48)',
+                  border: isNuovoGruppo ? `1px solid ${tipo.color}40` : '1px solid transparent',
+                }}>
+                {isNuovoGruppo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}
+              </button>
+              {gruppi.map(g => (
+                <button key={g.id} onClick={() => set('gruppo_id', g.id)} style={{
+                  padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+                  background: local.gruppo_id === g.id ? tipo.bg : 'var(--c-20)',
+                  color: local.gruppo_id === g.id ? tipo.color : 'var(--c-48)',
+                  border: local.gruppo_id === g.id ? `1px solid ${tipo.color}40` : '1px solid transparent',
+                }}>
+                  Gruppo {g.label}
+                </button>
+              ))}
+            </div>
+          </Section>
         </div>
 
-        {/* ── Colonna destra: parametri ── */}
+        {/* ── Colonna destra ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Section icon="fa-sliders" label="PARAMETRI" active={complete}>
             <ParametriFields local={local} set={set} intensita={intensita} isTimer={isTimer} />
@@ -82,6 +128,57 @@ export default function DesktopInlineForm({ data, esercizi, intensita, onConfigu
 
           <Section icon="fa-arrow-trend-up" label="PROGRESSIONE" active={complete}>
             <ProgressGrid value={local.progressione_tipo} onChange={v => set('progressione_tipo', v)} cols={4} />
+          </Section>
+
+          {/* Warmup specifico */}
+          <Section icon="fa-fire" label="WARMUP SPECIFICO" collapsible>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 10.5, color: 'var(--c-50)' }}>
+                {warmup.length === 0 ? 'Nessuna serie warmup' : `${warmup.length} serie`}
+              </span>
+              <button
+                onClick={() => setWarmup([...warmup, { peso: '', reps: '10' }])}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '4px 10px', borderRadius: 7, fontSize: 10.5, fontWeight: 700,
+                  background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)',
+                }}>
+                <FontAwesomeIcon icon={faPlus} style={{ fontSize: 9 }} />
+                Serie
+              </button>
+            </div>
+            {warmup.map((w, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: 'oklch(0.65 0.18 150)', width: 22, textAlign: 'center', flexShrink: 0 }}>
+                  W{i + 1}
+                </span>
+                <input
+                  type="text" value={w.peso} placeholder="kg"
+                  onChange={e => { const u = [...warmup]; u[i] = { ...u[i], peso: e.target.value }; setWarmup(u) }}
+                  style={{
+                    flex: 1, padding: '5px 8px', borderRadius: 7, fontSize: 11, textAlign: 'center',
+                    background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', outline: 'none',
+                  }}
+                />
+                <input
+                  type="text" value={w.reps} placeholder="reps"
+                  onChange={e => { const u = [...warmup]; u[i] = { ...u[i], reps: e.target.value }; setWarmup(u) }}
+                  style={{
+                    flex: 1, padding: '5px 8px', borderRadius: 7, fontSize: 11, textAlign: 'center',
+                    background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', outline: 'none',
+                  }}
+                />
+                <button
+                  onClick={() => setWarmup(warmup.filter((_, idx) => idx !== i))}
+                  style={{
+                    width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                    background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.18 27)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                  <FontAwesomeIcon icon={faXmark} style={{ fontSize: 9 }} />
+                </button>
+              </div>
+            ))}
           </Section>
 
           <Section icon="fa-note-sticky" label="NOTE & ALTERNATIVA" collapsible>
@@ -121,7 +218,7 @@ export default function DesktopInlineForm({ data, esercizi, intensita, onConfigu
           fontSize: 10.5, display: 'flex', alignItems: 'center', gap: 6,
           color: complete ? 'oklch(0.68 0.18 150)' : 'var(--c-50)',
         }}>
-          <i className={`fa-solid ${complete ? 'fa-circle-check' : 'fa-circle'}`} style={{ fontSize: 10 }} />
+          <FontAwesomeIcon icon={complete ? faCircleCheck : faCircle} style={{ fontSize: 10 }} />
           {complete ? 'Configurazione valida' : 'Seleziona un esercizio per continuare'}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -137,7 +234,7 @@ export default function DesktopInlineForm({ data, esercizi, intensita, onConfigu
             fontSize: 11.5, fontWeight: 800,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <i className="fa-solid fa-check" style={{ fontSize: 10 }} />
+            <FontAwesomeIcon icon={faCheck} style={{ fontSize: 10 }} />
             Conferma
           </button>
         </div>

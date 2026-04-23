@@ -201,6 +201,19 @@ export default function SchedaEditorModal({
   const configuratiPending = pendingGiorno.filter(p => !p.isPlaceholder && p.form.esercizio_id).length
   const configurati = eserciziGiorno.length + configuratiPending
 
+  const getGruppiGiorno = () => {
+    const seen = new Map<string, string>()
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    for (const ese of eserciziGiorno) {
+      if (ese.gruppo_id && !seen.has(ese.gruppo_id)) seen.set(ese.gruppo_id, letters[seen.size % 26])
+    }
+    for (const p of pendingGiorno) {
+      if (p.form.gruppo_id && !seen.has(p.form.gruppo_id)) seen.set(p.form.gruppo_id, letters[seen.size % 26])
+    }
+    return Array.from(seen.entries()).map(([id, label]) => ({ id, label }))
+  }
+  const gruppiGiorno = getGruppiGiorno()
+
   // ── Supabase actions ────────────────────────────────────────────────
   const handleSaveNome = async () => {
     if (!schedaNomeEdit.trim() || schedaNomeEdit === schedaNome) return
@@ -313,6 +326,48 @@ export default function SchedaEditorModal({
     await Promise.all(lista.map((e, i) => supabase.from('scheda_esercizi').update({ ordine: i }).eq('id', e.id)))
   }
 
+  const onPointerDownDrag = (e: React.PointerEvent<Element>, eseId: string, el: HTMLDivElement) => {
+    e.preventDefault()
+    const rect = el.getBoundingClientRect()
+    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const clone = el.cloneNode(true) as HTMLDivElement
+    clone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:0.88;pointer-events:none;
+      border-radius:12px;background:var(--c-28);box-shadow:0 8px 32px oklch(0 0 0 / 60%);
+      left:${rect.left}px;top:${rect.top}px;`
+    document.body.appendChild(clone)
+    el.style.opacity = '0.3'
+    let currentOver: HTMLElement | null = null
+    const onMove = (me: PointerEvent) => {
+      clone.style.left = `${me.clientX - offset.x}px`
+      clone.style.top = `${me.clientY - offset.y}px`
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(me.clientX, me.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      if (currentOver && currentOver !== row) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
+      if (row && row !== el) {
+        row.style.borderTop = '2px solid oklch(0.70 0.19 46)'
+        row.style.background = 'oklch(0.70 0.19 46 / 8%)'
+        currentOver = row
+      }
+    }
+    const onUp = (ue: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+      if (currentOver) { currentOver.style.borderTop = ''; currentOver.style.background = '' }
+      clone.style.display = 'none'
+      const below = document.elementFromPoint(ue.clientX, ue.clientY)
+      clone.style.display = ''
+      const row = below?.closest('[data-eseid]') as HTMLElement | null
+      const toId = row?.dataset.eseid
+      if (toId && toId !== eseId) reorderEsercizi(eseId, toId)
+      el.style.opacity = '1'
+      document.body.removeChild(clone)
+    }
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }
+
   // ── Render ──────────────────────────────────────────────────────────
   if (loading) return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'oklch(0 0 0 / 75%)' }}>
@@ -419,7 +474,7 @@ export default function SchedaEditorModal({
               return mode === 'mobile' ? (
                 <MobileExRow
                   key={ese.id} index={i + 1} form={form} isPlaceholder={false}
-                  esercizi={esercizi} intensita={intensita}
+                  esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
                   onConfigura={f => handleEditEse(ese.id, f)}
                   onDelete={() => handleDeleteEse(ese.id)}
                   onCreaEsercizio={handleCreaEsercizio}
@@ -428,9 +483,10 @@ export default function SchedaEditorModal({
                 <div key={ese.id} data-eseid={ese.id}>
                   <DesktopExRow
                     index={i + 1} form={form} isPlaceholder={false}
-                    esercizi={esercizi} intensita={intensita}
+                    esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
                     onConfigura={f => handleEditEse(ese.id, f)}
                     onDelete={() => handleDeleteEse(ese.id)}
+                    onDrag={e => { const el = (e.currentTarget as HTMLElement).closest('[data-eseid]') as HTMLDivElement | null; if (el) onPointerDownDrag(e, ese.id, el) }}
                     onCreaEsercizio={handleCreaEsercizio}
                   />
                 </div>
@@ -443,7 +499,7 @@ export default function SchedaEditorModal({
               return mode === 'mobile' ? (
                 <MobileExRow
                   key={p.tempId} index={index} form={p.form} isPlaceholder={p.isPlaceholder}
-                  esercizi={esercizi} intensita={intensita}
+                  esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
                   onConfigura={f => updatePending(p.tempId, f)}
                   onDelete={() => removePending(p.tempId)}
                   onCreaEsercizio={handleCreaEsercizio}
@@ -451,7 +507,7 @@ export default function SchedaEditorModal({
               ) : (
                 <DesktopExRow
                   key={p.tempId} index={index} form={p.form} isPlaceholder={p.isPlaceholder}
-                  esercizi={esercizi} intensita={intensita}
+                  esercizi={esercizi} gruppi={gruppiGiorno} intensita={intensita}
                   onConfigura={f => updatePending(p.tempId, f)}
                   onDelete={() => removePending(p.tempId)}
                   onCreaEsercizio={handleCreaEsercizio}

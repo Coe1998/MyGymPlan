@@ -1,19 +1,23 @@
 'use client'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronUp, faChevronDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faChevronUp, faChevronDown, faTrash, faGripVertical } from '@fortawesome/free-solid-svg-icons'
 import { getTipo, getProgress } from '@/lib/scheda-constants'
 import DesktopInlineForm from './DesktopInlineForm'
 import type { EsForm, Esercizio } from './types'
+
+interface Gruppo { id: string; label: string }
 
 interface Props {
   index: number
   form: EsForm
   isPlaceholder: boolean
   esercizi: Esercizio[]
+  gruppi: Gruppo[]
   intensita?: 'rpe' | 'rir' | null
   onConfigura: (form: EsForm) => void
   onDelete: () => void
+  onDrag?: (e: React.PointerEvent<Element>) => void
   onCreaEsercizio: (nome: string, muscoli: string[]) => Promise<Esercizio | null>
 }
 
@@ -31,7 +35,7 @@ function NumCell({ w, v, isPlaceholder }: { w: number; v?: string | null; isPlac
   )
 }
 
-export default function DesktopExRow({ index, form, isPlaceholder, esercizi, intensita, onConfigura, onDelete, onCreaEsercizio }: Props) {
+export default function DesktopExRow({ index, form, isPlaceholder, esercizi, gruppi, intensita, onConfigura, onDelete, onDrag, onCreaEsercizio }: Props) {
   const [expanded, setExpanded] = useState(isPlaceholder)
 
   const ese = esercizi.find(e => e.id === form.esercizio_id)
@@ -50,6 +54,15 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
     }}>
       {/* Compact row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
+        {/* Drag handle */}
+        {onDrag && !isPlaceholder && (
+          <div
+            onPointerDown={onDrag}
+            style={{ cursor: 'grab', color: 'var(--c-35)', padding: '0 2px', touchAction: 'none' }}
+            title="Trascina per riordinare">
+            <FontAwesomeIcon icon={faGripVertical} style={{ fontSize: 12 }} />
+          </div>
+        )}
         {/* # */}
         <div style={{ width: 36, display: 'flex', justifyContent: 'center' }}>
           <div style={{
@@ -131,6 +144,7 @@ export default function DesktopExRow({ index, form, isPlaceholder, esercizi, int
         <DesktopInlineForm
           data={form}
           esercizi={esercizi}
+          gruppi={gruppi}
           intensita={intensita}
           onConfigura={f => { onConfigura(f); setExpanded(false) }}
           onClose={() => setExpanded(false)}

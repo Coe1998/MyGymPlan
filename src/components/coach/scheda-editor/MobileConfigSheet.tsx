@@ -1,5 +1,7 @@
 'use client'
 import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faXmark, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { SCHEDA_TIPI, getTipo } from '@/lib/scheda-constants'
 import EsercizioPicker from './sections/EsercizioPicker'
 import TipoGrid from './sections/TipoGrid'
@@ -8,6 +10,8 @@ import ProgressGrid from './sections/ProgressGrid'
 import ParametriFields from './sections/ParametriFields'
 import FieldInput, { FieldLabel } from './shared/FieldInput'
 import type { EsForm, Esercizio } from './types'
+
+interface Gruppo { id: string; label: string }
 
 const STEPS = [
   { label: 'Esercizio', icon: 'fa-dumbbell' },
@@ -19,16 +23,21 @@ interface Props {
   index: number
   initial: EsForm
   esercizi: Esercizio[]
+  gruppi: Gruppo[]
   intensita?: 'rpe' | 'rir' | null
   onClose: () => void
   onSave: (form: EsForm) => void
   onCreaEsercizio: (nome: string, muscoli: string[]) => Promise<Esercizio | null>
 }
 
-export default function MobileConfigSheet({ index, initial, esercizi, intensita, onClose, onSave, onCreaEsercizio }: Props) {
+export default function MobileConfigSheet({ index, initial, esercizi, gruppi, intensita, onClose, onSave, onCreaEsercizio }: Props) {
   const [step, setStep] = useState(initial.esercizio_id ? 1 : 0)
   const [local, setLocal] = useState<EsForm>({ ...initial })
   const set = (k: keyof EsForm, v: string) => setLocal(p => ({ ...p, [k]: v }))
+
+  const warmup: { peso: string; reps: string }[] = (() => { try { return JSON.parse(local.warmup_serie || '[]') } catch { return [] } })()
+  const setWarmup = (w: { peso: string; reps: string }[]) => set('warmup_serie', JSON.stringify(w))
+  const isNuovoGruppo = !!local.gruppo_id && !gruppi.some(g => g.id === local.gruppo_id)
 
   const selectedEse = esercizi.find(e => e.id === local.esercizio_id)
   const isTimer = selectedEse?.tipo_input === 'timer' || selectedEse?.tipo_input === 'timer_unilaterale'
@@ -168,11 +177,38 @@ export default function MobileConfigSheet({ index, initial, esercizi, intensita,
                 <FieldLabel>PROGRESSIONE</FieldLabel>
                 <ProgressGrid value={local.progressione_tipo} onChange={v => set('progressione_tipo', v)} cols={2} />
               </div>
+
+              {/* Gruppo */}
+              <div>
+                <FieldLabel>GRUPPO SUPERSET</FieldLabel>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                  <button onClick={() => set('gruppo_id', '')} style={{
+                    padding: '6px 12px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
+                    background: !local.gruppo_id ? 'var(--c-30)' : 'var(--c-20)',
+                    color: !local.gruppo_id ? 'var(--c-80)' : 'var(--c-48)',
+                    border: !local.gruppo_id ? '1px solid var(--c-w20)' : '1px solid transparent',
+                  }}>Nessun gruppo</button>
+                  <button onClick={() => set('gruppo_id', crypto.randomUUID())} style={{
+                    padding: '6px 12px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
+                    background: isNuovoGruppo ? getTipo(local.tipo).bg : 'var(--c-20)',
+                    color: isNuovoGruppo ? getTipo(local.tipo).color : 'var(--c-48)',
+                    border: isNuovoGruppo ? `1px solid ${getTipo(local.tipo).color}40` : '1px solid transparent',
+                  }}>{isNuovoGruppo ? '✓ Nuovo gruppo' : '+ Nuovo gruppo'}</button>
+                  {gruppi.map(g => (
+                    <button key={g.id} onClick={() => set('gruppo_id', g.id)} style={{
+                      padding: '6px 12px', borderRadius: 999, fontSize: 11.5, fontWeight: 700,
+                      background: local.gruppo_id === g.id ? getTipo(local.tipo).bg : 'var(--c-20)',
+                      color: local.gruppo_id === g.id ? getTipo(local.tipo).color : 'var(--c-48)',
+                      border: local.gruppo_id === g.id ? `1px solid ${getTipo(local.tipo).color}40` : '1px solid transparent',
+                    }}>Gruppo {g.label}</button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
           {step === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <FieldInput label="Note coach" value={local.note}
                 placeholder="Indicazioni tecniche, avvertenze…"
                 onChange={v => set('note', v)} area />
@@ -194,18 +230,54 @@ export default function MobileConfigSheet({ index, initial, esercizi, intensita,
                 </select>
               </div>
 
-              <div style={{
-                padding: 14, borderRadius: 12,
-                background: 'oklch(0.65 0.18 150 / 8%)', border: '1px solid oklch(0.65 0.18 150 / 22%)',
-                display: 'flex', alignItems: 'flex-start', gap: 10,
-              }}>
-                <i className="fa-solid fa-sparkles" style={{ color: 'oklch(0.72 0.18 150)', fontSize: 13, marginTop: 2 }} />
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--c-90)' }}>Quasi pronto</div>
-                  <div style={{ fontSize: 10.5, color: 'var(--c-55)', marginTop: 2, lineHeight: 1.45 }}>
-                    Tutti i campi avanzati sono opzionali: puoi salvare così o completare più tardi.
-                  </div>
+              {/* Warmup specifico */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <FieldLabel>WARMUP SPECIFICO</FieldLabel>
+                  <button
+                    onClick={() => setWarmup([...warmup, { peso: '', reps: '10' }])}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+                      background: 'oklch(0.65 0.18 150 / 15%)', color: 'oklch(0.65 0.18 150)',
+                    }}>
+                    <FontAwesomeIcon icon={faPlus} style={{ fontSize: 9 }} />
+                    Serie
+                  </button>
                 </div>
+                {warmup.length === 0 ? (
+                  <p style={{ fontSize: 11, color: 'var(--c-40)' }}>Nessuna serie warmup</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {warmup.map((w, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: 'oklch(0.65 0.18 150)', width: 26, textAlign: 'center', flexShrink: 0 }}>
+                          W{i + 1}
+                        </span>
+                        <input type="text" value={w.peso} placeholder="Peso kg"
+                          onChange={e => { const u = [...warmup]; u[i] = { ...u[i], peso: e.target.value }; setWarmup(u) }}
+                          style={{
+                            flex: 1, padding: '8px 10px', borderRadius: 9, fontSize: 12, textAlign: 'center',
+                            background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', outline: 'none',
+                          }} />
+                        <input type="text" value={w.reps} placeholder="Reps"
+                          onChange={e => { const u = [...warmup]; u[i] = { ...u[i], reps: e.target.value }; setWarmup(u) }}
+                          style={{
+                            flex: 1, padding: '8px 10px', borderRadius: 9, fontSize: 12, textAlign: 'center',
+                            background: 'var(--c-22)', border: '1px solid var(--c-w8)', color: 'var(--c-97)', outline: 'none',
+                          }} />
+                        <button onClick={() => setWarmup(warmup.filter((_, idx) => idx !== i))}
+                          style={{
+                            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                            background: 'oklch(0.65 0.22 27 / 20%)', color: 'oklch(0.75 0.18 27)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                          <FontAwesomeIcon icon={faXmark} style={{ fontSize: 11 }} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
