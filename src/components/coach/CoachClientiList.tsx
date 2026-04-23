@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import MacroTargetForm from '@/components/coach/MacroTargetForm'
+import NutrizioneModal from '@/components/coach/NutrizioneModal'
 
 const WeightChart = dynamic(() => import('@/components/coach/WeightChart'), {
   ssr: false,
@@ -38,6 +38,7 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
   const [drawerTab, setDrawerTab] = useState<'overview' | 'nutrizione'>('overview')
   const [dietaAbilitata, setDietaAbilitata] = useState<boolean>(false)
   const [togglingDieta, setTogglingDieta] = useState(false)
+  const [nutModalAperto, setNutModalAperto] = useState(false)
   const supabase = useMemo(() => createClient(), [])
 
   const apriCliente = async (c: Cliente) => {
@@ -164,7 +165,21 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
                       </div>
                     </button>
                   </div>
-                  {dietaAbilitata ? <MacroTargetForm clienteId={clienteAperto.cliente_id} /> : <p className="text-center py-10 text-sm" style={{ color: 'var(--c-45)' }}>Abilita la nutrizione per questo cliente.</p>}
+                  {dietaAbilitata ? (
+                    <button
+                      onClick={() => setNutModalAperto(true)}
+                      style={{
+                        width: '100%', padding: '14px 18px', borderRadius: 14, marginTop: 4,
+                        background: 'oklch(0.70 0.19 46 / 10%)', border: '1.5px solid oklch(0.70 0.19 46 / 35%)',
+                        color: 'oklch(0.75 0.19 46)', fontSize: 14, fontWeight: 800,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      }}>
+                      <FontAwesomeIcon icon={faUtensils} style={{ fontSize: 14 }} />
+                      Gestisci Dieta
+                    </button>
+                  ) : (
+                    <p className="text-center py-10 text-sm" style={{ color: 'var(--c-45)' }}>Abilita la nutrizione per questo cliente.</p>
+                  )}
                 </div>
               ) : (
                 /* TAB OVERVIEW */
@@ -235,6 +250,15 @@ export default function CoachClientiList({ clienti }: { clienti: Cliente[] }) {
             )}
           </div>
         </div>
+      )}
+
+      {nutModalAperto && clienteAperto && (
+        <NutrizioneModal
+          clienteId={clienteAperto.cliente_id}
+          clienteNome={clienteAperto.profiles.full_name ?? 'Cliente'}
+          pesoCurrent={dettaglio?.misurazioni.length ? dettaglio.misurazioni[dettaglio.misurazioni.length - 1].peso_kg : null}
+          onClose={() => setNutModalAperto(false)}
+        />
       )}
     </>
   )
