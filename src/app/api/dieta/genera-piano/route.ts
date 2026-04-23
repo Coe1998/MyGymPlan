@@ -154,11 +154,16 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const clienteId: string = body.clienteId ?? user.id
 
-  // 1. Target macro
+  // 1. Target macro (dieta attiva per oggi)
+  const today = new Date().toISOString().split('T')[0]
   const { data: targetRow } = await supabase
-    .from('macro_target')
-    .select('calorie, proteine_g, carboidrati_g, grassi_g, pasti_config, carb_cycling_enabled, carbs_training, carbs_rest')
+    .from('diete')
+    .select('calorie, proteine_g, carboidrati_g, grassi_g, pasti_config')
     .eq('cliente_id', clienteId)
+    .lte('data_inizio', today)
+    .or(`data_fine.is.null,data_fine.gte.${today}`)
+    .order('data_inizio', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (!targetRow) return NextResponse.json({ error: 'Nessun piano nutrizionale impostato' }, { status: 400 })
@@ -173,28 +178,23 @@ export async function POST(req: NextRequest) {
   const allergens: string[] = ((anam?.intolleranze ?? '') as string)
     .toLowerCase().split(/[,;\n]+/).map(s => s.trim()).filter(Boolean)
 
-  // 3. Carb cycling
-  const carbEff = targetRow.carb_cycling_enabled && body.dayType === 'training' && targetRow.carbs_training
-    ? targetRow.carbs_training
-    : targetRow.carb_cycling_enabled && body.dayType === 'rest' && targetRow.carbs_rest
-    ? targetRow.carbs_rest
-    : targetRow.carboidrati_g
-
   const daily: MacroTarget = {
     kcal:      targetRow.calorie,
     protein_g: targetRow.proteine_g,
-    carbs_g:   carbEff,
+    carbs_g:   targetRow.carboidrati_g,
     fat_g:     targetRow.grassi_g,
   }
 
-  // 4. Pasti config
+  // Pasti config: normalizza sia {percentuale} (vecchio) che {pct} (nuovo)
   type PastoConfig = { nome: string; percentuale: number; macro_custom?: boolean; prot_pct?: number; carb_pct?: number; grassi_pct?: number }
-  const pastiConfig: PastoConfig[] = targetRow.pasti_config ?? [
-    { nome: 'Colazione', percentuale: 25 },
-    { nome: 'Pranzo',    percentuale: 35 },
-    { nome: 'Cena',      percentuale: 30 },
-    { nome: 'Spuntino',  percentuale: 10 },
-  ]
+  const pastiConfig: PastoConfig[] = (targetRow.pasti_config ?? []).length > 0
+    ? (targetRow.pasti_config as any[]).map(p => ({ ...p, percentuale: p.percentuale ?? p.pct ?? 0 }))
+    : [
+        { nome: 'Colazione', percentuale: 25 },
+        { nome: 'Pranzo',    percentuale: 35 },
+        { nome: 'Cena',      percentuale: 30 },
+        { nome: 'Spuntino',  percentuale: 10 },
+      ]
 
   // 5. Risolvi ogni pasto — accumula usedIds per varietà
   const results: MealResult[] = []

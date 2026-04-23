@@ -15,11 +15,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nessun alimento selezionato' }, { status: 400 })
   }
 
-  // 1. Macro target giornaliero
+  // 1. Macro target giornaliero (dieta attiva per oggi)
+  const today = new Date().toISOString().split('T')[0]
   const { data: targetRow } = await supabase
-    .from('macro_target')
+    .from('diete')
     .select('calorie, proteine_g, carboidrati_g, grassi_g')
     .eq('cliente_id', clienteId)
+    .lte('data_inizio', today)
+    .or(`data_fine.is.null,data_fine.gte.${today}`)
+    .order('data_inizio', { ascending: false })
+    .limit(1)
     .maybeSingle()
 
   if (!targetRow) return NextResponse.json({ error: 'Nessun piano nutrizionale impostato' }, { status: 400 })

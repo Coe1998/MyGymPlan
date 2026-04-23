@@ -463,8 +463,13 @@ export default function AnalyticsPage() {
       supabase.from('coach_clienti').select('dieta_abilitata').eq('cliente_id', cliente.id).maybeSingle(),
       supabase.from('pasto_log').select('data, calorie, proteine_g, carboidrati_g, grassi_g')
         .eq('cliente_id', cliente.id).gte('data', data7agoStr).lte('data', oggi).order('data', { ascending: false }),
-      supabase.from('macro_target').select('calorie, proteine_g, carboidrati_g, grassi_g')
-        .eq('cliente_id', cliente.id).maybeSingle(),
+      supabase.from('diete').select('calorie, proteine_g, carboidrati_g, grassi_g')
+        .eq('cliente_id', cliente.id)
+        .lte('data_inizio', oggi)
+        .or(`data_fine.is.null,data_fine.gte.${oggi}`)
+        .order('data_inizio', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
       supabase.from('piano_integratori')
         .select('*')
         .eq('cliente_id', cliente.id)

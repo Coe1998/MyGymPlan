@@ -98,6 +98,11 @@ export default function NutrizioneModal({
 
     if (attiva) {
       setDietaId(attiva.id)
+      // Normalizza pasti_config: supporta sia {percentuale} (vecchio) che {pct} (nuovo)
+      const pastiNorm = (attiva.pasti_config ?? []).map((p: any) => ({
+        nome: p.nome ?? 'Pasto',
+        pct: p.pct ?? p.percentuale ?? 0,
+      }))
       setDraftRaw({
         data_inizio: attiva.data_inizio,
         macro: {
@@ -108,8 +113,8 @@ export default function NutrizioneModal({
           note: attiva.note_coach ?? '',
         },
         pasti: {
-          count: attiva.pasti_config.length || 4,
-          split: attiva.pasti_config.length > 0 ? attiva.pasti_config : DRAFT_VUOTO.pasti.split,
+          count: pastiNorm.length || 4,
+          split: pastiNorm.length > 0 ? pastiNorm : DRAFT_VUOTO.pasti.split,
         },
         carb_cycling_abilitato: attiva.carb_cycling_abilitato,
         carb_cycling_start_date: (attiva as any).carb_cycling_start_date ?? '',
@@ -127,52 +132,7 @@ export default function NutrizioneModal({
         setCicloRaw(c)
       }
     } else {
-      // Nessuna dieta nella nuova tabella: fallback su macro_target esistente
-      const { data: mt } = await supabase.from('macro_target')
-        .select('calorie, proteine_g, carboidrati_g, grassi_g, note, pasti_config, carb_cycling_abilitato, carb_cycling_start_date, id')
-        .eq('cliente_id', clienteId).maybeSingle()
-
-      if (mt) {
-        const pastiOld = Array.isArray(mt.pasti_config) && mt.pasti_config.length > 0
-          ? mt.pasti_config.map((p: any) => ({ nome: p.nome ?? p.name ?? 'Pasto', pct: p.percentuale ?? p.pct ?? 0 }))
-          : DRAFT_VUOTO.pasti.split
-        setDraftRaw({
-          data_inizio: today,
-          macro: {
-            kcal: String(mt.calorie ?? 2000),
-            prot: String(mt.proteine_g ?? 150),
-            carb: String(mt.carboidrati_g ?? 200),
-            grassi: String(mt.grassi_g ?? 70),
-            note: mt.note ?? '',
-          },
-          pasti: { count: pastiOld.length, split: pastiOld },
-          carb_cycling_abilitato: mt.carb_cycling_abilitato ?? false,
-          carb_cycling_start_date: mt.carb_cycling_start_date ?? '',
-        })
-
-        // Carica anche profili carb cycling dal vecchio schema
-        if (mt.carb_cycling_abilitato && mt.id) {
-          const [profRes, cicloRes] = await Promise.all([
-            supabase.from('carb_cycling_profili').select('*').eq('piano_id', mt.id).order('nome'),
-            supabase.from('carb_cycling_giorni').select('*').eq('piano_id', mt.id).order('giorno_ciclo'),
-          ])
-          if (profRes.data?.length) {
-            setProfiliRaw(profRes.data.map((p: any) => ({
-              id: p.id, label: p.nome ?? p.label ?? 'A',
-              kcal: p.calorie ?? p.kcal ?? 0, prot: p.proteine_g ?? p.prot ?? 0,
-              carb: p.carboidrati_g ?? p.carb ?? 0, grassi: p.grassi_g ?? p.grassi ?? 0,
-              color: p.color ?? 'oklch(0.70 0.19 46)',
-            })))
-          }
-          if (cicloRes.data?.length) {
-            const c = Array(7).fill('')
-            for (const row of cicloRes.data as any[]) c[(row.giorno_ciclo ?? 1) - 1] = row.profilo_id ?? ''
-            setCicloRaw(c)
-          }
-        }
-      } else {
-        setDraftRaw({ ...DRAFT_VUOTO, data_inizio: today })
-      }
+      setDraftRaw({ ...DRAFT_VUOTO, data_inizio: today })
     }
 
     setDirty(false)
@@ -206,7 +166,7 @@ export default function NutrizioneModal({
       await supabase.from('diete').update({ data_fine: dataFinePrec }).eq('id', dietaId).neq('data_inizio', draft.data_inizio)
     }
 
-    // Inserisce nuova versione
+    // Inserisce nuova versione — salva pasti_config nel formato {nome, percentuale} (standard)
     const { data: nuovaDieta, error } = await supabase.from('diete').insert({
       cliente_id: clienteId,
       coach_id: user.id,
@@ -216,7 +176,7 @@ export default function NutrizioneModal({
       carboidrati_g: parseInt(draft.macro.carb) || null,
       grassi_g: parseInt(draft.macro.grassi) || null,
       note_coach: draft.macro.note.trim() || null,
-      pasti_config: draft.pasti.split,
+      pasti_config: draft.pasti.split.map(s => ({ nome: s.nome, percentuale: s.pct })),
       carb_cycling_abilitato: draft.carb_cycling_abilitato,
       carb_cycling_start_date: draft.carb_cycling_start_date || null,
     }).select('id').single()
@@ -240,20 +200,6 @@ export default function NutrizioneModal({
         if (cicloRows.length > 0) await supabase.from('dieta_ciclo').insert(cicloRows)
       }
     }
-
-    // Sincronizza macro_target per compatibilità lato cliente
-    await supabase.from('macro_target').upsert({
-      cliente_id: clienteId, coach_id: user.id,
-      calorie: parseInt(draft.macro.kcal) || 2000,
-      proteine_g: parseInt(draft.macro.prot) || 150,
-      carboidrati_g: parseInt(draft.macro.carb) || 200,
-      grassi_g: parseInt(draft.macro.grassi) || 70,
-      note: draft.macro.note.trim() || null,
-      pasti_config: draft.pasti.split,
-      carb_cycling_abilitato: draft.carb_cycling_abilitato,
-      carb_cycling_start_date: draft.carb_cycling_start_date || null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'cliente_id' })
 
     setSaving(false)
     setDirty(false)

@@ -140,8 +140,16 @@ export default function DietaPage() {
     const oggiInizio = new Date()
     oggiInizio.setHours(0, 0, 0, 0)
 
+    const todayStr = new Date().toISOString().split('T')[0]
     const [targetRes, pastiRes, storicoRes, pianoIntRes, checkinIntRes, checkinOggiRes] = await Promise.all([
-      supabase.from('macro_target').select('*').eq('cliente_id', user.id).maybeSingle(),
+      supabase.from('diete')
+        .select('calorie, proteine_g, carboidrati_g, grassi_g, pasti_config, carb_cycling_abilitato, carb_cycling_start_date')
+        .eq('cliente_id', user.id)
+        .lte('data_inizio', todayStr)
+        .or(`data_fine.is.null,data_fine.gte.${todayStr}`)
+        .order('data_inizio', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
       supabase.from('pasto_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
       supabase.from('pasto_log')
         .select('data, calorie, proteine_g, carboidrati_g, grassi_g')
@@ -165,7 +173,21 @@ export default function DietaPage() {
         .maybeSingle(),
     ])
 
-    const t = targetRes.data as MacroTarget | null
+    // Normalizza pasti_config: supporta sia {percentuale} (vecchio) che {pct} (nuovo)
+    const rawT = targetRes.data as any
+    const t: MacroTarget | null = rawT ? {
+      calorie: rawT.calorie,
+      proteine_g: rawT.proteine_g,
+      carboidrati_g: rawT.carboidrati_g,
+      grassi_g: rawT.grassi_g,
+      pasti_config: (rawT.pasti_config ?? []).map((p: any) => ({
+        ...p,
+        percentuale: p.percentuale ?? p.pct ?? 0,
+      })),
+      carb_cycling_enabled: rawT.carb_cycling_enabled ?? false,
+      carbs_training: rawT.carbs_training ?? null,
+      carbs_rest: rawT.carbs_rest ?? null,
+    } : null
     setTarget(t)
     setPasti(pastiRes.data ?? [])
     setPianoInt((pianoIntRes as any)?.data ?? [])

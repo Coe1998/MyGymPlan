@@ -331,9 +331,14 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
             testo: `Loggato solo ${pctLog}% dei giorni del mese. Senza dati è impossibile ottimizzare la nutrizione — incoraggiare almeno 4-5 giorni/settimana`,
           })
         } else {
-          const macroTargetRes = await supabase.from('macro_target')
+          const today = new Date().toISOString().split('T')[0]
+          const macroTargetRes = await supabase.from('diete')
             .select('calorie')
             .eq('cliente_id', clienteId)
+            .lte('data_inizio', today)
+            .or(`data_fine.is.null,data_fine.gte.${today}`)
+            .order('data_inizio', { ascending: false })
+            .limit(1)
             .maybeSingle()
           const target = macroTargetRes.data?.calorie ?? null
 
