@@ -91,7 +91,6 @@ export default function NutrizioneModal({
 
     setStorico(versions)
 
-    // Carica la dieta più recente (data_inizio più alta) come draft
     const today = todayISO()
     const attiva = versions.find(v => v.data_inizio <= today && (!v.data_fine || v.data_fine >= today))
       ?? versions[0]
@@ -110,9 +109,7 @@ export default function NutrizioneModal({
         },
         pasti: {
           count: attiva.pasti_config.length || 4,
-          split: attiva.pasti_config.length > 0
-            ? attiva.pasti_config
-            : DRAFT_VUOTO.pasti.split,
+          split: attiva.pasti_config.length > 0 ? attiva.pasti_config : DRAFT_VUOTO.pasti.split,
         },
         carb_cycling_abilitato: attiva.carb_cycling_abilitato,
         carb_cycling_start_date: (attiva as any).carb_cycling_start_date ?? '',
@@ -130,7 +127,52 @@ export default function NutrizioneModal({
         setCicloRaw(c)
       }
     } else {
-      setDraftRaw({ ...DRAFT_VUOTO, data_inizio: today })
+      // Nessuna dieta nella nuova tabella: fallback su macro_target esistente
+      const { data: mt } = await supabase.from('macro_target')
+        .select('calorie, proteine_g, carboidrati_g, grassi_g, note, pasti_config, carb_cycling_abilitato, carb_cycling_start_date, id')
+        .eq('cliente_id', clienteId).maybeSingle()
+
+      if (mt) {
+        const pastiOld = Array.isArray(mt.pasti_config) && mt.pasti_config.length > 0
+          ? mt.pasti_config.map((p: any) => ({ nome: p.nome ?? p.name ?? 'Pasto', pct: p.percentuale ?? p.pct ?? 0 }))
+          : DRAFT_VUOTO.pasti.split
+        setDraftRaw({
+          data_inizio: today,
+          macro: {
+            kcal: String(mt.calorie ?? 2000),
+            prot: String(mt.proteine_g ?? 150),
+            carb: String(mt.carboidrati_g ?? 200),
+            grassi: String(mt.grassi_g ?? 70),
+            note: mt.note ?? '',
+          },
+          pasti: { count: pastiOld.length, split: pastiOld },
+          carb_cycling_abilitato: mt.carb_cycling_abilitato ?? false,
+          carb_cycling_start_date: mt.carb_cycling_start_date ?? '',
+        })
+
+        // Carica anche profili carb cycling dal vecchio schema
+        if (mt.carb_cycling_abilitato && mt.id) {
+          const [profRes, cicloRes] = await Promise.all([
+            supabase.from('carb_cycling_profili').select('*').eq('piano_id', mt.id).order('nome'),
+            supabase.from('carb_cycling_giorni').select('*').eq('piano_id', mt.id).order('giorno_ciclo'),
+          ])
+          if (profRes.data?.length) {
+            setProfiliRaw(profRes.data.map((p: any) => ({
+              id: p.id, label: p.nome ?? p.label ?? 'A',
+              kcal: p.calorie ?? p.kcal ?? 0, prot: p.proteine_g ?? p.prot ?? 0,
+              carb: p.carboidrati_g ?? p.carb ?? 0, grassi: p.grassi_g ?? p.grassi ?? 0,
+              color: p.color ?? 'oklch(0.70 0.19 46)',
+            })))
+          }
+          if (cicloRes.data?.length) {
+            const c = Array(7).fill('')
+            for (const row of cicloRes.data as any[]) c[(row.giorno_ciclo ?? 1) - 1] = row.profilo_id ?? ''
+            setCicloRaw(c)
+          }
+        }
+      } else {
+        setDraftRaw({ ...DRAFT_VUOTO, data_inizio: today })
+      }
     }
 
     setDirty(false)
