@@ -25,7 +25,8 @@ WHERE NOT EXISTS (
 );
 
 -- 2. Migra profili carb cycling (carb_cycling_profili → dieta_profili_macro)
---    Solo per i piani appena migrati (quelli con data_inizio = CURRENT_DATE)
+--    Assegna colori in base alla posizione (ROW_NUMBER) dato che la tabella
+--    vecchia non aveva una colonna color.
 INSERT INTO public.dieta_profili_macro (dieta_id, label, kcal, prot, carb, grassi, color)
 SELECT
   d.id,
@@ -34,7 +35,12 @@ SELECT
   COALESCE(cp.proteine_g, 0),
   COALESCE(cp.carboidrati_g, 0),
   COALESCE(cp.grassi_g, 0),
-  COALESCE(cp.color, 'oklch(0.70 0.19 46)')
+  CASE (ROW_NUMBER() OVER (PARTITION BY d.id ORDER BY cp.nome) - 1) % 4
+    WHEN 0 THEN 'oklch(0.70 0.14 200)'
+    WHEN 1 THEN 'oklch(0.70 0.19 46)'
+    WHEN 2 THEN 'oklch(0.68 0.18 150)'
+    ELSE        'oklch(0.82 0.13 85)'
+  END
 FROM public.carb_cycling_profili cp
 JOIN public.macro_target mt ON mt.id = cp.piano_id
 JOIN public.diete d ON d.cliente_id = mt.cliente_id AND d.data_inizio = CURRENT_DATE
