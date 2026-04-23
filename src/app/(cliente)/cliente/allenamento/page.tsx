@@ -1538,6 +1538,15 @@ export default function AllenamentoPage() {
                   const isNewDesign = !isViewMode && !['amrap', 'emom', 'tabata', 'max_reps'].includes(ese.tipo) &&
                     ['reps', 'reps_unilaterale', 'timer', 'timer_unilaterale'].includes(tipoInputNew)
                   if (isNewDesign) {
+                    // Font size che si restringe al crescere delle cifre
+                    const dynFs = (val: string) => {
+                      const l = (val || '').length
+                      if (l <= 3) return 24
+                      if (l === 4) return 20
+                      if (l === 5) return 16
+                      return 13
+                    }
+
                     const btnStyle: React.CSSProperties = {
                       width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                       background: 'var(--c-22)', color: 'var(--c-80)',
@@ -1645,7 +1654,7 @@ export default function AllenamentoPage() {
                               <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: wHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)', boxShadow: wHighlight ? '0 0 0 3px oklch(0.70 0.19 46 / 12%)' : 'none' }}>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
-                                  <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: wHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                  <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(wVal), color: wHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                   <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
                                 </div>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
@@ -1657,7 +1666,7 @@ export default function AllenamentoPage() {
                               <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: rHighlight ? '1px solid var(--accent)' : '1px solid var(--c-w8)' }}>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(Math.max(0, rCur - 1)))} style={btnStyle}>−</button>
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <input type="text" inputMode="numeric" value={rVal} placeholder={String(confronto?.ripetizioni ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: rHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                  <input type="text" inputMode="numeric" value={rVal} placeholder={String(confronto?.ripetizioni ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'ripetizioni', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(rVal), color: rHighlight ? 'var(--accent)' : 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 </div>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'ripetizioni', String(rCur + 1))} style={btnStyle}>+</button>
                               </div>
@@ -1684,7 +1693,7 @@ export default function AllenamentoPage() {
                             <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
                               <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
-                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(wVal), color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
                               </div>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
@@ -1696,7 +1705,7 @@ export default function AllenamentoPage() {
                               <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'reps_sx', String(Math.max(0, sxCur - 1)))} style={btnStyle}>−</button>
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <input type="text" inputMode="numeric" value={sxVal} placeholder={String(confronto?.reps_sx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_sx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                  <input type="text" inputMode="numeric" value={sxVal} placeholder={String(confronto?.reps_sx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_sx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(sxVal), color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 </div>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'reps_sx', String(sxCur + 1))} style={btnStyle}>+</button>
                               </div>
@@ -1707,7 +1716,7 @@ export default function AllenamentoPage() {
                               <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'reps_dx', String(Math.max(0, dxCur - 1)))} style={btnStyle}>−</button>
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <input type="text" inputMode="numeric" value={dxVal} placeholder={String(confronto?.reps_dx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_dx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                  <input type="text" inputMode="numeric" value={dxVal} placeholder={String(confronto?.reps_dx ?? 0)} onChange={e => { if (/^\d*$/.test(e.target.value)) updateLog(ese.id, serieIndex, 'reps_dx', e.target.value) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(dxVal), color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 </div>
                                 <button onClick={() => updateLog(ese.id, serieIndex, 'reps_dx', String(dxCur + 1))} style={btnStyle}>+</button>
                               </div>
@@ -1769,7 +1778,7 @@ export default function AllenamentoPage() {
                             <div style={{ background: 'var(--c-13)', borderRadius: 12, padding: '6px', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid var(--c-w8)' }}>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.max(0, Math.round((wCur - 2.5) * 10) / 10)))} style={btnStyle}>−</button>
                               <div style={{ flex: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
-                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: 24, color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
+                                <input type="text" inputMode="decimal" value={wVal} placeholder={String(confronto?.peso_kg ?? 0)} onChange={e => { const raw = e.target.value.replace(',', '.'); if (/^\d*\.?\d{0,2}$/.test(raw)) updateLog(ese.id, serieIndex, 'peso_kg', raw) }} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', textAlign: 'center', fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: dynFs(wVal), color: 'var(--c-97)', fontVariantNumeric: 'tabular-nums', padding: 0, caretColor: 'var(--accent)' }} />
                                 <span style={{ fontSize: 10, color: 'var(--c-50)', fontWeight: 600, flexShrink: 0 }}>kg</span>
                               </div>
                               <button onClick={() => updateLog(ese.id, serieIndex, 'peso_kg', String(Math.round((wCur + 2.5) * 10) / 10))} style={btnStyle}>+</button>
