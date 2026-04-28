@@ -150,7 +150,7 @@ export default function DietaPage() {
         .order('data_inizio', { ascending: false })
         .limit(1)
         .maybeSingle(),
-      supabase.from('pasto_log').select('*').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
+      supabase.from('pasto_log').select('id, alimento_nome, quantita_g, calorie, proteine_g, carboidrati_g, grassi_g, gruppo_nome, gruppo_id, created_at, data').eq('cliente_id', user.id).eq('data', oggi).order('created_at'),
       supabase.from('pasto_log')
         .select('data, calorie, proteine_g, carboidrati_g, grassi_g')
         .eq('cliente_id', user.id)
@@ -302,7 +302,7 @@ export default function DietaPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase
-      .from('pasto_log').select('*')
+      .from('pasto_log').select('id, alimento_nome, quantita_g, calorie, proteine_g, carboidrati_g, grassi_g, gruppo_nome, gruppo_id, created_at, data')
       .eq('cliente_id', user.id).eq('gruppo_nome', nomePasto).neq('data', oggi)
       .order('data', { ascending: false }).limit(150)
     setStoricoPerPasto(data ?? [])
@@ -315,7 +315,7 @@ export default function DietaPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data } = await supabase
-      .from('pasto_log').select('*')
+      .from('pasto_log').select('id, alimento_nome, quantita_g, calorie, proteine_g, carboidrati_g, grassi_g, gruppo_nome, gruppo_id, created_at, data')
       .eq('cliente_id', user.id).neq('data', oggi)
       .order('data', { ascending: false }).limit(300)
     const map = new Map<string, PastoLog[]>()

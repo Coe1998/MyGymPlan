@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
         .order('data', { ascending: false }),
       // Check-in ultimi 180gg — evita full scan
       supabase.from('checkin')
-        .select('*')
+        .select('cliente_id, data, energia, sonno, stress, motivazione')
         .in('cliente_id', clienteIds)
         .gte('data', ultimi180gg)
         .order('data', { ascending: false }),
@@ -474,7 +474,7 @@ export default function AnalyticsPage() {
         .limit(1)
         .maybeSingle(),
       supabase.from('piano_integratori')
-        .select('*')
+        .select('id, nome, quantita, unita, momento, note, attivo, created_at')
         .eq('cliente_id', cliente.id)
         .eq('attivo', true)
         .order('created_at'),
