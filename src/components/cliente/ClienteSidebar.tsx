@@ -53,7 +53,7 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
 
 		channel = supabase.channel('unread-cliente')
 		  .on('postgres_changes', {
-			event: '*', schema: 'public', table: 'messaggi',
+			event: 'INSERT', schema: 'public', table: 'messaggi',
 			filter: `cliente_id=eq.${user.id}`,
 		  }, () => fetchUnread())
 		  .subscribe()

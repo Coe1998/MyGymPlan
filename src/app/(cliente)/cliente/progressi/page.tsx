@@ -168,7 +168,7 @@ export default function ProgressiPage() {
     if (eserciziList.length > 0) setSelectedEsercizio(eserciziList[0].id)
 
     const { data: misData } = await supabase
-      .from('misurazioni').select('*').eq('cliente_id', user.id).order('data', { ascending: false })
+      .from('misurazioni').select('*').eq('cliente_id', user.id).order('data', { ascending: false }).limit(365)
     setMisurazioni(misData ?? [])
 
     const { data: fotoData } = await supabase.storage.from('progressi-foto')
@@ -185,7 +185,7 @@ export default function ProgressiPage() {
     }
 
     const { data: checkinData } = await supabase
-      .from('checkin').select('*').eq('cliente_id', user.id).order('data', { ascending: false })
+      .from('checkin').select('*').eq('cliente_id', user.id).order('data', { ascending: false }).limit(365)
     setCheckins(checkinData ?? [])
     const oggi = new Date().toISOString().split('T')[0]
     const checkinDiOggi = checkinData?.find(c => c.data === oggi) ?? null

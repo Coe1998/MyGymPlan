@@ -62,8 +62,9 @@ export default function ClienteChatPage() {
         .select('*')
         .eq('coach_id', cc.coach_id)
         .eq('cliente_id', user.id)
-        .order('created_at')
-      setMessaggi((data as any) ?? [])
+        .order('created_at', { ascending: false })
+        .limit(100)
+      setMessaggi(((data as any) ?? []).reverse())
 
       await supabase.from('messaggi')
         .update({ letto: true })

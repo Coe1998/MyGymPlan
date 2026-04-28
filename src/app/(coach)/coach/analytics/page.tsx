@@ -205,16 +205,19 @@ export default function AnalyticsPage() {
     const clienteIds = clientiData.map(c => c.cliente_id)
 
     // ── 2. Fetch aggregate per TUTTI i clienti in parallelo ───────
+    const ultimi180gg = new Date(Date.now() - 180 * 86400000).toISOString()
     const [sessRes, checkinRes, misRes, assegAttiveRes] = await Promise.all([
-      // Tutte le sessioni di tutti i clienti
+      // Sessioni ultimi 180gg — evita full scan su tutta la storia
       supabase.from('sessioni')
         .select('id, data, cliente_id')
         .in('cliente_id', clienteIds)
+        .gte('data', ultimi180gg)
         .order('data', { ascending: false }),
-      // Ultimi check-in per tutti i clienti (1 per cliente)
+      // Check-in ultimi 180gg — evita full scan
       supabase.from('checkin')
         .select('*')
         .in('cliente_id', clienteIds)
+        .gte('data', ultimi180gg)
         .order('data', { ascending: false }),
       // Misurazioni peso per tutti i clienti
       supabase.from('misurazioni')

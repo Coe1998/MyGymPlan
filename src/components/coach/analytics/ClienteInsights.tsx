@@ -41,46 +41,49 @@ export default function ClienteInsights({ clienteId, frequenzaDichiarata, obiett
 
       // ── Fetch dati ───────────────────────────────────────────────────────────
 
-      const [sessRes, logRes, checkinRes, pesoRes, macroRes, anamnesiRes] = await Promise.all([
+      // Fetch sessioni + dati indipendenti in parallelo
+      const [sessRes, checkinRes, pesoRes, macroRes, anamnesiRes] = await Promise.all([
         supabase.from('sessioni')
           .select('id, data, completata, durata_secondi')
           .eq('cliente_id', clienteId)
           .eq('completata', true)
           .gte('data', da90)
           .order('data'),
-        supabase.from('log_serie')
-          .select(`
-            peso_kg, ripetizioni, completata,
-            sessione_id,
-            scheda_esercizi!inner(
-              esercizi!scheda_esercizi_esercizio_id_fkey(id, nome, muscoli, tipo_input)
-            )
-          `)
-          .in('sessione_id',
-            (await supabase.from('sessioni').select('id')
-              .eq('cliente_id', clienteId).eq('completata', true).gte('data', da90)).data?.map(s => s.id) ?? []
-          )
-          .eq('completata', true),
-        supabase.from('checkin_giornalieri')
-          .select('energia, stress, motivazione, created_at')
+        supabase.from('checkin')
+          .select('energia, stress, motivazione, data')
           .eq('cliente_id', clienteId)
-          .gte('created_at', da30)
-          .order('created_at'),
+          .gte('data', da30Date)
+          .order('data'),
         supabase.from('misurazioni')
           .select('peso_kg, data')
           .eq('cliente_id', clienteId)
           .gte('data', da90)
           .order('data'),
-        supabase.from('pasto_log') // CORRETTO: Nome tabella
-          .select('calorie, data')   // CORRETTO: Campi tabella
+        supabase.from('pasto_log')
+          .select('calorie, data')
           .eq('cliente_id', clienteId)
-          .gte('data', da30Date)      // CORRETTO: Filtro su colonna data
+          .gte('data', da30Date)
           .order('data'),
         supabase.from('anamnesi')
           .select('allenamenti_settimana, ore_sonno, descrizione_caratteriale')
           .eq('cliente_id', clienteId)
           .maybeSingle(),
       ])
+
+      // log_serie usa gli ID già caricati — elimina la query duplicata precedente
+      const sessIds = (sessRes.data ?? []).map((s: any) => s.id)
+      const logRes = sessIds.length > 0
+        ? await supabase.from('log_serie')
+            .select(`
+              peso_kg, ripetizioni, completata,
+              sessione_id,
+              scheda_esercizi!inner(
+                esercizi!scheda_esercizi_esercizio_id_fkey(id, nome, muscoli, tipo_input)
+              )
+            `)
+            .in('sessione_id', sessIds)
+            .eq('completata', true)
+        : { data: [] }
 
       const sessioni = sessRes.data ?? []
       const logs = (logRes.data ?? []) as any[]

@@ -56,7 +56,7 @@ export default function CoachSidebar({ profile }: { profile: Profile }) {
 
 		channel = supabase.channel('unread-coach')
 		  .on('postgres_changes', {
-			event: '*', schema: 'public', table: 'messaggi',
+			event: 'INSERT', schema: 'public', table: 'messaggi',
 			filter: `coach_id=eq.${user.id}`,
 		  }, () => fetchUnread())
 		  .subscribe()
