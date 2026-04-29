@@ -42,7 +42,19 @@ export default function ClienteChatPage() {
   const [showAllegati, setShowAllegati] = useState(false)
   const [sessioniRecenti, setSessioniRecenti] = useState<any[]>([])
   const [noteRecenti, setNoteRecenti] = useState<any[]>([])
+  const [sessioneInCorsoId, setSessioneInCorsoId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith('bynari_logs_draft_')) {
+        setSessioneInCorsoId(key.replace('bynari_logs_draft_', ''))
+        return
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -242,6 +254,16 @@ export default function ClienteChatPage() {
           </div>
         </div>
 
+        {sessioneInCorsoId && (
+          <div className="px-4 py-2.5 flex items-center gap-2 flex-shrink-0"
+            style={{ background: 'oklch(0.70 0.19 46 / 15%)', borderBottom: '1px solid oklch(0.70 0.19 46)' }}>
+            <span style={{ fontSize: 14, flexShrink: 0 }}>⚠️</span>
+            <p className="text-xs font-semibold leading-snug" style={{ color: 'oklch(0.70 0.19 46)' }}>
+              Hai un allenamento in corso — i messaggi di allenamento saranno visibili al termine della sessione
+            </p>
+          </div>
+        )}
+
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2">
           {messaggi.length === 0 && (
             <p className="text-sm text-center py-8" style={{ color: 'var(--c-40)' }}>
@@ -251,6 +273,9 @@ export default function ClienteChatPage() {
           {messaggi.map((m, i) => {
             const prevM = messaggi[i - 1]
             const showDate = !prevM || new Date(m.created_at).toDateString() !== new Date(prevM.created_at).toDateString()
+            const isBlurred = !!(sessioneInCorsoId &&
+              m.metadata?.tipo === 'nota_esercizio' &&
+              m.metadata?.sessione_id === sessioneInCorsoId)
             return (
               <div key={m.id}>
                 {showDate && (
@@ -263,22 +288,34 @@ export default function ClienteChatPage() {
                   </div>
                 )}
                 <div className={`flex ${m.da_coach ? 'justify-start' : 'justify-end'}`}>
-                  <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
-                    style={{
-                      background: m.da_coach ? 'var(--c-22)' : 'oklch(0.70 0.19 46)',
-                      borderBottomLeftRadius: m.da_coach ? 4 : 16,
-                      borderBottomRightRadius: m.da_coach ? 16 : 4,
-                    }}>
-                    {m.metadata ? (
-                      <ChatAllegatoCard metadata={m.metadata} daCoach={m.da_coach} ruolo="cliente" />
-                    ) : (
-                      <p className="text-sm break-words" style={{ color: m.da_coach ? 'var(--c-90)' : 'var(--c-11)' }}>
-                        {renderTesto(m.testo ?? '', m.da_coach)}
+                  <div style={{ position: 'relative' }}>
+                    <div className="max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl"
+                      style={{
+                        background: m.da_coach ? 'var(--c-22)' : 'oklch(0.70 0.19 46)',
+                        borderBottomLeftRadius: m.da_coach ? 4 : 16,
+                        borderBottomRightRadius: m.da_coach ? 16 : 4,
+                        filter: isBlurred ? 'blur(3px)' : undefined,
+                        userSelect: isBlurred ? 'none' : undefined,
+                        pointerEvents: isBlurred ? 'none' : undefined,
+                      }}>
+                      {m.metadata ? (
+                        <ChatAllegatoCard metadata={m.metadata} daCoach={m.da_coach} ruolo="cliente" />
+                      ) : (
+                        <p className="text-sm break-words" style={{ color: m.da_coach ? 'var(--c-90)' : 'var(--c-11)' }}>
+                          {renderTesto(m.testo ?? '', m.da_coach)}
+                        </p>
+                      )}
+                      <p className="text-xs mt-1" style={{ color: m.da_coach ? 'var(--c-45)' : 'var(--c-30)' }}>
+                        {formatOra(m.created_at)}
                       </p>
+                    </div>
+                    {isBlurred && (
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 10, background: 'oklch(0.70 0.19 46 / 20%)', color: 'oklch(0.70 0.19 46)', border: '1px solid oklch(0.70 0.19 46 / 40%)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}>
+                          Disponibile a fine allenamento
+                        </span>
+                      </div>
                     )}
-                    <p className="text-xs mt-1" style={{ color: m.da_coach ? 'var(--c-45)' : 'var(--c-30)' }}>
-                      {formatOra(m.created_at)}
-                    </p>
                   </div>
                 </div>
               </div>

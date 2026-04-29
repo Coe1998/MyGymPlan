@@ -460,7 +460,7 @@ export default function AllenamentoPage() {
     const savedTimerEnd = typeof window !== 'undefined' ? localStorage.getItem('bynari_timer_end') : null
     if (savedTimerEnd) {
       const endTs = parseInt(savedTimerEnd)
-      const remaining = Math.ceil((endTs - Date.now()) / 1000)
+      const remaining = Math.max(0, Math.floor((endTs - Date.now()) / 1000))
       if (remaining > 0) {
         timerEndRef.current = endTs
         setTimerSecondi(remaining)
@@ -807,7 +807,7 @@ export default function AllenamentoPage() {
       },
     })
     setNoteInviata(ese.id)
-    setTimeout(() => setNoteInviata(prev => prev === ese.id ? null : prev), 2000)
+    setTimeout(() => setNoteInviata(prev => prev === ese.id ? null : prev), 3000)
   }
 
   const updateLog = (eseId: string, serieIndex: number, field: keyof LogSerie, value: string) => {
@@ -1491,16 +1491,24 @@ export default function AllenamentoPage() {
                     {noteCliente[ese.id] && coachId && (
                       <button
                         onClick={() => inviaNoteAlCoach(ese)}
+                        disabled={noteInviata === ese.id}
                         className="flex-1 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
                         style={{
-                          background: noteInviata === ese.id ? 'oklch(0.65 0.18 150 / 15%)' : 'oklch(0.60 0.15 200 / 15%)',
-                          border: `1px solid ${noteInviata === ese.id ? 'oklch(0.65 0.18 150 / 35%)' : 'oklch(0.60 0.15 200 / 30%)'}`,
-                          color: noteInviata === ese.id ? 'oklch(0.65 0.18 150)' : 'oklch(0.60 0.15 200)',
+                          background: 'oklch(0.60 0.15 200 / 15%)',
+                          border: '1px solid oklch(0.60 0.15 200 / 30%)',
+                          color: 'oklch(0.60 0.15 200)',
+                          opacity: noteInviata === ese.id ? 0.5 : 1,
                         }}>
-                        {noteInviata === ese.id ? 'Inviata al coach ✓' : 'Invia al coach'}
+                        Invia al coach
                       </button>
                     )}
                   </div>
+                  {noteInviata === ese.id && (
+                    <div className="py-2 px-3 rounded-xl text-xs font-semibold text-center"
+                      style={{ background: 'oklch(0.70 0.19 46 / 15%)', border: '1px solid oklch(0.70 0.19 46 / 30%)', color: 'oklch(0.70 0.19 46)' }}>
+                      Nota inviata ✓ — il coach la vedrà a fine allenamento
+                    </div>
+                  )}
                 </div>
               )}
 

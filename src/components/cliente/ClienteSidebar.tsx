@@ -164,22 +164,31 @@ export default function ClienteSidebar({ profile, dietaAbilitata = false }: { pr
               )
             }
             return (
-              <Link key={item.href} href={href}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
-                style={{
-                  background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
-                  color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-55)',
-                  borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
-                }}>
-                <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-				{item.label}
-				{item.href === '/cliente/chat' && unreadCoach > 0 && (
-				  <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
-					style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-97)' }}>
-					{unreadCoach}
-				  </span>
-				)}
-              </Link>
+              <div key={item.href} style={{ position: 'relative' }}
+                className={item.href === '/cliente/chat' && haSessioneInCorso ? 'group' : ''}>
+                <Link href={href}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: isActive ? 'oklch(0.60 0.15 200 / 15%)' : 'transparent',
+                    color: isActive ? 'oklch(0.60 0.15 200)' : 'var(--c-55)',
+                    borderLeft: isActive ? '3px solid oklch(0.60 0.15 200)' : '3px solid transparent',
+                  }}>
+                  <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
+                  {item.label}
+                  {item.href === '/cliente/chat' && unreadCoach > 0 && (
+                    <span className="ml-auto text-xs font-black w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ background: 'oklch(0.60 0.15 200)', color: 'var(--c-97)' }}>
+                      {unreadCoach}
+                    </span>
+                  )}
+                </Link>
+                {item.href === '/cliente/chat' && haSessioneInCorso && (
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                    style={{ background: 'oklch(0.70 0.19 46)', color: 'var(--c-11)', zIndex: 50 }}>
+                    Hai un allenamento in corso
+                  </div>
+                )}
+              </div>
             )
           })}
         </nav>
