@@ -30,7 +30,20 @@
       "Read(//c/Users/cozmin.bejinari/Downloads/bynari/**)",
       "Bash(grep -n \"gif-\\\\${ese.id}\\\\|gif_url.*hidden\" /c/Users/cozmin.bejinari/Documents/GitHub/mygymplan/src/app/\\\\\\(cliente\\\\\\)/cliente/allenamento/page.tsx)",
       "Bash(git stash *)",
-      "Bash(git pull *)"
+      "Bash(git pull *)",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/alimenti?select=product_name,brands,fat_100g,energy_kcal_100g,meal_slots&fat_100g=gte.15&order=fat_100g.desc&limit=30' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs')",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/alimenti?select=product_name,brands,fat_100g,proteins_100g,energy_kcal_100g,meal_slots&product_name=ilike.*avocado*&limit=10' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs')",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/alimenti?select=id&limit=1' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Prefer: count=exact' -I)",
+      "Bash(curl -s 'https://dcwchgzxuzfywkxsadjp.supabase.co/rest/v1/alimenti?limit=1' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjd2NoZ3p4dXpmeXdreHNhZGpwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDAxMDE5OSwiZXhwIjoyMDg5NTg2MTk5fQ.LTFykwESrf1BFBYdAGjjcqAQozNUiexbKnShSqzAPXs')",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\cozmin.bejinari\\\\Documents\\\\GitHub\\\\mygymplan\\\\src\\\\components\\\\coach\\\\scheda-editor' -Name\")",
+      "Bash(powershell.exe *)",
+      "PowerShell(Get-Content *)",
+      "Bash(sqlite3 /c/Users/cozmin.bejinari/Documents/GitHub/mygymplan/.next/server)",
+      "Bash(Select-String \"^\\\\.\")",
+      "Bash(dir -Hidden \"C:/Users/cozmin.bejinari/Documents/GitHub/mygymplan/\")",
+      "Bash(git *)",
+      "Bash(npm install *)",
+      "Bash(grep -v \"^\\\\s*//\")"
     ]
   }
 }

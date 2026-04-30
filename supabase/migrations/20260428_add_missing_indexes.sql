@@ -145,3 +145,8 @@ BEGIN
   END IF;
 
 END $$;
+
+-- ──────────────────────────────────────────────────────────────
+-- RLS fix
+-- ──────────────────────────────────────────────────────────────
+ALTER TABLE public.progress_check_domande ENABLE ROW LEVEL SECURITY;
